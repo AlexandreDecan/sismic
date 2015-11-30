@@ -44,6 +44,8 @@ def _transition_from_dict(state_name: str, transition_d: dict):
     """
     to_state = transition_d.get('target', None)
     event = transition_d.get('event', None)
+    if event:
+        event = statemachine.Event(event)
     condition = transition_d.get('condition', None)
     action = transition_d.get('action', None)
     return statemachine.Transition(state_name, to_state, event, condition, action)

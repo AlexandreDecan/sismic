@@ -1,7 +1,25 @@
 from functools import lru_cache
 
 
-class State(object):
+class Event:
+    """
+    Simple event with a name and (optionaly) some data.
+    """
+    def __init__(self, name: str, data: dict=None):
+        self.name = name
+        self.data = data
+
+    def __eq__(self, other):
+        return isinstance(other, Event) and self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def to_dict(self):
+        return {'name': self.name}
+
+
+class State:
     """
     State element with a name, no transition, no substate.
     """
@@ -155,7 +173,7 @@ class Transition(object):
     A condition (code as string) can be specified as a guard.
     """
 
-    def __init__(self, from_state: str, to_state: str=None, event: str=None, condition: str=None, action: str=None):
+    def __init__(self, from_state: str, to_state: str=None, event: Event=None, condition: str=None, action: str=None):
         if to_state is None and event is None:
             raise ValueError('You should either specify to_state or event.')
         self.from_state = from_state
@@ -180,7 +198,7 @@ class Transition(object):
         if not self.internal:
             d['target'] = self.to_state
         if not self.eventless:
-            d['event'] = self.event
+            d['event'] = self.event.to_dict()
         if self.condition:
             d['condition'] = self.condition
         if self.action:
