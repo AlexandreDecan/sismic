@@ -9,6 +9,9 @@ In particular, `pyss` provides:
  - Statecharts simulators (SCXML semantic, no language restriction!)
  - A base framework for model-based testing
 
+We do not provide any package yet, but you can test `pyss` by cloning this repository.
+The list of dependencies is given by `requirements.txt` and can be automatically satisfied by using `pip install -r requirements.txt`.
+Python >=3.4 is required, so we suggest you to test this package in a virtual environment.
 
 ## Features
 
