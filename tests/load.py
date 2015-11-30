@@ -2,11 +2,15 @@ import unittest
 from pyss import load
 
 
-class LoadStateMachineTests(unittest.TestCase):
-    def test_from_yaml(self):
+class LoadFromYAMLTests(unittest.TestCase):
+    def test_simple(self):
         content = open('../examples/simple.yaml')
         load.from_yaml(content)
 
-    def test_from_json(self):
-        content = open('../examples/simple.json')
-        load.from_json(content)
+    def test_composite(self):
+        content = open('../examples/composite.yaml')
+        load.from_yaml(content)
+
+    def test_history(self):
+        content = open('../examples/history.yaml')
+        load.from_yaml(content)
