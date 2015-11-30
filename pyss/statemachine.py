@@ -1,4 +1,5 @@
 from functools import lru_cache
+from collections import OrderedDict
 
 
 class Event:
@@ -16,7 +17,7 @@ class Event:
         return hash(self.name)
 
     def to_dict(self):
-        return {'name': self.name}
+        return OrderedDict({'name': self.name})
 
 
 class State:
@@ -37,7 +38,7 @@ class State:
         return hash(self.name)
 
     def to_dict(self):
-        return {'name': self.name}
+        return OrderedDict({'name': self.name})
 
 
 class SimpleState(State):
@@ -194,7 +195,7 @@ class Transition(object):
         return 'Transition({}, {}, {})'.format(self.from_state, self.to_state, self.event)
 
     def to_dict(self):
-        d = {}
+        d = OrderedDict()
         if not self.internal:
             d['target'] = self.to_state
         if not self.eventless:
@@ -211,9 +212,9 @@ class StateMachine(object):
         self.name = name
         self.initial = initial
         self.execute = execute  # code that should be executed on start
-        self.states = {}  # name -> State object
+        self.states = OrderedDict()  # name -> State object
         self.transitions = []  # list of Transition objects
-        self.parent = {}  # name -> parent.name
+        self.parent = OrderedDict()  # name -> parent.name
         self.children = []
 
     def register_state(self, state: State, parent: str):
@@ -301,11 +302,10 @@ class StateMachine(object):
                 return state
 
     def to_dict(self) -> dict:
-        d = {
-            'name': self.name,
-            'initial': self.initial,
-            'states': self.children
-        }
+        d = OrderedDict()
+        d['name'] = self.name
+        d['initial'] = self.initial
+        d['states'] = self.children
 
         if self.execute:
             d['execute'] = self.execute
