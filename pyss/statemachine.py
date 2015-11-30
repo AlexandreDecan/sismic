@@ -207,9 +207,10 @@ class Transition(object):
 
 
 class StateMachine(object):
-    def __init__(self, name: str, initial: str):
+    def __init__(self, name: str, initial: str, execute: str=None):
         self.name = name
         self.initial = initial
+        self.execute = execute  # code that should be executed on start
         self.states = {}  # name -> State object
         self.transitions = []  # list of Transition objects
         self.parent = {}  # name -> parent.name
@@ -305,6 +306,9 @@ class StateMachine(object):
             'initial': self.initial,
             'states': self.children
         }
+
+        if self.execute:
+            d['execute'] = self.execute
 
         statelist_to_expand = [d['states']]
         while statelist_to_expand:

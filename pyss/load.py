@@ -7,7 +7,7 @@ def from_yaml(data):
 
 
 def from_dict(data: dict):
-    sm = statemachine.StateMachine(data['name'], data['initial'])
+    sm = statemachine.StateMachine(data['name'], data['initial'], data.get('execute', None))
 
     states_to_add = []  # list of (state, parent) to be added
     for state in data['states']:
