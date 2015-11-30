@@ -5,9 +5,10 @@
 `pyss` provides a set of tools related to statechart manipulation and execution.
 In particular, `pyss` provides:
  - A Python data structure to store and manipulate statecharts
- - A easy way to define statecharts using YAML
+ - A easy way to define statecharts using YAML (see `examples/*.yaml`)
  - Statecharts simulators (SCXML semantic, no language restriction!)
  - A base framework for model-based testing
+
 
 ## Features
 
