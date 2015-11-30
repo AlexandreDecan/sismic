@@ -14,3 +14,7 @@ class LoadFromYAMLTests(unittest.TestCase):
     def test_history(self):
         content = open('../examples/history.yaml')
         load.from_yaml(content)
+
+    def test_actions(self):
+        content = open('../examples/actions.yaml')
+        load.from_yaml(content)

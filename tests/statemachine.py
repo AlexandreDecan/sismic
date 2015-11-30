@@ -12,6 +12,9 @@ class ToDictTests(unittest.TestCase):
     def test_history(self):
         load.from_yaml(open('../examples/history.yaml')).to_dict()
 
+    def test_actions(self):
+        load.from_yaml(open('../examples/actions.yaml')).to_dict()
+
 
 class TraversalTests(unittest.TestCase):
     def setUp(self):

@@ -7,16 +7,10 @@ statemachine:
       transitions:
       - target: s2
         event: click
-      on_entry: |
-        log('s1 entered')
-      on_exit: |
-        log('s1 exited')
     - name: s2
     - name: s3
       transitions:
         - target: s1
           event: key_pressed
-          action: |
-            log('A key was pressed')
         - target: s2
           event: click
