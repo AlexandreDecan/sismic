@@ -1,11 +1,13 @@
 # Statechart Simulator for Python
 
+(Currently under development)
+
 ## Overview
 
 `pyss` provides a set of tools related to statechart manipulation and execution.
 In particular, `pyss` provides:
  - A Python data structure to store and manipulate statecharts
- - A easy way to define statecharts using YAML (see `examples/*.yaml`)
+ - A easy way to define statecharts using YAML
  - Statecharts simulators (SCXML semantic, no language restriction!)
  - A base framework for model-based testing
 
@@ -29,8 +31,6 @@ statemachine:
           event: click
 ```
 
-## Features
-
 `pyss` supports:
  - simple (basic) state, composite state, orthogonal state
  - initial state, final state, history state (incl. shallow and deep semantic)
@@ -39,6 +39,8 @@ statemachine:
  - (Not yet) fully observable step-by-step execution (based on SCXML semantic)
  - (Not yet) static visualization
  - (Not yet) dynamic visualization during execution
+
+More examples are available in `examples/*.yaml`.
 
 
 ## Installation
@@ -52,8 +54,8 @@ Python >=3.4 is required, so we suggest you to test this package in a virtual en
  - `tests` contains, uh, well, the tests!
  - `examples` currently contains several statecharts in YAML.
 
+
 ## Credits & license
 
 Under version 3 of the GNU General Public License.
-
 Developed by Alexandre Decan at the University of Mons (Belgium).
