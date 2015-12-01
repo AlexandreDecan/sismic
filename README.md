@@ -50,7 +50,7 @@ The list of dependencies is given by `requirements.txt` and can be automatically
 Python >=3.4 is required, so we suggest you to test this package in a virtual environment.
 
  - `pyss` is the main module, it contains the data structure,
- YAML loader (`pyss.load`), code evaluators (`pyss.evaluators`) and statechart executors (`pyss.executors`).
+ YAML loader (`pyss.load`), code evaluators (`pyss.evaluator`) and statechart simulators (`pyss.simulator`).
  - `tests` contains, uh, well, the tests!
  - `examples` currently contains several statecharts in YAML.
 
