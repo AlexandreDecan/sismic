@@ -197,8 +197,6 @@ class Transition(object):
     """
 
     def __init__(self, from_state: str, to_state: str=None, event: Event=None, condition: str=None, action: str=None):
-        if to_state is None and event is None:
-            raise ValueError('You should either specify to_state or event.')
         self.from_state = from_state
         self.to_state = to_state
         self.event = event
@@ -290,10 +288,11 @@ class StateMachine(object):
         states_to_consider = [state]
         while states_to_consider:
             state = states_to_consider.pop(0)
-            # Get children for composite state
-            for child in getattr(self.states[state], 'children', []):
-                states_to_consider.append(child)
-                descendants.append(child)
+            state = self.states[state]
+            if isinstance(state, CompositeStateMixin):
+                for child in state.children:
+                    states_to_consider.append(child)
+                    descendants.append(child)
         return descendants
 
     @lru_cache()
@@ -341,6 +340,21 @@ class StateMachine(object):
             if keep:
                 leaves.append(state)
         return leaves
+
+    @property
+    def valid(self) -> bool:
+        """
+        Valide current state machine:
+         - Check that transitions refer to existing states
+         - Check that history can only be defined as a child of a CompoundState
+         - Check that history state's initial memory refer to a parent's child
+         - Check that initial state refer to a parent's child
+         - Check that orthogonal states have at least one child
+         - Check that there is no internal eventless guardless transition
+        :return: True or False
+        """
+        # TODO: Implement!
+        raise NotImplementedError()
 
     def to_dict(self) -> dict:
         d = OrderedDict()

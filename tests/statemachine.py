@@ -49,6 +49,7 @@ class TraversalTests(unittest.TestCase):
         self.assertEqual(self.sm.least_common_ancestor('s1a', 's1b1'), 's1')
 
     def test_leaf(self):
+        self.assertEqual(self.sm.leaf_for([]), [])
         self.assertEqual(self.sm.leaf_for(['s1']), ['s1'])
         self.assertEqual(self.sm.leaf_for(['s1', 's2']), ['s1', 's2'])
         self.assertEqual(self.sm.leaf_for(['s1', 's1b1', 's2']), ['s1b1', 's2'])
