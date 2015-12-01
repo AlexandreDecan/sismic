@@ -73,8 +73,8 @@ def _state_from_dict(state_d: dict):
                 state = statemachine.OrthogonalState(name, on_entry, on_exit)
             else:
                 initial = state_d['initial']
-                state = statemachine.CompositeState(name, initial, on_entry, on_exit)
+                state = statemachine.CompoundState(name, initial, on_entry, on_exit)
         else:
             # Simple state
-            state = statemachine.SimpleState(name, on_entry, on_exit)
+            state = statemachine.BasicState(name, on_entry, on_exit)
     return state

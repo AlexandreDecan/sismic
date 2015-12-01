@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 class Event:
     """
-    Simple event with a name and (optionaly) some data.
+    Simple event with a name and (optionally) some data.
     """
     def __init__(self, name: str, data: dict=None):
         self.name = name
@@ -22,7 +22,7 @@ class Event:
 
 class State:
     """
-    State element with a name, no transition, no substate.
+    State element with a name.
     """
 
     def __init__(self, name: str):
@@ -37,38 +37,20 @@ class State:
     def __hash__(self):
         return hash(self.name)
 
-    def to_dict(self):
-        return OrderedDict({'name': self.name})
+    def to_dict(self) -> dict:
+        return {'name': self.name}
 
 
-class SimpleState(State):
+class ActionStateMixin:
     """
-    A simple state can host transitions
+    State that can define actions on entry and on exit.
     """
-
-    def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
-        """
-        :param name: name of this state
-        :param on_entry: code (string) to execute on entry
-        :param on_exit: code (string) to execute on exit
-        """
-        super().__init__(name)
+    def __init__(self, on_entry: str=None, on_exit: str=None):
         self.on_entry = on_entry
         self.on_exit = on_exit
-        self.transitions = []
 
-    def add_transition(self, transition):
-        """
-        :param transition: an instance of Transition
-        """
-        if transition.from_state != self.name:
-            raise ValueError('Transition {} cannot be added to {}'.format(transition, self))
-        self.transitions.append(transition)
-
-    def to_dict(self):
-        d = super().to_dict()
-        if len(self.transitions) > 0:
-            d['transitions'] = [transition.to_dict() for transition in self.transitions]
+    def to_dict(self) -> dict:
+        d = {}
         if self.on_entry:
             d['on_entry'] = self.on_entry
         if self.on_exit:
@@ -76,58 +58,97 @@ class SimpleState(State):
         return d
 
 
-class CompositeState(SimpleState):
+class TransitionStateMixin:
     """
-    Composite state has nested OR-states.
-    An initial state must be provided.
+    A simple state can host transitions
     """
 
-    def __init__(self, name: str, initial: str, on_entry: str=None, on_exit: str=None):
-        super().__init__(name, on_entry, on_exit)
-        self.initial = initial
-        self.children = []
+    def __init__(self):
         self.transitions = []
+
+    def add_transition(self, transition):
+        """
+        :param transition: an instance of Transition
+        """
+        self.transitions.append(transition)
+
+    def to_dict(self) -> dict:
+        d = {}
+        if len(self.transitions) > 0:
+            d['transitions'] = [transition.to_dict() for transition in self.transitions]
+        return d
+
+
+class CompositeStateMixin:
+    """
+    Composite state can have children states.
+    """
+    def __init__(self):
+        self.children = []
 
     def add_child(self, state_name):
         self.children.append(state_name)
 
-    def to_dict(self):
-        d = super().to_dict()
-        d['states'] = self.children
-        return d
+    def to_dict(self) -> dict:
+        return {'states': self.children}
 
 
-class OrthogonalState(SimpleState):
+class BasicState(State, TransitionStateMixin, ActionStateMixin):
     """
-    Orthogonal state has nested AND-states.
-    Orthogonal states has NO initial state (all the substates are initial).
+    A basic state, with a name, transitions, actions, etc. but no children.
     """
-
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
-        super().__init__(name, on_entry, on_exit)
-        self.children = []
-        self.transitions = []
+        State.__init__(self, name)
+        TransitionStateMixin.__init__(self)
+        ActionStateMixin.__init__(self, on_entry, on_exit)
 
-    def add_child(self, state_name):
-        self.children.append(state_name)
-
-    def to_dict(self):
-        d = super().to_dict()
-        d['states'] = self.children
-        d['orthogonal'] = True
+    def to_dict(self) -> dict:
+        d = State.to_dict(self)
+        d.update(ActionStateMixin.to_dict(self))
+        d.update(TransitionStateMixin.to_dict(self))
         return d
 
 
-class PseudoState(State):
+class CompoundState(State, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
     """
-    Abstract base class for pseudo states.
+    Compound states must have children states.
     """
+    def __init__(self, name: str, initial: str, on_entry: str=None, on_exit: str=None):
+        State.__init__(self, name)
+        TransitionStateMixin.__init__(self)
+        ActionStateMixin.__init__(self, on_entry, on_exit)
+        CompositeStateMixin.__init__(self)
+        self.initial = initial
 
-    def __init__(self, name):
-        super().__init__(name)
+    def to_dict(self) -> dict:
+        d = State.to_dict(self)
+        d['initial'] = self.initial
+        d.update(ActionStateMixin.to_dict(self))
+        d.update(TransitionStateMixin.to_dict(self))
+        d.update(CompositeStateMixin.to_dict(self))
+        return d
 
 
-class HistoryState(PseudoState):
+class OrthogonalState(State, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
+    """
+    Orthogonal states run their children simultaneously.
+    """
+    def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
+        State.__init__(self, name)
+        TransitionStateMixin.__init__(self)
+        ActionStateMixin.__init__(self, on_entry, on_exit)
+        CompositeStateMixin.__init__(self)
+
+    def to_dict(self) -> dict:
+        d = State.to_dict(self)
+        d['orthogonal'] = True
+        d.update(ActionStateMixin.to_dict(self))
+        d.update(TransitionStateMixin.to_dict(self))
+        d.update(CompositeStateMixin.to_dict(self))
+        return d
+
+
+class HistoryState(State):
     """
     History state can be either 'shallow' (default) or 'deep'.
     A shallow history state resumes the execution of its parent.
@@ -136,14 +157,14 @@ class HistoryState(PseudoState):
     """
 
     def __init__(self, name: str, initial: str=None, deep: bool=False):
-        super().__init__(name)
+        State.__init__(self, name)
         self.name = name
         self.memory = [initial]
         self.initial = initial
         self.deep = deep
 
     def to_dict(self):
-        d = super().to_dict()
+        d = State.to_dict(self)
         d['type'] = 'history'
         if self.initial:
             d['initial'] = self.initial
@@ -152,18 +173,19 @@ class HistoryState(PseudoState):
         return d
 
 
-class FinalState(PseudoState):
+class FinalState(State, ActionStateMixin):
     """
     Final state has NO transition and is used to detect state machine termination.
     """
 
-    def __init__(self, name: str):
-        super().__init__(name)
-        self.name = name
+    def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
+        State.__init__(self, name)
+        ActionStateMixin.__init__(self, on_entry, on_exit)
 
     def to_dict(self):
-        d = super().to_dict()
+        d = State.to_dict(self)
         d['type'] = 'final'
+        d.update(ActionStateMixin.to_dict(self))
         return d
 
 
