@@ -95,7 +95,7 @@ philosphy
 
 goal + dummy eval + python eval + write your own
 
-#### Module `pyss.executor`
+#### Module `pyss.simulator`
 
 goal + main steps (eventless, evented, step and stabilization)
 

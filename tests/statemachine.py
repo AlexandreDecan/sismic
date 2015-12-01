@@ -4,21 +4,21 @@ from pyss import io
 
 class ToDictTests(unittest.TestCase):
     def test_simple(self):
-        io.from_yaml(open('../examples/simple.yaml')).to_dict()
+        io.import_from_yaml(open('../examples/simple.yaml')).to_dict()
 
     def test_composite(self):
-        io.from_yaml(open('../examples/composite.yaml')).to_dict()
+        io.import_from_yaml(open('../examples/composite.yaml')).to_dict()
 
     def test_history(self):
-        io.from_yaml(open('../examples/history.yaml')).to_dict()
+        io.import_from_yaml(open('../examples/history.yaml')).to_dict()
 
     def test_actions(self):
-        io.from_yaml(open('../examples/actions.yaml')).to_dict()
+        io.import_from_yaml(open('../examples/actions.yaml')).to_dict()
 
 
 class TraversalTests(unittest.TestCase):
     def setUp(self):
-        self.sm = io.from_yaml(open('../examples/composite.yaml'))
+        self.sm = io.import_from_yaml(open('../examples/composite.yaml'))
 
     def test_ancestors(self):
         self.assertEqual(self.sm.ancestors_for('s2'), [])

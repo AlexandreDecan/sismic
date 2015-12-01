@@ -2,11 +2,11 @@ import yaml
 import pyss.statemachine as statemachine
 
 
-def from_yaml(data):
-    return from_dict(yaml.load(data)['statemachine'])
+def import_from_yaml(data):
+    return import_from_dict(yaml.load(data)['statemachine'])
 
 
-def from_dict(data: dict):
+def import_from_dict(data: dict):
     sm = statemachine.StateMachine(data['name'], data['initial'], data.get('on entry', None))
 
     states_to_add = []  # list of (state, parent) to be added

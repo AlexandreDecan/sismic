@@ -367,6 +367,12 @@ class StateMachine(object):
         raise NotImplementedError()
 
     def to_dict(self) -> dict:
+        """
+        Return a Python representation of this state machine using built-in
+        types (dict, list, ...).
+        This representation can be used with `io.import_from_dict`.
+        :return: a Python representation of this state machine
+        """
         d = OrderedDict()
         d['name'] = self.name
         d['initial'] = self.initial

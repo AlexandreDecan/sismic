@@ -6,7 +6,7 @@ from pyss.statemachine import Event
 
 class SimulatorTest(unittest.TestCase):
     def test_init(self):
-        sm = io.from_yaml(open('../examples/simple.yaml'))
+        sm = io.import_from_yaml(open('../examples/simple.yaml'))
         simulator = Simulator(sm)
         self.assertFalse(simulator.running)
         steps = simulator.start()
@@ -14,7 +14,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertTrue(simulator.running)
 
     def test_simple(self):
-        sm = io.from_yaml(open('../examples/simple.yaml'))
+        sm = io.import_from_yaml(open('../examples/simple.yaml'))
         simulator = Simulator(sm)
 
         simulator.start()
@@ -28,7 +28,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertEqual(simulator.configuration, ['s3'])
 
     def test_simple_iterator(self):
-        sm = io.from_yaml(open('../examples/simple.yaml'))
+        sm = io.import_from_yaml(open('../examples/simple.yaml'))
         simulator = Simulator(sm)
         simulator.fire_event(Event('goto s2'))
         simulator.fire_event(Event('goto final'))
@@ -48,7 +48,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertFalse(simulator.running)
 
     def test_simple_infinite_run(self):
-        sm = io.from_yaml(open('../examples/simple.yaml'))
+        sm = io.import_from_yaml(open('../examples/simple.yaml'))
         simulator = Simulator(sm)
         steps = iter(simulator)
         next(steps)
