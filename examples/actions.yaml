@@ -1,6 +1,6 @@
 statemachine:
   name: State machine with executable content
-  execute: |
+  on entry: |
     x = 1
     y = 2
   initial: s1

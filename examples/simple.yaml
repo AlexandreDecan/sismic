@@ -6,13 +6,17 @@ statemachine:
     - name: s1
       transitions:
         - target: s2
-          event: click
+          event: goto s2
     - name: s2
       transitions:
         - target: s3
     - name: s3
       transitions:
         - target: s1
-          event: key_pressed
+          event: goto s1
         - target: s2
-          event: click
+          event: goto s2
+        - target: final
+          event: goto final
+    - name: final
+      type: final

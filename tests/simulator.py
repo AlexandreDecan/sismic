@@ -1,12 +1,12 @@
 import unittest
-from pyss import load
+from pyss import io
 from pyss.simulator import Simulator, Step
 from pyss.statemachine import Event
 
 
 class SimulatorTest(unittest.TestCase):
     def test_init(self):
-        sm = load.from_yaml(open('../examples/simple.yaml'))
+        sm = io.from_yaml(open('../examples/simple.yaml'))
         simulator = Simulator(sm)
         self.assertFalse(simulator.running)
         steps = simulator.start()
@@ -14,17 +14,47 @@ class SimulatorTest(unittest.TestCase):
         self.assertTrue(simulator.running)
 
     def test_simple(self):
-        sm = load.from_yaml(open('../examples/simple.yaml'))
+        sm = io.from_yaml(open('../examples/simple.yaml'))
         simulator = Simulator(sm)
-        steps = []
-        steps += simulator.start()
+
+        simulator.start()
         self.assertEqual(simulator.configuration, ['s1'])
-        steps += simulator.macrostep()
+        simulator.execute()
         self.assertEqual(simulator.configuration, ['s1'])
-        simulator.fire_event(Event('click'))
-        steps += simulator.macrostep()
+        simulator.fire_event(Event('goto s2'))
+        simulator.execute()
         self.assertEqual(simulator.configuration, ['s2'])
-        steps += simulator.macrostep()
+        simulator.execute()
         self.assertEqual(simulator.configuration, ['s3'])
-        for step in steps:
-            print(step)
+
+    def test_simple_iterator(self):
+        sm = io.from_yaml(open('../examples/simple.yaml'))
+        simulator = Simulator(sm)
+        simulator.fire_event(Event('goto s2'))
+        simulator.fire_event(Event('goto final'))
+        for _ in simulator:
+            pass
+        self.assertEqual(simulator.configuration, ['final'])
+        self.assertFalse(simulator.running)
+
+        simulator = Simulator(sm)
+        steps = iter(simulator)
+        next(steps)
+        steps.send(Event('goto s2'))
+        steps.send(Event('goto final'))
+        for _ in simulator:
+            pass
+        self.assertEqual(simulator.configuration, ['final'])
+        self.assertFalse(simulator.running)
+
+    def test_simple_infinite_run(self):
+        sm = io.from_yaml(open('../examples/simple.yaml'))
+        simulator = Simulator(sm)
+        steps = iter(simulator)
+        next(steps)
+        steps.send(Event('goto s2'))
+        with self.assertRaises(RuntimeError):
+            for _ in simulator:
+                pass
+
+

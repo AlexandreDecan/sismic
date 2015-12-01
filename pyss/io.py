@@ -7,7 +7,7 @@ def from_yaml(data):
 
 
 def from_dict(data: dict):
-    sm = statemachine.StateMachine(data['name'], data['initial'], data.get('execute', None))
+    sm = statemachine.StateMachine(data['name'], data['initial'], data.get('on entry', None))
 
     states_to_add = []  # list of (state, parent) to be added
     for state in data['states']:
@@ -46,7 +46,7 @@ def _transition_from_dict(state_name: str, transition_d: dict):
     event = transition_d.get('event', None)
     if event:
         event = statemachine.Event(event)
-    condition = transition_d.get('condition', None)
+    condition = transition_d.get('guard', None)
     action = transition_d.get('action', None)
     return statemachine.Transition(state_name, to_state, event, condition, action)
 
@@ -66,14 +66,13 @@ def _state_from_dict(state_d: dict):
         state = statemachine.HistoryState(state_d['name'], state_d.get('initial'), state_d.get('deep', False))
     else:
         name = state_d.get('name')
-        on_entry = state_d.get('on_entry', None)
-        on_exit = state_d.get('on_exit', None)
-        if 'states' in state_d:  # Composite state
-            if state_d.get('orthogonal', False):  # Orthogonal state
-                state = statemachine.OrthogonalState(name, on_entry, on_exit)
-            else:
-                initial = state_d['initial']
-                state = statemachine.CompoundState(name, initial, on_entry, on_exit)
+        on_entry = state_d.get('on entry', None)
+        on_exit = state_d.get('on exit', None)
+        if 'states' in state_d:  # Compound state
+            initial = state_d['initial']
+            state = statemachine.CompoundState(name, initial, on_entry, on_exit)
+        elif 'orthogonal states' in state_d: #
+            state = statemachine.OrthogonalState(name, on_entry, on_exit)
         else:
             # Simple state
             state = statemachine.BasicState(name, on_entry, on_exit)

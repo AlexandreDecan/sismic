@@ -1,24 +1,24 @@
 import unittest
-from pyss import load
+from pyss import io
 
 
 class ToDictTests(unittest.TestCase):
     def test_simple(self):
-        load.from_yaml(open('../examples/simple.yaml')).to_dict()
+        io.from_yaml(open('../examples/simple.yaml')).to_dict()
 
     def test_composite(self):
-        load.from_yaml(open('../examples/composite.yaml')).to_dict()
+        io.from_yaml(open('../examples/composite.yaml')).to_dict()
 
     def test_history(self):
-        load.from_yaml(open('../examples/history.yaml')).to_dict()
+        io.from_yaml(open('../examples/history.yaml')).to_dict()
 
     def test_actions(self):
-        load.from_yaml(open('../examples/actions.yaml')).to_dict()
+        io.from_yaml(open('../examples/actions.yaml')).to_dict()
 
 
 class TraversalTests(unittest.TestCase):
     def setUp(self):
-        self.sm = load.from_yaml(open('../examples/composite.yaml'))
+        self.sm = io.from_yaml(open('../examples/composite.yaml'))
 
     def test_ancestors(self):
         self.assertEqual(self.sm.ancestors_for('s2'), [])

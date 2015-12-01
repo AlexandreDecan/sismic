@@ -16,7 +16,7 @@ Example of a YAML definition of a simple state chart:
 statemachine:
   name: Simple state machine
   initial: s1
-  execute: x = 1
+  on entry: x = 1
 
   states:
     - name: s1
@@ -25,7 +25,7 @@ statemachine:
           event: click
           action: x = x + 1
         - event: key_pressed  # Internal transition
-          condition: event.data['key'] > 42 
+          guard: event.data['key'] > 42
     - name: s2
       transitions: 
         - target: s3  # Eventless transition
@@ -58,12 +58,47 @@ The list of dependencies is given by `requirements.txt` and can be automatically
 Python >=3.4 is required, so we suggest you to test this package in a virtual environment.
 
  - `pyss` is the main module, it contains the data structure,
- YAML loader (`pyss.load`), code evaluators (`pyss.evaluator`) and statechart simulators (`pyss.simulator`).
+ YAML loader (`pyss.io`), code evaluators (`pyss.evaluator`) and statechart simulators (`pyss.simulator`).
  - `tests` contains, uh, well, the tests!
  - `examples` currently contains several statecharts in YAML.
 
 
-## Credits & license
+## Credits and license
 
 Under version 3 of the GNU General Public License.
 Developed by Alexandre Decan at the University of Mons (Belgium).
+
+## Documentation
+
+To be done...
+
+### State machine construction
+
+yaml
+
+
+#### Module `pyss.io`
+
+dict / yaml
+
+#### Module `pyss.statemachine`
+
+objects
+
+
+### State machine execution
+
+philosphy
+
+
+#### Module `pyss.evaluator`
+
+goal + dummy eval + python eval + write your own
+
+#### Module `pyss.executor`
+
+goal + main steps (eventless, evented, step and stabilization)
+
+Step + execute + configuration + fire_event + running
+
+iterator

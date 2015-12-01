@@ -55,9 +55,9 @@ class ActionStateMixin:
     def to_dict(self) -> dict:
         d = {}
         if self.on_entry:
-            d['on_entry'] = self.on_entry
+            d['on entry'] = self.on_entry
         if self.on_exit:
-            d['on_exit'] = self.on_exit
+            d['on exit'] = self.on_exit
         return d
 
 
@@ -144,10 +144,11 @@ class OrthogonalState(State, TransitionStateMixin, ActionStateMixin, CompositeSt
 
     def to_dict(self) -> dict:
         d = State.to_dict(self)
-        d['orthogonal'] = True
         d.update(ActionStateMixin.to_dict(self))
         d.update(TransitionStateMixin.to_dict(self))
         d.update(CompositeStateMixin.to_dict(self))
+        d['orthogonal states'] = d['states']
+        del d['states']
         return d
 
 
@@ -224,17 +225,23 @@ class Transition(object):
         if not self.eventless:
             d['event'] = self.event.to_dict()
         if self.condition:
-            d['condition'] = self.condition
+            d['guard'] = self.condition
         if self.action:
             d['action'] = self.action
         return d
 
 
 class StateMachine(object):
-    def __init__(self, name: str, initial: str, execute: str=None):
+    def __init__(self, name: str, initial: str, on_entry: str=None):
+        """
+        Initialize a state machine.
+        :param name: Name of this state machine
+        :param initial: Initial state
+        :param on_entry: Code to execute before the execution
+        """
         self.name = name
         self.initial = initial
-        self.execute = execute  # code that should be executed on start
+        self.on_entry = on_entry
         self.states = {}  # name -> State object
         self.transitions = []  # list of Transition objects
         self.parent = {}  # name -> parent.name
@@ -365,8 +372,8 @@ class StateMachine(object):
         d['initial'] = self.initial
         d['states'] = self.children
 
-        if self.execute:
-            d['execute'] = self.execute
+        if self.on_entry:
+            d['on entry'] = self.on_entry
 
         statelist_to_expand = [d['states']]
         while statelist_to_expand:

@@ -4,7 +4,7 @@ from pyss.evaluator import Evaluator, DummyEvaluator
 
 class Step:
     def __init__(self, event: statemachine.Event, transition: statemachine.Transition,
-               entered_states: list, exited_states: list):
+                 entered_states: list, exited_states: list):
         """
         Create a step. A step consider `event`, takes `transition` and results in a list
         of `entered_states` and a list of `exited_states`.
@@ -24,6 +24,18 @@ class Step:
 
 
 class Simulator:
+    """
+    Use case:
+    >>> simulator = Simulator(sm)
+    >>> assert(simulator.running == False)
+    >>> simulator.start()
+    >>> assert(simulator.running == True)
+    >>> simulator.fire_event(Event('click'))
+    >>> for step in simulator:
+            print(step)
+    >>> assert(simulator.running == False)
+    """
+
     def __init__(self, sm: statemachine.StateMachine, evaluator: Evaluator=None):
         """
         A simulator that interprets a state machine according to a specific semantic.
@@ -48,15 +60,15 @@ class Simulator:
         Make this machine runnable:
          - Execute state machine initial code
          - Execute until a stable situation is reached.
-        :return A (possibly empty) list of Step.
+        :return A (possibly empty) list of executed Step.
         """
         # Initialize state machine
-        if self._sm.execute:
-            self._evaluator.execute_action(self._sm.execute)
+        if self._sm.on_entry:
+            self._evaluator.execute_action(self._sm.on_entry)
 
         # Initial step and stabilization
         step = Step(None, None, [self._sm.initial], [])
-        self.apply(step)
+        self._execute_step(step)
         return [step] + self._stabilize()
 
     @property
@@ -65,12 +77,57 @@ class Simulator:
         Return True iff state machine is running.
         """
         for state in self._sm.leaf_for(list(self._configuration)):
-            if not isinstance(state, statemachine.FinalState):
+            if not isinstance(self._sm.states[state], statemachine.FinalState):
                 return True
         return False
 
     def fire_event(self, event: statemachine.Event):
         self._events.append(event)
+
+    def __iter__(self):
+        """
+        Return an iterator for current execution.
+        It corresponds to successive call to execute().
+        There is no need to manually start() this executor.
+        Event can be added using iterator.send().
+        """
+        if not self.running:
+            self.start()
+
+        consecutive_null_steps = 0
+        while self.running:
+            step = self.execute()
+            consecutive_null_steps = 0 if step else consecutive_null_steps + 1
+            if consecutive_null_steps >= 42:
+                raise RuntimeError('Possible infinite run detected')
+            event = yield step
+            if event:
+                self.fire_event(event)
+        raise StopIteration()
+
+    def execute(self) -> list:
+        """
+        Execute an eventless transition or an evented transition and put the
+        state machine in a stable state.
+        Return a list of executed Step instances.
+        """
+        steps = []
+
+        # Try eventless transitions
+        step = self._transition_step(event=None)  # Explicit is better than implicit
+
+        if not step and len(self._events) > 0:
+            event = self._events.pop(0)
+            step = self._transition_step(event=event)
+            if not step:
+                steps.append(Step(event, None, [], []))
+
+        if step:
+            steps.append(step)
+            self._execute_step(step)
+
+        # Stabilization
+        return steps + self._stabilize()
 
     def _actionable_transitions(self, event: statemachine.Event=None) -> list:
         """
@@ -120,7 +177,7 @@ class Simulator:
         step = self._stabilize_step()
         while step:
             steps.append(step)
-            self.apply(step)
+            self._execute_step(step)
             step = self._stabilize_step()
         return steps
 
@@ -161,7 +218,7 @@ class Simulator:
 
         return Step(event, transition, entered_states, exited_states)
 
-    def apply(self, step: Step):
+    def _execute_step(self, step: Step):
         """
         Apply given Step on this state machine
         :param step: Step instance
@@ -205,30 +262,6 @@ class Simulator:
 
         # Add state to configuration
         self._configuration = self._configuration.union(step.entered_states)
-
-    def macrostep(self) -> list:
-        """
-        Perform a macro step, ie. a sequence of micro steps until a stable configuration is reached.
-        Corresponds to the processing of exactly at most ONE transition.
-        This method should return a list of (micro) Step instance.
-        """
-        steps = []
-
-        # Try eventless transitions
-        step = self._transition_step(event=None)  # Explicit is better than implicit
-
-        if not step and len(self._events) > 0:
-            event = self._events.pop(0)
-            step = self._transition_step(event=event)
-            if not step:
-                steps.append(Step(event, None, [], []))
-
-        if step:
-            steps.append(step)
-            self.apply(step)
-
-        # Stabilization
-        return steps + self._stabilize()
 
     def __repr__(self):
         return '{}[{}]'.format(self.__class__.__name__, ' '.join(self._configuration))
