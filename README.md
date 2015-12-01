@@ -9,13 +9,29 @@ In particular, `pyss` provides:
  - Statecharts simulators (SCXML semantic, no language restriction!)
  - A base framework for model-based testing
 
-We do not provide any package yet, but you can test `pyss` by cloning this repository.
-The list of dependencies is given by `requirements.txt` and can be automatically satisfied by using `pip install -r requirements.txt`.
-Python >=3.4 is required, so we suggest you to test this package in a virtual environment.
+Example of a YAML definition of a simple state chart:
+```
+statemachine:
+  name: Simple state machine
+  initial: s1
+
+  states:
+    - name: s1
+      transitions:
+      - target: s2
+        event: click
+    - name: s2
+    - name: s3
+      transitions:
+        - target: s1
+          event: key_pressed
+        - target: s2
+          event: click
+```
 
 ## Features
 
-`pyss` actually exhibits the following features:
+`pyss` supports:
  - simple (basic) state, composite state, orthogonal state
  - initial state, final state, history state (incl. shallow and deep semantic)
  - guarded transition, eventless transition, internal transition
@@ -25,22 +41,16 @@ Python >=3.4 is required, so we suggest you to test this package in a virtual en
  - (Not yet) dynamic visualization during execution
 
 
-## Development
+## Installation
 
-Pyss is currently under development.
-Expected features for this package:
- - Distribution a full package on `PyPi` (install with `pip`)
- - Integration of a continuous integration process, with heavy test coverage
- - Well documented on *ReadTheDocs*, including a complete reference and many examples
-
-
-## Content
+We do not provide any package yet, but you can test `pyss` by cloning this repository.
+The list of dependencies is given by `requirements.txt` and can be automatically satisfied by using `pip install -r requirements.txt`.
+Python >=3.4 is required, so we suggest you to test this package in a virtual environment.
 
  - `pyss` is the main module, it contains the data structure,
- YAML loader, code evaluators and statechart executors.
+ YAML loader (`pyss.load`), code evaluators (`pyss.evaluators`) and statechart executors (`pyss.executors`).
  - `tests` contains, uh, well, the tests!
  - `examples` currently contains several statecharts in YAML.
-
 
 ## Credits & license
 
