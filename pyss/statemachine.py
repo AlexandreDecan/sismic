@@ -301,6 +301,25 @@ class StateMachine(object):
             if state in s2_anc:
                 return state
 
+    def leaf_for(self, states: list) -> list:
+        """
+        Return a subset of `states` that are leaves, ie. return each state from
+        `states` that has no descendant in `states`.
+        :param states: A list of state names
+        :return: A list of state names
+        """
+        leaves = []
+        # TODO: Need a more efficient way to compute this set
+        for state in states:
+            keep = True
+            for descendant in self.descendants_for(state):
+                if descendant in states:
+                    keep = False
+                    break
+            if keep:
+                leaves.append(state)
+        return leaves
+
     def to_dict(self) -> dict:
         d = OrderedDict()
         d['name'] = self.name
