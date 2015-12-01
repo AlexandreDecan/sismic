@@ -16,19 +16,27 @@ Example of a YAML definition of a simple state chart:
 statemachine:
   name: Simple state machine
   initial: s1
+  execute: x = 1
 
   states:
     - name: s1
       transitions:
-      - target: s2
-        event: click
+        - target: s2
+          event: click
+          action: x = x + 1
+        - event: key_pressed  # Internal transition
+          condition: event.data['key'] > 42 
     - name: s2
+      transitions: 
+        - target: s3  # Eventless transition
     - name: s3
       transitions:
         - target: s1
           event: key_pressed
+          action: x = x - 1
         - target: s2
           event: click
+          
 ```
 
 `pyss` supports:
@@ -36,7 +44,7 @@ statemachine:
  - initial state, final state, history state (incl. shallow and deep semantic)
  - guarded transition, eventless transition, internal transition
  - entry action, exit action, transition action
- - (Not yet) fully observable step-by-step execution (based on SCXML semantic)
+ - fully observable step-by-step execution (based on SCXML semantic)
  - (Not yet) static visualization
  - (Not yet) dynamic visualization during execution
 
