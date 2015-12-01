@@ -5,9 +5,11 @@ statemachine:
   states:
     - name: s1
       transitions:
-      - target: s2
-        event: click
+        - target: s2
+          event: click
     - name: s2
+      transitions:
+        - target: s3
     - name: s3
       transitions:
         - target: s1

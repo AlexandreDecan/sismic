@@ -19,6 +19,9 @@ class Step:
         self.entered_states = entered_states
         self.exited_states = exited_states
 
+    def __repr__(self):
+        return 'Step({}, {}, {}, {})'.format(self.event, self.transition, self.entered_states, self.exited_states)
+
 
 class Simulator:
     def __init__(self, sm: statemachine.StateMachine, evaluator: Evaluator=None):
@@ -40,22 +43,21 @@ class Simulator:
     def events(self) -> list:
         return self._events
 
-    def start(self):
+    def start(self) -> list:
         """
         Make this machine runnable:
          - Execute state machine initial code
          - Execute until a stable situation is reached.
+        :return A (possibly empty) list of Step.
         """
         # Initialize state machine
         if self._sm.execute:
             self._evaluator.execute_action(self._sm.execute)
 
-        # Add initial state to configuration
-        self._configuration.add(self._sm.initial)
-
-        step = self._stabilize_step()
-        while step:
-            self.apply(step)
+        # Initial step and stabilization
+        step = Step(None, None, [self._sm.initial], [])
+        self.apply(step)
+        return [step] + self._stabilize()
 
     @property
     def running(self) -> bool:
@@ -70,32 +72,24 @@ class Simulator:
     def fire_event(self, event: statemachine.Event):
         self._events.append(event)
 
-    def actionable_transitions(self, event: statemachine.Event=None) -> list:
+    def _actionable_transitions(self, event: statemachine.Event=None) -> list:
         """
-        Return a list of transitions that can be enabled with respect to current
-        configuration and given event. Should be called only when the state machine
-        is stabilized.
-        The resulting list is ordered by:
-          1) eventless transitions first
-          2) deepest states first
-          :param event: Event to be considered, or None
+        Return a list of transitions that can be actioned wrt.
+        the current configuration. The list is ordered: deepest states first.
+        :param event: Event to considered or None for eventless transitions
+        :return: A (possibly empty) ordered list of Transition instances
         """
-        # Order configuration by state depth
-        ordered_configuration = sorted(self._configuration, key=lambda x: self._sm.depth_of(x), reverse=True)
+        transitions = []
+        for transition in self._sm.transitions:
+            if transition.event != event:
+                continue
+            if transition.from_state not in self._configuration:
+                continue
+            if transition.condition is None or self._evaluator.evaluate_condition(transition.condition, event):
+                transitions.append(transition)
 
-        eventless_transitions = []
-        eventfull_transitions = []
-
-        for state in ordered_configuration:
-            for transition in self._sm.states[state].transitions:
-                # keep transitions with matching event, or eventless
-                if transition.eventless or transition.event == event:
-                    if transition.condition is None or self._evaluator.evaluate_condition(transition.condition, event):
-                        if transition.eventless:
-                            eventless_transitions.append(transition)
-                        else:
-                            eventfull_transitions.append(transition)
-        return eventless_transitions + eventfull_transitions
+        # Order by deepest first
+        return sorted(transitions, key=lambda t: self._sm.depth_of(t.from_state), reverse=True)
 
     def _stabilize_step(self) -> Step:
         """
@@ -104,7 +98,7 @@ class Simulator:
         :return: A Step instance or None if this state machine can not be stabilized
         """
         # Check if we are in a set of "stable" states
-        leaves = self._sm.leaf_for(self._configuration)
+        leaves = self._sm.leaf_for(list(self._configuration))
         for leaf in leaves:
             leaf = self._sm.states[leaf]
             if isinstance(leaf, statemachine.HistoryState):
@@ -116,6 +110,57 @@ class Simulator:
             elif isinstance(leaf, statemachine.CompoundState):
                 return Step(None, None, [leaf.initial], [])
 
+    def _stabilize(self) -> list:
+        """
+        Compute, apply and return stabilization steps.
+        :return: A list of Step instances
+        """
+        # Stabilization
+        steps = []
+        step = self._stabilize_step()
+        while step:
+            steps.append(step)
+            self.apply(step)
+            step = self._stabilize_step()
+        return steps
+
+    def _transition_step(self, event: statemachine.Event=None) -> Step:
+        """
+        Return the Step (if any) associated with the appropriate transition matching
+        given event (or eventless transition if event is None).
+        :param event: Event to consider (or None)
+        :return: A Step instance or None
+        """
+        transitions = self._actionable_transitions(event)
+
+        if len(transitions) == 0:
+            return None
+
+        # TODO: Check there is at most one transition for selected depth
+        transition = transitions[0]
+
+        # Internal transition
+        if transition.to_state is None:
+            return Step(event, transition, [], [])
+
+        lca = self._sm.least_common_ancestor(transition.from_state, transition.to_state)
+        from_ancestors = self._sm.ancestors_for(transition.from_state)
+        to_ancestors = self._sm.ancestors_for(transition.to_state)
+
+        exited_states = [transition.from_state]
+        for state in from_ancestors:
+            if state == lca:
+                break
+            exited_states.append(state)
+
+        entered_states = [transition.to_state]
+        for state in to_ancestors:
+            if state == lca:
+                break
+            entered_states.insert(0, state)
+
+        return Step(event, transition, entered_states, exited_states)
+
     def apply(self, step: Step):
         """
         Apply given Step on this state machine
@@ -126,7 +171,7 @@ class Simulator:
 
         for state in exited_states:
             # Execute exit action
-            if isinstance(state, statemachine.ActionStateMixin):
+            if isinstance(state, statemachine.ActionStateMixin) and state.on_exit:
                 self._evaluator.execute_action(state.on_exit)
 
         # Deal with history: this only concerns compound states
@@ -147,27 +192,43 @@ class Simulator:
                         child.memory = list(active)
 
         # Remove states from configuration
-        self._configuration = self._configuration.remove(step.entered_states)
+        self._configuration = self._configuration.difference(step.exited_states)
 
         # Execute transition
-        if step.transition.action:
+        if step.transition and step.transition.action:
             self._evaluator.execute_action(step.transition.action, step.transition.event)
 
         for state in entered_states:
             # Execute entry action
-            if isinstance(state, statemachine.ActionStateMixin):
+            if isinstance(state, statemachine.ActionStateMixin) and state.on_entry:
                 self._evaluator.execute_action(state.on_entry)
 
         # Add state to configuration
-        self._configuration = self._configuration.add(step.entered_states)
+        self._configuration = self._configuration.union(step.entered_states)
 
     def macrostep(self) -> list:
         """
         Perform a macro step, ie. a sequence of micro steps until a stable configuration is reached.
-        Corresponds to the processing of exactly ONE transition.
+        Corresponds to the processing of exactly at most ONE transition.
         This method should return a list of (micro) Step instance.
         """
-        raise NotImplementedError()
+        steps = []
+
+        # Try eventless transitions
+        step = self._transition_step(event=None)  # Explicit is better than implicit
+
+        if not step and len(self._events) > 0:
+            event = self._events.pop(0)
+            step = self._transition_step(event=event)
+            if not step:
+                steps.append(Step(event, None, [], []))
+
+        if step:
+            steps.append(step)
+            self.apply(step)
+
+        # Stabilization
+        return steps + self._stabilize()
 
     def __repr__(self):
         return '{}[{}]'.format(self.__class__.__name__, ' '.join(self._configuration))

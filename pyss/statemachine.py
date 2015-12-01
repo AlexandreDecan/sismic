@@ -16,6 +16,9 @@ class Event:
     def __hash__(self):
         return hash(self.name)
 
+    def __repr__(self):
+        return 'Event({})'.format(self.name)
+
     def to_dict(self):
         return OrderedDict({'name': self.name})
 
@@ -232,9 +235,9 @@ class StateMachine(object):
         self.name = name
         self.initial = initial
         self.execute = execute  # code that should be executed on start
-        self.states = OrderedDict()  # name -> State object
+        self.states = {}  # name -> State object
         self.transitions = []  # list of Transition objects
-        self.parent = OrderedDict()  # name -> parent.name
+        self.parent = {}  # name -> parent.name
         self.children = []
 
     def register_state(self, state: State, parent: str):
