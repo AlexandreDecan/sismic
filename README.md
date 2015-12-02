@@ -101,5 +101,116 @@ Developed by Alexandre Decan at the University of Mons (Belgium).
 
 ## Documentation
 
-To be done...
+In progress.
+
+### YAML format for a statemachine
+
+Statemachines can be defined using a YAML format. 
+The root of the YAML file should declare a statemachine:
+```
+statemachine:
+  name: Name of this state machine
+  initial: name of the initial state
+```
+
+The `name` and the `initial` state are mandatory. 
+You can declare code to execute on the initialization of the statemachine using `on entry`, as follows:
+```
+statemachine:
+  name: with code
+  initial: s1
+  on entry: x = 1
+```
+
+Code can be written on multiple lines: 
+```
+on entry: |
+  x = 1
+  y = 2
+```
+
+A statemachine has to declare a (nonempty) list of states using `states`. 
+Each state consist of at least a `name`. Depending on the state type, several fields can be declared.
+
+```
+statemachine:
+  name: with state
+  initial: s1
+  states:
+    - name: s1
+```
+
+For each state, it is possible to specify the code that has to be executed when entering and leaving the state using `on entry` and `on exit` as follows:
+```
+- name: s1
+  on entry: x += 1
+  on exit: |
+    x -= 1
+    y = 2
+```
+
+Final state simply declares a `type: final` property. 
+History state simply declares a `type: history` property. Default semantic is shallow history. 
+For a deep history semantic, add a `deep: True` property. Exemple:
+```
+- name: s1
+- name: history state
+  type: history
+  deep: True
+- name: s2
+  type: final
+```
+
+An history state can stipulate its initial memory using `initial`, for e.g.:
+```
+- name: history state
+  type: history
+  initial: s1
+```
+
+The `initial` value (for history state or, later, for compound state) should refer to a parent's substate. 
+
+Except final states and history states, states can contain nested states. Such a state is a compound state or a region, we do not make any difference between those two concepts. 
+```
+- name: compound state
+  states: 
+    - name: nested state 1
+    - name: nested state 2
+      states: 
+        - name: nested state 2a
+```
+
+Orthogonal (or parallel) states can be declared using `parallel states` instead of `states`. 
+For example, the following state machine declares two concurrent processes:
+```
+statemachine:
+  name: Concurrent processes state machine
+  initial: processes
+  states: 
+    - name: processes
+      parallel states:
+        - name: process 1
+        - name: process 2
+```
+ 
+A compound orthogonal state can not be declared at top level, and should be nested in a compound state, as illustrated in the previous example (in other words, one cannot use `parallel states` instead of `states` in this previous example). 
+ 
+Except final states and history states, states can declare transitions using `transitions`:
+```
+- name: state with transitions
+  transitions: 
+    - target: other state
+```
+
+A transition can define a `target` (name of the target state), a `guard` (Boolean expression that will be evaluated), an `event` (name of the event) and an `action` (code that will be executed if the transition is performed). A full example of a transition: 
+```
+- name: state with a transition
+  transitions: 
+    - target: other state
+      event: click
+      guard: x > 1
+      action: print('Hello World!')
+```
+
+Each field is optional. A transition with no event has priority. If a transition does not declare a `target`, it is an internal transition. A transition can not be internal AND eventless AND guardless (or this eventually lead to an infinite execution). 
 
