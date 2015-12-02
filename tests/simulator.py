@@ -105,4 +105,19 @@ class SimulatorTest(unittest.TestCase):
         simulator.send(Event('stop')).execute()
         self.assertFalse(simulator.running)
 
-
+    def test_deep_history(self):
+        sm = io.import_from_yaml(open('../examples/concrete/deep_history.yaml'))
+        simulator = Simulator(sm)
+        simulator.start()
+        base_states = ['active', 'concurrent_processes', 'process_1', 'process_2']
+        self.assertEqual(sorted(simulator.configuration), base_states + ['s11', 's21'])
+        simulator.send(Event('next1')).execute()
+        simulator.send(Event('next2')).execute()
+        self.assertEqual(sorted(simulator.configuration), base_states + ['s12', 's22'])
+        simulator.send(Event('pause')).execute()
+        self.assertEqual(sorted(simulator.configuration), ['pause'])
+        simulator.send(Event('continue')).execute()
+        self.assertEqual(sorted(simulator.configuration), base_states + ['s12', 's22'])
+        simulator.send(Event('next1')).execute()
+        simulator.send(Event('next2')).execute()
+        self.assertFalse(simulator.running)
