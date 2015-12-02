@@ -17,12 +17,8 @@ class PythonEvaluatorTests(unittest.TestCase):
         self.assertFalse(self.e.evaluate_condition('False'))
         self.assertTrue(self.e.evaluate_condition('1 == 1'))
         self.assertTrue(self.e.evaluate_condition('x == 1'))
-        try:
-            self.assertTrue(self.e.evaluate_condition('a'))
-        except Exception as e:
-            pass
-        else:
-            self.assertTrue(False, 'invalid code should fail!')
+        with self.assertRaises(Exception):
+            self.e.evaluate_condition('a')
 
     def test_condition_on_event(self):
         self.assertTrue(self.e.evaluate_condition('event.data[\'a\'] == 1', Event('test', {'a': 1})))
@@ -38,3 +34,6 @@ class PythonEvaluatorTests(unittest.TestCase):
         events = self.e.execute_action('fire_event(Event(\'test\'))')
         self.assertEqual(events, [Event('test')])
 
+    def test_execution_fire_events(self):
+        events = self.e.execute_action('fire_event(Event(\'test\'))\nfire_event(Event(\'test2\'))')
+        self.assertEqual(events, [Event('test'), Event('test2')])

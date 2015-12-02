@@ -266,6 +266,7 @@ class Simulator:
                     self._events.appendleft(event)
 
         # Deal with history: this only concerns compound states
+        # TODO: History states are currently NOT tested!!
         for state in filter(lambda s: isinstance(s, statemachine.CompoundState), exited_states):
             # Look for an HistoryState among its children
             for child_name in state.children:

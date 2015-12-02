@@ -30,14 +30,18 @@ def import_from_dict(data: dict) -> StateMachine:
         state_d, parent_name = states_to_add.pop()
 
         # Create and register state
-        # TODO: Catch exception and provide details about the "parsing" error
-        state = _state_from_dict(state_d)
+        try:
+            state = _state_from_dict(state_d)
+        except Exception as e:
+            raise ValueError('An exception occurred while trying to parse:\n {1}\n\nException:\n{0}'.format(e, state_d))
         sm.register_state(state, parent_name)
 
         # Register transitions if any
         for transition_d in state_d.get('transitions', []):
-            # TODO: Catch exception and provide details about the "parsing" error
-            transition = _transition_from_dict(state.name, transition_d)
+            try:
+                transition = _transition_from_dict(state.name, transition_d)
+            except Exception as e:
+                raise ValueError('An exception occurred while trying to parse transitions in {2}:\n {1}\n\nException:\n{0}'.format(e, transition_d, state.name))
             sm.register_transition(transition)
 
         # Register substates
