@@ -41,7 +41,7 @@ def import_from_dict(data: dict) -> StateMachine:
             sm.register_transition(transition)
 
         # Register substates
-        for substate in state_d.get('states', []):
+        for substate in state_d.get('states', state_d.get('parallel states', [])):
             states_to_add.append((substate, state.name))
 
     return sm
@@ -83,7 +83,7 @@ def _state_from_dict(state_d: dict) -> StateMixin:
         if 'states' in state_d:  # Compound state
             initial = state_d.get('initial', None)
             state = CompoundState(name, initial, on_entry, on_exit)
-        elif 'orthogonal states' in state_d: #
+        elif 'parallel states' in state_d:  # Orthogonal state
             state = OrthogonalState(name, on_entry, on_exit)
         else:
             # Simple state
@@ -110,7 +110,7 @@ def export_to_dict(statemachine: StateMachine) -> dict:
         statelist = statelist_to_expand.pop()
         for i, state in enumerate(statelist):
             statelist[i] = _export_element_to_dict(sm.states[state])
-            new_statelist = statelist[i].get('states', statelist[i].get('orthogonal states', []))
+            new_statelist = statelist[i].get('states', statelist[i].get('parallel states', []))
             if len(new_statelist) > 0:
                 statelist_to_expand.append(new_statelist)
     return {'statemachine': d}
@@ -150,7 +150,7 @@ def _export_element_to_dict(el) -> dict:
             d['transitions'] = [_export_element_to_dict(t) for t in el.transitions]
     if isinstance(el, CompositeStateMixin):
         if isinstance(el, OrthogonalState):
-            d['orthogonal states'] = el.children
+            d['parallel states'] = el.children
         else:
             d['states'] = el.children
     if isinstance(el, HistoryState):

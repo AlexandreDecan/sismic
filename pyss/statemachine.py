@@ -16,7 +16,10 @@ class Event:
         return hash(self.name)
 
     def __repr__(self):
-        return 'Event({})'.format(self.name)
+        if self.data:
+            return 'Event({}, {})'.format(self.name, self.data)
+        else:
+            return 'Event({})'.format(self.name)
 
 
 class Transition(object):
@@ -42,7 +45,7 @@ class Transition(object):
         return self.event is None
 
     def __repr__(self):
-        return 'Transition({}, {}, {})'.format(self.from_state, self.to_state, self.event)
+        return 'Transition({0}, {2}, {1})'.format(self.from_state, self.to_state, self.event)
 
 
 class StateMixin:
@@ -277,8 +280,7 @@ class StateMachine(object):
                 leaves.append(state)
         return leaves
 
-    @property
-    def valid(self) -> bool:
+    def validate(self) -> bool:
         """
         Validate current state machine:
          (C1) Check that transitions refer to existing states

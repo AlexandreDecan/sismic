@@ -24,6 +24,37 @@ class MicroStep:
         return 'MicroStep({}, {}, {}, {})'.format(self.event, self.transition, self.entered_states, self.exited_states)
 
 
+class MacroStep:
+    def __init__(self, main_step:MicroStep, micro_steps: list):
+        self.main = main_step
+        self.micro_steps = micro_steps
+
+    @property
+    def event(self) -> statemachine.Event:
+        return self.main.event
+
+    @property
+    def transition(self) -> statemachine.Transition:
+        return self.main.transition
+
+    @property
+    def entered_states(self) -> list:
+        states = self.main.entered_states
+        for step in self.micro_steps:
+            states += step.entered_states
+        return states
+
+    @property
+    def exited_states(self) -> list:
+        states = self.main.exited_states
+        for step in self.micro_steps:
+            states += step.exited_states
+        return states
+
+    def __repr__(self):
+        return 'MacroStep({}, {}, {}, {})'.format(self.event, self.transition, self.entered_states, self.exited_states)
+
+
 class Simulator:
     def __init__(self, sm: statemachine.StateMachine, evaluator: Evaluator=None):
         """
@@ -35,14 +66,22 @@ class Simulator:
         self._sm = sm
         self._configuration = set()  # Set of active states
         self._events = deque()  # Events queue
+        self._started = False
 
     @property
     def configuration(self) -> list:
         return list(self._configuration)
 
-    @property
-    def events(self) -> list:
-        return self._events
+    def send(self, event_or_list):
+        """
+        Send an event to the state machine. Will be placed in the queue
+        :param event: Event to pass, or an iterable of events
+        """
+        if hasattr(event_or_list, '__iter__'):
+            for event in event_or_list:
+                self._events.append(event)
+        else:
+            self._events.append(event_or_list)
 
     def start(self) -> list:
         """
@@ -51,6 +90,9 @@ class Simulator:
          - Execute until a stable situation is reached.
         :return A (possibly empty) list of executed MicroStep.
         """
+        if self._started:
+            return []
+
         # Initialize state machine
         if self._sm.on_entry:
             self._evaluator.execute_action(self._sm.on_entry)
@@ -58,6 +100,8 @@ class Simulator:
         # Initial step and stabilization
         step = MicroStep(entered_states=[self._sm.initial])
         self._execute_step(step)
+
+        self._started = True
         return [step] + self._stabilize()
 
     @property
@@ -65,6 +109,9 @@ class Simulator:
         """
         Return True iff state machine is running.
         """
+        if not self._started:
+            return False
+
         for state in self._sm.leaf_for(list(self._configuration)):
             if not isinstance(self._sm.states[state], statemachine.FinalState):
                 return True
@@ -74,46 +121,45 @@ class Simulator:
         """
         Return an iterator for current execution.
         It corresponds to successive call to execute().
-        There is no need to manually start() this executor.
+        You should start() this simulator first!
         Event can be added using iterator.send().
         """
-        if not self.running:
-            self.start()
+        self.start()
+        return self
 
-        consecutive_null_steps = 0
-        while self.running:
-            step = self.execute()
-            consecutive_null_steps = 0 if step else consecutive_null_steps + 1
-            if consecutive_null_steps >= 42:
-                raise RuntimeError('Possible infinite run detected')
-            event = yield step
-            if event:
-                self._events.append(event)
-        raise StopIteration()
+    def __next__(self):
+        steps = self.execute()
+        if steps:
+            return steps
+        else:
+            raise StopIteration
 
-    def execute(self) -> list:
+    def execute(self) -> MacroStep:
         """
         Execute an eventless transition or an evented transition and put the
         state machine in a stable state.
-        Return a list of executed MicroStep instances.
+        :return: A MacroStep instance
         """
-        steps = []
+        if not self._started:
+            raise Exception('You should start the simulator before running it')
 
         # Try eventless transitions
-        step = self._transition_step(event=None)  # Explicit is better than implicit
+        main_step = self._transition_step(event=None)  # Explicit is better than implicit
 
-        if not step and len(self._events) > 0:
+        # If there is no eventless transition, and there exists at least one event to process
+        if not main_step and len(self._events) > 0:
             event = self._events.popleft()
-            step = self._transition_step(event=event)
-            if not step:
-                steps.append(MicroStep(event=event))
+            main_step = self._transition_step(event=event)
 
-        if step:
-            steps.append(step)
-            self._execute_step(step)
+            # If this event can not be processed, discard it
+            if not main_step:
+                main_step = MicroStep(event=event)
 
-        # Stabilization
-        return steps + self._stabilize()
+        if not main_step:  # No actionable eventless nor evented transition
+            return None
+        else:
+            self._execute_step(main_step)
+            return MacroStep(main_step, self._stabilize())
 
     def _actionable_transitions(self, event: statemachine.Event=None) -> list:
         """
@@ -241,7 +287,7 @@ class Simulator:
 
         # Execute transition
         if step.transition and step.transition.action:
-            self._evaluator.execute_action(step.transition.action, step.transition.event)
+            self._evaluator.execute_action(step.transition.action, step.event)
 
         for state in entered_states:
             # Execute entry action
