@@ -11,32 +11,63 @@ In particular, `pyss` provides:
  - Statecharts simulators (SCXML semantic, no language restriction!)
  - A base framework for model-based testing
 
-Example of a YAML definition of a simple state chart:
+Example of a YAML definition of a state chart for an elevator:
 ```
 statemachine:
-  name: Simple state machine
-  initial: s1
-  on entry: x = 1
-
+  name: Elevator
+  initial: active
+  on entry: |
+    current = 0
+    destination = 0
+    openDoors = lambda: print('open doors')
+    closeDoors = lambda: print('close doors')
   states:
-    - name: s1
-      transitions:
-        - target: s2
-          event: click
-          action: x = x + 1
-        - event: key_pressed  # Internal transition
-          guard: event.data['key'] > 42
-    - name: s2
-      transitions: 
-        - target: s3  # Eventless transition
-    - name: s3
-      transitions:
-        - target: s1
-          event: key_pressed
-          action: x = x - 1
-        - target: s2
-          event: click
-          
+    - name: active
+      parallel states:
+        - name: movingElevator
+          initial: doorsOpen
+          on entry: current = 0
+          states:
+            - name: doorsOpen
+              transitions:
+                - target: doorsClosed
+                  guard: destination != current
+                  action: closeDoors()
+                - target: doorsClosed
+                  event: after10s
+                  guard: current > 0
+                  action: destination = 0
+            - name: doorsClosed
+              transitions:
+                - target: movingUp
+                  guard: destination > current
+                - target: movingDown
+                  guard: destination < current and destination >= 0
+            - name: moving
+              transitions:
+                - target: doorsOpen
+                  guard: destination == current
+                  action: openDoors()
+              states:
+                - name: movingUp
+                  on entry: current = current + 1
+                  transitions:
+                    - target: movingUp
+                      guard: destination > current
+                - name: movingDown
+                  on entry: current = current - 1
+                  transitions:
+                    - target: movingDown
+                      guard: destination < current
+        - name: floorListener
+          initial: floorSelecting
+          on entry: destination = 0
+          states:
+            - name: floorSelecting
+              transitions:
+                - target: floorSelecting
+                  event: floorSelected
+                  action: destination = event.data['floor']
 ```
 
 `pyss` supports:
