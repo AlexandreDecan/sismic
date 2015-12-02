@@ -225,8 +225,13 @@ class Simulator:
         if len(transitions) == 0:
             return None
 
-        # TODO: Check there is at most one transition for selected depth
         transition = transitions[0]
+        transition_depth = self._sm.depth_of(transition.from_state)
+        for other_transition in transitions:
+            if not(other_transition is transition) and self._sm.depth_of(other_transition.from_state) == transition_depth:
+                raise Warning('More than one transition can be processed: non-determinism!' +
+                              '\nConfiguration is {}\nEvent is {}\nTransitions are:{}\n'
+                              .format(self.configuration, event, transitions))
 
         # Internal transition
         if transition.to_state is None:
