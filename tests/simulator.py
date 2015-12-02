@@ -1,6 +1,7 @@
 import unittest
 from pyss import io
-from pyss.simulator import Simulator, MicroStep
+from pyss.simulator import Simulator
+from pyss.evaluator import PythonEvaluator
 from pyss.statemachine import Event
 
 
@@ -19,42 +20,55 @@ class SimulatorTest(unittest.TestCase):
 
         simulator.start()
         self.assertEqual(simulator.configuration, ['s1'])
-        simulator.execute()
+        simulator.execute()  # Should do nothing!
         self.assertEqual(simulator.configuration, ['s1'])
-        simulator.events.append(Event('goto s2'))
+        simulator.send(Event('goto s2'))
         simulator.execute()
         self.assertEqual(simulator.configuration, ['s2'])
         simulator.execute()
         self.assertEqual(simulator.configuration, ['s3'])
 
-    def test_simple_iterator(self):
+    def test_simple_final(self):
         sm = io.import_from_yaml(open('../examples/simple.yaml'))
         simulator = Simulator(sm)
-        simulator.events.append(Event('goto s2'))
-        simulator.events.append(Event('goto final'))
-        for _ in simulator:
+        simulator.send(Event('goto s2'))
+        simulator.send(Event('goto final'))
+        simulator.start()
+        while simulator.execute():
             pass
         self.assertEqual(simulator.configuration, ['final'])
         self.assertFalse(simulator.running)
 
+    def test_simple_iterator_final(self):
+        sm = io.import_from_yaml(open('../examples/simple.yaml'))
         simulator = Simulator(sm)
-        steps = iter(simulator)
-        next(steps)
-        steps.send(Event('goto s2'))
-        steps.send(Event('goto final'))
-        for _ in simulator:
+        simulator.send(Event('goto s2'))
+        simulator.send(Event('goto final'))
+        simulator.start()
+        for steps in simulator:
             pass
         self.assertEqual(simulator.configuration, ['final'])
         self.assertFalse(simulator.running)
 
-    def test_simple_infinite_run(self):
-        sm = io.import_from_yaml(open('../examples/simple.yaml'))
-        simulator = Simulator(sm)
-        steps = iter(simulator)
-        next(steps)
-        steps.send(Event('goto s2'))
-        with self.assertRaises(RuntimeError):
-            for _ in simulator:
-                pass
+    def test_elevator(self):
+        sm = io.import_from_yaml(open('../examples/elevator.yaml'))
+        evaluator = PythonEvaluator()
+        simulator = Simulator(sm, evaluator)
+        with self.assertRaises(Exception):
+            simulator.execute()
 
+        simulator.start()
+        self.assertEqual(len(simulator.configuration), 5)
+
+        simulator.send(Event('floorSelected', {'floor': 4}))
+        simulator.execute()
+        self.assertEqual(evaluator.context['destination'], 4)
+
+        simulator.execute()
+        self.assertTrue('doorsClosed' in simulator.configuration)
+
+        while simulator.execute():
+            pass
+        self.assertTrue('doorsOpen' in simulator.configuration)
+        self.assertEqual(simulator._evaluator.context['current'], 4)
 

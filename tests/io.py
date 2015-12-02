@@ -6,22 +6,22 @@ class ImportFromYamlTests(unittest.TestCase):
     def test_simple(self):
         content = open('../examples/simple.yaml')
         sm =io.import_from_yaml(content)
-        self.assertTrue(sm.valid)
+        self.assertTrue(sm.validate())
 
     def test_composite(self):
         content = open('../examples/composite.yaml')
         sm = io.import_from_yaml(content)
-        self.assertTrue(sm.valid)
+        self.assertTrue(sm.validate())
 
     def test_history(self):
         content = open('../examples/history.yaml')
         sm = io.import_from_yaml(content)
-        self.assertTrue(sm.valid)
+        self.assertTrue(sm.validate())
 
     def test_actions(self):
         content = open('../examples/actions.yaml')
         sm = io.import_from_yaml(content)
-        self.assertTrue(sm.valid)
+        self.assertTrue(sm.validate())
 
 
 class ExportToDictTests(unittest.TestCase):
