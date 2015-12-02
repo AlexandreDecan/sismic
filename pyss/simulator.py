@@ -128,7 +128,7 @@ class Simulator:
                 continue
             if transition.from_state not in self._configuration:
                 continue
-            if transition.condition is None or self._evaluator.evaluate_condition(transition.condition, event):
+            if transition.guard is None or self._evaluator.evaluate_condition(transition.guard, event):
                 transitions.append(transition)
 
         # Order by deepest first

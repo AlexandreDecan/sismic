@@ -1,5 +1,4 @@
 from functools import lru_cache
-from collections import OrderedDict
 
 
 class Event:
@@ -18,6 +17,32 @@ class Event:
 
     def __repr__(self):
         return 'Event({})'.format(self.name)
+
+
+class Transition(object):
+    """
+    A Transition between two states.
+    Transition can be eventless or internal (but not both at once).
+    A condition (code as string) can be specified as a guard.
+    """
+
+    def __init__(self, from_state: str, to_state: str=None, event: Event=None, guard: str=None, action: str=None):
+        self.from_state = from_state
+        self.to_state = to_state
+        self.event = event
+        self.guard = guard
+        self.action = action
+
+    @property
+    def internal(self):
+        return self.to_state is None
+
+    @property
+    def eventless(self):
+        return self.event is None
+
+    def __repr__(self):
+        return 'Transition({}, {}, {})'.format(self.from_state, self.to_state, self.event)
 
 
 class StateMixin:
@@ -130,32 +155,6 @@ class FinalState(StateMixin, ActionStateMixin):
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
-
-
-class Transition(object):
-    """
-    A Transition between two states.
-    Transition can be eventless or internal (but not both at once).
-    A condition (code as string) can be specified as a guard.
-    """
-
-    def __init__(self, from_state: str, to_state: str=None, event: Event=None, condition: str=None, action: str=None):
-        self.from_state = from_state
-        self.to_state = to_state
-        self.event = event
-        self.condition = condition
-        self.action = action
-
-    @property
-    def internal(self):
-        return self.to_state is None
-
-    @property
-    def eventless(self):
-        return self.event is None
-
-    def __repr__(self):
-        return 'Transition({}, {}, {})'.format(self.from_state, self.to_state, self.event)
 
 
 class StateMachine(object):
@@ -281,14 +280,35 @@ class StateMachine(object):
     @property
     def valid(self) -> bool:
         """
-        Valide current state machine:
-         - Check that transitions refer to existing states
-         - Check that history can only be defined as a child of a CompoundState
-         - Check that history state's initial memory refer to a parent's child
-         - Check that initial state refer to a parent's child
-         - Check that orthogonal states have at least one child
-         - Check that there is no internal eventless guardless transition
-        :return: True or False
+        Validate current state machine:
+         (C1) Check that transitions refer to existing states
+         (C2) Check that history can only be defined as a child of a CompoundState
+         (C3) Check that history state's initial memory refer to a parent's child
+         (C4) Check that initial state refer to a parent's child
+         (C5) Check that orthogonal states have at least one child
+         (C6) Check that there is no internal eventless guardless transition
+        :return: True or raise a ValueError
         """
-        # TODO: Implement!
-        raise NotImplementedError()
+        # C1 & C6
+        for transition in self.transitions:
+            if not(transition.from_state in self.states and (not transition.to_state or transition.to_state in self.states)):
+                raise ValueError('Transition {} refers to an unknown state'.format(transition))
+            if not transition.event and not transition.guard and not transition.to_state:
+                raise ValueError('Transition {} is an internal, eventless and guardless transition.'.format(transition))
+
+        for name, state in self.states.items():
+            if isinstance(state, HistoryState):  # C2 & C3
+                if not isinstance(self.states[self.parent[name]], CompoundState):
+                    raise ValueError('History state {} can only be defined in a compound (non-orthogonal) states'.format(state))
+                if state.initial and not (self.parent[state.initial] == self.parent[name]):
+                    raise ValueError('Initial memory of {} should refer to a child of {}'.format(state, self.parent[name]))
+
+            if isinstance(state, CompositeStateMixin):  # C5
+                if len(state.children) <= 0:
+                    raise ValueError('Composite state {} should have at least one child'.format(state))
+
+            if isinstance(state, CompoundState):  # C4
+                if self.parent[name] and not (self.parent[state.initial] == name):
+                    raise ValueError('Initial state of {} should refer to one of its children'.format(state))
+
+        return True

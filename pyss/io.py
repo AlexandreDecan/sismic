@@ -58,9 +58,9 @@ def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
     event = transition_d.get('event', None)
     if event:
         event = Event(event)
-    condition = transition_d.get('guard', None)
+    guard = transition_d.get('guard', None)
     action = transition_d.get('action', None)
-    return Transition(state_name, to_state, event, condition, action)
+    return Transition(state_name, to_state, event, guard, action)
 
 
 def _state_from_dict(state_d: dict) -> StateMixin:
@@ -131,8 +131,8 @@ def _export_element_to_dict(el) -> dict:
             d['target'] = el.to_state
         if not el.eventless:
             d['event'] = _export_element_to_dict(el.event)
-        if el.condition:
-            d['guard'] = el.condition
+        if el.guard:
+            d['guard'] = el.guard
         if el.action:
             d['action'] = el.action
     if isinstance(el, StateMixin):
