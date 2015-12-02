@@ -7,7 +7,7 @@ from pyss.statemachine import Event
 
 class SimulatorTest(unittest.TestCase):
     def test_init(self):
-        sm = io.import_from_yaml(open('../examples/simple.yaml'))
+        sm = io.import_from_yaml(open('../examples/simple/simple.yaml'))
         simulator = Simulator(sm)
         self.assertFalse(simulator.running)
         steps = simulator.start()
@@ -15,7 +15,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertTrue(simulator.running)
 
     def test_simple(self):
-        sm = io.import_from_yaml(open('../examples/simple.yaml'))
+        sm = io.import_from_yaml(open('../examples/simple/simple.yaml'))
         simulator = Simulator(sm)
 
         simulator.start()
@@ -29,7 +29,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertEqual(simulator.configuration, ['s3'])
 
     def test_simple_final(self):
-        sm = io.import_from_yaml(open('../examples/simple.yaml'))
+        sm = io.import_from_yaml(open('../examples/simple/simple.yaml'))
         simulator = Simulator(sm)
         simulator.send(Event('goto s2'))
         simulator.send(Event('goto final'))
@@ -40,7 +40,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertFalse(simulator.running)
 
     def test_simple_iterator_final(self):
-        sm = io.import_from_yaml(open('../examples/simple.yaml'))
+        sm = io.import_from_yaml(open('../examples/simple/simple.yaml'))
         simulator = Simulator(sm)
         simulator.send(Event('goto s2'))
         simulator.send(Event('goto final'))
@@ -51,7 +51,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertFalse(simulator.running)
 
     def test_elevator(self):
-        sm = io.import_from_yaml(open('../examples/elevator.yaml'))
+        sm = io.import_from_yaml(open('../examples/concrete/elevator.yaml'))
         evaluator = PythonEvaluator()
         simulator = Simulator(sm, evaluator)
         with self.assertRaises(Exception):
@@ -79,7 +79,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertEqual(simulator._evaluator.context['current'], 0)
 
     def test_nondeterminism(self):
-        sm = io.import_from_yaml(open('../examples/nondeterministic.yaml'))
+        sm = io.import_from_yaml(open('../examples/simple/nondeterministic.yaml'))
         sm.validate()  # Shouldn't raise anything
         simulator = Simulator(sm)
         simulator.start()

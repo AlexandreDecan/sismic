@@ -4,7 +4,7 @@ from pyss import io
 
 class TraversalTests(unittest.TestCase):
     def setUp(self):
-        self.sm = io.import_from_yaml(open('../examples/composite.yaml'))
+        self.sm = io.import_from_yaml(open('../examples/simple/composite.yaml'))
 
     def test_ancestors(self):
         self.assertEqual(self.sm.ancestors_for('s2'), [])
