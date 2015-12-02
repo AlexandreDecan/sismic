@@ -1,5 +1,5 @@
-statemachine:
-  name: Simple state machine
+statechart:
+  name: simple statechart
   initial: s1
 
   states:

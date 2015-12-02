@@ -1,25 +1,25 @@
 import yaml
 from collections import OrderedDict
-from pyss.statemachine import Event, Transition, StateMachine, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
-from pyss.statemachine import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
+from pyss.model import Event, Transition, StateChart, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
+from pyss.model import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 
 
-def import_from_yaml(data) -> StateMachine:
+def import_from_yaml(data) -> StateChart:
     """
-    Import a state machine from a YAML representation.
+    Import a statechart from a YAML representation.
     :param data: string or any equivalent object
-    :return: a StateMachine instance
+    :return: a StateChart instance
     """
-    return import_from_dict(yaml.load(data)['statemachine'])
+    return import_from_dict(yaml.load(data)['statechart'])
 
 
-def import_from_dict(data: dict) -> StateMachine:
+def import_from_dict(data: dict) -> StateChart:
     """
-    Import a state machine from a (set of nested) dictionary.
+    Import a statechart from a (set of nested) dictionary.
     :param data: dict-like structure
-    :return: a StateMachine instance
+    :return: a StateChart instance
     """
-    sm = StateMachine(data['name'], data['initial'], data.get('on entry', None))
+    sc = StateChart(data['name'], data['initial'], data.get('on entry', None))
 
     states_to_add = []  # list of (state, parent) to be added
     for state in data['states']:
@@ -34,7 +34,7 @@ def import_from_dict(data: dict) -> StateMachine:
             state = _state_from_dict(state_d)
         except Exception as e:
             raise ValueError('An exception occurred while trying to parse:\n {1}\n\nException:\n{0}'.format(e, state_d))
-        sm.register_state(state, parent_name)
+        sc.register_state(state, parent_name)
 
         # Register transitions if any
         for transition_d in state_d.get('transitions', []):
@@ -42,13 +42,13 @@ def import_from_dict(data: dict) -> StateMachine:
                 transition = _transition_from_dict(state.name, transition_d)
             except Exception as e:
                 raise ValueError('An exception occurred while trying to parse transitions in {2}:\n {1}\n\nException:\n{0}'.format(e, transition_d, state.name))
-            sm.register_transition(transition)
+            sc.register_transition(transition)
 
         # Register substates
         for substate in state_d.get('states', state_d.get('parallel states', [])):
             states_to_add.append((substate, state.name))
 
-    return sm
+    return sc
 
 
 def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
@@ -95,36 +95,35 @@ def _state_from_dict(state_d: dict) -> StateMixin:
     return state
 
 
-def export_to_dict(statemachine: StateMachine) -> dict:
+def export_to_dict(statechart: StateChart) -> dict:
     """
-    Export given StateMachine instance to a dict.
-    :param statemachine: a StateMachine instance
+    Export given StateChart instance to a dict.
+    :param statechart: a StateChart instance
     :return: a dict that can be used in `import_from_dict`
     """
-    sm = statemachine  # alias
     d = OrderedDict()
-    d['name'] = sm.name
-    d['initial'] = sm.initial
-    d['states'] = sm.children
-    if sm.on_entry:
-        d['on entry'] = sm.on_entry
+    d['name'] = statechart.name
+    d['initial'] = statechart.initial
+    d['states'] = statechart.children
+    if statechart.on_entry:
+        d['on entry'] = statechart.on_entry
 
     statelist_to_expand = [d['states']]
     while statelist_to_expand:
         statelist = statelist_to_expand.pop()
         for i, state in enumerate(statelist):
-            statelist[i] = _export_element_to_dict(sm.states[state])
+            statelist[i] = _export_element_to_dict(statechart.states[state])
             new_statelist = statelist[i].get('states', statelist[i].get('parallel states', []))
             if len(new_statelist) > 0:
                 statelist_to_expand.append(new_statelist)
-    return {'statemachine': d}
+    return {'statechart': d}
 
 
 def _export_element_to_dict(el) -> dict:
     """
     Export an element (State, Transition, etc.) to a dict.
     Is used in `export_to_dict` to generate a global representation.
-    :param el: an instance of `statemachine.*`
+    :param el: an instance of `model.*`
     :return: a dict
     """
     d = OrderedDict()

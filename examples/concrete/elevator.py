@@ -1,16 +1,16 @@
 import pyss
 import yaml
 
-# Construct the state machine
-sm = pyss.import_from_yaml(open('elevator.yaml'))
+# Construct the statechart
+sc = pyss.import_from_yaml(open('elevator.yaml'))
 
-sm.validate()  # Raise an exception if our state machine is not a valid one
+sc.validate()  # Raise an exception if our state machine is not a valid one
 
 # Use a Python evaluator for the code in the state machine
 evaluator = pyss.PythonEvaluator()
 
 # Create a simulation for our state machine, with our evaluator
-simulator = pyss.Simulator(sm, evaluator)
+simulator = pyss.Simulator(sc, evaluator)
 
 # Make the simulator runnable
 print('- Start simulator, stabilization steps:')

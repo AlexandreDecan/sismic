@@ -1,6 +1,6 @@
 import unittest
 from pyss import evaluator
-from pyss.statemachine import Event
+from pyss.model import Event
 
 
 class PythonEvaluatorTests(unittest.TestCase):

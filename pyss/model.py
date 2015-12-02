@@ -160,11 +160,11 @@ class FinalState(StateMixin, ActionStateMixin):
         ActionStateMixin.__init__(self, on_entry, on_exit)
 
 
-class StateMachine(object):
+class StateChart(object):
     def __init__(self, name: str, initial: str, on_entry: str=None):
         """
-        Initialize a state machine.
-        :param name: Name of this state machine
+        Initialize a statechart.
+        :param name: Name of this statechart
         :param initial: Initial state
         :param on_entry: Code to execute before the execution
         """
@@ -178,7 +178,7 @@ class StateMachine(object):
 
     def register_state(self, state: StateMixin, parent: str):
         """
-        Register given state in current state machine and register it to its parent
+        Register given state in current statechart and register it to its parent
         :param state: instance of State to add
         :param parent: name of parent state
         """
@@ -195,7 +195,7 @@ class StateMachine(object):
 
     def register_transition(self, transition: Transition):
         """
-        Register given transition in current state machine and register it on the source state
+        Register given transition in current statechart and register it on the source state
         :param transition: instance of Transition
         """
         self.transitions.append(transition)
@@ -282,7 +282,7 @@ class StateMachine(object):
 
     def validate(self) -> bool:
         """
-        Validate current state machine:
+        Validate current statechart:
          (C1) Check that transitions refer to existing states
          (C2) Check that history can only be defined as a child of a CompoundState
          (C3) Check that history state's initial memory refer to a parent's child

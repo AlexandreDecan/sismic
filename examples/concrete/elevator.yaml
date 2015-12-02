@@ -1,4 +1,4 @@
-statemachine:
+statechart:
   name: Elevator
   initial: active
   on entry: |

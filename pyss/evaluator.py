@@ -1,4 +1,4 @@
-from pyss.statemachine import Event
+from pyss.model import Event
 
 
 class Evaluator:
@@ -6,7 +6,7 @@ class Evaluator:
     Base class for any Evaluator.
 
     An instance of this class defines what can be done with piece of codes
-    contained in a state machine (condition, action, etc.).
+    contained in a statechart (condition, action, etc.).
     """
     def evaluate_condition(self, condition: str, event: Event) -> bool:
         """

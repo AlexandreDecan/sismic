@@ -5,28 +5,28 @@ from pyss import io
 class ImportFromYamlTests(unittest.TestCase):
     def test_simple(self):
         content = open('../examples/simple/simple.yaml')
-        sm =io.import_from_yaml(content)
-        self.assertTrue(sm.validate())
+        sc =io.import_from_yaml(content)
+        self.assertTrue(sc.validate())
 
     def test_composite(self):
         content = open('../examples/simple/composite.yaml')
-        sm = io.import_from_yaml(content)
-        self.assertTrue(sm.validate())
+        sc = io.import_from_yaml(content)
+        self.assertTrue(sc.validate())
 
     def test_history(self):
         content = open('../examples/concrete/history.yaml')
-        sm = io.import_from_yaml(content)
-        self.assertTrue(sm.validate())
+        sc = io.import_from_yaml(content)
+        self.assertTrue(sc.validate())
 
     def test_actions(self):
         content = open('../examples/simple/actions.yaml')
-        sm = io.import_from_yaml(content)
-        self.assertTrue(sm.validate())
+        sc = io.import_from_yaml(content)
+        self.assertTrue(sc.validate())
 
     def test_elevator(self):
         content = open('../examples/concrete/elevator.yaml')
-        sm = io.import_from_yaml(content)
-        self.assertTrue(sm.validate())
+        sc = io.import_from_yaml(content)
+        self.assertTrue(sc.validate())
 
 
 class ExportToDictTests(unittest.TestCase):

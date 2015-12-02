@@ -6,14 +6,25 @@
 
 `pyss` provides a set of tools related to statechart manipulation and execution.
 In particular, `pyss` provides:
- - An easy way to define statecharts using YAML
- - Discrete, step-by-step, statechart simulation following SCXML semantic
+ - An easy way to define statecharts with YAML
+ - Discrete, step-by-step, fully observable statechart simulation following SCXML semantic
  - Built-in support for Python code, can be easily extended to other languages
  - A base framework for model-based testing
 
+`pyss` has a complete support for simple state, composite state, orthogonal (parallel) state,
+initial state, final state, history state (including shallow and deep semantics), internal
+transitions, guarded transition, eventless transition, statechart entry action,
+state entry action, state exit action, transition action, internal and external events and
+parametrized events.
+
+We expect to support the following features soon:
+ - Static visualization (export to GraphViz)
+ - Runtime dynamic visualization and manipulation
+
+
 Example of a YAML definition of a state chart for an elevator:
 ```
-statemachine:
+statechart:
   name: Elevator
   initial: active
   on entry: |
@@ -70,15 +81,6 @@ statemachine:
                   action: destination = event.data['floor']
 ```
 
-`pyss` supports:
- - simple (basic) state, composite state, orthogonal state
- - initial state, final state, history state (incl. shallow and deep semantic)
- - guarded transition, eventless transition, internal transition
- - entry action, exit action, transition action
- - fully observable step-by-step execution (based on SCXML semantic)
- - (Not yet) static visualization
- - (Not yet) dynamic visualization during execution
-
 More examples are available in `examples/*.yaml`.
 
 
@@ -89,7 +91,7 @@ The list of dependencies is given by `requirements.txt` and can be automatically
 Python >=3.4 is required, so we suggest you to test this package in a virtual environment.
 
  - `pyss` is the main module, it contains the data structure,
- YAML loader (`pyss.io`), code evaluators (`pyss.evaluator`) and statechart simulators (`pyss.simulator`).
+ YAML loader (`pyss.io`), code evaluators (`pyss.evaluator`) and statechart simulator (`pyss.simulator`).
  - `tests` contains, uh, well, the tests!
  - `examples` currently contains several statecharts in YAML.
 
@@ -99,24 +101,25 @@ Python >=3.4 is required, so we suggest you to test this package in a virtual en
 Under version 3 of the GNU General Public License.
 Developed by Alexandre Decan at the University of Mons (Belgium).
 
+
 ## Documentation
 
-In progress.
+The documentation is in a work-in-progress state.
 
-### YAML format for a statemachine
+### YAML format for a statechart
 
-Statemachines can be defined using a YAML format. 
-The root of the YAML file should declare a statemachine:
+Statecharts can be defined using a YAML format.
+The root of the YAML file should declare a statechart:
 ```
-statemachine:
-  name: Name of this state machine
+statechart:
+  name: Name of this statechart
   initial: name of the initial state
 ```
 
 The `name` and the `initial` state are mandatory. 
-You can declare code to execute on the initialization of the statemachine using `on entry`, as follows:
+You can declare code to execute on the initialization of the statechart using `on entry`, as follows:
 ```
-statemachine:
+statechart:
   name: with code
   initial: s1
   on entry: x = 1
@@ -129,7 +132,7 @@ on entry: |
   y = 2
 ```
 
-A statemachine has to declare a (nonempty) list of states using `states`. 
+A statechart has to declare a (nonempty) list of states using `states`.
 Each state consist of at least a `name`. Depending on the state type, several fields can be declared.
 
 ```
@@ -140,7 +143,8 @@ statemachine:
     - name: s1
 ```
 
-For each state, it is possible to specify the code that has to be executed when entering and leaving the state using `on entry` and `on exit` as follows:
+For each state, it is possible to specify the code that has to be executed when entering and leaving the
+state using `on entry` and `on exit` as follows:
 ```
 - name: s1
   on entry: x += 1
@@ -161,16 +165,17 @@ For a deep history semantic, add a `deep: True` property. Exemple:
   type: final
 ```
 
-An history state can stipulate its initial memory using `initial`, for e.g.:
+An history state can optionally define an initial state using `initial`, for e.g.:
 ```
 - name: history state
   type: history
   initial: s1
 ```
+The `initial` value (for history state or, later, for compound state) should refer to a parent's
+substate and will be used the first time the history state is reached if it has not yet a memorized configuration.
 
-The `initial` value (for history state or, later, for compound state) should refer to a parent's substate. 
-
-Except final states and history states, states can contain nested states. Such a state is a compound state or a region, we do not make any difference between those two concepts. 
+Except final states and history states, states can contain nested states.
+Such a state is a compound state or a region, we do not make any difference between those two concepts.
 ```
 - name: compound state
   states: 
@@ -180,10 +185,10 @@ Except final states and history states, states can contain nested states. Such a
         - name: nested state 2a
 ```
 
-Orthogonal (or parallel) states can be declared using `parallel states` instead of `states`. 
-For example, the following state machine declares two concurrent processes:
+Orthogonal states (sometimes referred as parallel states) must be with `parallel states` instead of `states`.
+For example, the following statechart declares two concurrent processes:
 ```
-statemachine:
+statechart:
   name: Concurrent processes state machine
   initial: processes
   states: 
@@ -193,16 +198,20 @@ statemachine:
         - name: process 2
 ```
  
-A compound orthogonal state can not be declared at top level, and should be nested in a compound state, as illustrated in the previous example (in other words, one cannot use `parallel states` instead of `states` in this previous example). 
+A compound orthogonal state can not be declared at top level, and should be nested in a compound state, as
+illustrated in the previous example. In other words, it is not allowed to define `parallel states`
+instead of `states` in this previous example.
  
-Except final states and history states, states can declare transitions using `transitions`:
+Simple states, compound states and parallel states can declare transitions using `transitions`:
 ```
 - name: state with transitions
   transitions: 
     - target: other state
 ```
 
-A transition can define a `target` (name of the target state), a `guard` (a one-line Boolean expression that will be evaluated), an `event` (name of the event) and an `action` (code that will be executed if the transition is performed). A full example of a transition: 
+A transition can define a `target` (name of the target state), a `guard` (a Boolean expression
+that will be evaluated), an `event` (name of the event) and an `action` (code that will be executed if the
+transition is processed). All those fields are optional. A full example of a transition:
 ```
 - name: state with a transition
   transitions: 
@@ -211,85 +220,134 @@ A transition can define a `target` (name of the target state), a `guard` (a one-
       guard: x > 1
       action: print('Hello World!')
 ```
+An internal transition is a transition that does not declare a `target`, implicitly meaning that its `target` is
+the state in which the transition is defined. When such a transition is processed, the parent state is not exited nor
+entered.
 
-Each field is optional. A transition with no event has priority. If a transition does not declare a `target`, it is an internal transition. A transition can not be internal AND eventless AND guardless (or this eventually lead to an infinite execution). 
+Finally, to prevent trivial infinite loops on execution, an internal transition must either define an event or a guard.
 
 ### Load a YAML file
 
-Statemachines (in YAML format) can be easily imported in Python. 
-The module `io` provides a convinient function `import_from_yaml(content)` which takes a string as input, and return a `StateMachine` instance (see `statemachine` module). 
+A YAML definition of a statechart can be easily imported to a `StateChart` instance.
+The module `pyss.io` provides a convenient loader `import_from_yaml(data)` which takes a textual YAML definition
+of a statechart.
 
-The parser is quite robust, and should warn you for most syntaxic problem. 
-A `StateMachine` instance has a `validate()` method that returns `True` if the statemachine *seems* to be valid, or raise an (detailed) exception instead. You should always consider using this method before doing anything else!
+Although the parser is quite robut and should warn about most syntaxic problems, a `StateChart` instance has a
+`validate()` method performs numerous other checks. This method either return `True` if the statechart *seems* to
+be valid, or raise a `ValueError` exception with a meaningful message.
+
+
 
 ### Code evaluation
 
-Statemachine can declare code to be executed under some circumstances (on entry, on exit, when a transition is processed, to evaluate a guard, etc.). The code can be evaluated using an `Evaluator`. By default, `pyss` provides two built-in `Evaluator` subclasses: 
- - A `DummyEvaluator` that does nothing, but always evaluate a condition to `True`. 
- - A `PythonEvaluator` that understands Python.
+A statechart can write code to be executed under some circumstances.
+For example, the `on entry` property on a `statechart`, `guard` or `action` on a transition or the
+`on entry` and `on exit` property for a state.
 
-An `Evaluator` must provide two methods: 
- - A `evaluate_condition(condition, event)` method that takes a condition (a one-line string containing some code) and an `Event` instance (which is essentially a `name` and a dictionary `data`). This methds should return either `True` or `False`.
- - A `execute_action(action, event)` method that takes an action (a string containing some code) and an `Event` instance. This method should return a list of `Event` instances that will be treated as internal events (and thus that have priority). 
- 
-The `PythonEvaluator` stores a `context`, which is a dictionary-like structure that contains the data available when evaluating or executing code. The context is always exposed as `__locals__` to the code that is executed. 
-For example, consider the following state machine.
+In `pyss`, these pieces of code can be evaluated and executed by `Evaluator` instances.
+An `Evaluator` must provide two methods:
+ - A `evaluate_condition(condition, event)` method that takes a condition (a one-line string containing some code)
+ and an `Event` instance (which is essentially a `name` and a dictionary `data`). This methods should return either `True` or `False`.
+ - A `execute_action(action, event)` method that takes an action (a string containing some code) and an `Event`
+ instance. This method should return a list of `Event` instances that will be treated as internal events
+ (and thus that have priority).
+
+By default, `pyss` provides two built-in `Evaluator` subclasses:
+ - A `DummyEvaluator` that always evaluate a guard to `True` and silently ignores `action`, `on entry` and `on exit`.
+ - A `PythonEvaluator` that brings Python into our statecharts.
+
+An instance of `PythonEvaluator` can evaluate and execute Python code expressed in the statechart.
+Such an instance relies on the concept of `context`, which is a dictionary-like structure that contains the data
+that are exposed to the pieces of code of the statechart (ie. override `__locals__`).
+
+As an example, consider the following partial statechart definition.
 ```
-statemachine: 
+statechar:
   # ...
   on entry: x = 1
   states:
     - name: s1
       on entry: x += 1
 ```
+When the statechart is initialized, the `context` of a `PythonEvaluator` will contain `{'x': 1}`.
+When *s1* is entered, the code will be evaluated with this context.
+After the execution of `x += 1`, the context will contain `{'x': 1}`.
 
-When the state machine is initialized, the `context` of a `PythonEvaluator` will contain `{'x': 1}`. 
-When *s1* is entered, the code will be evaluated with this context. After the execution of `x += 1`, the context will contain `{'x': 1}`. 
+When a `PythonEvaluator` instance is initialized, a prepopulated context can be specified:
+```
+>>> import math as my_favorite_module
+...
+>>> evaluator = PythonEvaluator({'x': 1, 'math': my_favorite_module})
+```
 
-Importantly, the context is prepopulated with `__builtins__` as in a standard Python scope, meaning that you can use nearly anything you want in your code (in fact, this part of the evaluator relies on `eval` and `exec`). 
-A `send` function is also exposed in the context. This function takes an `Event` instance (also exposed) and generates an internal event in the simulation. 
+By default, the context will expose an `Event` class (from `model.Event`) and a `send` function, that can be used
+to send internal event to the simulator (eg.: `on entry: send(Event('Hello World!'))`).
 
-Moreover, an initial context can be provided, eg. `PythonEvaluator({'x': 42, 'my_favorite_module': my_favorite_module})`.
+Additionally, the `__builtins__` of Python are also exposed, implying that you can use nearly everything provided
+by the standard library of Python.
 
-### Statemachine execution
 
-The module `simulator` contains a `Simulator` class that interprets a statemachine following SCXML semantic. 
-A `Simulator` instance is constructed upon a `StateMachine` instance and optionally an `Evaluator` (if not specified, a `DummyEvaluator` instance will be used). 
+### Statechart execution
 
-The simulator exposes the following methods: 
- - `send(event)` takes an `Event` instance that will be added to a FIFO queue of external events. This method returns `self` and can thus be chained: `simulator.send(Event('click')).send(Event('another click'))`. 
+The module `simulator` contains a `Simulator` class that interprets a statechart following SCXML semantic.
+A `Simulator` instance is constructed upon a `StateChart` instance and an optional `Evaluator`.
+If no `Evaluator` instance is specified, a `DummyEvaluator` instance will be used by default.
+
+The main methods of a simulator instance are:
+ - `send(event)` takes an `Event` instance that will be added to a FIFO queue of external events.
  - `start()` initializes the simulator to a stable situation (ie. processes initial steps). Return a list of `MicroStep` instances (see below). 
- - `execute()` computes and executes the next step (eventless transition, evented transition or nothing; followed by some stabilization steps like processing history and initial states). This method returns an instance of `MacroStep` or `None` if nothing was done.
+ - `execute()` processes a transition based on the oldest queued event (or no event if an eventless transition can be processed), and stabilizes
+  the simulator in a stable situation (ie. processes initial states, history states, etc.). This method returns an instance of `MacroStep` (see
+  below) or `None` if (1) no eventless transition can be processed, (2) there is no event in the event queue.
+  This method returns an instance of `MacroStep` or `None` if nothing was done.
  - Property `configuration`: contains an (unordered) list of active states. 
- - Property `running`: return `True` if and only if the state machine is running AND is not in a final configuration.
+ - Property `running`: return `True` if and only if the statechart is running AND is not in a final configuration.
  
 Example:
 ```
-simulator = Simulator(my_statemachine)
+simulator = Simulator(my_statechart)
 simulator.start()
 # We are now in a stable initial state
 simulator.send(Event('click'))  # Send event to the simulator
 simulator.execute()  # Will process the event if no eventless transitions are found at first
 ```
 
-For convenience, `send` can be chained: 
+For convenience, `send` returns `self` and thus can be chained:
 ```
 simulator.send(Event('click')).send(Event('click')).execute()
 ```
-Notice that `execute()` will at most process one of the two events! To process all the event, call repeatedly `execute()` until it returns a `None` value: 
+
+Notice that `execute()` consumes at most one event at a time.
+In this example, the second *click* event is not processed.
+
+To process all events *at once*, repeatedly call `execute()` until it returns a `None` value.
+For instance:
 ```
 while simulator.execute():
   pass
 ```
 
-For convenience, a `Simulator` instance exposes an iterator: 
+As a shortcut, a `Simulator` instance provides an iterator:
 ```
 for step in simulator: 
   assert isinstance(step, MacroStep)
+assert simulator.execute() == None
 ```
 
-The `execute()` method returns an instance of `MacroStep`. Such an instance corresponds to the process of a `Transition` instance (see `statemachine` module), for given `Event` instance (or `None` if transition is eventless) and leads to an ordered list of `exited_states` and `entered_states`. The order in those lists corresponds to the order in which the `on exit` and `on entry` codes were executed. 
+The simulator is fully observable: its `execute()` method returns an instance of `MacroStep`.
+A macro step corresponds to the process of either an eventless transition, or an evented transition,
+or no transition (but consume the event), including the stabilization steps (ie. the steps that are needed
+to enter nested states, or to switch into the configuration of an history state).
 
-In fact, a macro step is an aggregation of `MicroSteps` instances, with a main step (the one that possibly consumes an event and performs a transition) and a (possibly empty) list of other micro steps (stabilization steps that could add states to the list of `exited_states` and `entered_states`). 
+A `MacroStep` exposes an `Event` (`None` in case of eventless transition), a `Transition` (`None` if the
+event was consumed without triggering a transition) and two sequences of state names: `entered_states` and
+`exited_states`. States order in those list indicates the order in which their `on entry` and `on exit` actions
+were processed.
 
-This way, a complete run of a state machine can be summarized as an ordered list of `MacroStep` instances. 
+The main step and the stabilization steps of a macro step are exposed through `main_step` and `micro_steps`.
+The first is a `MicroStep` instance, and the second is an ordered list of `MicroStep` instances.
+A micro step is the smallest, atomic step that a statechart can execute.
+A `MacroStep` instance can be viewed (and is!) an aggregate of `MicroStep` instances.
+
+This way, a complete run of a state machine can be summarized as an ordered list of `MacroStep` instances,
+and details of such a run can be obtained using the `MicroStep`'s of a `MacroStep`.

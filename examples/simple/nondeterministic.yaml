@@ -1,5 +1,5 @@
-statemachine:
-  name: "Counter-example: non deterministic state machine"  # Use quotes to protect ':'
+statechart:
+  name: "Counter-example: non deterministic statechart"  # Use quotes to protect ':'
   initial: s1
 
   states:

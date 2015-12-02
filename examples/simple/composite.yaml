@@ -1,5 +1,5 @@
-statemachine:
-  name: State machine with composite states
+statechart:
+  name: statechart with composite states
   initial: s1
 
   states:
