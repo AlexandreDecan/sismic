@@ -11,7 +11,7 @@ class MicroStep:
         of `entered_states` and a list of `exited_states`.
         Order in the two lists is REALLY important!
         :param event: Event or None in case of eventless transition
-        :param transition: Transition or None if no matching transition
+        :param transition: Transition or None if no processed transition
         :param entered_states: possibly empty list of entered states
         :param exited_states: possibly empty list of exited states
         """
