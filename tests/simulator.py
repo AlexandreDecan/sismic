@@ -21,7 +21,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertEqual(simulator.configuration, ['s1'])
         simulator.execute()
         self.assertEqual(simulator.configuration, ['s1'])
-        simulator.fire_event(Event('goto s2'))
+        simulator.events.append(Event('goto s2'))
         simulator.execute()
         self.assertEqual(simulator.configuration, ['s2'])
         simulator.execute()
@@ -30,8 +30,8 @@ class SimulatorTest(unittest.TestCase):
     def test_simple_iterator(self):
         sm = io.import_from_yaml(open('../examples/simple.yaml'))
         simulator = Simulator(sm)
-        simulator.fire_event(Event('goto s2'))
-        simulator.fire_event(Event('goto final'))
+        simulator.events.append(Event('goto s2'))
+        simulator.events.append(Event('goto final'))
         for _ in simulator:
             pass
         self.assertEqual(simulator.configuration, ['final'])

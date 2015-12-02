@@ -4,8 +4,8 @@ from pyss.evaluator import Evaluator, DummyEvaluator
 
 
 class MicroStep:
-    def __init__(self, event: statemachine.Event, transition: statemachine.Transition,
-                 entered_states: list, exited_states: list):
+    def __init__(self, event: statemachine.Event=None, transition: statemachine.Transition=None,
+                 entered_states: list=None, exited_states: list=None):
         """
         Create a micro step. A step consider `event`, takes `transition` and results in a list
         of `entered_states` and a list of `exited_states`.
@@ -17,8 +17,8 @@ class MicroStep:
         """
         self.event = event
         self.transition = transition
-        self.entered_states = entered_states
-        self.exited_states = exited_states
+        self.entered_states = entered_states if entered_states else []
+        self.exited_states = exited_states if exited_states else []
 
     def __repr__(self):
         return 'MicroStep({}, {}, {}, {})'.format(self.event, self.transition, self.entered_states, self.exited_states)
@@ -56,7 +56,7 @@ class Simulator:
             self._evaluator.execute_action(self._sm.on_entry)
 
         # Initial step and stabilization
-        step = MicroStep(None, None, [self._sm.initial], [])
+        step = MicroStep(entered_states=[self._sm.initial])
         self._execute_step(step)
         return [step] + self._stabilize()
 
@@ -106,7 +106,7 @@ class Simulator:
             event = self._events.popleft()
             step = self._transition_step(event=event)
             if not step:
-                steps.append(MicroStep(event, None, [], []))
+                steps.append(MicroStep(event=event))
 
         if step:
             steps.append(step)
@@ -147,11 +147,11 @@ class Simulator:
             if isinstance(leaf, statemachine.HistoryState):
                 states_to_enter = leaf.memory
                 states_to_enter.sort(key=lambda x: self._sm.depth_of(x))
-                return MicroStep(None, None, states_to_enter, [leaf.name])
+                return MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, statemachine.OrthogonalState):
-                return MicroStep(None, None, leaf.children, [])
+                return MicroStep(entered_states=leaf.children)
             elif isinstance(leaf, statemachine.CompoundState):
-                return MicroStep(None, None, [leaf.initial], [])
+                return MicroStep(entered_states=[leaf.initial])
 
     def _stabilize(self) -> list:
         """
