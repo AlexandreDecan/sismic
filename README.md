@@ -6,9 +6,9 @@
 
 `pyss` provides a set of tools related to statechart manipulation and execution.
 In particular, `pyss` provides:
- - A Python data structure to store and manipulate statecharts
- - A easy way to define statecharts using YAML
- - Statecharts simulators (SCXML semantic, no language restriction!)
+ - An easy way to define statecharts using YAML
+ - Discrete, step-by-step, statechart simulation following SCXML semantic
+ - Built-in support for Python code, can be easily extended to other languages
  - A base framework for model-based testing
 
 Example of a YAML definition of a state chart for an elevator:
@@ -202,7 +202,7 @@ Except final states and history states, states can declare transitions using `tr
     - target: other state
 ```
 
-A transition can define a `target` (name of the target state), a `guard` (Boolean expression that will be evaluated), an `event` (name of the event) and an `action` (code that will be executed if the transition is performed). A full example of a transition: 
+A transition can define a `target` (name of the target state), a `guard` (a one-line Boolean expression that will be evaluated), an `event` (name of the event) and an `action` (code that will be executed if the transition is performed). A full example of a transition: 
 ```
 - name: state with a transition
   transitions: 
@@ -214,3 +214,82 @@ A transition can define a `target` (name of the target state), a `guard` (Boolea
 
 Each field is optional. A transition with no event has priority. If a transition does not declare a `target`, it is an internal transition. A transition can not be internal AND eventless AND guardless (or this eventually lead to an infinite execution). 
 
+### Load a YAML file
+
+Statemachines (in YAML format) can be easily imported in Python. 
+The module `io` provides a convinient function `import_from_yaml(content)` which takes a string as input, and return a `StateMachine` instance (see `statemachine` module). 
+
+The parser is quite robust, and should warn you for most syntaxic problem. 
+A `StateMachine` instance has a `validate()` method that returns `True` if the statemachine *seems* to be valid, or raise an (detailed) exception instead. You should always consider using this method before doing anything else!
+
+### Code evaluation
+
+Statemachine can declare code to be executed under some circumstances (on entry, on exit, when a transition is processed, to evaluate a guard, etc.). The code can be evaluated using an `Evaluator`. By default, `pyss` provides two built-in `Evaluator` subclasses: 
+ - A `DummyEvaluator` that does nothing, but always evaluate a condition to `True`. 
+ - A `PythonEvaluator` that understands Python.
+
+An `Evaluator` must provide two methods: 
+ - A `evaluate_condition(condition, event)` method that takes a condition (a one-line string containing some code) and an `Event` instance (which is essentially a `name` and a dictionary `data`). This methds should return either `True` or `False`.
+ - A `execute_action(action, event)` method that takes an action (a string containing some code) and an `Event` instance. This method should return a list of `Event` instances that will be treated as internal events (and thus that have priority). 
+ 
+The `PythonEvaluator` stores a `context`, which is a dictionary-like structure that contains the data available when evaluating or executing code. The context is always exposed as `__locals__` to the code that is executed. 
+For example, consider the following state machine.
+```
+statemachine: 
+  # ...
+  on entry: x = 1
+  states:
+    - name: s1
+      on entry: x += 1
+```
+
+When the state machine is initialized, the `context` of a `PythonEvaluator` will contain `{'x': 1}`. 
+When *s1* is entered, the code will be evaluated with this context. After the execution of `x += 1`, the context will contain `{'x': 1}`. 
+
+Importantly, the context is prepopulated with `__builtins__` as in a standard Python scope, meaning that you can use nearly anything you want in your code (in fact, this part of the evaluator relies on `eval` and `exec`). 
+A `send` function is also exposed in the context. This function takes an `Event` instance (also exposed) and generates an internal event in the simulation. 
+
+Moreover, an initial context can be provided, eg. `PythonEvaluator({'x': 42, 'my_favorite_module': my_favorite_module})`.
+
+### Statemachine execution
+
+The module `simulator` contains a `Simulator` class that interprets a statemachine following SCXML semantic. 
+A `Simulator` instance is constructed upon a `StateMachine` instance and optionally an `Evaluator` (if not specified, a `DummyEvaluator` instance will be used). 
+
+The simulator exposes the following methods: 
+ - `send(event)` takes an `Event` instance that will be added to a FIFO queue of external events. This method returns `self` and can thus be chained: `simulator.send(Event('click')).send(Event('another click'))`. 
+ - `start()` initializes the simulator to a stable situation (ie. processes initial steps). Return a list of `MicroStep` instances (see below). 
+ - `execute()` computes and executes the next step (eventless transition, evented transition or nothing; followed by some stabilization steps like processing history and initial states). This method returns an instance of `MacroStep` or `None` if nothing was done.
+ - Property `configuration`: contains an (unordered) list of active states. 
+ - Property `running`: return `True` if and only if the state machine is running AND is not in a final configuration.
+ 
+Example:
+```
+simulator = Simulator(my_statemachine)
+simulator.start()
+# We are now in a stable initial state
+simulator.send(Event('click'))  # Send event to the simulator
+simulator.execute()  # Will process the event if no eventless transitions are found at first
+```
+
+For convenience, `send` can be chained: 
+```
+simulator.send(Event('click')).send(Event('click')).execute()
+```
+Notice that `execute()` will at most process one of the two events! To process all the event, call repeatedly `execute()` until it returns a `None` value: 
+```
+while simulator.execute():
+  pass
+```
+
+For convenience, a `Simulator` instance exposes an iterator: 
+```
+for step in simulator: 
+  assert isinstance(step, MacroStep)
+```
+
+The `execute()` method returns an instance of `MacroStep`. Such an instance corresponds to the process of a `Transition` instance (see `statemachine` module), for given `Event` instance (or `None` if transition is eventless) and leads to an ordered list of `exited_states` and `entered_states`. The order in those lists corresponds to the order in which the `on exit` and `on entry` codes were executed. 
+
+In fact, a macro step is an aggregation of `MicroSteps` instances, with a main step (the one that possibly consumes an event and performs a transition) and a (possibly empty) list of other micro steps (stabilization steps that could add states to the list of `exited_states` and `entered_states`). 
+
+This way, a complete run of a state machine can be summarized as an ordered list of `MacroStep` instances. 
