@@ -1,12 +1,13 @@
+import itertools
 from pyss import statemachine
 from pyss.evaluator import Evaluator, DummyEvaluator
 
 
-class Step:
+class MicroStep:
     def __init__(self, event: statemachine.Event, transition: statemachine.Transition,
                  entered_states: list, exited_states: list):
         """
-        Create a step. A step consider `event`, takes `transition` and results in a list
+        Create a micro step. A step consider `event`, takes `transition` and results in a list
         of `entered_states` and a list of `exited_states`.
         Order in the two lists is REALLY important!
         :param event: Event or None in case of eventless transition
@@ -20,22 +21,10 @@ class Step:
         self.exited_states = exited_states
 
     def __repr__(self):
-        return 'Step({}, {}, {}, {})'.format(self.event, self.transition, self.entered_states, self.exited_states)
+        return 'MicroStep({}, {}, {}, {})'.format(self.event, self.transition, self.entered_states, self.exited_states)
 
 
 class Simulator:
-    """
-    Use case:
-    >>> simulator = Simulator(sm)
-    >>> assert(simulator.running == False)
-    >>> simulator.start()
-    >>> assert(simulator.running == True)
-    >>> simulator.fire_event(Event('click'))
-    >>> for step in simulator:
-            print(step)
-    >>> assert(simulator.running == False)
-    """
-
     def __init__(self, sm: statemachine.StateMachine, evaluator: Evaluator=None):
         """
         A simulator that interprets a state machine according to a specific semantic.
@@ -60,14 +49,14 @@ class Simulator:
         Make this machine runnable:
          - Execute state machine initial code
          - Execute until a stable situation is reached.
-        :return A (possibly empty) list of executed Step.
+        :return A (possibly empty) list of executed MicroStep.
         """
         # Initialize state machine
         if self._sm.on_entry:
             self._evaluator.execute_action(self._sm.on_entry)
 
         # Initial step and stabilization
-        step = Step(None, None, [self._sm.initial], [])
+        step = MicroStep(None, None, [self._sm.initial], [])
         self._execute_step(step)
         return [step] + self._stabilize()
 
@@ -109,7 +98,7 @@ class Simulator:
         """
         Execute an eventless transition or an evented transition and put the
         state machine in a stable state.
-        Return a list of executed Step instances.
+        Return a list of executed MicroStep instances.
         """
         steps = []
 
@@ -120,7 +109,7 @@ class Simulator:
             event = self._events.pop(0)
             step = self._transition_step(event=event)
             if not step:
-                steps.append(Step(event, None, [], []))
+                steps.append(MicroStep(event, None, [], []))
 
         if step:
             steps.append(step)
@@ -148,11 +137,11 @@ class Simulator:
         # Order by deepest first
         return sorted(transitions, key=lambda t: self._sm.depth_of(t.from_state), reverse=True)
 
-    def _stabilize_step(self) -> Step:
+    def _stabilize_step(self) -> MicroStep:
         """
         Return a stabilization step, ie. a step that lead to a more stable situation
         for the current state machine (expand to initial state, expand to history state, etc.).
-        :return: A Step instance or None if this state machine can not be stabilized
+        :return: A MicroStep instance or None if this state machine can not be stabilized
         """
         # Check if we are in a set of "stable" states
         leaves = self._sm.leaf_for(list(self._configuration))
@@ -161,16 +150,16 @@ class Simulator:
             if isinstance(leaf, statemachine.HistoryState):
                 states_to_enter = leaf.memory
                 states_to_enter.sort(key=lambda x: self._sm.depth_of(x))
-                return Step(None, None, states_to_enter, [leaf.name])
+                return MicroStep(None, None, states_to_enter, [leaf.name])
             elif isinstance(leaf, statemachine.OrthogonalState):
-                return Step(None, None, leaf.children, [])
+                return MicroStep(None, None, leaf.children, [])
             elif isinstance(leaf, statemachine.CompoundState):
-                return Step(None, None, [leaf.initial], [])
+                return MicroStep(None, None, [leaf.initial], [])
 
     def _stabilize(self) -> list:
         """
         Compute, apply and return stabilization steps.
-        :return: A list of Step instances
+        :return: A list of MicroStep instances
         """
         # Stabilization
         steps = []
@@ -181,12 +170,12 @@ class Simulator:
             step = self._stabilize_step()
         return steps
 
-    def _transition_step(self, event: statemachine.Event=None) -> Step:
+    def _transition_step(self, event: statemachine.Event=None) -> MicroStep:
         """
-        Return the Step (if any) associated with the appropriate transition matching
+        Return the MicroStep (if any) associated with the appropriate transition matching
         given event (or eventless transition if event is None).
         :param event: Event to consider (or None)
-        :return: A Step instance or None
+        :return: A MicroStep instance or None
         """
         transitions = self._actionable_transitions(event)
 
@@ -198,7 +187,7 @@ class Simulator:
 
         # Internal transition
         if transition.to_state is None:
-            return Step(event, transition, [], [])
+            return MicroStep(event, transition, [], [])
 
         lca = self._sm.least_common_ancestor(transition.from_state, transition.to_state)
         from_ancestors = self._sm.ancestors_for(transition.from_state)
@@ -216,12 +205,12 @@ class Simulator:
                 break
             entered_states.insert(0, state)
 
-        return Step(event, transition, entered_states, exited_states)
+        return MicroStep(event, transition, entered_states, exited_states)
 
-    def _execute_step(self, step: Step):
+    def _execute_step(self, step: MicroStep):
         """
-        Apply given Step on this state machine
-        :param step: Step instance
+        Apply given MicroStep on this state machine
+        :param step: MicroStep instance
         """
         entered_states = map(lambda s: self._sm.states[s], step.entered_states)
         exited_states = map(lambda s: self._sm.states[s], step.exited_states)

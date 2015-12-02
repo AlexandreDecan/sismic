@@ -1,6 +1,6 @@
 import unittest
 from pyss import io
-from pyss.simulator import Simulator, Step
+from pyss.simulator import Simulator, MicroStep
 from pyss.statemachine import Event
 
 
