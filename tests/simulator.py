@@ -72,6 +72,12 @@ class SimulatorTest(unittest.TestCase):
         self.assertTrue('doorsOpen' in simulator.configuration)
         self.assertEqual(simulator._evaluator.context['current'], 4)
 
+        simulator.send(Event('after10s'))
+        while simulator.execute():
+            pass
+        self.assertTrue('doorsOpen' in simulator.configuration)
+        self.assertEqual(simulator._evaluator.context['current'], 0)
+
     def test_nondeterminism(self):
         sm = io.import_from_yaml(open('../examples/nondeterministic.yaml'))
         sm.validate()  # Shouldn't raise anything
