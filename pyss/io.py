@@ -1,13 +1,24 @@
 import yaml
-import pyss.statemachine as statemachine
+from pyss.statemachine import Event, Transition, StateMachine, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
+from pyss.statemachine import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 
 
 def import_from_yaml(data):
+    """
+    Import a state machine from a YAML representation.
+    :param data: string or any equivalent object
+    :return: a StateMachine instance
+    """
     return import_from_dict(yaml.load(data)['statemachine'])
 
 
 def import_from_dict(data: dict):
-    sm = statemachine.StateMachine(data['name'], data['initial'], data.get('on entry', None))
+    """
+    Import a state machine from a (set of nested) dictionary.
+    :param data: dict-like structure
+    :return: a StateMachine instance
+    """
+    sm = StateMachine(data['name'], data['initial'], data.get('on entry', None))
 
     states_to_add = []  # list of (state, parent) to be added
     for state in data['states']:
@@ -45,10 +56,10 @@ def _transition_from_dict(state_name: str, transition_d: dict):
     to_state = transition_d.get('target', None)
     event = transition_d.get('event', None)
     if event:
-        event = statemachine.Event(event)
+        event = Event(event)
     condition = transition_d.get('guard', None)
     action = transition_d.get('action', None)
-    return statemachine.Transition(state_name, to_state, event, condition, action)
+    return Transition(state_name, to_state, event, condition, action)
 
 
 def _state_from_dict(state_d: dict):
@@ -60,20 +71,21 @@ def _state_from_dict(state_d: dict):
     # Guess the type of state
     if state_d.get('type', None) == 'final':
         # Final pseudo state
-        state = statemachine.FinalState(state_d['name'])
+        state = FinalState(state_d['name'])
     elif state_d.get('type', None) == 'history':
         # History pseudo state
-        state = statemachine.HistoryState(state_d['name'], state_d.get('initial'), state_d.get('deep', False))
+        state = HistoryState(state_d['name'], state_d.get('initial'), state_d.get('deep', False))
     else:
         name = state_d.get('name')
         on_entry = state_d.get('on entry', None)
         on_exit = state_d.get('on exit', None)
         if 'states' in state_d:  # Compound state
             initial = state_d['initial']
-            state = statemachine.CompoundState(name, initial, on_entry, on_exit)
+            state = CompoundState(name, initial, on_entry, on_exit)
         elif 'orthogonal states' in state_d: #
-            state = statemachine.OrthogonalState(name, on_entry, on_exit)
+            state = OrthogonalState(name, on_entry, on_exit)
         else:
             # Simple state
-            state = statemachine.BasicState(name, on_entry, on_exit)
+            state = BasicState(name, on_entry, on_exit)
     return state
+

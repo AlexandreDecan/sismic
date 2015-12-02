@@ -23,7 +23,7 @@ class Event:
         return OrderedDict({'name': self.name})
 
 
-class State:
+class StateMixin:
     """
     State element with a name.
     """
@@ -35,7 +35,7 @@ class State:
         return '{}({})'.format(self.__class__.__name__, self.name)
 
     def __eq__(self, other):
-        return isinstance(other, State) and self.name == other.name
+        return isinstance(other, StateMixin) and self.name == other.name
 
     def __hash__(self):
         return hash(self.name)
@@ -96,35 +96,35 @@ class CompositeStateMixin:
         return {'states': self.children}
 
 
-class BasicState(State, TransitionStateMixin, ActionStateMixin):
+class BasicState(StateMixin, TransitionStateMixin, ActionStateMixin):
     """
     A basic state, with a name, transitions, actions, etc. but no children.
     """
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
-        State.__init__(self, name)
+        StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
 
     def to_dict(self) -> dict:
-        d = State.to_dict(self)
+        d = StateMixin.to_dict(self)
         d.update(ActionStateMixin.to_dict(self))
         d.update(TransitionStateMixin.to_dict(self))
         return d
 
 
-class CompoundState(State, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
+class CompoundState(StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
     """
     Compound states must have children states.
     """
     def __init__(self, name: str, initial: str, on_entry: str=None, on_exit: str=None):
-        State.__init__(self, name)
+        StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
         CompositeStateMixin.__init__(self)
         self.initial = initial
 
     def to_dict(self) -> dict:
-        d = State.to_dict(self)
+        d = StateMixin.to_dict(self)
         d['initial'] = self.initial
         d.update(ActionStateMixin.to_dict(self))
         d.update(TransitionStateMixin.to_dict(self))
@@ -132,18 +132,18 @@ class CompoundState(State, TransitionStateMixin, ActionStateMixin, CompositeStat
         return d
 
 
-class OrthogonalState(State, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
+class OrthogonalState(StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
     """
     Orthogonal states run their children simultaneously.
     """
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
-        State.__init__(self, name)
+        StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
         CompositeStateMixin.__init__(self)
 
     def to_dict(self) -> dict:
-        d = State.to_dict(self)
+        d = StateMixin.to_dict(self)
         d.update(ActionStateMixin.to_dict(self))
         d.update(TransitionStateMixin.to_dict(self))
         d.update(CompositeStateMixin.to_dict(self))
@@ -152,7 +152,7 @@ class OrthogonalState(State, TransitionStateMixin, ActionStateMixin, CompositeSt
         return d
 
 
-class HistoryState(State):
+class HistoryState(StateMixin):
     """
     History state can be either 'shallow' (default) or 'deep'.
     A shallow history state resumes the execution of its parent.
@@ -161,14 +161,14 @@ class HistoryState(State):
     """
 
     def __init__(self, name: str, initial: str=None, deep: bool=False):
-        State.__init__(self, name)
+        StateMixin.__init__(self, name)
         self.name = name
         self.memory = [initial]
         self.initial = initial
         self.deep = deep
 
     def to_dict(self):
-        d = State.to_dict(self)
+        d = StateMixin.to_dict(self)
         d['type'] = 'history'
         if self.initial:
             d['initial'] = self.initial
@@ -177,17 +177,17 @@ class HistoryState(State):
         return d
 
 
-class FinalState(State, ActionStateMixin):
+class FinalState(StateMixin, ActionStateMixin):
     """
     Final state has NO transition and is used to detect state machine termination.
     """
 
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
-        State.__init__(self, name)
+        StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
 
     def to_dict(self):
-        d = State.to_dict(self)
+        d = StateMixin.to_dict(self)
         d['type'] = 'final'
         d.update(ActionStateMixin.to_dict(self))
         return d
@@ -247,14 +247,14 @@ class StateMachine(object):
         self.parent = {}  # name -> parent.name
         self.children = []
 
-    def register_state(self, state: State, parent: str):
+    def register_state(self, state: StateMixin, parent: str):
         """
         Register given state in current state machine and register it to its parent
         :param state: instance of State to add
         :param parent: name of parent state
         """
         self.states[state.name] = state
-        self.parent[state.name] = parent.name if isinstance(parent, State) else parent
+        self.parent[state.name] = parent.name if isinstance(parent, StateMixin) else parent
 
         # Register on parent state
         parent_state = self.states.get(self.parent[state.name], None)
