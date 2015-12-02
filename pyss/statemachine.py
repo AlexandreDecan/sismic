@@ -112,7 +112,7 @@ class CompoundState(StateMixin, TransitionStateMixin, ActionStateMixin, Composit
     """
     Compound states must have children states.
     """
-    def __init__(self, name: str, initial: str, on_entry: str=None, on_exit: str=None):
+    def __init__(self, name: str, initial: str=None, on_entry: str=None, on_exit: str=None):
         StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
@@ -308,7 +308,7 @@ class StateMachine(object):
                     raise ValueError('Composite state {} should have at least one child'.format(state))
 
             if isinstance(state, CompoundState):  # C4
-                if self.parent[name] and not (self.parent[state.initial] == name):
+                if self.parent[name] and state.initial and not (self.parent[state.initial] == name):
                     raise ValueError('Initial state of {} should refer to one of its children'.format(state))
 
         return True

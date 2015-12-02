@@ -81,7 +81,7 @@ def _state_from_dict(state_d: dict) -> StateMixin:
         on_entry = state_d.get('on entry', None)
         on_exit = state_d.get('on exit', None)
         if 'states' in state_d:  # Compound state
-            initial = state_d['initial']
+            initial = state_d.get('initial', None)
             state = CompoundState(name, initial, on_entry, on_exit)
         elif 'orthogonal states' in state_d: #
             state = OrthogonalState(name, on_entry, on_exit)
@@ -138,7 +138,8 @@ def _export_element_to_dict(el) -> dict:
     if isinstance(el, StateMixin):
         d['name'] = el.name
     if isinstance(el, CompoundState):
-        d['initial'] = el.initial
+        if el.initial:
+            d['initial'] = el.initial
     if isinstance(el, ActionStateMixin):
         if el.on_entry:
             d['on entry'] = el.on_entry

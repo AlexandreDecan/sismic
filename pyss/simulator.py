@@ -150,7 +150,7 @@ class Simulator:
                 return MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, statemachine.OrthogonalState):
                 return MicroStep(entered_states=leaf.children)
-            elif isinstance(leaf, statemachine.CompoundState):
+            elif isinstance(leaf, statemachine.CompoundState) and leaf.initial:
                 return MicroStep(entered_states=[leaf.initial])
 
     def _stabilize(self) -> list:
