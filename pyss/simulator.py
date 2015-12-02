@@ -215,7 +215,9 @@ class Simulator:
         for state in exited_states:
             # Execute exit action
             if isinstance(state, statemachine.ActionStateMixin) and state.on_exit:
-                self._evaluator.execute_action(state.on_exit)
+                for event in self._evaluator.execute_action(state.on_exit):
+                    # Internal event
+                    self._events.appendleft(event)
 
         # Deal with history: this only concerns compound states
         for state in filter(lambda s: isinstance(s, statemachine.CompoundState), exited_states):
@@ -244,7 +246,9 @@ class Simulator:
         for state in entered_states:
             # Execute entry action
             if isinstance(state, statemachine.ActionStateMixin) and state.on_entry:
-                self._evaluator.execute_action(state.on_entry)
+                for event in self._evaluator.execute_action(state.on_entry):
+                    # Internal event
+                    self._events.appendleft(event)
 
         # Add state to configuration
         self._configuration = self._configuration.union(step.entered_states)
