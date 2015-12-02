@@ -1,9 +1,10 @@
 import yaml
+from collections import OrderedDict
 from pyss.statemachine import Event, Transition, StateMachine, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
 from pyss.statemachine import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 
 
-def import_from_yaml(data):
+def import_from_yaml(data) -> StateMachine:
     """
     Import a state machine from a YAML representation.
     :param data: string or any equivalent object
@@ -12,7 +13,7 @@ def import_from_yaml(data):
     return import_from_dict(yaml.load(data)['statemachine'])
 
 
-def import_from_dict(data: dict):
+def import_from_dict(data: dict) -> StateMachine:
     """
     Import a state machine from a (set of nested) dictionary.
     :param data: dict-like structure
@@ -46,7 +47,7 @@ def import_from_dict(data: dict):
     return sm
 
 
-def _transition_from_dict(state_name: str, transition_d: dict):
+def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
     """
     Return a Transition instance from given dict.
     :param state: name of the state in which the transition is defined
@@ -62,7 +63,7 @@ def _transition_from_dict(state_name: str, transition_d: dict):
     return Transition(state_name, to_state, event, condition, action)
 
 
-def _state_from_dict(state_d: dict):
+def _state_from_dict(state_d: dict) -> StateMixin:
     """
     Return the appropriate type of state from given dict.
     :param state_d: a dictionary containing state data
@@ -89,3 +90,74 @@ def _state_from_dict(state_d: dict):
             state = BasicState(name, on_entry, on_exit)
     return state
 
+
+def export_to_dict(statemachine: StateMachine) -> dict:
+    """
+    Export given StateMachine instance to a dict.
+    :param statemachine: a StateMachine instance
+    :return: a dict that can be used in `import_from_dict`
+    """
+    sm = statemachine  # alias
+    d = OrderedDict()
+    d['name'] = sm.name
+    d['initial'] = sm.initial
+    d['states'] = sm.children
+    if sm.on_entry:
+        d['on entry'] = sm.on_entry
+
+    statelist_to_expand = [d['states']]
+    while statelist_to_expand:
+        statelist = statelist_to_expand.pop()
+        for i, state in enumerate(statelist):
+            statelist[i] = _export_element_to_dict(sm.states[state])
+            new_statelist = statelist[i].get('states', statelist[i].get('orthogonal states', []))
+            if len(new_statelist) > 0:
+                statelist_to_expand.append(new_statelist)
+    return {'statemachine': d}
+
+
+def _export_element_to_dict(el) -> dict:
+    """
+    Export an element (State, Transition, etc.) to a dict.
+    Is used in `export_to_dict` to generate a global representation.
+    :param el: an instance of `statemachine.*`
+    :return: a dict
+    """
+    d = OrderedDict()
+    if isinstance(el, Event):
+        d['name'] = el.name
+    if isinstance(el, Transition):
+        if not el.internal:
+            d['target'] = el.to_state
+        if not el.eventless:
+            d['event'] = _export_element_to_dict(el.event)
+        if el.condition:
+            d['guard'] = el.condition
+        if el.action:
+            d['action'] = el.action
+    if isinstance(el, StateMixin):
+        d['name'] = el.name
+    if isinstance(el, CompoundState):
+        d['initial'] = el.initial
+    if isinstance(el, ActionStateMixin):
+        if el.on_entry:
+            d['on entry'] = el.on_entry
+        if el.on_exit:
+            d['on exit'] = el.on_exit
+    if isinstance(el, TransitionStateMixin):
+        if len(el.transitions) > 0:
+            d['transitions'] = [_export_element_to_dict(t) for t in el.transitions]
+    if isinstance(el, CompositeStateMixin):
+        if isinstance(el, OrthogonalState):
+            d['orthogonal states'] = el.children
+        else:
+            d['states'] = el.children
+    if isinstance(el, HistoryState):
+        d['type'] = 'history'
+        if el.initial:
+            d['initial'] = el.initial
+        if el.deep:
+            d['deep'] = True
+    if isinstance(el, FinalState):
+        d['type'] = 'final'
+    return d

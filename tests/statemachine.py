@@ -2,20 +2,6 @@ import unittest
 from pyss import io
 
 
-class ToDictTests(unittest.TestCase):
-    def test_simple(self):
-        io.import_from_yaml(open('../examples/simple.yaml')).to_dict()
-
-    def test_composite(self):
-        io.import_from_yaml(open('../examples/composite.yaml')).to_dict()
-
-    def test_history(self):
-        io.import_from_yaml(open('../examples/history.yaml')).to_dict()
-
-    def test_actions(self):
-        io.import_from_yaml(open('../examples/actions.yaml')).to_dict()
-
-
 class TraversalTests(unittest.TestCase):
     def setUp(self):
         self.sm = io.import_from_yaml(open('../examples/composite.yaml'))

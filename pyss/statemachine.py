@@ -19,9 +19,6 @@ class Event:
     def __repr__(self):
         return 'Event({})'.format(self.name)
 
-    def to_dict(self):
-        return OrderedDict({'name': self.name})
-
 
 class StateMixin:
     """
@@ -40,9 +37,6 @@ class StateMixin:
     def __hash__(self):
         return hash(self.name)
 
-    def to_dict(self) -> dict:
-        return {'name': self.name}
-
 
 class ActionStateMixin:
     """
@@ -51,14 +45,6 @@ class ActionStateMixin:
     def __init__(self, on_entry: str=None, on_exit: str=None):
         self.on_entry = on_entry
         self.on_exit = on_exit
-
-    def to_dict(self) -> dict:
-        d = {}
-        if self.on_entry:
-            d['on entry'] = self.on_entry
-        if self.on_exit:
-            d['on exit'] = self.on_exit
-        return d
 
 
 class TransitionStateMixin:
@@ -75,12 +61,6 @@ class TransitionStateMixin:
         """
         self.transitions.append(transition)
 
-    def to_dict(self) -> dict:
-        d = {}
-        if len(self.transitions) > 0:
-            d['transitions'] = [transition.to_dict() for transition in self.transitions]
-        return d
-
 
 class CompositeStateMixin:
     """
@@ -92,9 +72,6 @@ class CompositeStateMixin:
     def add_child(self, state_name):
         self.children.append(state_name)
 
-    def to_dict(self) -> dict:
-        return {'states': self.children}
-
 
 class BasicState(StateMixin, TransitionStateMixin, ActionStateMixin):
     """
@@ -104,12 +81,6 @@ class BasicState(StateMixin, TransitionStateMixin, ActionStateMixin):
         StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
-
-    def to_dict(self) -> dict:
-        d = StateMixin.to_dict(self)
-        d.update(ActionStateMixin.to_dict(self))
-        d.update(TransitionStateMixin.to_dict(self))
-        return d
 
 
 class CompoundState(StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
@@ -123,14 +94,6 @@ class CompoundState(StateMixin, TransitionStateMixin, ActionStateMixin, Composit
         CompositeStateMixin.__init__(self)
         self.initial = initial
 
-    def to_dict(self) -> dict:
-        d = StateMixin.to_dict(self)
-        d['initial'] = self.initial
-        d.update(ActionStateMixin.to_dict(self))
-        d.update(TransitionStateMixin.to_dict(self))
-        d.update(CompositeStateMixin.to_dict(self))
-        return d
-
 
 class OrthogonalState(StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
     """
@@ -141,15 +104,6 @@ class OrthogonalState(StateMixin, TransitionStateMixin, ActionStateMixin, Compos
         TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
         CompositeStateMixin.__init__(self)
-
-    def to_dict(self) -> dict:
-        d = StateMixin.to_dict(self)
-        d.update(ActionStateMixin.to_dict(self))
-        d.update(TransitionStateMixin.to_dict(self))
-        d.update(CompositeStateMixin.to_dict(self))
-        d['orthogonal states'] = d['states']
-        del d['states']
-        return d
 
 
 class HistoryState(StateMixin):
@@ -167,15 +121,6 @@ class HistoryState(StateMixin):
         self.initial = initial
         self.deep = deep
 
-    def to_dict(self):
-        d = StateMixin.to_dict(self)
-        d['type'] = 'history'
-        if self.initial:
-            d['initial'] = self.initial
-        if self.deep:
-            d['deep'] = True
-        return d
-
 
 class FinalState(StateMixin, ActionStateMixin):
     """
@@ -185,12 +130,6 @@ class FinalState(StateMixin, ActionStateMixin):
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
-
-    def to_dict(self):
-        d = StateMixin.to_dict(self)
-        d['type'] = 'final'
-        d.update(ActionStateMixin.to_dict(self))
-        return d
 
 
 class Transition(object):
@@ -217,18 +156,6 @@ class Transition(object):
 
     def __repr__(self):
         return 'Transition({}, {}, {})'.format(self.from_state, self.to_state, self.event)
-
-    def to_dict(self):
-        d = OrderedDict()
-        if not self.internal:
-            d['target'] = self.to_state
-        if not self.eventless:
-            d['event'] = self.event.to_dict()
-        if self.condition:
-            d['guard'] = self.condition
-        if self.action:
-            d['action'] = self.action
-        return d
 
 
 class StateMachine(object):
@@ -365,28 +292,3 @@ class StateMachine(object):
         """
         # TODO: Implement!
         raise NotImplementedError()
-
-    def to_dict(self) -> dict:
-        """
-        Return a Python representation of this state machine using built-in
-        types (dict, list, ...).
-        This representation can be used with `io.import_from_dict`.
-        :return: a Python representation of this state machine
-        """
-        d = OrderedDict()
-        d['name'] = self.name
-        d['initial'] = self.initial
-        d['states'] = self.children
-
-        if self.on_entry:
-            d['on entry'] = self.on_entry
-
-        statelist_to_expand = [d['states']]
-        while statelist_to_expand:
-            statelist = statelist_to_expand.pop()
-            for i, state in enumerate(statelist):
-                statelist[i] = self.states[state].to_dict()
-                new_statelist = statelist[i].get('states', [])
-                if len(new_statelist) > 0:
-                    statelist_to_expand.append(new_statelist)
-        return {'statemachine': d}
