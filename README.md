@@ -72,33 +72,3 @@ Developed by Alexandre Decan at the University of Mons (Belgium).
 
 To be done...
 
-### State machine construction
-
-yaml
-
-
-#### Module `pyss.io`
-
-dict / yaml
-
-#### Module `pyss.statemachine`
-
-objects
-
-
-### State machine execution
-
-philosphy
-
-
-#### Module `pyss.evaluator`
-
-goal + dummy eval + python eval + write your own
-
-#### Module `pyss.simulator`
-
-goal + main steps (eventless, evented, step and stabilization)
-
-Step + execute + configuration + fire_event + running
-
-iterator
