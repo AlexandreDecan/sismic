@@ -1,4 +1,4 @@
-import itertools
+from collections import deque
 from pyss import statemachine
 from pyss.evaluator import Evaluator, DummyEvaluator
 
@@ -34,7 +34,7 @@ class Simulator:
         self._evaluator = evaluator if evaluator else DummyEvaluator()
         self._sm = sm
         self._configuration = set()  # Set of active states
-        self._events = []  # Event queue
+        self._events = deque()  # Events queue
 
     @property
     def configuration(self) -> list:
@@ -70,9 +70,6 @@ class Simulator:
                 return True
         return False
 
-    def fire_event(self, event: statemachine.Event):
-        self._events.append(event)
-
     def __iter__(self):
         """
         Return an iterator for current execution.
@@ -91,7 +88,7 @@ class Simulator:
                 raise RuntimeError('Possible infinite run detected')
             event = yield step
             if event:
-                self.fire_event(event)
+                self._events.append(event)
         raise StopIteration()
 
     def execute(self) -> list:
@@ -106,7 +103,7 @@ class Simulator:
         step = self._transition_step(event=None)  # Explicit is better than implicit
 
         if not step and len(self._events) > 0:
-            event = self._events.pop(0)
+            event = self._events.popleft()
             step = self._transition_step(event=event)
             if not step:
                 steps.append(MicroStep(event, None, [], []))
