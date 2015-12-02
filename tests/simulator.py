@@ -80,9 +80,29 @@ class SimulatorTest(unittest.TestCase):
 
     def test_nondeterminism(self):
         sm = io.import_from_yaml(open('../examples/simple/nondeterministic.yaml'))
-        sm.validate()  # Shouldn't raise anything
         simulator = Simulator(sm)
         simulator.start()
         with self.assertRaises(Warning):
             simulator.execute()
+
+    def test_history(self):
+        sm = io.import_from_yaml(open('../examples/concrete/history.yaml'))
+        simulator = Simulator(sm)
+        simulator.start()
+        self.assertEqual(sorted(simulator.configuration), ['loop', 's1'])
+        simulator.send(Event('stop')).execute()
+        self.assertEqual(sorted(simulator.configuration), ['loop', 's1'])
+        simulator.send(Event('next')).execute()
+        self.assertEqual(sorted(simulator.configuration), ['loop', 's2'])
+        simulator.send(Event('pause')).execute()
+        self.assertEqual(sorted(simulator.configuration), ['pause'])
+        simulator.send(Event('continue')).execute()
+        self.assertEqual(sorted(simulator.configuration), ['loop', 's2'])
+        simulator.send(Event('next')).execute()
+        simulator.send(Event('next')).execute()
+        self.assertEqual(sorted(simulator.configuration), ['loop', 's1'])
+        simulator.send(Event('pause')).execute()
+        simulator.send(Event('stop')).execute()
+        self.assertFalse(simulator.running)
+
 

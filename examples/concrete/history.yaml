@@ -1,0 +1,37 @@
+statemachine:
+  name: Shallow history
+  description: |
+    A state machine that makes use of an history state.
+    It represents a process that loops over three states (s1, s2, s3) on `next` event.
+    The process can be interrupted with a `pause` event.
+    When paused, the process can either be continued (`continue` event) or stopped (`stop` event).
+  initial: loop
+  states:
+    - name: loop
+      initial: s1
+      transitions:
+        - target: pause
+          event: pause
+      states:
+        - name: s1
+          transitions:
+            - target: s2
+              event: next
+        - name: s2
+          transitions:
+            - target: s3
+              event: next
+        - name: s3
+          transitions:
+            - target: s1
+              event: next
+        - name: loop.H
+          type: history
+    - name: pause
+      transitions:
+        - target: loop.H
+          event: continue
+        - target: stop
+          event: stop
+    - name: stop
+      type: final

@@ -72,16 +72,14 @@ class Simulator:
     def configuration(self) -> list:
         return list(self._configuration)
 
-    def send(self, event_or_list):
+    def send(self, event):
         """
         Send an event to the state machine. Will be placed in the queue
-        :param event: Event to pass, or an iterable of events
+        :param event: Event instance
+        :return: self, so it can be chained
         """
-        if hasattr(event_or_list, '__iter__'):
-            for event in event_or_list:
-                self._events.append(event)
-        else:
-            self._events.append(event_or_list)
+        self._events.append(event)
+        return self
 
     def start(self) -> list:
         """
@@ -241,7 +239,8 @@ class Simulator:
         from_ancestors = self._sm.ancestors_for(transition.from_state)
         to_ancestors = self._sm.ancestors_for(transition.to_state)
 
-        exited_states = [transition.from_state]
+        exited_states = [state for state in self._sm.descendants_for(transition.from_state) if state in self._configuration]
+        exited_states.append(transition.from_state)
         for state in from_ancestors:
             if state == lca:
                 break
@@ -260,8 +259,8 @@ class Simulator:
         Apply given MicroStep on this state machine
         :param step: MicroStep instance
         """
-        entered_states = map(lambda s: self._sm.states[s], step.entered_states)
-        exited_states = map(lambda s: self._sm.states[s], step.exited_states)
+        entered_states = list(map(lambda s: self._sm.states[s], step.entered_states))
+        exited_states = list(map(lambda s: self._sm.states[s], step.exited_states))
 
         for state in exited_states:
             # Execute exit action
@@ -272,7 +271,8 @@ class Simulator:
 
         # Deal with history: this only concerns compound states
         # TODO: History states are currently NOT tested!!
-        for state in filter(lambda s: isinstance(s, statemachine.CompoundState), exited_states):
+        exited_compound_states = list(filter(lambda s: isinstance(s, statemachine.CompoundState), exited_states))
+        for state in exited_compound_states:
             # Look for an HistoryState among its children
             for child_name in state.children:
                 child = self._sm.states[child_name]
@@ -306,5 +306,5 @@ class Simulator:
         self._configuration = self._configuration.union(step.entered_states)
 
     def __repr__(self):
-        return '{}[{}]'.format(self.__class__.__name__, ' '.join(self._configuration))
+        return '{}[{}]'.format(self.__class__.__name__, ', '.join(self._configuration))
 

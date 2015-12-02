@@ -14,12 +14,17 @@ class ImportFromYamlTests(unittest.TestCase):
         self.assertTrue(sm.validate())
 
     def test_history(self):
-        content = open('../examples/simple/history.yaml')
+        content = open('../examples/concrete/history.yaml')
         sm = io.import_from_yaml(content)
         self.assertTrue(sm.validate())
 
     def test_actions(self):
         content = open('../examples/simple/actions.yaml')
+        sm = io.import_from_yaml(content)
+        self.assertTrue(sm.validate())
+
+    def test_elevator(self):
+        content = open('../examples/concrete/elevator.yaml')
         sm = io.import_from_yaml(content)
         self.assertTrue(sm.validate())
 
@@ -32,7 +37,7 @@ class ExportToDictTests(unittest.TestCase):
         io.export_to_dict(io.import_from_yaml(open('../examples/simple/composite.yaml')))
 
     def test_history(self):
-        io.export_to_dict(io.import_from_yaml(open('../examples/simple/history.yaml')))
+        io.export_to_dict(io.import_from_yaml(open('../examples/concrete/history.yaml')))
 
     def test_actions(self):
         io.export_to_dict(io.import_from_yaml(open('../examples/simple/actions.yaml')))
