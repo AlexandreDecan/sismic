@@ -31,9 +31,9 @@ class PythonEvaluatorTests(unittest.TestCase):
         self.assertEqual(self.e.context['x'], 2)
 
     def test_execution_fire_event(self):
-        events = self.e.execute_action('fire_event(Event(\'test\'))')
+        events = self.e.execute_action('send(Event(\'test\'))')
         self.assertEqual(events, [Event('test')])
 
     def test_execution_fire_events(self):
-        events = self.e.execute_action('fire_event(Event(\'test\'))\nfire_event(Event(\'test2\'))')
+        events = self.e.execute_action('send(Event(\'test\'))\nsend(Event(\'test2\'))')
         self.assertEqual(events, [Event('test'), Event('test2')])

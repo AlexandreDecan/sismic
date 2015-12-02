@@ -58,7 +58,7 @@ class MacroStep:
 class Simulator:
     def __init__(self, sm: statemachine.StateMachine, evaluator: Evaluator=None):
         """
-        A simulator that interprets a state machine according to a specific semantic.
+        A discrete simulator that interprets a state machine according to a semantic close to SCXML.
         :param sm: state machine to interpret
         :param evaluator: Code evaluator (optional)
         """

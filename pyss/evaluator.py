@@ -44,7 +44,7 @@ class PythonEvaluator(Evaluator):
     Evaluator that interprets Python code.
 
     An initial context can be provided, as a dictionary (will be used as __locals__).
-    This context will be updated with __builtins__, Event and with fire_event, a function that
+    This context will be updated with __builtins__, Event and with send(), a function that
     receive an Event instance that will be fired on the state machine.
 
     When evaluate_condition or execute_action is called with an Event, this event
@@ -57,14 +57,14 @@ class PythonEvaluator(Evaluator):
         """
         self.context = {
             'Event': Event,
-            'fire_event': self._fire_event
+            'send': self._send_event
         }
         if initial_context:
             self.context.update(initial_context)
 
         self.events = []  # List of events that need to be fired
 
-    def _fire_event(self, event: Event):
+    def _send_event(self, event: Event):
         self.events.append(event)
 
     def evaluate_condition(self, condition: str, event: Event=None):
