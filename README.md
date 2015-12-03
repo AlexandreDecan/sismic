@@ -96,6 +96,42 @@ Python >=3.4 is required, so we suggest you to test this package in a virtual en
  - `examples` currently contains several statecharts in YAML.
 
 
+PySS is expected to be imported as a Python module, but it also provides a command-line
+interface, available in `execute.py`.
+
+```
+(shell) python execute.py -h
+usage: execute.py [-h] [--evaluator {python,dummy}] [-v]
+                  [--events [EVENTS [EVENTS ...]]]
+                  infile
+
+positional arguments:
+  infile                A YAML file describing a statechart
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --evaluator {python,dummy}
+                        Evaluator to use for code
+  -v                    Level of details, -v shows configurations, -vv shows
+                        events, -vvv shows transitions
+  --events [EVENTS [EVENTS ...]]
+                        A list of event names
+```
+
+An example of a call:
+```
+(shell) python execute.py examples/concrete/history.yaml --evaluator=dummy --events next pause continue next pause stop -v
+Initial configuration: ['s1', 'loop']
+-- Configuration: ['s2', 'loop']
+-- Configuration: ['pause']
+-- Configuration: ['s2', 'loop']
+-- Configuration: ['s3', 'loop']
+-- Configuration: ['pause']
+-- Configuration: ['stop']
+Final: True
+
+```
+
 ## Credits and license
 
 Under version 3 of the GNU General Public License.
