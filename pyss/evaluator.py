@@ -1,4 +1,4 @@
-from pyss.model import Event
+from .model import Event
 
 
 class Evaluator:

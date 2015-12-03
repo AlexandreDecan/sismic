@@ -1,4 +1,5 @@
-from pyss.model import Event
-from pyss.simulator import MicroStep, Simulator
-from pyss.evaluator import DummyEvaluator, PythonEvaluator
-from pyss.io import import_from_yaml
+from .model import Event
+from .simulator import MicroStep, Simulator
+from .evaluator import DummyEvaluator, PythonEvaluator
+from .io import import_from_yaml
+

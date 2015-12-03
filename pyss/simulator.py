@@ -1,6 +1,6 @@
 from collections import deque
-from pyss import model
-from pyss.evaluator import Evaluator, DummyEvaluator
+from . import model
+from .evaluator import Evaluator, DummyEvaluator
 
 
 class MicroStep:

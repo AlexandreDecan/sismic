@@ -1,7 +1,7 @@
 import yaml
 from collections import OrderedDict
-from pyss.model import Event, Transition, StateChart, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
-from pyss.model import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
+from .model import Event, Transition, StateChart, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
+from .model import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 
 
 def import_from_yaml(data) -> StateChart:
