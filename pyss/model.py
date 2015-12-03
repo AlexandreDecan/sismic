@@ -171,9 +171,9 @@ class StateChart(object):
         self.name = name
         self.initial = initial
         self.on_entry = on_entry
-        self.states = {}  # name -> State object
+        self._states = {}  # name -> State object
+        self._parent = {}  # name -> parent.name
         self.transitions = []  # list of Transition objects
-        self.parent = {}  # name -> parent.name
         self.children = []
 
     def register_state(self, state: StateMixin, parent: str):
@@ -182,13 +182,13 @@ class StateChart(object):
         :param state: instance of State to add
         :param parent: name of parent state
         """
-        self.states[state.name] = state
-        self.parent[state.name] = parent.name if isinstance(parent, StateMixin) else parent
+        self._states[state.name] = state
+        self._parent[state.name] = parent.name if isinstance(parent, StateMixin) else parent
 
         # Register on parent state
-        parent_state = self.states.get(self.parent[state.name], None)
+        parent_state = self._states.get(self._parent[state.name], None)
         if parent_state is not None:
-            self.states[self.parent[state.name]].add_child(state.name)
+            self._states[self._parent[state.name]].add_child(state.name)
         else:
             # ... or on top-level state (self!)
             self.children.append(state.name)
@@ -199,10 +199,24 @@ class StateChart(object):
         :param transition: instance of Transition
         """
         self.transitions.append(transition)
-        self.states[transition.from_state].add_transition(transition)
+        self._states[transition.from_state].add_transition(transition)
 
-    def __repr__(self):
-        return 'State machine: {}'.format(self.name)
+    @property
+    def states(self):
+        """
+        A dictionary that associates a StateMixin instance to a state name
+        """
+        return self._states
+
+    @property
+    def parent(self):
+        """
+        A dictionary that associates a parent name state to a (child) state name
+        Return the name of the parent of given state name
+        :param name: Name of a child state
+        :return: name of the parent state, or None if state has no parent
+        """
+        return self._parent[name]
 
     @lru_cache()
     def ancestors_for(self, state: str) -> list:
@@ -211,10 +225,10 @@ class StateChart(object):
         :return: ancestors, in decreasing depth
         """
         ancestors = []
-        parent = self.parent[state]
+        parent = self._parent[state]
         while parent:
             ancestors.append(parent)
-            parent = self.parent[parent]
+            parent = self._parent[parent]
         return ancestors
 
     @lru_cache()
@@ -227,7 +241,7 @@ class StateChart(object):
         states_to_consider = [state]
         while states_to_consider:
             state = states_to_consider.pop(0)
-            state = self.states[state]
+            state = self._states[state]
             if isinstance(state, CompositeStateMixin):
                 for child in state.children:
                     states_to_consider.append(child)
@@ -293,24 +307,27 @@ class StateChart(object):
         """
         # C1 & C6
         for transition in self.transitions:
-            if not(transition.from_state in self.states and (not transition.to_state or transition.to_state in self.states)):
+            if not(transition.from_state in self._states and (not transition.to_state or transition.to_state in self._states)):
                 raise ValueError('Transition {} refers to an unknown state'.format(transition))
             if not transition.event and not transition.guard and not transition.to_state:
                 raise ValueError('Transition {} is an internal, eventless and guardless transition.'.format(transition))
 
-        for name, state in self.states.items():
+        for name, state in self._states.items():
             if isinstance(state, HistoryState):  # C2 & C3
-                if not isinstance(self.states[self.parent[name]], CompoundState):
+                if not isinstance(self._states[self._parent[name]], CompoundState):
                     raise ValueError('History state {} can only be defined in a compound (non-orthogonal) states'.format(state))
-                if state.initial and not (self.parent[state.initial] == self.parent[name]):
-                    raise ValueError('Initial memory of {} should refer to a child of {}'.format(state, self.parent[name]))
+                if state.initial and not (self._parent[state.initial] == self._parent[name]):
+                    raise ValueError('Initial memory of {} should refer to a child of {}'.format(state, self._parent[name]))
 
             if isinstance(state, CompositeStateMixin):  # C5
                 if len(state.children) <= 0:
                     raise ValueError('Composite state {} should have at least one child'.format(state))
 
             if isinstance(state, CompoundState):  # C4
-                if self.parent[name] and state.initial and not (self.parent[state.initial] == name):
+                if self._parent[name] and state.initial and not (self._parent[state.initial] == name):
                     raise ValueError('Initial state of {} should refer to one of its children'.format(state))
 
         return True
+
+    def __repr__(self):
+        return 'State machine: {}'.format(self.name)

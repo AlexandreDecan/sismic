@@ -118,7 +118,7 @@ class Simulator:
             return False
 
         for state in self._statechart.leaf_for(list(self._configuration)):
-            if not isinstance(self._statechart.states[state], model.FinalState):
+            if not isinstance(self._statechart._states[state], model.FinalState):
                 return True
         return False
 
@@ -226,6 +226,7 @@ class Simulator:
         given event (or eventless transition if event is None).
         :param event: Event to consider (or None)
         :return: A MicroStep instance or None
+        :raise: a Warning in case of non determinism
         """
         transitions = self._actionable_transitions(event)
 
