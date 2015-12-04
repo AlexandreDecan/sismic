@@ -23,7 +23,7 @@ We expect to support the following features soon:
 
 
 Example of a YAML definition of a state chart for an elevator:
-```
+```yaml
 statechart:
   name: Elevator
   initial: active
@@ -146,7 +146,7 @@ The documentation is in a work-in-progress state.
 
 Statecharts can be defined using a YAML format.
 The root of the YAML file should declare a statechart:
-```
+```yaml
 statechart:
   name: Name of this statechart
   initial: name of the initial state
@@ -154,7 +154,7 @@ statechart:
 
 The `name` and the `initial` state are mandatory. 
 You can declare code to execute on the initialization of the statechart using `on entry`, as follows:
-```
+```yaml
 statechart:
   name: with code
   initial: s1
@@ -162,7 +162,7 @@ statechart:
 ```
 
 Code can be written on multiple lines: 
-```
+```yaml
 on entry: |
   x = 1
   y = 2
@@ -171,7 +171,7 @@ on entry: |
 A statechart has to declare a (nonempty) list of states using `states`.
 Each state consist of at least a `name`. Depending on the state type, several fields can be declared.
 
-```
+```yaml
 statemachine:
   name: with state
   initial: s1
@@ -181,7 +181,7 @@ statemachine:
 
 For each state, it is possible to specify the code that has to be executed when entering and leaving the
 state using `on entry` and `on exit` as follows:
-```
+```yaml
 - name: s1
   on entry: x += 1
   on exit: |
@@ -192,7 +192,7 @@ state using `on entry` and `on exit` as follows:
 Final state simply declares a `type: final` property. 
 History state simply declares a `type: history` property. Default semantic is shallow history. 
 For a deep history semantic, add a `deep: True` property. Exemple:
-```
+```yaml
 - name: s1
 - name: history state
   type: history
@@ -202,7 +202,7 @@ For a deep history semantic, add a `deep: True` property. Exemple:
 ```
 
 An history state can optionally define an initial state using `initial`, for e.g.:
-```
+```yaml
 - name: history state
   type: history
   initial: s1
@@ -212,7 +212,7 @@ substate and will be used the first time the history state is reached if it has 
 
 Except final states and history states, states can contain nested states.
 Such a state is a compound state or a region, we do not make any difference between those two concepts.
-```
+```yaml
 - name: compound state
   states: 
     - name: nested state 1
@@ -223,7 +223,7 @@ Such a state is a compound state or a region, we do not make any difference betw
 
 Orthogonal states (sometimes referred as parallel states) must be with `parallel states` instead of `states`.
 For example, the following statechart declares two concurrent processes:
-```
+```yaml
 statechart:
   name: Concurrent processes state machine
   initial: processes
@@ -239,7 +239,7 @@ illustrated in the previous example. In other words, it is not allowed to define
 instead of `states` in this previous example.
  
 Simple states, compound states and parallel states can declare transitions using `transitions`:
-```
+```yaml
 - name: state with transitions
   transitions: 
     - target: other state
@@ -248,7 +248,7 @@ Simple states, compound states and parallel states can declare transitions using
 A transition can define a `target` (name of the target state), a `guard` (a Boolean expression
 that will be evaluated), an `event` (name of the event) and an `action` (code that will be executed if the
 transition is processed). All those fields are optional. A full example of a transition:
-```
+```yaml
 - name: state with a transition
   transitions: 
     - target: other state
@@ -297,7 +297,7 @@ Such an instance relies on the concept of `context`, which is a dictionary-like 
 that are exposed to the pieces of code of the statechart (ie. override `__locals__`).
 
 As an example, consider the following partial statechart definition.
-```
+```yaml
 statechar:
   # ...
   on entry: x = 1
@@ -310,10 +310,10 @@ When *s1* is entered, the code will be evaluated with this context.
 After the execution of `x += 1`, the context will contain `{'x': 1}`.
 
 When a `PythonEvaluator` instance is initialized, a prepopulated context can be specified:
-```
->>> import math as my_favorite_module
-...
->>> evaluator = PythonEvaluator({'x': 1, 'math': my_favorite_module})
+```python
+import math as my_favorite_module
+# ...
+evaluator = PythonEvaluator({'x': 1, 'math': my_favorite_module})
 ```
 
 By default, the context will expose an `Event` class (from `model.Event`) and a `send` function, that can be used
@@ -340,7 +340,7 @@ The main methods of a simulator instance are:
  - Property `running`: return `True` if and only if the statechart is running AND is not in a final configuration.
  
 Example:
-```
+```python
 simulator = Simulator(my_statechart)
 simulator.start()
 # We are now in a stable initial state
@@ -349,7 +349,7 @@ simulator.execute()  # Will process the event if no eventless transitions are fo
 ```
 
 For convenience, `send` returns `self` and thus can be chained:
-```
+```python
 simulator.send(Event('click')).send(Event('click')).execute()
 ```
 
@@ -358,13 +358,13 @@ In this example, the second *click* event is not processed.
 
 To process all events *at once*, repeatedly call `execute()` until it returns a `None` value.
 For instance:
-```
+```python
 while simulator.execute():
   pass
 ```
 
 As a shortcut, a `Simulator` instance provides an iterator:
-```
+```python
 for step in simulator: 
   assert isinstance(step, MacroStep)
 assert simulator.execute() == None
