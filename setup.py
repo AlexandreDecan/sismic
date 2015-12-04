@@ -5,6 +5,9 @@ from os import path
 
 import pyss
 
+# python setup.py register
+# python setup.py sdist bdist_wheel upload
+
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file

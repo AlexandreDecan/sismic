@@ -10,6 +10,9 @@ Python Statechart Simulator for Python >=3.4
 .. |Coverage Status| image:: https://coveralls.io/repos/AlexandreDecan/PySS/badge.svg?branch=master&service=github
    :target: https://coveralls.io/github/AlexandreDecan/PySS?branch=master
 
+PySS on `GitHub <https://github.com/AlexandreDecan/PySS>`__ and on
+`PyPI <https://pypi.python.org/pypi/PySS>`__.
+
 Overview
 --------
 

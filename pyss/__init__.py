@@ -5,7 +5,7 @@ from .format import import_from_yaml
 
 
 __description__ = 'Python Statechart Simulator'
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 __url__ = 'https://github.com/AlexandreDecan/PySS/'
 __author__ = 'Alexandre Decan'
 __email__ = 'alexandre.decan@lexpage.net'
