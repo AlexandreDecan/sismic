@@ -21,6 +21,12 @@ class Event:
         else:
             return 'Event({})'.format(self.name)
 
+    def __str__(self):
+        if self.data:
+            return '{} (data={})'.format(self.name, self.data)
+        else:
+            return self.name
+
 
 class Transition(object):
     """
@@ -46,6 +52,11 @@ class Transition(object):
 
     def __repr__(self):
         return 'Transition({0}, {2}, {1})'.format(self.from_state, self.to_state, self.event)
+
+    def __str__(self):
+        to_state = self.to_state if self.to_state else '['+self.from_state+']'
+        event = '+' + self.event.name if self.event else ''
+        return self.from_state + event + ' -> ' + to_state
 
 
 class StateMixin:

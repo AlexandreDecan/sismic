@@ -3,41 +3,13 @@ from .simulator import MicroStep, Simulator
 from .evaluator import DummyEvaluator, PythonEvaluator
 from .format import import_from_yaml
 
+
 __description__ = 'Python Statechart Simulator'
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 __url__ = 'https://github.com/AlexandreDecan/PySS/'
 __author__ = 'Alexandre Decan'
 __email__ = 'alexandre.decan@lexpage.net'
 __licence__ = 'LGPL3'
-
-
-def execute_cli(infile, evaluator, verbosity, events):
-    output = []
-    sc = import_from_yaml(infile)
-    evaluator = PythonEvaluator() if evaluator == 'python' else DummyEvaluator()
-    simulator = Simulator(sc, evaluator)
-
-    if verbosity >= 1:
-        output.append('Initial configuration: ' + str(simulator.configuration) + '\n')
-
-    for event in events:
-        event = Event(event)
-        simulator.send(event)
-        if verbosity >= 2:
-            output.append('Event sent: ' + str(event) + '\n')
-
-    for step in simulator:
-        if verbosity >= 1:
-            output.append('-- ')
-        if verbosity >= 2:
-            output.append('Event consumed: ' + str(step.event) + '\n')
-        if verbosity >= 3:
-            output.append('Transition: ' + str(step.transition) + '\n')
-        if verbosity >= 1:
-            output.append('Configuration: ' + str(simulator.configuration) + '\n')
-
-    output.append('Final: {}'.format(not simulator.running) + '\n')
-    return output
 
 
 def main():  # pragma: no cover
@@ -48,18 +20,50 @@ def main():  # pragma: no cover
     parser.add_argument('infile',
                         type=argparse.FileType('r'),
                         help='A YAML file describing a statechart')
-    parser.add_argument('--evaluator',
-                        default='dummy',
-                        help='Evaluator to use for code',
-                        choices=['python', 'dummy'])
-    parser.add_argument('-v',
-                        help='Level of details, -v ads configurations, -vv adds events, -vvv adds transitions',
+    parser.add_argument('--python',
+                        action='store_true',
+                        help='use Python to execute and evaluate the actions and conditions.')
+    parser.add_argument('-v', '--verbosity',
+                        help='set output verbosity: -v displays transitions, -vv displays events and configurations, and -vvv displays states',
                         default=0,
                         action='count')
     parser.add_argument('--events',
-                        help='A list of event names',
+                        help='send events to the statechart simulation',
                         nargs='*',
+                        metavar='EVENT',
                         default=[])
 
     args = parser.parse_args()
-    print(''.join(execute_cli(args.infile, args.evaluator, args.v, args.events)))
+    print(_execute_cli(args))
+
+
+def _execute_cli(args):
+    import io
+    s = io.StringIO()
+
+    sc = import_from_yaml(args.infile)
+    simulator = Simulator(sc, PythonEvaluator() if args.python else DummyEvaluator())
+
+    if args.verbosity >= 1:
+        print('Initial configuration: ' + ', '.join(simulator.configuration), file=s)
+
+    for event in args.events:
+        simulator.send(Event(event))
+    if args.verbosity >= 2:
+        print('Events sent: ' + ', '.join(args.events), file=s)
+
+    for i, step in enumerate(simulator):
+        if args.verbosity >= 1:
+            print('Step {} - '.format(i+1), file=s, end='')
+        if args.verbosity >= 2:
+            print('Considered event: {}'.format(step.event), file=s)
+        if args.verbosity >= 1:
+           print('Transition: ' + str(step.transition), file=s)
+        if args.verbosity >= 3:
+            print('Exited states: ' + ', '.join(step.exited_states), file=s)
+            print('Entered states: ' + ', '.join(step.entered_states), file=s)
+        if args.verbosity >= 2:
+            print('Configuration: ' + ', '.join(simulator.configuration), file=s)
+
+    print('Final: {}'.format(not simulator.running), file=s)
+    return s.getvalue()
