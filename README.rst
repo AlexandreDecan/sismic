@@ -110,56 +110,17 @@ to test this package in a virtual environment:
 4. Install dependencies: `pip install -r requirements.txt`
 5. Test PySS: `python -m unittest discover`
 
-PySS is expected to be imported as a Python module, but it also provides
-a command-line interface. The CLI can be used by calling the ``pyss``
-module (``python -m pyss``) or, if PySS is installed on your system
-(e.g. using ``pip``), by directly calling ``pyss`` in your shell
-(``pyss -h``).
-
-::
-
-    (shell) pyss -h
-    usage: execute.py [-h] [--evaluator {python,dummy}] [-v]
-                      [--events [EVENTS [EVENTS ...]]]
-                      infile
-
-    positional arguments:
-      infile                A YAML file describing a statechart
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      --evaluator {python,dummy}
-                            Evaluator to use for code
-      -v                    Level of details, -v shows configurations, -vv shows
-                            events, -vvv shows transitions
-      --events [EVENTS [EVENTS ...]]
-                            A list of event names
-
-An example of a call:
-
-::
-
-    (shell) pyss examples/concrete/history.yaml --evaluator=dummy --events next pause continue next pause stop -v
-    Initial configuration: ['s1', 'loop']
-    -- Configuration: ['s2', 'loop']
-    -- Configuration: ['pause']
-    -- Configuration: ['s2', 'loop']
-    -- Configuration: ['s3', 'loop']
-    -- Configuration: ['pause']
-    -- Configuration: ['stop']
-    Final: True
 
 Documentation
 -------------
 
 The documentation is currently in a "work-in-progress" state.
 
-- `YAML format for a statechart <https://github.com/AlexandreDecan/PySS/tree/master/docs/format.md>`__
-  how can I build a statechart using your YAML format?
-- `Code evaluation and code evaluator <https://github.com/AlexandreDecan/PySS/tree/master/docs/evaluation.md>`__
-  how can I evaluate/execute the code that is written in my statechart?
-- `Executing statecharts <https://github.com/AlexandreDecan/PySS/tree/master/docs/exection.md>`__
-  how can I execute a statechart using PySS?
+- `Create a statechart using YAML format <https://github.com/AlexandreDecan/PySS/tree/master/docs/format.md>`__
+- `Use the command-line interface to execute statechart <https://github.com/AlexandreDecan/PySS/tree/master/docs/cli.md>`__
+- `Use PySS as a module to execute statechart <https://github.com/AlexandreDecan/PySS/tree/master/docs/exection.md>`__
+- `Evaluate and execute the code contained in statecharts <https://github.com/AlexandreDecan/PySS/tree/master/docs/evaluation.md>`__
+
 
 Credits
 -------

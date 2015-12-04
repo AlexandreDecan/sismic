@@ -20,12 +20,12 @@ class SimulatorTest(unittest.TestCase):
 
         simulator.start()
         self.assertEqual(simulator.configuration, ['s1'])
-        simulator.execute()  # Should do nothing!
+        simulator.execute_once()  # Should do nothing!
         self.assertEqual(simulator.configuration, ['s1'])
         simulator.send(Event('goto s2'))
-        simulator.execute()
+        simulator.execute_once()
         self.assertEqual(simulator.configuration, ['s2'])
-        simulator.execute()
+        simulator.execute_once()
         self.assertEqual(simulator.configuration, ['s3'])
 
     def test_simple_final(self):
@@ -34,7 +34,7 @@ class SimulatorTest(unittest.TestCase):
         simulator.send(Event('goto s2'))
         simulator.send(Event('goto final'))
         simulator.start()
-        while simulator.execute():
+        while simulator.execute_once():
             pass
         self.assertEqual(simulator.configuration, ['final'])
         self.assertFalse(simulator.running)
@@ -55,25 +55,25 @@ class SimulatorTest(unittest.TestCase):
         evaluator = PythonEvaluator(initial_context={'print': lambda x: None})
         simulator = Simulator(sc, evaluator)
         with self.assertRaises(Exception):
-            simulator.execute()
+            simulator.execute_once()
 
         simulator.start()
         self.assertEqual(len(simulator.configuration), 5)
 
         simulator.send(Event('floorSelected', {'floor': 4}))
-        simulator.execute()
+        simulator.execute_once()
         self.assertEqual(evaluator.context['destination'], 4)
 
-        simulator.execute()
+        simulator.execute_once()
         self.assertTrue('doorsClosed' in simulator.configuration)
 
-        while simulator.execute():
+        while simulator.execute_once():
             pass
         self.assertTrue('doorsOpen' in simulator.configuration)
         self.assertEqual(simulator._evaluator.context['current'], 4)
 
         simulator.send(Event('after10s'))
-        while simulator.execute():
+        while simulator.execute_once():
             pass
         self.assertTrue('doorsOpen' in simulator.configuration)
         self.assertEqual(simulator._evaluator.context['current'], 0)
@@ -83,26 +83,26 @@ class SimulatorTest(unittest.TestCase):
         simulator = Simulator(sc)
         simulator.start()
         with self.assertRaises(Warning):
-            simulator.execute()
+            simulator.execute_once()
 
     def test_history(self):
         sc = format.import_from_yaml(open('examples/concrete/history.yaml'))
         simulator = Simulator(sc)
         simulator.start()
         self.assertEqual(sorted(simulator.configuration), ['loop', 's1'])
-        simulator.send(Event('stop')).execute()
+        simulator.send(Event('stop')).execute_once()
         self.assertEqual(sorted(simulator.configuration), ['loop', 's1'])
-        simulator.send(Event('next')).execute()
+        simulator.send(Event('next')).execute_once()
         self.assertEqual(sorted(simulator.configuration), ['loop', 's2'])
-        simulator.send(Event('pause')).execute()
+        simulator.send(Event('pause')).execute_once()
         self.assertEqual(sorted(simulator.configuration), ['pause'])
-        simulator.send(Event('continue')).execute()
+        simulator.send(Event('continue')).execute_once()
         self.assertEqual(sorted(simulator.configuration), ['loop', 's2'])
-        simulator.send(Event('next')).execute()
-        simulator.send(Event('next')).execute()
+        simulator.send(Event('next')).execute_once()
+        simulator.send(Event('next')).execute_once()
         self.assertEqual(sorted(simulator.configuration), ['loop', 's1'])
-        simulator.send(Event('pause')).execute()
-        simulator.send(Event('stop')).execute()
+        simulator.send(Event('pause')).execute_once()
+        simulator.send(Event('stop')).execute_once()
         self.assertFalse(simulator.running)
 
     def test_history_from_child(self):
@@ -112,12 +112,10 @@ class SimulatorTest(unittest.TestCase):
         simulator.send(Event('next1'))
         simulator.send(Event('next2'))
         simulator.send(Event('error1'))
-        for step in simulator:
-            pass
+        simulator.execute()
         self.assertEqual(simulator.configuration, ['pause'])
         simulator.send(Event('continue'))
-        for step in simulator:
-            pass
+        simulator.execute()
         self.assertEqual(sorted(simulator.configuration), ['active', 'concurrent_processes', 'process_1',
                                                            'process_2', 's12', 's22'])
 
@@ -127,13 +125,13 @@ class SimulatorTest(unittest.TestCase):
         simulator.start()
         base_states = ['active', 'concurrent_processes', 'process_1', 'process_2']
         self.assertEqual(sorted(simulator.configuration), base_states + ['s11', 's21'])
-        simulator.send(Event('next1')).execute()
-        simulator.send(Event('next2')).execute()
+        simulator.send(Event('next1')).execute_once()
+        simulator.send(Event('next2')).execute_once()
         self.assertEqual(sorted(simulator.configuration), base_states + ['s12', 's22'])
-        simulator.send(Event('pause')).execute()
+        simulator.send(Event('pause')).execute_once()
         self.assertEqual(sorted(simulator.configuration), ['pause'])
-        simulator.send(Event('continue')).execute()
+        simulator.send(Event('continue')).execute_once()
         self.assertEqual(sorted(simulator.configuration), base_states + ['s12', 's22'])
-        simulator.send(Event('next1')).execute()
-        simulator.send(Event('next2')).execute()
+        simulator.send(Event('next1')).execute_once()
+        simulator.send(Event('next2')).execute_once()
         self.assertFalse(simulator.running)

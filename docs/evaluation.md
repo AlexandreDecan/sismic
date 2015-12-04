@@ -1,10 +1,10 @@
-# Code evaluation and code evaluator
+# Evaluate and execute the code contained in statecharts
 
 A statechart can write code to be executed under some circumstances.
 For example, the `on entry` property on a `statechart`, `guard` or `action` on a transition or the
 `on entry` and `on exit` property for a state.
 
-In `pyss`, these pieces of code can be evaluated and executed by `Evaluator` instances.
+In PySS, these pieces of code can be evaluated and executed by `Evaluator` instances.
 An `Evaluator` must provide two methods:
  - A `evaluate_condition(condition, event)` method that takes a condition (a one-line string containing some code)
  and an `Event` instance (which is essentially a `name` and a dictionary `data`). This methods should return either `True` or `False`.
@@ -12,7 +12,7 @@ An `Evaluator` must provide two methods:
  instance. This method should return a list of `Event` instances that will be treated as internal events
  (and thus that have priority).
 
-By default, `pyss` provides two built-in `Evaluator` subclasses:
+By default, PySS provides two built-in `Evaluator` subclasses:
  - A `DummyEvaluator` that always evaluate a guard to `True` and silently ignores `action`, `on entry` and `on exit`.
  - A `PythonEvaluator` that brings Python into our statecharts.
 

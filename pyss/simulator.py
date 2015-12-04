@@ -125,7 +125,7 @@ class Simulator:
     def __iter__(self):
         """
         Return an iterator for current execution.
-        It corresponds to successive call to execute().
+        It corresponds to successive call to execute_once().
         You should start() this simulator first!
         Event can be added using iterator.send().
         """
@@ -133,13 +133,20 @@ class Simulator:
         return self
 
     def __next__(self):
-        steps = self.execute()
+        steps = self.execute_once()
         if steps:
             return steps
         else:
             raise StopIteration
 
-    def execute(self) -> MacroStep:
+    def execute(self) -> list:
+        """
+        Repeatedly call self.execute_once() until a stable situation is reached (ie. MacroStep is None).
+        :return: A list of MacroStep
+        """
+        return [step for step in self]
+
+    def execute_once(self) -> MacroStep:
         """
         Processes a transition based on the oldest queued event (or no event if an eventless transition
         can be processed), and stabilizes the simulator in a stable situation (ie. processes initial states,

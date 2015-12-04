@@ -1,9 +1,9 @@
-# YAML format for a statechart
+# Create a statechart using YAML format
 
 Statecharts can be defined using a YAML format.
 
 A YAML definition of a statechart can be easily imported to a `StateChart` instance.
-The module `pyss.io` provides a convenient loader `import_from_yaml(data)` which takes a textual YAML definition
+The module `pyss.format` provides a convenient loader `import_from_yaml(data)` which takes a textual YAML definition
 of a statechart.
 
 Although the parser is quite robut and should warn about most syntaxic problems, a `StateChart` instance has a

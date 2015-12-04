@@ -20,7 +20,7 @@ class Evaluator:
     def execute_action(self, action: str, event: Event=None) -> list:
         """
         Execute given action and return a (possibly empty) list of Event to fire.
-        :param action: code (as string) to execute
+        :param action: code (as string) to execute_once
         :param event: event (if action is a transition action)
         :return: list of events to fire.
         """
@@ -82,7 +82,7 @@ class PythonEvaluator(Evaluator):
         Execute given action using `exec()` and thus accepts action defining on multiple
         lines and using statements.
         Return a list of Event's to be considered by the state machine.
-        :param action: code (as string) to execute
+        :param action: code (as string) to execute_once
         :param event: Event instance (in case of transition action).
         :return: a list of Event instances
         """

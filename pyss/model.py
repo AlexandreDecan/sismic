@@ -166,7 +166,7 @@ class StateChart(object):
         Initialize a statechart.
         :param name: Name of this statechart
         :param initial: Initial state
-        :param on_entry: Code to execute before the execution
+        :param on_entry: Code to execute_once before the execution
         """
         self.name = name
         self.initial = initial

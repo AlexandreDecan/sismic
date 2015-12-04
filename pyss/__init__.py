@@ -3,9 +3,8 @@ from .simulator import MicroStep, Simulator
 from .evaluator import DummyEvaluator, PythonEvaluator
 from .format import import_from_yaml
 
-
 __description__ = 'Python Statechart Simulator'
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 __url__ = 'https://github.com/AlexandreDecan/PySS/'
 __author__ = 'Alexandre Decan'
 __email__ = 'alexandre.decan@lexpage.net'
@@ -44,8 +43,9 @@ def execute_cli(infile, evaluator, verbosity, events):
 
 def main():  # pragma: no cover
     import argparse
+    description = '{d} v{v} by {a}'.format(d=__description__, v=__version__, a=__author__)
 
-    parser = argparse.ArgumentParser(prog='pyss', description='Python Statechart Simulator v' + __version__)
+    parser = argparse.ArgumentParser(prog='pyss', description=description)
     parser.add_argument('infile',
                         type=argparse.FileType('r'),
                         help='A YAML file describing a statechart')
@@ -64,4 +64,3 @@ def main():  # pragma: no cover
 
     args = parser.parse_args()
     print(''.join(execute_cli(args.infile, args.evaluator, args.v, args.events)))
-
