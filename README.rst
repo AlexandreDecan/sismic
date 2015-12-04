@@ -3,12 +3,8 @@ Python Statechart Simulator
 
 Python Statechart Simulator for Python >=3.4
 
-|Build Status| |Coverage Status|
-
-.. |Build Status| image:: https://travis-ci.org/AlexandreDecan/PySS.svg
-   :target: https://travis-ci.org/AlexandreDecan/PySS
-.. |Coverage Status| image:: https://coveralls.io/repos/AlexandreDecan/PySS/badge.svg?branch=master&service=github
-   :target: https://coveralls.io/github/AlexandreDecan/PySS?branch=master
+.. image:: https://travis-ci.org/AlexandreDecan/PySS.svg :target: https://travis-ci.org/AlexandreDecan/PySS
+.. image:: https://coveralls.io/repos/AlexandreDecan/PySS/badge.svg?branch=master&service=github :target: https://coveralls.io/github/AlexandreDecan/PySS?branch=master
 
 PySS on `GitHub <https://github.com/AlexandreDecan/PySS>`__ and on
 `PyPI <https://pypi.python.org/pypi/PySS>`__.
