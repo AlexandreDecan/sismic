@@ -5,21 +5,16 @@ from pyss.evaluator import PythonEvaluator
 from pyss.model import Event
 
 
-class SimulatorTest(unittest.TestCase):
+class SimulatorSimpleTest(unittest.TestCase):
     def test_init(self):
         sc = format.import_from_yaml(open('examples/simple/simple.yaml'))
         simulator = Simulator(sc)
-        self.assertFalse(simulator.running)
-        steps = simulator.start()
-        self.assertEqual(len(steps), 1)
+        self.assertEqual(simulator.configuration, ['s1'])
         self.assertTrue(simulator.running)
 
-    def test_simple(self):
+    def test_simple_configuration(self):
         sc = format.import_from_yaml(open('examples/simple/simple.yaml'))
         simulator = Simulator(sc)
-
-        simulator.start()
-        self.assertEqual(simulator.configuration, ['s1'])
         simulator.execute_once()  # Should do nothing!
         self.assertEqual(simulator.configuration, ['s1'])
         simulator.send(Event('goto s2'))
@@ -28,110 +23,157 @@ class SimulatorTest(unittest.TestCase):
         simulator.execute_once()
         self.assertEqual(simulator.configuration, ['s3'])
 
+    def test_simple_entered(self):
+        sc = format.import_from_yaml(open('examples/simple/simple.yaml'))
+        simulator = Simulator(sc)
+        simulator.send(Event('goto s2'))
+        self.assertEqual(simulator.execute_once().entered_states, ['s2'])
+        simulator.send(Event('goto final'))
+        self.assertEqual(simulator.execute_once().entered_states, ['s3'])
+        self.assertEqual(simulator.execute_once().entered_states, ['final'])
+        self.assertEqual(simulator.configuration, ['final'])
+
     def test_simple_final(self):
         sc = format.import_from_yaml(open('examples/simple/simple.yaml'))
         simulator = Simulator(sc)
-        simulator.send(Event('goto s2'))
-        simulator.send(Event('goto final'))
-        simulator.start()
-        while simulator.execute_once():
-            pass
-        self.assertEqual(simulator.configuration, ['final'])
+        simulator.send(Event('goto s2')).send(Event('goto final'))
+        simulator.execute()
         self.assertFalse(simulator.running)
 
-    def test_simple_iterator_final(self):
-        sc = format.import_from_yaml(open('examples/simple/simple.yaml'))
-        simulator = Simulator(sc)
-        simulator.send(Event('goto s2'))
-        simulator.send(Event('goto final'))
-        simulator.start()
-        for steps in simulator:
-            pass
-        self.assertEqual(simulator.configuration, ['final'])
-        self.assertFalse(simulator.running)
 
-    def test_elevator(self):
+class SimulatorElevatorTests(unittest.TestCase):
+    def test_init(self):
         sc = format.import_from_yaml(open('examples/concrete/elevator.yaml'))
-        evaluator = PythonEvaluator(initial_context={'print': lambda x: None})
-        simulator = Simulator(sc, evaluator)
-        with self.assertRaises(Exception):
-            simulator.execute_once()
+        simulator = Simulator(sc, PythonEvaluator())
 
-        simulator.start()
         self.assertEqual(len(simulator.configuration), 5)
 
+    def test_floor_selection(self):
+        sc = format.import_from_yaml(open('examples/concrete/elevator.yaml'))
+        simulator = Simulator(sc, PythonEvaluator())
+
+        simulator.send(Event('floorSelected', {'floor': 4})).execute_once()
+        self.assertEqual(simulator._evaluator.context['destination'], 4)
+        simulator.execute_once()
+        self.assertEqual(sorted(simulator.configuration), ['active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'])
+
+    def test_doorsOpen(self):
+        sc = format.import_from_yaml(open('examples/concrete/elevator.yaml'))
+        simulator = Simulator(sc, PythonEvaluator())
+
         simulator.send(Event('floorSelected', {'floor': 4}))
-        simulator.execute_once()
-        self.assertEqual(evaluator.context['destination'], 4)
-
-        simulator.execute_once()
-        self.assertTrue('doorsClosed' in simulator.configuration)
-
-        while simulator.execute_once():
-            pass
-        self.assertTrue('doorsOpen' in simulator.configuration)
+        simulator.execute()
         self.assertEqual(simulator._evaluator.context['current'], 4)
-
         simulator.send(Event('after10s'))
-        while simulator.execute_once():
-            pass
+        simulator.execute()
+
         self.assertTrue('doorsOpen' in simulator.configuration)
         self.assertEqual(simulator._evaluator.context['current'], 0)
 
+
+class SimulatorNonDeterminismTests(unittest.TestCase):
     def test_nondeterminism(self):
         sc = format.import_from_yaml(open('examples/simple/nondeterministic.yaml'))
         simulator = Simulator(sc)
-        simulator.start()
+
         with self.assertRaises(Warning):
             simulator.execute_once()
 
-    def test_history(self):
+
+class SimulatorHistoryTests(unittest.TestCase):
+    def test_init(self):
         sc = format.import_from_yaml(open('examples/concrete/history.yaml'))
         simulator = Simulator(sc)
-        simulator.start()
-        self.assertEqual(sorted(simulator.configuration), ['loop', 's1'])
-        simulator.send(Event('stop')).execute_once()
-        self.assertEqual(sorted(simulator.configuration), ['loop', 's1'])
+
+    def test_memory(self):
+        sc = format.import_from_yaml(open('examples/concrete/history.yaml'))
+        simulator = Simulator(sc)
+
         simulator.send(Event('next')).execute_once()
         self.assertEqual(sorted(simulator.configuration), ['loop', 's2'])
-        simulator.send(Event('pause')).execute_once()
+
+        step = simulator.send(Event('pause')).execute_once()
+        self.assertEqual(step.exited_states, ['s2', 'loop'])
         self.assertEqual(sorted(simulator.configuration), ['pause'])
-        simulator.send(Event('continue')).execute_once()
+
+    def test_resume_memory(self):
+        sc = format.import_from_yaml(open('examples/concrete/history.yaml'))
+        simulator = Simulator(sc)
+
+        simulator.send(Event('next')).send(Event('pause')).send(Event('continue'))
+        steps = simulator.execute()
+        step = steps[-1]
+
+        self.assertEqual(step.entered_states, ['loop', 'loop.H', 's2'])
+        self.assertEqual(step.exited_states, ['pause', 'loop.H'])
         self.assertEqual(sorted(simulator.configuration), ['loop', 's2'])
-        simulator.send(Event('next')).execute_once()
-        simulator.send(Event('next')).execute_once()
+
+    def test_after_memory(self):
+        sc = format.import_from_yaml(open('examples/concrete/history.yaml'))
+        simulator = Simulator(sc)
+
+        simulator.send(Event('next')).send(Event('pause')).send(Event('continue'))
+        simulator.send(Event('next')).send(Event('next'))
+        simulator.execute()
         self.assertEqual(sorted(simulator.configuration), ['loop', 's1'])
-        simulator.send(Event('pause')).execute_once()
-        simulator.send(Event('stop')).execute_once()
+
+        simulator.send(Event('pause')).send(Event('stop'))
+        simulator.execute()
         self.assertFalse(simulator.running)
 
-    def test_history_from_child(self):
+
+class SimulatorDeepHistoryTests(unittest.TestCase):
+    def test_deep_memory(self):
         sc = format.import_from_yaml(open('examples/concrete/deep_history.yaml'))
         simulator = Simulator(sc)
-        simulator.start()
-        simulator.send(Event('next1'))
-        simulator.send(Event('next2'))
+
+        simulator.send(Event('next1')).send(Event('next2'))
+        simulator.execute()
+        self.assertEqual(sorted(simulator.configuration), ['active', 'concurrent_processes', 'process_1', 'process_2', 's12', 's22'])
+
         simulator.send(Event('error1'))
         simulator.execute()
         self.assertEqual(simulator.configuration, ['pause'])
+        self.assertEqual(sorted(sc.states['active.H*'].memory), ['concurrent_processes', 'process_1', 'process_2', 's12', 's22'])
+
         simulator.send(Event('continue'))
         simulator.execute()
         self.assertEqual(sorted(simulator.configuration), ['active', 'concurrent_processes', 'process_1',
                                                            'process_2', 's12', 's22'])
 
-    def test_deep_history(self):
+    def test_entered_order(self):
         sc = format.import_from_yaml(open('examples/concrete/deep_history.yaml'))
         simulator = Simulator(sc)
-        simulator.start()
-        base_states = ['active', 'concurrent_processes', 'process_1', 'process_2']
-        self.assertEqual(sorted(simulator.configuration), base_states + ['s11', 's21'])
-        simulator.send(Event('next1')).execute_once()
-        simulator.send(Event('next2')).execute_once()
-        self.assertEqual(sorted(simulator.configuration), base_states + ['s12', 's22'])
-        simulator.send(Event('pause')).execute_once()
+
+        simulator.send(Event('next1')).send(Event('next2')).send(Event('pause'))
+        step = simulator.execute()[-1]
+
+        self.assertEqual(step.entered_states, ['pause'])
         self.assertEqual(sorted(simulator.configuration), ['pause'])
-        simulator.send(Event('continue')).execute_once()
-        self.assertEqual(sorted(simulator.configuration), base_states + ['s12', 's22'])
-        simulator.send(Event('next1')).execute_once()
-        simulator.send(Event('next2')).execute_once()
+
+        step = simulator.send(Event('continue')).execute_once()
+        self.assertTrue(step.entered_states.index('active') < step.entered_states.index('active.H*'))
+        self.assertTrue(step.entered_states.index('active.H*') < step.entered_states.index('concurrent_processes'))
+        self.assertTrue(step.entered_states.index('concurrent_processes') < step.entered_states.index('process_1'))
+        self.assertTrue(step.entered_states.index('concurrent_processes') < step.entered_states.index('process_2'))
+        self.assertTrue(step.entered_states.index('process_1') < step.entered_states.index('s12'))
+        self.assertTrue(step.entered_states.index('process_2') < step.entered_states.index('s22'))
+
+        simulator.send(Event('next1')).send(Event('next2')).execute()
+        self.assertFalse(simulator.running)
+
+    def test_exited_order(self):
+        sc = format.import_from_yaml(open('examples/concrete/deep_history.yaml'))
+        simulator = Simulator(sc)
+
+        simulator.send(Event('next1')).send(Event('next2')).send(Event('pause'))
+        step = simulator.execute()[-1]
+
+        self.assertEqual(step.exited_states, ['s12', 's22', 'process_1', 'process_2', 'concurrent_processes', 'active'])
+        self.assertEqual(sorted(simulator.configuration), ['pause'])
+
+        step = simulator.send(Event('continue')).execute_once()
+        self.assertEqual(step.exited_states, ['pause', 'active.H*'])
+
+        simulator.send(Event('next1')).send(Event('next2')).execute()
         self.assertFalse(simulator.running)

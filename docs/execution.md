@@ -6,7 +6,6 @@ If no `Evaluator` instance is specified, a `DummyEvaluator` instance will be use
 
 The main methods of a simulator instance are:
  - `send(event)` takes an `Event` instance that will be added to a FIFO queue of external events.
- - `start()` initializes the simulator to a stable situation (ie. processes initial steps). Return a list of `MicroStep` instances (see below).
  - `execute_once()` processes a transition based on the oldest queued event (or no event if an eventless transition can be processed), and stabilizes
   the simulator in a stable situation (ie. processes initial states, history states, etc.). This method returns an instance of `MacroStep` (see
   below) or `None` if (1) no eventless transition can be processed, (2) there is no event in the event queue.
@@ -18,7 +17,6 @@ The main methods of a simulator instance are:
 Example:
 ```python
 simulator = Simulator(my_statechart)
-simulator.start()
 # We are now in a stable initial state
 simulator.send(Event('click'))  # Send event to the simulator
 simulator.execute_once()  # Will process the event if no eventless transitions are found at first

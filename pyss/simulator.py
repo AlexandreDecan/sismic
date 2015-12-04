@@ -73,7 +73,7 @@ class Simulator:
         self._statechart = statechart
         self._configuration = set()  # Set of active states
         self._events = deque()  # Events queue
-        self._started = False
+        self._start()
 
     @property
     def configuration(self) -> list:
@@ -88,17 +88,13 @@ class Simulator:
         self._events.append(event)
         return self
 
-    def start(self) -> list:
+    def _start(self) -> list:
         """
         Make this statechart runnable:
          - Execute statechart initial code
          - Execute until a stable situation is reached.
         :return A (possibly empty) list of executed MicroStep.
         """
-        if self._started:
-            return []
-
-        # Initialize statechart
         if self._statechart.on_entry:
             self._evaluator.execute_action(self._statechart.on_entry)
 
@@ -106,7 +102,6 @@ class Simulator:
         step = MicroStep(entered_states=[self._statechart.initial])
         self._execute_step(step)
 
-        self._started = True
         return [step] + self._stabilize()
 
     @property
@@ -114,9 +109,6 @@ class Simulator:
         """
         Return True iff statechart is running and not in a final state
         """
-        if not self._started:
-            return False
-
         for state in self._statechart.leaf_for(list(self._configuration)):
             if not isinstance(self._statechart._states[state], model.FinalState):
                 return True
@@ -126,10 +118,8 @@ class Simulator:
         """
         Return an iterator for current execution.
         It corresponds to successive call to execute_once().
-        You should start() this simulator first!
         Event can be added using iterator.send().
         """
-        self.start()
         return self
 
     def __next__(self):
@@ -154,9 +144,6 @@ class Simulator:
         :return: an instance of `MacroStep` or `None` if (1) no eventless transition can be processed,
         (2) there is no event in the event queue.
         """
-        if not self._started:
-            raise Exception('You should start the simulator before running it')
-
         # Try eventless transitions
         main_step = self._transition_step(event=None)  # Explicit is better than implicit
 
@@ -256,21 +243,27 @@ class Simulator:
         from_ancestors = self._statechart.ancestors_for(transition.from_state)
         to_ancestors = self._statechart.ancestors_for(transition.to_state)
 
-        # Exit descendants of the state that is left.
-        exited_states = [state for state in self._statechart.descendants_for(transition.from_state) if state in self._configuration]
-        exited_states.append(transition.from_state)  # Leave state
-        # Leave active ancestors that are not descendant of the new entered state (ie < LCA in the hierarchy)
+        # Exited states
+        exited_states = []
+
+        # last_before_lca is the "highest" ancestor or from_state that is a child of LCA
+        last_before_lca = transition.from_state
         for state in from_ancestors:
             if state == lca:
                 break
-            # Exit descendant states if they are active
-            for descendant in self._statechart.descendants_for(state):
-                if descendant in self._configuration:
-                    exited_states.append(descendant)
-            exited_states.append(state)
-        # Sort states by depth
-        exited_states = sorted(exited_states, key=lambda s: self._statechart.depth_of(s))
+            last_before_lca = state
 
+        # Take all the descendants of this state and list the ones that are active
+        for descendant in self._statechart.descendants_for(last_before_lca)[::-1]:  # Mind the reversed order!
+            # Only leave states that are currently active
+            if descendant in self._configuration:
+                exited_states.append(descendant)
+
+        # Add last_before_lca as it is a child of LCA that must be exited
+        if last_before_lca in self._configuration:
+            exited_states.append(last_before_lca)
+
+        # Entered states
         entered_states = [transition.to_state]
         for state in to_ancestors:
             if state == lca:

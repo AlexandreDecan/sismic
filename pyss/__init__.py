@@ -4,7 +4,7 @@ from .evaluator import DummyEvaluator, PythonEvaluator
 from .format import import_from_yaml
 
 __description__ = 'Python Statechart Simulator'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __url__ = 'https://github.com/AlexandreDecan/PySS/'
 __author__ = 'Alexandre Decan'
 __email__ = 'alexandre.decan@lexpage.net'
@@ -16,7 +16,6 @@ def execute_cli(infile, evaluator, verbosity, events):
     sc = import_from_yaml(infile)
     evaluator = PythonEvaluator() if evaluator == 'python' else DummyEvaluator()
     simulator = Simulator(sc, evaluator)
-    simulator.start()
 
     if verbosity >= 1:
         output.append('Initial configuration: ' + str(simulator.configuration) + '\n')
