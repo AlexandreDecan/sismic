@@ -102,8 +102,12 @@ installs the latest stable version.
 
 You can also install PySS from this repository. Each version of PySS as
 an associated tagged commit. Python >=3.4 is required, so we suggest you
-to test this package in a virtual environment. Dependencies can be
-satisfied using ``pip install -r requirements.txt``
+to test this package in a virtual environment:
+1. Get the tool to create environment: `pip install virtualenv`
+2. Create the environment: `virtualenv -p python3.4 env`
+3. Jump into: `source env/bin/activate`
+4. Install dependencies: `pip install -r requirements.txt`
+5. Test PySS: `python -m unittest discover`
 
 PySS is expected to be imported as a Python module, but it also provides
 a command-line interface. The CLI can be used by calling the ``pyss``
