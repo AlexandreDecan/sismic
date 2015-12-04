@@ -42,7 +42,7 @@ def execute_cli(infile, evaluator, verbosity, events):
     return output
 
 
-def main():
+def main():  # pragma: no cover
     import argparse
 
     parser = argparse.ArgumentParser(prog='pyss', description='Python Statechart Simulator v' + __version__)
