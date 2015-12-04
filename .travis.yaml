@@ -1,0 +1,10 @@
+language: python
+python:
+  - 3.4
+install:
+  - pip install -r requirements.txt
+  - pip install coveralls
+script:
+  - coverage run --source pyss python -m unittest discover
+after_success:
+  - coveralls

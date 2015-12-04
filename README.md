@@ -1,4 +1,4 @@
-# Statechart Simulator for Python
+# Statechart Simulator for Python [![Build Status](https://travis-ci.org/AlexandreDecan/PySS.svg)](https://travis-ci.org/AlexandreDecan/PySS) [![Coverage Status](https://coveralls.io/repos/AlexandreDecan/PySS/badge.svg?branch=master&service=github)](https://coveralls.io/github/AlexandreDecan/PySS?branch=master)
 
 (Currently under development)
 

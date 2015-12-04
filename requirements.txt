@@ -1,2 +1,1 @@
-sortedcontainers
-pyyaml
+pyyaml=3.11

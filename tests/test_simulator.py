@@ -7,7 +7,7 @@ from pyss.model import Event
 
 class SimulatorTest(unittest.TestCase):
     def test_init(self):
-        sc = io.import_from_yaml(open('../examples/simple/simple.yaml'))
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
         simulator = Simulator(sc)
         self.assertFalse(simulator.running)
         steps = simulator.start()
@@ -15,7 +15,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertTrue(simulator.running)
 
     def test_simple(self):
-        sc = io.import_from_yaml(open('../examples/simple/simple.yaml'))
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
         simulator = Simulator(sc)
 
         simulator.start()
@@ -29,7 +29,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertEqual(simulator.configuration, ['s3'])
 
     def test_simple_final(self):
-        sc = io.import_from_yaml(open('../examples/simple/simple.yaml'))
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
         simulator = Simulator(sc)
         simulator.send(Event('goto s2'))
         simulator.send(Event('goto final'))
@@ -40,7 +40,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertFalse(simulator.running)
 
     def test_simple_iterator_final(self):
-        sc = io.import_from_yaml(open('../examples/simple/simple.yaml'))
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
         simulator = Simulator(sc)
         simulator.send(Event('goto s2'))
         simulator.send(Event('goto final'))
@@ -51,7 +51,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertFalse(simulator.running)
 
     def test_elevator(self):
-        sc = io.import_from_yaml(open('../examples/concrete/elevator.yaml'))
+        sc = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
         evaluator = PythonEvaluator()
         simulator = Simulator(sc, evaluator)
         with self.assertRaises(Exception):
@@ -79,14 +79,14 @@ class SimulatorTest(unittest.TestCase):
         self.assertEqual(simulator._evaluator.context['current'], 0)
 
     def test_nondeterminism(self):
-        sc = io.import_from_yaml(open('../examples/simple/nondeterministic.yaml'))
+        sc = io.import_from_yaml(open('examples/simple/nondeterministic.yaml'))
         simulator = Simulator(sc)
         simulator.start()
         with self.assertRaises(Warning):
             simulator.execute()
 
     def test_history(self):
-        sc = io.import_from_yaml(open('../examples/concrete/history.yaml'))
+        sc = io.import_from_yaml(open('examples/concrete/history.yaml'))
         simulator = Simulator(sc)
         simulator.start()
         self.assertEqual(sorted(simulator.configuration), ['loop', 's1'])
@@ -106,7 +106,7 @@ class SimulatorTest(unittest.TestCase):
         self.assertFalse(simulator.running)
 
     def test_deep_history(self):
-        sc = io.import_from_yaml(open('../examples/concrete/deep_history.yaml'))
+        sc = io.import_from_yaml(open('examples/concrete/deep_history.yaml'))
         simulator = Simulator(sc)
         simulator.start()
         base_states = ['active', 'concurrent_processes', 'process_1', 'process_2']
