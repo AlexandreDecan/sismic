@@ -29,6 +29,8 @@ statechart:
                   transitions:
                     - target: s13
                       event: next1
+                    - target: pause
+                      event: error1
                 - name: s13
                   type: final
             - name: process_2
@@ -42,6 +44,8 @@ statechart:
                   transitions:
                     - target: s23
                       event: next2
+                    - target: pause
+                      event: error2
                 - name: s23
                   type: final
     - name: pause

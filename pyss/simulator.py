@@ -249,12 +249,20 @@ class Simulator:
         from_ancestors = self._statechart.ancestors_for(transition.from_state)
         to_ancestors = self._statechart.ancestors_for(transition.to_state)
 
+        # Exit descendants of the state that is left.
         exited_states = [state for state in self._statechart.descendants_for(transition.from_state) if state in self._configuration]
-        exited_states.append(transition.from_state)
+        exited_states.append(transition.from_state)  # Leave state
+        # Leave active ancestors that are not descendant of the new entered state (ie < LCA in the hierarchy)
         for state in from_ancestors:
             if state == lca:
                 break
+            # Exit descendant states if they are active
+            for descendant in self._statechart.descendants_for(state):
+                if descendant in self._configuration:
+                    exited_states.append(descendant)
             exited_states.append(state)
+        # Sort states by depth
+        exited_states = sorted(exited_states, key=lambda s: self._statechart.depth_of(s))
 
         entered_states = [transition.to_state]
         for state in to_ancestors:
@@ -280,7 +288,6 @@ class Simulator:
                     self._events.appendleft(event)
 
         # Deal with history: this only concerns compound states
-        # TODO: History states are currently NOT tested!!
         exited_compound_states = list(filter(lambda s: isinstance(s, model.CompoundState), exited_states))
         for state in exited_compound_states:
             # Look for an HistoryState among its children

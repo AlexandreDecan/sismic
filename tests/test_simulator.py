@@ -105,6 +105,22 @@ class SimulatorTest(unittest.TestCase):
         simulator.send(Event('stop')).execute()
         self.assertFalse(simulator.running)
 
+    def test_history_from_child(self):
+        sc = format.import_from_yaml(open('examples/concrete/deep_history.yaml'))
+        simulator = Simulator(sc)
+        simulator.start()
+        simulator.send(Event('next1'))
+        simulator.send(Event('next2'))
+        simulator.send(Event('error1'))
+        for step in simulator:
+            pass
+        self.assertEqual(simulator.configuration, ['pause'])
+        simulator.send(Event('continue'))
+        for step in simulator:
+            pass
+        self.assertEqual(sorted(simulator.configuration), ['active', 'concurrent_processes', 'process_1',
+                                                           'process_2', 's12', 's22'])
+
     def test_deep_history(self):
         sc = format.import_from_yaml(open('examples/concrete/deep_history.yaml'))
         simulator = Simulator(sc)
