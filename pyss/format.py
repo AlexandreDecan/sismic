@@ -95,13 +95,24 @@ def _state_from_dict(state_d: dict) -> StateMixin:
     return state
 
 
-def export_to_dict(statechart: StateChart) -> dict:
+def export_to_yaml(statechart: StateChart) -> str:
+    """
+    Export given StateChart instance to YAML
+    :param statechart:
+    :return: A textual YAML representation
+    """
+    return yaml.dump(export_to_dict(statechart, ordered=False),
+                     width=1000, default_flow_style=False, default_style='"')
+
+
+def export_to_dict(statechart: StateChart, ordered=True) -> dict:
     """
     Export given StateChart instance to a dict.
     :param statechart: a StateChart instance
+    :param ordered: set to True to use OrderedDict instead
     :return: a dict that can be used in `import_from_dict`
     """
-    d = OrderedDict()
+    d = OrderedDict() if ordered else dict()
     d['name'] = statechart.name
     d['initial'] = statechart.initial
     d['states'] = statechart.children
@@ -112,21 +123,22 @@ def export_to_dict(statechart: StateChart) -> dict:
     while statelist_to_expand:
         statelist = statelist_to_expand.pop()
         for i, state in enumerate(statelist):
-            statelist[i] = _export_element_to_dict(statechart.states[state])
+            statelist[i] = _export_element_to_dict(statechart.states[state], ordered)
             new_statelist = statelist[i].get('states', statelist[i].get('parallel states', []))
             if len(new_statelist) > 0:
                 statelist_to_expand.append(new_statelist)
     return {'statechart': d}
 
 
-def _export_element_to_dict(el) -> dict:
+def _export_element_to_dict(el, ordered=False) -> dict:
     """
     Export an element (State, Transition, etc.) to a dict.
     Is used in `export_to_dict` to generate a global representation.
     :param el: an instance of `model.*`
+    :param ordered: set to True to use OrderedDict instead of dict
     :return: a dict
     """
-    d = OrderedDict()
+    d = OrderedDict() if ordered else dict()
 
     if isinstance(el, Transition):
         if not el.internal:

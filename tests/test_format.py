@@ -29,15 +29,20 @@ class ImportFromYamlTests(unittest.TestCase):
         self.assertTrue(sc.validate())
 
 
-class ExportToDictTests(unittest.TestCase):
+class ExportToDictYAMLTests(unittest.TestCase):
     def test_simple(self):
         format.export_to_dict(format.import_from_yaml(open('examples/simple/simple.yaml')))
+        format.export_to_yaml(format.import_from_yaml(open('examples/simple/simple.yaml')))
 
     def test_composite(self):
         format.export_to_dict(format.import_from_yaml(open('examples/simple/composite.yaml')))
+        format.export_to_yaml(format.import_from_yaml(open('examples/simple/composite.yaml')))
 
     def test_history(self):
         format.export_to_dict(format.import_from_yaml(open('examples/concrete/history.yaml')))
+        format.export_to_yaml(format.import_from_yaml(open('examples/concrete/history.yaml')))
 
     def test_actions(self):
         format.export_to_dict(format.import_from_yaml(open('examples/simple/actions.yaml')))
+        format.export_to_yaml(format.import_from_yaml(open('examples/simple/actions.yaml')))
+

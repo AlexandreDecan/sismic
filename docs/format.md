@@ -4,7 +4,7 @@ Statecharts can be defined using a YAML format.
 
 A YAML definition of a statechart can be easily imported to a `StateChart` instance.
 The module `pyss.format` provides a convenient loader `import_from_yaml(data)` which takes a textual YAML definition
-of a statechart.
+of a statechart. It also provides ways to export statechart to YAML (see 'pyss.format.export_to_yaml').
 
 Although the parser is quite robut and should warn about most syntaxic problems, a `StateChart` instance has a
 `validate()` method performs numerous other checks. This method either return `True` if the statechart *seems* to
