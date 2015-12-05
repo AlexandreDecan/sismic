@@ -105,7 +105,7 @@ installs the latest stable version.
 You can also install PySS from this repository.
 Python >=3.4 is required, so we suggest you to test this package in a virtual environment:
 1. Get the tool to create environment: `pip install virtualenv`
-2. Create the environment: `virtualenv -p python3.4 env`
+2. Create the environment: `virtualenv -p python3.3 env`
 3. Jump into: `source env/bin/activate`
 4. Install dependencies: `pip install -r requirements.txt`
 5. Test PySS: `python -m unittest discover`
