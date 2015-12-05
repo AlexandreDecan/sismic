@@ -1,6 +1,8 @@
 language: python
 python:
+- 3.3
 - 3.4
+- 3.5
 install:
 - pip install -r requirements.txt
 - pip install coveralls
@@ -16,3 +18,4 @@ deploy:
     secure: YGqrSD08YMey9MoNawibQVoYiO2uR4R2lffhkPsV7Mp6xVp1rLuGn1JZQCrn9FjQYBh1OqLsbqivaOzm88TWPzUsbXeVVUi12K4pdejX/A50kDiKkaMLEci/TnxiwXnNBh6QksTRl6u5BoXFBGtyZMJ8EyJ5oG0hUw9BWywbcESQ/kD72eu9z/AkpwPLPUcBKV/Dubz0lz8HZoMTKxrmmqIi6lHZuJgzRfTDnZOPufPV1QXbiL0CsZaTImA0UE2Fi3dRJJT/jqBqYs+pyYqK1SLw8G8MkEpt72DZUAZ1wJyCb/cWHIwvJdpCdeEWxwDr4r1goMeXfvAcOHws0YcYpKNklwTm7Bv8yeeiaC/dCGirfpqQNc4BxmY8HbE//wHBU1RAijVoseCPRMNZke2ePoh299kxd7NzkokLS8v9U5zr02j7vrBUj2sw2t3avRmwHA61fke1NKsB6TezZ7rIgepYd/GUrtwD10H1M+wRtU2KT8Zt+/QVPFmuL3bk+K7+VIxYrfNoQwhpwLAk9bPQvMG2cwJ4FLyvsrPF7e4Q+Z+LzzBS5Nk8OOgo6/fHL0qvy/xrGJBw8RS+ckSjWQW5Z2sR3xFoI2MbdiAruCOLRLkZyUlN0Qpd0M9CM7HZzIOxcr3mvOp3ED65a5t8ht3sKXyp7nYAirlbqC0ec33YGOc=
   on:
     branch: stable
+    python: '3.4'
