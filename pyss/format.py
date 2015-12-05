@@ -127,13 +127,12 @@ def _export_element_to_dict(el) -> dict:
     :return: a dict
     """
     d = OrderedDict()
-    if isinstance(el, Event):
-        d['name'] = el.name
+
     if isinstance(el, Transition):
         if not el.internal:
             d['target'] = el.to_state
         if not el.eventless:
-            d['event'] = _export_element_to_dict(el.event)
+            d['event'] = el.event.name
         if el.guard:
             d['guard'] = el.guard
         if el.action:
