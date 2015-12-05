@@ -1,5 +1,5 @@
 import unittest
-from pyss import _execute_cli
+from pyss import _cli_execute
 
 
 class CommandLineInterfaceTests(unittest.TestCase):
@@ -10,5 +10,5 @@ class CommandLineInterfaceTests(unittest.TestCase):
             verbosity = 3
             python = False
 
-        output = _execute_cli(DataTemp)
+        output = _cli_execute(DataTemp)
         self.assertTrue(len(output) > 0)

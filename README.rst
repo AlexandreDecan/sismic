@@ -25,13 +25,18 @@ execution. In particular, PySS provides:
 
 PySS has a complete support for simple state, composite state,
 orthogonal (parallel) state, initial state, final state, history state
-(including shallow and deep semantics), internal transitions, guarded
+(including shallow and deep semantics), internal transition, guarded
 transition, eventless transition, statechart entry action, state entry
 action, state exit action, transition action, internal and external
 events and parametrized events.
 
-We expect to support the following features soon: - Static visualization
-(export to GraphViz) - Runtime dynamic visualization and manipulation
+We aim to support the following features soon:
+
+- Static visualization (export to GraphViz)
+- Import statecharts from Yakindu
+- Runtime dynamic visualization and manipulation
+
+
 
 Example of a YAML definition of a state chart for an elevator:
 
@@ -99,18 +104,19 @@ More examples are available in ``examples/*.yaml``.
 Installation
 ------------
 
-PySS can be installed using ``pip`` as usual: ``pip install pyss``. This
-installs the latest stable version.
+PySS can be installed using ``pip`` as usual: ``pip install pyss``.
+This will install the latest stable version.
 
-You can also install PySS from this repository.
-Python >=3.4 is required, so we suggest you to test this package in a virtual environment:
+You can also install PySS from this repository by cloning it.
+The development occurs in the `master` branch, the latest stable distributed version is in the `stable` branch.
+
+PySS requires Python >=3.4 but should also work with Python 3.3.
+You can isolate PySS installation by using virtual environments:
 1. Get the tool to create environment: `pip install virtualenv`
-2. Create the environment: `virtualenv -p python3.3 env`
+2. Create the environment: `virtualenv -p python3.4 env`
 3. Jump into: `source env/bin/activate`
 4. Install dependencies: `pip install -r requirements.txt`
 5. Test PySS: `python -m unittest discover`
-
-You can find the latest distributed version in the `stable` branch.
 
 
 Documentation

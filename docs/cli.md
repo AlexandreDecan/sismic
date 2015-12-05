@@ -8,9 +8,24 @@ module (``python -m pyss``) or, if PySS is installed on your system
 ::
 
     (shell) pyss -h
-    usage: pyss [-h] [--python] [-v] [--events [EVENT [EVENT ...]]] infile
+    usage: pyss [-h] {execute} ...
 
-    Python Statechart Simulator v0.3.0 by Alexandre Decan
+    Python Statechart Simulator v0.3.2 by Alexandre Decan
+
+    optional arguments:
+      -h, --help  show this help message and exit
+
+    subcommands:
+      {execute}
+        execute   execute a statechart
+
+## Execute subcommand
+
+
+::
+
+    (shell) pyss execute -h
+    usage: pyss execute [-h] [--python] [-v] [--events [EVENT [EVENT ...]]] infile
 
     positional arguments:
       infile                A YAML file describing a statechart
@@ -19,17 +34,17 @@ module (``python -m pyss``) or, if PySS is installed on your system
       -h, --help            show this help message and exit
       --python              use Python to execute and evaluate the actions and
                             conditions.
-      -v, -vv, -vvv         define the verbosity (1) transitions, (2) events and
-                            configurations, (3) states
+      -v, --verbosity       set output verbosity: -v displays transitions, -vv
+                            displays events and configurations, and -vvv displays
+                            states
       --events [EVENT [EVENT ...]]
                             send events to the statechart simulation
 
 
-An example of a call:
-
+For example:
 ::
 
-    (shell) pyss -vvv  examples/concrete/history.yaml --events next pause
+    (shell) pyss execute -vvv  examples/concrete/history.yaml --events next pause
     Initial configuration: loop, s1
     Events sent: next, pause
     Step 1 - Considered event: next
@@ -43,6 +58,5 @@ An example of a call:
     Entered states: pause
     Configuration: pause
     Final: False
-
 
 The considered statechart is `examples/concrete/history.yaml <https://github.com/AlexandreDecan/PySS/blob/master/examples/concrete/history.yaml>`__.
