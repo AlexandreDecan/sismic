@@ -124,10 +124,10 @@ Documentation
 
 The documentation is currently in a "work-in-progress" state.
 
-- `Create a statechart using YAML format <https://github.com/AlexandreDecan/PySS/tree/master/docs/format.md>`__
-- `Use the command-line interface to execute statechart <https://github.com/AlexandreDecan/PySS/tree/master/docs/cli.md>`__
-- `Use PySS as a module to execute statechart <https://github.com/AlexandreDecan/PySS/tree/master/docs/execution.md>`__
-- `Evaluate and execute the code contained in statecharts <https://github.com/AlexandreDecan/PySS/tree/master/docs/evaluation.md>`__
+- `Create a statechart using YAML format <https://github.com/AlexandreDecan/PySS/tree/master/docs/format.rst>`__
+- `Use the command-line interface to execute statechart <https://github.com/AlexandreDecan/PySS/tree/master/docs/cli.rst>`__
+- `Use PySS as a module to execute statechart <https://github.com/AlexandreDecan/PySS/tree/master/docs/execution.rst>`__
+- `Evaluate and execute the code contained in statecharts <https://github.com/AlexandreDecan/PySS/tree/master/docs/evaluation.rst>`__
 
 
 Credits

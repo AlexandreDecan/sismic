@@ -1,10 +1,13 @@
-# Use PySS as a module to execute statechart
+Use PySS as a module to execute statechart
+==========================================
+
 
 The module `simulator` contains a `Simulator` class that interprets a statechart following SCXML semantic.
 A `Simulator` instance is constructed upon a `StateChart` instance and an optional `Evaluator`.
 If no `Evaluator` instance is specified, a `DummyEvaluator` instance will be used by default.
 
 The main methods of a simulator instance are:
+
  - `send(event)` takes an `Event` instance that will be added to a FIFO queue of external events.
  - `execute_once()` processes a transition based on the oldest queued event (or no event if an eventless transition can be processed), and stabilizes
   the simulator in a stable situation (ie. processes initial states, history states, etc.). This method returns an instance of `MacroStep` (see
@@ -15,42 +18,52 @@ The main methods of a simulator instance are:
  - Property `running`: return `True` if and only if the statechart is running AND is not in a final configuration.
 
 Example:
-```python
-simulator = Simulator(my_statechart)
-# We are now in a stable initial state
-simulator.send(Event('click'))  # Send event to the simulator
-simulator.execute_once()  # Will process the event if no eventless transitions are found at first
-```
+
+.. code:: python
+
+    simulator = Simulator(my_statechart)
+    # We are now in a stable initial state
+    simulator.send(Event('click'))  # Send event to the simulator
+    simulator.execute_once()  # Will process the event if no eventless transitions are found at first
+
 
 For convenience, `send` returns `self` and thus can be chained:
-```python
-simulator.send(Event('click')).send(Event('click')).execute_once()
-```
+
+.. code:: python
+
+    simulator.send(Event('click')).send(Event('click')).execute_once()
+
 
 Notice that `execute_once()` consumes at most one event at a time.
 In this example, the second *click* event is not processed.
 
 To process all events *at once*, repeatedly call `execute_once()` until it returns a `None` value.
 For instance:
-```python
-while simulator.execute_once():
-  pass
-```
+
+.. code:: python
+
+    while simulator.execute_once():
+      pass
+
 
 As a shortcut, a `Simulator` instance provides an iterator:
-```python
-for step in simulator:
-  assert isinstance(step, MacroStep)
-assert simulator.execute_once() == None
-```
+
+.. code:: python
+
+    for step in simulator:
+      assert isinstance(step, MacroStep)
+    assert simulator.execute_once() == None
+
 
 And as a better shortcut, the `execute()` method will return a list of `MacroStep` instances
 obtained by repeatedly calling `execute_once()`:
-```python
-steps = simulator.execute()
-for step in steps:
-    assert isinstance(step, MacroStep)
-```
+
+.. code:: python
+
+    steps = simulator.execute()
+    for step in steps:
+      assert isinstance(step, MacroStep)
+
 
 The simulator is fully observable: its `execute_once()` method returns an instance of `MacroStep`.
 A macro step corresponds to the process of either an eventless transition, or an evented transition,

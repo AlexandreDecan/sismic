@@ -1,4 +1,5 @@
-# Use the command-line interface to execute statechart
+Use the command-line interface to execute statechart
+====================================================
 
 PySS is expected to be imported as a Python module, but it also provides
 a command-line interface. The CLI can be used by calling the ``pyss``
