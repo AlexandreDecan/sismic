@@ -1,5 +1,5 @@
-Create a statechart using YAML format
-=====================================
+YAML format for statecharts
+===========================
 
 Statecharts can be defined using a YAML format.
 

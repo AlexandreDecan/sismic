@@ -1,5 +1,5 @@
-Use PySS as a module to execute statechart
-==========================================
+Execute statecharts
+===================
 
 
 The module `simulator` contains a `Simulator` class that interprets a statechart following SCXML semantic.

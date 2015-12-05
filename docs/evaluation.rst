@@ -1,5 +1,5 @@
-Evaluate and execute the code contained in statecharts
-======================================================
+Evaluate and execute code contained in statecharts
+==================================================
 
 
 A statechart can write code to be executed under some circumstances.
