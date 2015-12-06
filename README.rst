@@ -9,8 +9,6 @@ Python Statechart Simulator for Python >=3.4
     :target: https://coveralls.io/github/AlexandreDecan/PySS?branch=master
 .. image:: https://badge.fury.io/py/pyss.svg
     :target: https://pypi.python.org/pypi/PySS
-.. image:: https://readthedocs.org/projects/pyss/badge/?version=stable
-    :target: https://pyss.readthedocs.org/en/stable
 .. image:: https://readthedocs.org/projects/pyss/badge/?version=latest
     :target: https://pyss.readthedocs.org/en/latest
 
@@ -37,7 +35,8 @@ Documentation
 
 The documentation can be built from the `docs` directory of this repository.
 
-An online version of this documentation is available at http://pyss.readthedocs.org/en/latest/
+The documentation for the stable version is available at http://pyss.readthedocs.org/en/stable/
+The latest version of this documentation is also available at http://pyss.readthedocs.org/en/latest/
 
 
 Credits
