@@ -33,9 +33,8 @@ The development occurs in the `master` branch, the latest stable distributed ver
 Documentation
 -------------
 
-The documentation for the stable version is available at http://pyss.readthedocs.org/en/stable/
-
-The latest version of this documentation is also available at http://pyss.readthedocs.org/en/latest/
+The documentation for the stable version is available at http://pyss.readthedocs.org/en/stable/.
+The latest version of this documentation is available at http://pyss.readthedocs.org/en/latest/
 
 It can also be directly built from the `docs/` directory using Sphinx.
 

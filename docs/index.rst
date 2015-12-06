@@ -44,8 +44,8 @@ We aim to support the following features soon:
 Contents
 --------
 
-This is the latest version of the documentation. The documentation for the stable version
-can be found at http://pyss.readthedocs.org/en/stable/
+The documentation for the stable version is available at http://pyss.readthedocs.org/en/stable/.
+The latest version of this documentation is available at http://pyss.readthedocs.org/en/latest/
 
 .. toctree::
     :maxdepth: 2
