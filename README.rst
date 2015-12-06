@@ -9,9 +9,10 @@ Python Statechart Simulator for Python >=3.4
     :target: https://coveralls.io/github/AlexandreDecan/PySS?branch=master
 .. image:: https://badge.fury.io/py/pyss.svg
     :target: https://pypi.python.org/pypi/PySS
-.. image:: https://readthedocs.org/projects/pyss/badge/
-    :target: https://pyss.readthedocs.org/
-
+.. image:: https://readthedocs.org/projects/pyss/badge/?version=stable
+    :target: https://pyss.readthedocs.org/en/stable
+.. image:: https://readthedocs.org/projects/pyss/badge/?version=latest
+    :target: https://pyss.readthedocs.org/en/latest
 
 PySS provides a set of tools related to statechart manipulation and
 execution. In particular, PySS provides:
