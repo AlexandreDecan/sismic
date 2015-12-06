@@ -79,13 +79,14 @@ class Simulator:
         self._start()
 
     @property
-    def configuration(self) -> set:
+    def configuration(self) -> list:
         """
-        Return the set of active states.
+        Return the list of active states.
+        States are ordered by depth.
 
-        :return: Set of active states
+        :return: A list of active states
         """
-        return self._configuration
+        return sorted(self._configuration, key=lambda s: self._statechart.depth_of(s))
 
     def send(self, event:model.Event):
         """
