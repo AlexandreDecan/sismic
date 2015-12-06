@@ -7,6 +7,7 @@ from .model import StateMixin, ActionStateMixin, TransitionStateMixin, Composite
 def import_from_yaml(data) -> StateChart:
     """
     Import a statechart from a YAML representation.
+
     :param data: string or any equivalent object
     :return: a StateChart instance
     """
@@ -16,6 +17,7 @@ def import_from_yaml(data) -> StateChart:
 def import_from_dict(data: dict) -> StateChart:
     """
     Import a statechart from a (set of nested) dictionary.
+
     :param data: dict-like structure
     :return: a StateChart instance
     """
@@ -54,6 +56,7 @@ def import_from_dict(data: dict) -> StateChart:
 def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
     """
     Return a Transition instance from given dict.
+
     :param state: name of the state in which the transition is defined
     :param transition_d: a dictionary containing transition data
     :return: an instance of Transition
@@ -70,6 +73,7 @@ def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
 def _state_from_dict(state_d: dict) -> StateMixin:
     """
     Return the appropriate type of state from given dict.
+
     :param state_d: a dictionary containing state data
     :return: a specialized instance of State
     """
@@ -98,6 +102,7 @@ def _state_from_dict(state_d: dict) -> StateMixin:
 def export_to_yaml(statechart: StateChart) -> str:
     """
     Export given StateChart instance to YAML
+
     :param statechart:
     :return: A textual YAML representation
     """
@@ -108,6 +113,7 @@ def export_to_yaml(statechart: StateChart) -> str:
 def export_to_dict(statechart: StateChart, ordered=True) -> dict:
     """
     Export given StateChart instance to a dict.
+
     :param statechart: a StateChart instance
     :param ordered: set to True to use OrderedDict instead
     :return: a dict that can be used in `import_from_dict`
@@ -134,6 +140,7 @@ def _export_element_to_dict(el, ordered=False) -> dict:
     """
     Export an element (State, Transition, etc.) to a dict.
     Is used in `export_to_dict` to generate a global representation.
+
     :param el: an instance of `model.*`
     :param ordered: set to True to use OrderedDict instead of dict
     :return: a dict

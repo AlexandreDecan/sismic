@@ -1,5 +1,8 @@
-YAML format for statecharts
-===========================
+Defining statecharts
+====================
+
+Defining statecharts in YAML
+----------------------------
 
 Statecharts can be defined using a YAML format.
 
@@ -12,6 +15,8 @@ Although the parser is quite robut and should warn about most syntaxic problems,
 be valid, or raise a `ValueError` exception with a meaningful message.
 
 
+Statechart
+**********
 
 The root of the YAML file should declare a statechart:
 
@@ -42,6 +47,9 @@ Code can be written on multiple lines:
       y = 2
 
 
+States
+******
+
 A statechart has to declare a (nonempty) list of states using `states`.
 Each state consist of at least a `name`. Depending on the state type, several fields can be declared.
 
@@ -54,6 +62,9 @@ Each state consist of at least a `name`. Depending on the state type, several fi
         - name: s1
 
 
+Entry and exit actions
+**********************
+
 For each state, it is possible to specify the code that has to be executed when entering and leaving the
 state using `on entry` and `on exit` as follows:
 
@@ -65,6 +76,8 @@ state using `on entry` and `on exit` as follows:
         x -= 1
         y = 2
 
+Final and History states
+************************
 
 Final state simply declares a `type: final` property.
 History state simply declares a `type: history` property. Default semantic is shallow history.
@@ -90,6 +103,10 @@ An history state can optionally define an initial state using `initial`, for e.g
 The `initial` value (for history state or, later, for compound state) should refer to a parent's
 substate and will be used the first time the history state is reached if it has not yet a memorized configuration.
 
+
+Compound states
+***************
+
 Except final states and history states, states can contain nested states.
 Such a state is a compound state or a region, we do not make any difference between those two concepts.
 
@@ -102,6 +119,8 @@ Such a state is a compound state or a region, we do not make any difference betw
         states:
           - name: nested state 2a
 
+Orthogonal states
+*****************
 
 Orthogonal states (sometimes referred as parallel states) must be with `parallel states` instead of `states`.
 For example, the following statechart declares two concurrent processes:
@@ -121,6 +140,9 @@ For example, the following statechart declares two concurrent processes:
 A compound orthogonal state can not be declared at top level, and should be nested in a compound state, as
 illustrated in the previous example. In other words, it is not allowed to define `parallel states`
 instead of `states` in this previous example.
+
+Transitions
+***********
 
 Simple states, compound states and parallel states can declare transitions using `transitions`:
 
@@ -150,3 +172,32 @@ the state in which the transition is defined. When such a transition is processe
 entered.
 
 Finally, to prevent trivial infinite loops on execution, an internal transition must either define an event or a guard.
+
+
+Defining statecharts in Python
+------------------------------
+
+While it is possible to directly define the statechart using Python objects,
+this is not very convenient.
+
+Events, transitions and states
+******************************
+
+The module `pyss.model` contains several classes and mixins to define
+states, transitions and events.
+
+.. automodule:: pyss.model
+    :members: Event, Transition, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
+    :undoc-members:
+    :exclude-members: StateChart
+
+Statecharts
+***********
+
+The `StateChart` class is more interesting as your are more subject to deal
+with instances of this class.
+
+.. autoclass:: pyss.model.StateChart
+    :members:
+
+Consider the source of `pyss.format` as an how-to construct a statechart using `pyss.model`.

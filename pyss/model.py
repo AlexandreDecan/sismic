@@ -175,6 +175,7 @@ class StateChart(object):
     def __init__(self, name: str, initial: str, on_entry: str=None):
         """
         Initialize a statechart.
+
         :param name: Name of this statechart
         :param initial: Initial state
         :param on_entry: Code to execute_once before the execution
@@ -190,6 +191,7 @@ class StateChart(object):
     def register_state(self, state: StateMixin, parent: str):
         """
         Register given state in current statechart and register it to its parent
+
         :param state: instance of State to add
         :param parent: name of parent state
         """
@@ -207,6 +209,7 @@ class StateChart(object):
     def register_transition(self, transition: Transition):
         """
         Register given transition in current statechart and register it on the source state
+
         :param transition: instance of Transition
         """
         self.transitions.append(transition)
@@ -224,6 +227,7 @@ class StateChart(object):
         """
         A dictionary that associates a parent name state to a (child) state name
         Return the name of the parent of given state name
+
         :param name: Name of a child state
         :return: name of the parent state, or None if state has no parent
         """
@@ -232,6 +236,7 @@ class StateChart(object):
     @lru_cache()
     def ancestors_for(self, state: str) -> list:
         """
+
         :param state: name of the state
         :return: ancestors, in decreasing depth
         """
@@ -245,6 +250,7 @@ class StateChart(object):
     @lru_cache()
     def descendants_for(self, state: str) -> list:
         """
+
         :param state: name of the state
         :return: descendants, in increasing depth
         """
@@ -263,6 +269,7 @@ class StateChart(object):
     def depth_of(self, state: str) -> int:
         """
         Return the depth of the given state, starting from 0 (root, top-level).
+
         :param state: name of the state
         :return: depth of state
         """
@@ -276,6 +283,7 @@ class StateChart(object):
         """
         Return the deepest common ancestor for s1 and s2, or None if
         there is no common ancestor except root (top-level) state.
+
         :param s1: name of first state
         :param s2: name of second state
         :return: name of deepest common ancestor or None
@@ -290,6 +298,7 @@ class StateChart(object):
         """
         Return a subset of `states` that are leaves, ie. return each state from
         `states` that has no descendant in `states`.
+
         :param states: A list of state names
         :return: A list of state names
         """
@@ -308,12 +317,14 @@ class StateChart(object):
     def validate(self) -> bool:
         """
         Validate current statechart:
-         (C1) Check that transitions refer to existing states
-         (C2) Check that history can only be defined as a child of a CompoundState
-         (C3) Check that history state's initial memory refer to a parent's child
-         (C4) Check that initial state refer to a parent's child
-         (C5) Check that orthogonal states have at least one child
-         (C6) Check that there is no internal eventless guardless transition
+
+         - C1. Check that transitions refer to existing states
+         - C2. Check that history can only be defined as a child of a CompoundState
+         - C3. Check that history state's initial memory refer to a parent's child
+         - C4. Check that initial state refer to a parent's child
+         - C5. Check that orthogonal states have at least one child
+         - C6. Check that there is no internal eventless guardless transition
+
         :return: True or raise a ValueError
         """
         # C1 & C6

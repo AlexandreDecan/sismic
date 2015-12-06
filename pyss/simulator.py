@@ -10,6 +10,7 @@ class MicroStep:
         Create a micro step. A step consider `event`, takes `transition` and results in a list
         of `entered_states` and a list of `exited_states`.
         Order in the two lists is REALLY important!
+
         :param event: Event or None in case of eventless transition
         :param transition: Transition or None if no processed transition
         :param entered_states: possibly empty list of entered states
@@ -30,6 +31,7 @@ class MacroStep:
         A MacroStep corresponds to the process of a Transition (given an Event or in case of an
         eventless transition). A MacroStep contains one main step (the one who processes the
         transition) and a (possibly empty) list of stabilization steps.
+
         :param main_step: Main (MicroStep instance) step.
         :param micro_steps: A possibly empty list of MicroStep instances (stabilization steps).
         """
@@ -66,6 +68,7 @@ class Simulator:
     def __init__(self, statechart: model.StateChart, evaluator: Evaluator=None):
         """
         A discrete simulator that interprets a statechart according to a semantic close to SCXML.
+
         :param statechart: statechart to interpret
         :param evaluator: Code evaluator (optional)
         """
@@ -76,13 +79,19 @@ class Simulator:
         self._start()
 
     @property
-    def configuration(self) -> list:
-        return list(self._configuration)
-
-    def send(self, event):
+    def configuration(self) -> set:
         """
-        Send an event to the statechart. Will be placed in the queue
-        :param event: Event instance
+        Return the set of active states.
+
+        :return: Set of active states
+        """
+        return self._configuration
+
+    def send(self, event:model.Event):
+        """
+        Send an event to the simulator, and add it into the event queue.
+
+        :param event: an `Event` instance
         :return: self, so it can be chained
         """
         self._events.append(event)
@@ -91,9 +100,11 @@ class Simulator:
     def _start(self) -> list:
         """
         Make this statechart runnable:
+
          - Execute statechart initial code
          - Execute until a stable situation is reached.
-        :return A (possibly empty) list of executed MicroStep.
+
+        :return: A (possibly empty) list of executed MicroStep.
         """
         if self._statechart.on_entry:
             self._evaluator.execute_action(self._statechart.on_entry)
@@ -107,7 +118,7 @@ class Simulator:
     @property
     def running(self) -> bool:
         """
-        Return True iff statechart is running and not in a final state
+        :return: True if and only if statechart is not in a final configuration
         """
         for state in self._statechart.leaf_for(list(self._configuration)):
             if not isinstance(self._statechart._states[state], model.FinalState):
@@ -117,8 +128,8 @@ class Simulator:
     def __iter__(self):
         """
         Return an iterator for current execution.
-        It corresponds to successive call to execute_once().
-        Event can be added using iterator.send().
+        It corresponds to successive call to `execute_once()`.
+        Event can be added using `iterator.send()`.
         """
         return self
 
@@ -131,8 +142,10 @@ class Simulator:
 
     def execute(self) -> list:
         """
-        Repeatedly call self.execute_once() until a stable situation is reached (ie. MacroStep is None).
-        :return: A list of MacroStep
+        Repeatedly calls `self.execute_once()` and return a list containing
+        the returned values of `self.execute_once()`.
+
+        :return: A list of `MacroStep` instances
         """
         return [step for step in self]
 
@@ -141,8 +154,9 @@ class Simulator:
         Processes a transition based on the oldest queued event (or no event if an eventless transition
         can be processed), and stabilizes the simulator in a stable situation (ie. processes initial states,
         history states, etc.).
+
         :return: an instance of `MacroStep` or `None` if (1) no eventless transition can be processed,
-        (2) there is no event in the event queue.
+            (2) there is no event in the event queue.
         """
         # Try eventless transitions
         main_step = self._transition_step(event=None)  # Explicit is better than implicit
@@ -166,6 +180,7 @@ class Simulator:
         """
         Return a list of transitions that can be actioned wrt.
         the current configuration. The list is ordered: deepest states first.
+
         :param event: Event to considered or None for eventless transitions
         :return: A (possibly empty) ordered list of Transition instances
         """
@@ -185,6 +200,7 @@ class Simulator:
         """
         Return a stabilization step, ie. a step that lead to a more stable situation
         for the current statechart (expand to initial state, expand to history state, etc.).
+
         :return: A MicroStep instance or None if this statechart can not be stabilized
         """
         # Check if we are in a set of "stable" states
@@ -203,6 +219,7 @@ class Simulator:
     def _stabilize(self) -> list:
         """
         Compute, apply and return stabilization steps.
+
         :return: A list of MicroStep instances
         """
         # Stabilization
@@ -218,6 +235,7 @@ class Simulator:
         """
         Return the MicroStep (if any) associated with the appropriate transition matching
         given event (or eventless transition if event is None).
+
         :param event: Event to consider (or None)
         :return: A MicroStep instance or None
         :raise: a Warning in case of non determinism
@@ -275,6 +293,7 @@ class Simulator:
     def _execute_step(self, step: MicroStep):
         """
         Apply given MicroStep on this statechart
+
         :param step: MicroStep instance
         """
         entered_states = list(map(lambda s: self._statechart.states[s], step.entered_states))

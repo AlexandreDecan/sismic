@@ -1,3 +1,4 @@
 pyyaml
 coverage
 wheel
+sphinx

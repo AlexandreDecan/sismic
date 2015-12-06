@@ -1,23 +1,42 @@
-Execute statecharts
-===================
+Executing statecharts
+=====================
 
+A statechart can be executed from the command-line interface or, for a finer-grained
+execution, programmatically.
+
+
+From the command line
+---------------------
+
+In a nutshell::
+
+    (shell) pyss execute -vvv  examples/concrete/history.yaml --events next pause
+
+
+Please consult :ref:`cli_execute` for more information.
+
+
+Module `simulator`
+------------------
 
 The module `simulator` contains a `Simulator` class that interprets a statechart following SCXML semantic.
-A `Simulator` instance is constructed upon a `StateChart` instance and an optional `Evaluator`.
+A `Simulator` instance is constructed upon a `StateChart` instance and an optional `Evaluator` (see :ref:`code_evaluation`).
 If no `Evaluator` instance is specified, a `DummyEvaluator` instance will be used by default.
 
 The main methods of a simulator instance are:
 
- - `send(event)` takes an `Event` instance that will be added to a FIFO queue of external events.
- - `execute_once()` processes a transition based on the oldest queued event (or no event if an eventless transition can be processed), and stabilizes
-  the simulator in a stable situation (ie. processes initial states, history states, etc.). This method returns an instance of `MacroStep` (see
-  below) or `None` if (1) no eventless transition can be processed, (2) there is no event in the event queue.
-  This method returns an instance of `MacroStep` or `None` if nothing was done.
- - `execute()` that repeatedly calls `execute_once()` and return a list returned values.
- - Property `configuration`: contains an (unordered) list of active states.
- - Property `running`: return `True` if and only if the statechart is running AND is not in a final configuration.
+.. automethod:: pyss.simulator.Simulator.configuration
 
-Example:
+.. automethod:: pyss.simulator.Simulator.running
+
+.. automethod:: pyss.simulator.Simulator.send
+
+.. automethod:: pyss.simulator.Simulator.execute_once
+
+.. automethod:: pyss.simulator.Simulator.execute
+
+
+Consider the following example.
 
 .. code:: python
 
@@ -70,6 +89,9 @@ A macro step corresponds to the process of either an eventless transition, or an
 or no transition (but consume the event), including the stabilization steps (ie. the steps that are needed
 to enter nested states, or to switch into the configuration of an history state).
 
+Macro and micro steps
+---------------------
+
 A `MacroStep` exposes an `Event` (`None` in case of eventless transition), a `Transition` (`None` if the
 event was consumed without triggering a transition) and two sequences of state names: `entered_states` and
 `exited_states`. States order in those list indicates the order in which their `on entry` and `on exit` actions
@@ -82,3 +104,16 @@ A `MacroStep` instance can be viewed (and is!) an aggregate of `MicroStep` insta
 
 This way, a complete run of a state machine can be summarized as an ordered list of `MacroStep` instances,
 and details of such a run can be obtained using the `MicroStep`'s of a `MacroStep`.
+
+
+Advanced usages
+---------------
+
+Several other methods are available on a `Simulator` instance for advanced usages:
+
+.. automethod:: pyss.simulator.Simulator._start
+.. automethod:: pyss.simulator.Simulator._execute_step
+.. automethod:: pyss.simulator.Simulator._actionable_transitions
+.. automethod:: pyss.simulator.Simulator._transition_step
+.. automethod:: pyss.simulator.Simulator._stabilize_step
+.. automethod:: pyss.simulator.Simulator._stabilize

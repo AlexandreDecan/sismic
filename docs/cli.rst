@@ -1,4 +1,4 @@
-Command line interface
+Command-line interface
 ======================
 
 PySS is expected to be imported as a Python module, but it also provides
@@ -19,6 +19,8 @@ module (``python -m pyss``) or, if PySS is installed on your system
     subcommands:
       {execute}
         execute   execute a statechart
+
+.. _cli_execute:
 
 Subcommand: `execute`
 ---------------------
@@ -42,8 +44,7 @@ Subcommand: `execute`
                             send events to the statechart simulation
 
 
-For example:
-::
+For example::
 
     (shell) pyss execute -vvv  examples/concrete/history.yaml --events next pause
     Initial configuration: loop, s1
