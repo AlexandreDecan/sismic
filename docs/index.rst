@@ -41,9 +41,11 @@ We aim to support the following features soon:
 - Import statecharts from Yakindu
 - Runtime dynamic visualization and manipulation
 
-
 Contents
 --------
+
+This is the latest version of the documentation. The documentation for the stable version
+can be found at http://pyss.readthedocs.org/en/stable/
 
 .. toctree::
     :maxdepth: 2
