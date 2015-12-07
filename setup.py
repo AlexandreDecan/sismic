@@ -89,7 +89,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'pyss=pyss:main',
+            'pyss=pyss:parse_args',
         ],
     },
 )
