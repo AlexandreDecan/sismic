@@ -90,7 +90,7 @@ For a deep history semantic, add a ``deep: True`` property. Example:
       type: history
       deep: True
     - name: s2
-      type: fina
+      type: final
 
 An history state can optionally define an initial state using ``initial``, for e.g.:
 
