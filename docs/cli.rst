@@ -25,6 +25,8 @@ module (``python -m pyss``) or, if PySS is installed on your system
 Subcommand: `execute`
 ---------------------
 
+The CLI can used to execute statecharts.
+
 ::
 
     (shell) pyss execute -h
@@ -44,6 +46,7 @@ Subcommand: `execute`
                             send events to the statechart simulation
 
 
+The events to be considered can be specified using `--events`.
 For example::
 
     (shell) pyss execute -vvv  examples/concrete/history.yaml --events next pause
@@ -62,3 +65,4 @@ For example::
     Final: False
 
 The considered statechart is `examples/concrete/history.yaml <https://github.com/AlexandreDecan/PySS/blob/master/examples/concrete/history.yaml>`__.
+

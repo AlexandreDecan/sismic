@@ -44,10 +44,18 @@ class Transition(object):
 
     @property
     def internal(self):
+        """
+
+        :return: True in case of internal transition
+        """
         return self.to_state is None
 
     @property
     def eventless(self):
+        """
+
+        :return: True in case of eventless transition
+        """
         return self.event is None
 
     def __repr__(self):
