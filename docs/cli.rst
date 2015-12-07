@@ -9,16 +9,16 @@ module (``python -m pyss``) or, if PySS is installed on your system
 ::
 
     (shell) pyss -h
-    usage: pyss [-h] {execute} ...
-
-    Python Statechart Simulator v0.3.2 by Alexandre Decan
+    Python Statechart Simulator v0.3.5 by Alexandre Decan
 
     optional arguments:
-      -h, --help  show this help message and exit
+      -h, --help          show this help message and exit
 
     subcommands:
-      {execute}
-        execute   execute a statechart
+      {execute,validate}
+        execute           execute a statechart
+        validate          validate a statechart
+
 
 .. _cli_execute:
 
@@ -66,3 +66,22 @@ For example::
 
 The considered statechart is `examples/concrete/history.yaml <https://github.com/AlexandreDecan/PySS/blob/master/examples/concrete/history.yaml>`__.
 
+.. _cli_validate:
+
+
+Subcommand: `validate`
+----------------------
+
+YAML statecharts can be validated against PySS format::
+
+    (shell) pyss validate -h
+    usage: pyss validate [-h] infile
+
+    positional arguments:
+      infile      A YAML file describing a statechart
+
+    optional arguments:
+      -h, --help  show this help message and exit
+
+
+In case of error, a complete traceback will be shown.

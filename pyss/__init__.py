@@ -4,7 +4,7 @@ from . import evaluator
 from . import io
 
 __description__ = 'Python Statechart Simulator'
-__version__ = '0.3.4'
+__version__ = '0.3.5'
 __url__ = 'https://github.com/AlexandreDecan/PySS/'
 __author__ = 'Alexandre Decan'
 __email__ = 'alexandre.decan@lexpage.net'
