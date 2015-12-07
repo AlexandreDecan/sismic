@@ -1,3 +1,3 @@
-from .cli import parse_args
+from . import _parse_args
 
-parse_args()
+_parse_args()

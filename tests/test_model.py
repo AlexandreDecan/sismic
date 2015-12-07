@@ -40,3 +40,6 @@ class TraversalTests(unittest.TestCase):
         self.assertEqual(self.sc.leaf_for(['s1', 's2']), ['s1', 's2'])
         self.assertEqual(self.sc.leaf_for(['s1', 's1b1', 's2']), ['s1b1', 's2'])
         self.assertEqual(self.sc.leaf_for(['s1', 's1b', 's1b1']), ['s1b1'])
+
+    def test_events(self):
+        self.assertEqual(self.sc.events, ['click', 'close', 'validate'])

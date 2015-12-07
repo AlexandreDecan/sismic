@@ -239,7 +239,21 @@ class StateChart(object):
         :param name: Name of a child state
         :return: name of the parent state, or None if state has no parent
         """
-        return self._parent[name]
+        return self._parent
+
+    @property
+    def events(self) -> list:
+        """
+        Return a list of possible event names, according to the content of this
+        statechart.
+
+        :return: a list of possible event names
+        """
+        names = set()
+        for transition in self.transitions:
+            if transition.event:
+                names.add(transition.event.name)
+        return sorted(names)
 
     @lru_cache()
     def ancestors_for(self, state: str) -> list:
