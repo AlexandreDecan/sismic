@@ -20,6 +20,9 @@ Module `simulator`
 ------------------
 
 The module `simulator` contains a `Simulator` class that interprets a statechart following SCXML semantic.
+In particular, eventless transitions are processed before evented transitions, internal events are consumed
+before external events, and the simulation follows a inner-first/source-state semantic.
+
 A `Simulator` instance is constructed upon a `StateChart` instance and an optional `Evaluator` (see :ref:`code_evaluation`).
 If no `Evaluator` instance is specified, a `DummyEvaluator` instance will be used by default.
 
