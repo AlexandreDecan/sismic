@@ -7,8 +7,8 @@ class MicroStep:
     def __init__(self, event: model.Event=None, transition: model.Transition=None,
                  entered_states: list=None, exited_states: list=None):
         """
-        Create a micro step. A step consider `event`, takes `transition` and results in a list
-        of `entered_states` and a list of `exited_states`.
+        Create a micro step. A step consider ``event``, takes ``transition`` and results in a list
+        of ``entered_states`` and a list of ``exited_states``.
         Order in the two lists is REALLY important!
 
         :param event: Event or None in case of eventless transition
@@ -92,7 +92,7 @@ class Simulator:
         """
         Send an event to the simulator, and add it into the event queue.
 
-        :param event: an `Event` instance
+        :param event: an ``Event`` instance
         :return: self, so it can be chained
         """
         self._events.append(event)
@@ -129,8 +129,8 @@ class Simulator:
     def __iter__(self):
         """
         Return an iterator for current execution.
-        It corresponds to successive call to `execute_once()`.
-        Event can be added using `iterator.send()`.
+        It corresponds to successive call to ``execute_once()``.
+        Event can be added using ``iterator.send()``.
         """
         return self
 
@@ -143,10 +143,10 @@ class Simulator:
 
     def execute(self) -> list:
         """
-        Repeatedly calls `self.execute_once()` and return a list containing
-        the returned values of `self.execute_once()`.
+        Repeatedly calls ``self.execute_once()`` and return a list containing
+        the returned values of ``self.execute_once()``.
 
-        :return: A list of `MacroStep` instances
+        :return: A list of ``MacroStep`` instances
         """
         return [step for step in self]
 
@@ -156,7 +156,7 @@ class Simulator:
         can be processed), and stabilizes the simulator in a stable situation (ie. processes initial states,
         history states, etc.).
 
-        :return: an instance of `MacroStep` or `None` if (1) no eventless transition can be processed,
+        :return: an instance of ``MacroStep`` or ``None`` if (1) no eventless transition can be processed,
             (2) there is no event in the event queue.
         """
         # Try eventless transitions

@@ -8,6 +8,18 @@ class Evaluator:
     An instance of this class defines what can be done with piece of codes
     contained in a statechart (condition, action, etc.).
     """
+
+    @property
+    def context(self) -> dict:
+        """
+        Return the context of this Evaluator. A context is a mapping between
+        variables and values that is expected to be exposed through
+        ``evaluate_condition`` and ``execute_action``.
+
+        :return: A dict-like mapping.
+        """
+        raise NotImplementedError()
+
     def evaluate_condition(self, condition: str, event: Event) -> bool:
         """
         Evaluate the condition of a guarded transition.
@@ -24,8 +36,8 @@ class Evaluator:
         of internal events to be considered by a statechart simulator.
 
         :param action: A (possibly multi-lined) code to execute.
-        :param event: an `Event` instance in case of a transition action.
-        :return: A possibly empty list of `Event` instances
+        :param event: an ``Event`` instance in case of a transition action.
+        :return: A possibly empty list of ``Event`` instances
         """
         raise NotImplementedError()
 
@@ -34,6 +46,10 @@ class DummyEvaluator(Evaluator):
     """
     A dummy evaluator that does nothing and evaluates every condition to True.
     """
+
+    @property
+    def context(self):
+        return dict()
 
     def evaluate_condition(self, condition: str, event: Event):
         return True
@@ -58,32 +74,36 @@ class PythonEvaluator(Evaluator):
         """
         :param initial_context: a dictionary that will be used as __locals__
         """
-        self.context = {
+        self._context = {
             'Event': Event,
             'send': self._send_event
         }
         if initial_context:
-            self.context.update(initial_context)
+            self._context.update(initial_context)
 
-        self.events = []  # List of events that need to be fired
+        self._events = []  # List of events that need to be fired
 
     def _send_event(self, event: Event):
-        self.events.append(event)
+        self._events.append(event)
 
-    def evaluate_condition(self, condition: str, event: Event=None):
+    @property
+    def context(self) -> dict:
+        return self._context
+
+    def evaluate_condition(self, condition: str, event: Event=None) -> bool:
         """
-        Evaluate given condition using `eval()`.
+        Evaluate given condition using ``eval()``.
         It is expected that condition is a one-line expression whose value is a Boolean.
 
         :param condition: one-line condition whose value is a Boolean
         :param event: Event instance (if any) on the transition
         """
-        self.context['event'] = event
-        return eval(condition, {'__builtins__': __builtins__}, self.context)
+        self._context['event'] = event
+        return eval(condition, {'__builtins__': __builtins__}, self._context)
 
     def execute_action(self, action: str, event: Event=None) -> list:
         """
-        Execute given action using `exec()` and thus accepts action defining on multiple
+        Execute given action using ``exec()`` and thus accepts action defining on multiple
         lines and using statements.
         Return a list of Event's to be considered by the state machine.
 
@@ -91,8 +111,8 @@ class PythonEvaluator(Evaluator):
         :param event: Event instance (in case of transition action).
         :return: a list of Event instances
         """
-        self.events = []
-        self.context['event'] = event
-        exec(action, {'__builtins__': __builtins__}, self.context)
-        return self.events
+        self._events = []  # Reset
+        self._context['event'] = event
+        exec(action, {'__builtins__': __builtins__}, self._context)
+        return self._events
 

@@ -116,7 +116,7 @@ def export_to_dict(statechart: StateChart, ordered=True) -> dict:
 
     :param statechart: a StateChart instance
     :param ordered: set to True to use OrderedDict instead
-    :return: a dict that can be used in `import_from_dict`
+    :return: a dict that can be used in ``import_from_dict``
     """
     d = OrderedDict() if ordered else dict()
     d['name'] = statechart.name
@@ -139,9 +139,9 @@ def export_to_dict(statechart: StateChart, ordered=True) -> dict:
 def _export_element_to_dict(el, ordered=False) -> dict:
     """
     Export an element (State, Transition, etc.) to a dict.
-    Is used in `export_to_dict` to generate a global representation.
+    Is used in ``export_to_dict`` to generate a global representation.
 
-    :param el: an instance of `model.*`
+    :param el: an instance of ``model.*``
     :param ordered: set to True to use OrderedDict instead of dict
     :return: a dict
     """

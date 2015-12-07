@@ -318,8 +318,8 @@ class StateChart(object):
 
     def leaf_for(self, states: list) -> list:
         """
-        Return a subset of `states` that are leaves, ie. return each state from
-        `states` that has no descendant in `states`.
+        Return a subset of ``states`` that are leaves, ie. return each state from
+        ``states`` that has no descendant in ``states``.
 
         :param states: A list of state names
         :return: A list of state names

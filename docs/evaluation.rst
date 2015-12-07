@@ -4,10 +4,10 @@ Code contained in statecharts
 =============================
 
 A statechart can write code to be executed under some circumstances.
-For example, the `on entry` property on a `statechart`, `guard` or `action` on a transition or the
-`on entry` and `on exit` property for a state.
+For example, the ``on entry`` property on a ``statechart``, ``guard`` or ``action`` on a transition or the
+``on entry`` and ``on exit`` property for a state.
 
-In PySS, these pieces of code can be evaluated and executed by `Evaluator` instances.
+In PySS, these pieces of code can be evaluated and executed by ``Evaluator`` instances.
 
 
 Code evaluator
