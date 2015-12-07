@@ -1,5 +1,5 @@
 import unittest
-from pyss import _cli_execute
+from pyss.cli import _cli_execute
 
 
 class CommandLineInterfaceTests(unittest.TestCase):

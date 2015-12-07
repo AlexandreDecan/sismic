@@ -1,5 +1,5 @@
 import unittest
-from pyss import format
+from pyss import io
 from pyss.simulator import Simulator
 from pyss.evaluator import PythonEvaluator
 from pyss.model import Event
@@ -7,13 +7,13 @@ from pyss.model import Event
 
 class SimulatorSimpleTest(unittest.TestCase):
     def test_init(self):
-        sc = format.import_from_yaml(open('examples/simple/simple.yaml'))
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
         simulator = Simulator(sc)
         self.assertEqual(simulator.configuration, ['s1'])
         self.assertTrue(simulator.running)
 
     def test_simple_configuration(self):
-        sc = format.import_from_yaml(open('examples/simple/simple.yaml'))
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
         simulator = Simulator(sc)
         simulator.execute_once()  # Should do nothing!
         self.assertEqual(simulator.configuration, ['s1'])
@@ -24,7 +24,7 @@ class SimulatorSimpleTest(unittest.TestCase):
         self.assertEqual(simulator.configuration, ['s3'])
 
     def test_simple_entered(self):
-        sc = format.import_from_yaml(open('examples/simple/simple.yaml'))
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
         simulator = Simulator(sc)
         simulator.send(Event('goto s2'))
         self.assertEqual(simulator.execute_once().entered_states, ['s2'])
@@ -34,7 +34,7 @@ class SimulatorSimpleTest(unittest.TestCase):
         self.assertEqual(simulator.configuration, ['final'])
 
     def test_simple_final(self):
-        sc = format.import_from_yaml(open('examples/simple/simple.yaml'))
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
         simulator = Simulator(sc)
         simulator.send(Event('goto s2')).send(Event('goto final'))
         simulator.execute()
@@ -43,13 +43,13 @@ class SimulatorSimpleTest(unittest.TestCase):
 
 class SimulatorElevatorTests(unittest.TestCase):
     def test_init(self):
-        sc = format.import_from_yaml(open('examples/concrete/elevator.yaml'))
+        sc = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
         simulator = Simulator(sc, PythonEvaluator())
 
         self.assertEqual(len(simulator.configuration), 5)
 
     def test_floor_selection(self):
-        sc = format.import_from_yaml(open('examples/concrete/elevator.yaml'))
+        sc = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
         simulator = Simulator(sc, PythonEvaluator())
 
         simulator.send(Event('floorSelected', {'floor': 4})).execute_once()
@@ -58,7 +58,7 @@ class SimulatorElevatorTests(unittest.TestCase):
         self.assertEqual(sorted(simulator.configuration), ['active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'])
 
     def test_doorsOpen(self):
-        sc = format.import_from_yaml(open('examples/concrete/elevator.yaml'))
+        sc = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
         simulator = Simulator(sc, PythonEvaluator())
 
         simulator.send(Event('floorSelected', {'floor': 4}))
@@ -73,7 +73,7 @@ class SimulatorElevatorTests(unittest.TestCase):
 
 class SimulatorNonDeterminismTests(unittest.TestCase):
     def test_nondeterminism(self):
-        sc = format.import_from_yaml(open('examples/simple/nondeterministic.yaml'))
+        sc = io.import_from_yaml(open('examples/simple/nondeterministic.yaml'))
         simulator = Simulator(sc)
 
         with self.assertRaises(Warning):
@@ -82,11 +82,11 @@ class SimulatorNonDeterminismTests(unittest.TestCase):
 
 class SimulatorHistoryTests(unittest.TestCase):
     def test_init(self):
-        sc = format.import_from_yaml(open('examples/concrete/history.yaml'))
+        sc = io.import_from_yaml(open('examples/concrete/history.yaml'))
         simulator = Simulator(sc)
 
     def test_memory(self):
-        sc = format.import_from_yaml(open('examples/concrete/history.yaml'))
+        sc = io.import_from_yaml(open('examples/concrete/history.yaml'))
         simulator = Simulator(sc)
 
         simulator.send(Event('next')).execute_once()
@@ -97,7 +97,7 @@ class SimulatorHistoryTests(unittest.TestCase):
         self.assertEqual(sorted(simulator.configuration), ['pause'])
 
     def test_resume_memory(self):
-        sc = format.import_from_yaml(open('examples/concrete/history.yaml'))
+        sc = io.import_from_yaml(open('examples/concrete/history.yaml'))
         simulator = Simulator(sc)
 
         simulator.send(Event('next')).send(Event('pause')).send(Event('continue'))
@@ -109,7 +109,7 @@ class SimulatorHistoryTests(unittest.TestCase):
         self.assertEqual(sorted(simulator.configuration), ['loop', 's2'])
 
     def test_after_memory(self):
-        sc = format.import_from_yaml(open('examples/concrete/history.yaml'))
+        sc = io.import_from_yaml(open('examples/concrete/history.yaml'))
         simulator = Simulator(sc)
 
         simulator.send(Event('next')).send(Event('pause')).send(Event('continue'))
@@ -124,7 +124,7 @@ class SimulatorHistoryTests(unittest.TestCase):
 
 class SimulatorDeepHistoryTests(unittest.TestCase):
     def test_deep_memory(self):
-        sc = format.import_from_yaml(open('examples/concrete/deep_history.yaml'))
+        sc = io.import_from_yaml(open('examples/concrete/deep_history.yaml'))
         simulator = Simulator(sc)
 
         simulator.send(Event('next1')).send(Event('next2'))
@@ -142,7 +142,7 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
                                                            'process_2', 's12', 's22'])
 
     def test_entered_order(self):
-        sc = format.import_from_yaml(open('examples/concrete/deep_history.yaml'))
+        sc = io.import_from_yaml(open('examples/concrete/deep_history.yaml'))
         simulator = Simulator(sc)
 
         simulator.send(Event('next1')).send(Event('next2')).send(Event('pause'))
@@ -163,7 +163,7 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
         self.assertFalse(simulator.running)
 
     def test_exited_order(self):
-        sc = format.import_from_yaml(open('examples/concrete/deep_history.yaml'))
+        sc = io.import_from_yaml(open('examples/concrete/deep_history.yaml'))
         simulator = Simulator(sc)
 
         simulator.send(Event('next1')).send(Event('next2')).send(Event('pause'))

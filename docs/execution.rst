@@ -89,6 +89,7 @@ A macro step corresponds to the process of either an eventless transition, or an
 or no transition (but consume the event), including the stabilization steps (ie. the steps that are needed
 to enter nested states, or to switch into the configuration of an history state).
 
+
 Macro and micro steps
 ---------------------
 
