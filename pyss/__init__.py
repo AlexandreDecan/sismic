@@ -6,13 +6,11 @@ __email__ = 'alexandre.decan@lexpage.net'
 __licence__ = 'LGPL3'
 
 
-
 # "Export" most used elements
 from . import model
 from . import simulator
 from . import evaluator
 from . import io
-
 
 
 def _parse_args():  # pragma: no cover
@@ -51,3 +49,5 @@ def _parse_args():  # pragma: no cover
         print(_cli_execute(args))
     elif args.subcommand == 'validate':
         print(_cli_validate(args))
+    else:
+        parser.print_help()
