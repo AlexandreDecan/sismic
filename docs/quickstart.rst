@@ -88,9 +88,30 @@ Example of a YAML definition of a state chart for an elevator:
 
 More examples are available in the `examples` directory.
 
-
 Execution
 ---------
 
 You can execute this example using the command-line interface or programmatically
-Using the command-line interface (see :ref:`cli_execute`):
+or using the command-line interface, see :ref:`cli_execute`.
+
+.. code:: python
+
+    import pyss
+
+    statechart = pyss.io.import_from_yaml(open('examples/concrete/elevator.yaml'))
+    evaluator = pyss.evaluator.PythonEvaluator()
+    simulator = pyss.simulator.Simulator(statechart, evaluator)
+
+    simulator.send(pyss.model.Event('floorSelected', data={'floor': 4}))
+    for step in simulator:
+        print('{}: {}'.format(step.transition, simulator.configuration))
+
+The output should be::
+
+    doorsOpen -> doorsClosed: ['active', 'movingElevator', 'floorListener', 'floorSelecting', 'doorsClosed']
+    doorsClosed -> movingUp: ['active', 'floorListener', 'movingElevator', 'floorSelecting', 'moving', 'movingUp']
+    movingUp -> movingUp: ['active', 'floorListener', 'movingElevator', 'floorSelecting', 'moving', 'movingUp']
+    movingUp -> movingUp: ['active', 'floorListener', 'movingElevator', 'floorSelecting', 'moving', 'movingUp']
+    movingUp -> movingUp: ['active', 'floorListener', 'movingElevator', 'floorSelecting', 'moving', 'movingUp']
+    moving -> doorsOpen: ['active', 'floorListener', 'movingElevator', 'floorSelecting', 'doorsOpen']
+
