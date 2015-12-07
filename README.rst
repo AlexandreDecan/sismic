@@ -27,7 +27,7 @@ PySS can be installed using ``pip`` as usual: ``pip install pyss``.
 This will install the latest stable version.
 
 You can also install PySS from this repository by cloning it.
-The development occurs in the `master` branch, the latest stable distributed version is in the `stable` branch.
+The development occurs in the *master* branch, the latest stable distributed version is in the *stable* branch.
 
 
 Documentation
@@ -36,7 +36,7 @@ Documentation
 The latest version of the documentation is available at http://pyss.readthedocs.org/
 .
 
-It can also be directly built from the `docs/` directory using Sphinx.
+It can also be directly built from the ``docs/`` directory using Sphinx.
 
 Credits
 -------

@@ -19,12 +19,12 @@ Please consult :ref:`cli_execute` for more information.
 Module `simulator`
 ------------------
 
-The module `simulator` contains a `Simulator` class that interprets a statechart following SCXML semantic.
+The module ``simulator`` contains a ``Simulator`` class that interprets a statechart following SCXML semantic.
 In particular, eventless transitions are processed before evented transitions, internal events are consumed
 before external events, and the simulation follows a inner-first/source-state semantic.
 
-A `Simulator` instance is constructed upon a `StateChart` instance and an optional `Evaluator` (see :ref:`code_evaluation`).
-If no `Evaluator` instance is specified, a `DummyEvaluator` instance will be used by default.
+A ``Simulator`` instance is constructed upon a ``StateChart`` instance and an optional ``Evaluator`` (see :ref:`code_evaluation`).
+If no ``Evaluator`` instance is specified, a ``DummyEvaluator`` instance will be used by default.
 
 The main methods of a simulator instance are:
 
@@ -49,17 +49,17 @@ Consider the following example.
     simulator.execute_once()  # Will process the event if no eventless transitions are found at first
 
 
-For convenience, `send` returns `self` and thus can be chained:
+For convenience, ``send`` returns ``self`` and thus can be chained:
 
 .. code:: python
 
     simulator.send(Event('click')).send(Event('click')).execute_once()
 
 
-Notice that `execute_once()` consumes at most one event at a time.
+Notice that ``execute_once()`` consumes at most one event at a time.
 In this example, the second *click* event is not processed.
 
-To process all events *at once*, repeatedly call `execute_once()` until it returns a `None` value.
+To process all events *at once*, repeatedly call ``execute_once()`` until it returns a ``None`` value.
 For instance:
 
 .. code:: python
@@ -68,7 +68,7 @@ For instance:
       pass
 
 
-As a shortcut, a `Simulator` instance provides an iterator:
+As a shortcut, a ``Simulator`` instance provides an iterator:
 
 .. code:: python
 
@@ -77,8 +77,8 @@ As a shortcut, a `Simulator` instance provides an iterator:
     assert simulator.execute_once() == None
 
 
-And as a better shortcut, the `execute()` method will return a list of `MacroStep` instances
-obtained by repeatedly calling `execute_once()`:
+And as a better shortcut, the ``execute()`` method will return a list of ``MacroStep`` instances
+obtained by repeatedly calling ``execute_once()``:
 
 .. code:: python
 
@@ -87,7 +87,7 @@ obtained by repeatedly calling `execute_once()`:
       assert isinstance(step, MacroStep)
 
 
-The simulator is fully observable: its `execute_once()` method returns an instance of `MacroStep`.
+The simulator is fully observable: its ``execute_once()`` method returns an instance of ``MacroStep``.
 A macro step corresponds to the process of either an eventless transition, or an evented transition,
 or no transition (but consume the event), including the stabilization steps (ie. the steps that are needed
 to enter nested states, or to switch into the configuration of an history state).
@@ -96,24 +96,28 @@ to enter nested states, or to switch into the configuration of an history state)
 Macro and micro steps
 ---------------------
 
-A `MacroStep` exposes an `Event` (`None` in case of eventless transition), a `Transition` (`None` if the
-event was consumed without triggering a transition) and two sequences of state names: `entered_states` and
-`exited_states`. States order in those list indicates the order in which their `on entry` and `on exit` actions
+A ``MacroStep`` exposes an ``Event`` (``None`` in case of eventless transition), a ``Transition`` (``None`` if the
+event was consumed without triggering a transition) and two sequences of state names: ``entered_states`` and
+``exited_states``. States order in those list indicates the order in which their ``on entry`` and ``on exit`` actions
 were processed.
 
-The main step and the stabilization steps of a macro step are exposed through `main_step` and `micro_steps`.
-The first is a `MicroStep` instance, and the second is an ordered list of `MicroStep` instances.
+The main step and the stabilization steps of a macro step are exposed through ``main_step`` and ``micro_steps``.
+The first is a ``MicroStep`` instance, and the second is an ordered list of ``MicroStep`` instances.
 A micro step is the smallest, atomic step that a statechart can execute.
-A `MacroStep` instance can be viewed (and is!) an aggregate of `MicroStep` instances.
+A ``MacroStep`` instance can be viewed (and is!) an aggregate of ``MicroStep`` instances.
 
-This way, a complete run of a state machine can be summarized as an ordered list of `MacroStep` instances,
-and details of such a run can be obtained using the `MicroStep`'s of a `MacroStep`.
+This way, a complete run of a state machine can be summarized as an ordered list of ``MacroStep`` instances,
+and details of such a run can be obtained using the ``MicroStep``'s of a ``MacroStep``.
 
 
 Advanced usages
 ---------------
 
-Several other methods are available on a `Simulator` instance for advanced usages:
+A ``Simulator`` instance provides several other methods than can give useful information about
+the execution of a statechart.
+
+``Simulator`` private methods
+*****************************
 
 .. automethod:: pyss.simulator.Simulator._start
 .. automethod:: pyss.simulator.Simulator._execute_step
@@ -121,3 +125,23 @@ Several other methods are available on a `Simulator` instance for advanced usage
 .. automethod:: pyss.simulator.Simulator._transition_step
 .. automethod:: pyss.simulator.Simulator._stabilize_step
 .. automethod:: pyss.simulator.Simulator._stabilize
+
+Implemeting other semantics
+***************************
+
+It is also quite easy to extend (or adapt) parts of a simulator to implement other semantics.
+For example, if you are interested in a outer-first/source-state semantic (instead of the
+inner-first/source-state one that is currently provided), you can subclass ``Simulator`` as follows:
+
+.. code:: python
+
+    class OuterFirstSimulator(Simulator):
+        def __init__(self, *args, **kwargs):
+            super().__init__(self, *args, **kwargs)
+
+        def _actionable_transitions(*args, **kwargs):
+            transitions = super()._actionable_transitions(*args, **kwargs)
+            transitions.reverse()
+            return transitions
+
+

@@ -46,7 +46,7 @@ The CLI can used to execute statecharts.
                             send events to the statechart simulation
 
 
-The events to be considered can be specified using `--events`.
+The events to be considered can be specified using ``--events``.
 For example::
 
     (shell) pyss execute -vvv  examples/concrete/history.yaml --events next pause
