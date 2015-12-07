@@ -184,7 +184,7 @@ Events, transitions and states
 ******************************
 
 The module `pyss.model` contains several classes and mixins to define
-states, transitions and events.
+states, transitions and events. Apart from `StateMixin`, `ActionStateMixin`, `TransitionStateMixin`, `CompositeStateMixin`, it defines:
 
 .. automodule:: pyss.model
     :members: Event, Transition, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
