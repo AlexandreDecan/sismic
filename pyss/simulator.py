@@ -28,12 +28,12 @@ class MicroStep:
 class MacroStep:
     def __init__(self, main_step: MicroStep, micro_steps: list):
         """
-        A MacroStep corresponds to the process of a Transition (given an Event or in case of an
-        eventless transition). A MacroStep contains one main step (the one who processes the
+        A macro step corresponds to the process of a Transition (given an ``Event`` or in case of an
+        eventless transition). A ``MacroStep`` contains one main step (the one who processes the
         transition) and a (possibly empty) list of stabilization steps.
 
-        :param main_step: Main (MicroStep instance) step.
-        :param micro_steps: A possibly empty list of MicroStep instances (stabilization steps).
+        :param main_step: Main (``MicroStep`` instance) step.
+        :param micro_steps: A possibly empty list of ``MicroStep`` instances (stabilization steps).
         """
         self.main = main_step
         self.micro_steps = micro_steps
@@ -84,7 +84,7 @@ class Simulator:
         Return the list of active states.
         States are ordered by depth.
 
-        :return: A list of active states
+        :return: The list of active states names
         """
         return sorted(self._configuration, key=lambda s: self._statechart.depth_of(s))
 
@@ -95,7 +95,7 @@ class Simulator:
         :param event: an ``Event`` instance
         :param internal: set to True if the provided ``Event`` should be considered as
             an internal event (and thus, as to be prepended to the events queue).
-        :return: self, so it can be chained
+        :return: ``self``
         """
         if internal:
             self._events.appendleft(event)
@@ -197,7 +197,7 @@ class Simulator:
         the current configuration. The list is ordered: deepest states first.
 
         :param event: Event to considered or None for eventless transitions
-        :return: A (possibly empty) ordered list of Transition instances
+        :return: A (possibly empty) ordered list of ``Transition`` instances
         """
         transitions = []
         for transition in self._statechart.transitions:
@@ -216,7 +216,7 @@ class Simulator:
         Return a stabilization step, ie. a step that lead to a more stable situation
         for the current statechart (expand to initial state, expand to history state, etc.).
 
-        :return: A MicroStep instance or None if this statechart can not be stabilized
+        :return: A ``MicroStep`` instance or ``None`` if this statechart can not be stabilized
         """
         # Check if we are in a set of "stable" states
         leaves = self._statechart.leaf_for(list(self._configuration))
@@ -235,7 +235,7 @@ class Simulator:
         """
         Compute, apply and return stabilization steps.
 
-        :return: A list of MicroStep instances
+        :return: A list of ``MicroStep`` instances
         """
         # Stabilization
         steps = []
@@ -251,8 +251,8 @@ class Simulator:
         Return the MicroStep (if any) associated with the appropriate transition matching
         given event (or eventless transition if event is None).
 
-        :param event: Event to consider (or None)
-        :return: A MicroStep instance or None
+        :param event: ``Event`` to consider (or None)
+        :return: A ``MicroStep`` instance or None
         :raise: a Warning in case of non determinism
         """
         transitions = self._actionable_transitions(event)
@@ -309,7 +309,7 @@ class Simulator:
         """
         Apply given MicroStep on this statechart
 
-        :param step: MicroStep instance
+        :param step: ``MicroStep`` instance
         """
         entered_states = list(map(lambda s: self._statechart.states[s], step.entered_states))
         exited_states = list(map(lambda s: self._statechart.states[s], step.exited_states))
