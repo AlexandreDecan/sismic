@@ -58,6 +58,12 @@ class Transition(object):
         """
         return self.event is None
 
+    def __eq__(self, other):
+        return (isinstance(other, Transition) and
+                self.from_state == other.from_state and
+                self.to_state == other.to_state and
+                self.event == other.event)
+
     def __repr__(self):
         return 'Transition({0}, {2}, {1})'.format(self.from_state, self.to_state, self.event)
 
