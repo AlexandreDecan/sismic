@@ -88,7 +88,7 @@ class Simulator:
         """
         return sorted(self._configuration, key=lambda s: self._statechart.depth_of(s))
 
-    def send(self, event:model.Event, internal=False):
+    def send(self, event: model.Event, internal: bool=False):
         """
         Send an event to the simulator, and add it into the event queue.
 
