@@ -1,0 +1,17 @@
+statechart:
+  name: infinite statechart
+  initial: s1
+  on entry: x = 0
+  states:
+    - name: s1
+      on entry: x += 1
+      transitions:
+        - target: s2
+          guard: x < 100
+        - target: stop
+          guard : x >= 100
+    - name: s2
+      transitions:
+        - target: s1
+    - name: stop
+      type: final

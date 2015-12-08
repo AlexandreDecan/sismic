@@ -177,3 +177,30 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
 
         simulator.send(Event('next1')).send(Event('next2')).execute()
         self.assertFalse(simulator.running)
+
+
+class InfiniteExecutionTests(unittest.TestCase):
+    def setUp(self):
+        self.sc = io.import_from_yaml(open('examples/simple/infinite.yaml'))
+        self.sim = Simulator(self.sc, PythonEvaluator())
+
+    def test_three_steps(self):
+        self.assertEqual(self.sim.configuration, ['s1'])
+        self.sim.execute_once()
+        self.assertEqual(self.sim.configuration, ['s2'])
+        self.sim.execute_once()
+        self.assertEqual(self.sim.configuration, ['s1'])
+        self.sim.execute_once()
+        self.assertEqual(self.sim.configuration, ['s2'])
+        self.assertEqual(self.sim._evaluator.context['x'], 2)  # x is incremented in s1.on_entry
+
+    def test_auto_three_steps(self):
+        self.sim.execute(max_steps=3)
+        self.assertEqual(self.sim.configuration, ['s2'])
+        self.assertEqual(self.sim._evaluator.context['x'], 2)  # x is incremented in s1.on_entry
+
+    def test_auto_stop(self):
+        self.sim.execute()
+        self.assertFalse(self.sim.running)
+        self.assertEqual(self.sim._evaluator.context['x'], 100)
+

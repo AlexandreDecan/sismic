@@ -88,14 +88,19 @@ class Simulator:
         """
         return sorted(self._configuration, key=lambda s: self._statechart.depth_of(s))
 
-    def send(self, event:model.Event):
+    def send(self, event:model.Event, internal=False):
         """
         Send an event to the simulator, and add it into the event queue.
 
         :param event: an ``Event`` instance
+        :param internal: set to True if the provided ``Event`` should be considered as
+            an internal event (and thus, as to be prepended to the events queue).
         :return: self, so it can be chained
         """
-        self._events.append(event)
+        if internal:
+            self._events.appendleft(event)
+        else:
+            self._events.append(event)
         return self
 
     def _start(self) -> list:
@@ -135,20 +140,29 @@ class Simulator:
         return self
 
     def __next__(self):
-        steps = self.execute_once()
-        if steps:
-            return steps
+        step = self.execute_once()
+        if step:
+            return step
         else:
             raise StopIteration
 
-    def execute(self) -> list:
+    def execute(self, max_steps: int=None) -> list:
         """
         Repeatedly calls ``self.execute_once()`` and return a list containing
         the returned values of ``self.execute_once()``.
 
+        :param max_steps: An upper bound on the number steps that are computed and returned.
+            Default is None. Set to an integer to avoid infinite loops in the statechart simulation.
         :return: A list of ``MacroStep`` instances
         """
-        return [step for step in self]
+        steps = []
+        i = 0
+        for step in self:
+            steps.append(step)
+            i += 1
+            if max_steps and i == max_steps:
+                break
+        return steps
 
     def execute_once(self) -> MacroStep:
         """
@@ -305,7 +319,7 @@ class Simulator:
             if isinstance(state, model.ActionStateMixin) and state.on_exit:
                 for event in self._evaluator.execute_action(state.on_exit):
                     # Internal event
-                    self._events.appendleft(event)
+                    self.send(event, internal=True)
 
         # Deal with history: this only concerns compound states
         exited_compound_states = list(filter(lambda s: isinstance(s, model.CompoundState), exited_states))
@@ -337,7 +351,7 @@ class Simulator:
             if isinstance(state, model.ActionStateMixin) and state.on_entry:
                 for event in self._evaluator.execute_action(state.on_entry):
                     # Internal event
-                    self._events.appendleft(event)
+                    self.send(event, internal=True)
 
         # Add state to configuration
         self._configuration = self._configuration.union(step.entered_states)

@@ -86,15 +86,23 @@ obtained by repeatedly calling ``execute_once()``:
     for step in steps:
       assert isinstance(step, MacroStep)
 
+As a call to ``execute()`` could lead to an infinite execution (see for example */examples/simple/infinite.yaml*),
+an additional parameter ``max_steps: int`` can be specified to limit the number of steps that are computed
+and executed by the method.
 
-The simulator is fully observable: its ``execute_once()`` method returns an instance of ``MacroStep``.
-A macro step corresponds to the process of either an eventless transition, or an evented transition,
-or no transition (but consume the event), including the stabilization steps (ie. the steps that are needed
-to enter nested states, or to switch into the configuration of an history state).
+.. code:: python
+
+    assert len(simulator.execute(max_steps=10)) <= 10
 
 
 Macro and micro steps
 ---------------------
+
+The simulator is fully observable: its ``execute_once()`` (resp. ``execute()``) method returns
+an instance of (resp. a list of) ``MacroStep``.
+A macro step corresponds to the process of either an eventless transition, or an evented transition,
+or no transition (but consume the event), including the stabilization steps (ie. the steps that are needed
+to enter nested states, or to switch into the configuration of an history state).
 
 A ``MacroStep`` exposes an ``Event`` (``None`` in case of eventless transition), a ``Transition`` (``None`` if the
 event was consumed without triggering a transition) and two sequences of state names: ``entered_states`` and
@@ -110,8 +118,8 @@ This way, a complete run of a state machine can be summarized as an ordered list
 and details of such a run can be obtained using the ``MicroStep``'s of a ``MacroStep``.
 
 
-Advanced usages
----------------
+Advanced uses
+-------------
 
 A ``Simulator`` instance provides several other methods than can give useful information about
 the execution of a statechart.
@@ -125,6 +133,7 @@ the execution of a statechart.
 .. automethod:: pyss.simulator.Simulator._transition_step
 .. automethod:: pyss.simulator.Simulator._stabilize_step
 .. automethod:: pyss.simulator.Simulator._stabilize
+
 
 Implemeting other semantics
 ***************************
@@ -144,4 +153,11 @@ inner-first/source-state one that is currently provided), you can subclass ``Sim
             transitions.reverse()
             return transitions
 
+As another example, if you are interested in considering that internal event should not have
+priority over external event, it is sufficient to override the ``send`` method:
 
+.. code:: python
+
+     def send(self, event:model.Event, internal=False):
+        self.append(event)  # No distinction between internal and external events
+        return self
