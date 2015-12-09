@@ -29,15 +29,8 @@ If no evaluator is specified, a :py:class:`~pyss.evaluator.PythonEvaluator` inst
 
 The main methods of a simulator instance are:
 
-.. autoattribute:: pyss.simulator.Simulator.configuration
-
-.. autoattribute:: pyss.simulator.Simulator.running
-
-.. automethod:: pyss.simulator.Simulator.send
-
-.. automethod:: pyss.simulator.Simulator.execute_once
-
-.. automethod:: pyss.simulator.Simulator.execute
+.. autoclass:: pyss.simulator.Simulator
+    :members: configuration, running, send, execute_once, execute
 
 
 Consider the following example.
@@ -102,6 +95,9 @@ event was consumed without triggering a transition) and two sequences of state n
 ``exited_states``. States order in those list indicates the order in which their ``on entry`` and ``on exit`` actions
 were processed.
 
+.. autoclass:: pyss.simulator.MacroStep
+    :members:
+
 The main step and the stabilization steps of a macro step are exposed through ``main_step`` and ``micro_steps``.
 The first is a :py:class:`~pyss.simulator.MicroStep` instance, and the second is an ordered list of
 :py:class:`~pyss.simulator.MicroStep` instances.
@@ -109,8 +105,11 @@ A micro step is the smallest, atomic step that a statechart can execute.
 A :py:class:`~pyss.simulator.MacroStep` instance thus can be viewed (and is!) an aggregate of
 :py:class:`~pyss.simulator.MicroStep` instances.
 
+.. autoclass:: pyss.simulator.MicroStep
+    :members:
+
 This way, a complete run of a state machine can be summarized as an ordered list of
- :py:class:`~pyss.simulator.MacroStep` instances,
+:py:class:`~pyss.simulator.MacroStep` instances,
 and details of such a run can be obtained using the :py:class:`~pyss.simulator.MicroStep`'s of a
 :py:class:`~pyss.simulator.MacroStep`.
 
@@ -130,7 +129,7 @@ Consider the following full-working example.
     sc.validate()  # Raise an exception if our statechart is not a valid one
 
     # Initialize the simulation (with a default PythonEvaluator for the code)
-    simulator = pyss.Simulator(sc)
+    simulator = pyss.simulator.Simulator(sc)
 
     print('Initial configuration = {}'.format(simulator.configuration))
 
