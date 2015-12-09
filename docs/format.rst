@@ -174,6 +174,18 @@ entered.
 Finally, to prevent trivial infinite loops on execution, an internal transition must either define an event or a guard.
 
 
+.. _yaml_example:
+
+
+Example
+*******
+
+Full example of a statechart definition using YAML.
+
+.. literalinclude:: examples/concrete/elevator.yaml
+   :language: yaml
+
+
 Defining statecharts in Python
 ------------------------------
 
@@ -202,12 +214,4 @@ with instances of this class.
 .. autoclass:: pyss.model.StateChart
     :members:
 
-Consider the source of :py:mod:`pyss.io` as an how-to construct a statechart using :py:mod:`pyss.model`.
-
-.. _yaml_example:
-
-Full example using YAML
------------------------
-
-.. literalinclude:: ../examples/concrete/elevator.yaml
-   :language: yaml
+Consider the source of :py:mod:`pyss.io` as an how-to to construct a statechart using :py:mod:`pyss.model`.

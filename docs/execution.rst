@@ -121,6 +121,7 @@ Example
 Consider the following full-working example.
 
 .. code:: python
+
     import pyss
 
     # Construct the statechart
@@ -150,8 +151,8 @@ Advanced uses
 A :py:class:`~pyss.simulator.Simulator` instance provides several other methods than can give useful information about
 the execution of a statechart.
 
-``Simulator`` protected methods
-*******************************
+*Simulator* protected methods
+*****************************
 
 .. automethod:: pyss.simulator.Simulator._start
 .. automethod:: pyss.simulator.Simulator._execute_step

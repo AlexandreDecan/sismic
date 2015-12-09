@@ -73,7 +73,8 @@ Examples
 
 As an example, consider the following statechart that performs simple arithmetic operations.
 
-.. literalinclude:: ../examples/simple/actions.yaml
+.. literalinclude:: examples/simple/actions.yaml
    language: yaml
 
-The statechart from :ref:`yaml_example` shows a more intricated example.
+
+The statechart from :ref:`yaml_example` shows a more intricate example.
