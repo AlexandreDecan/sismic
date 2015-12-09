@@ -18,6 +18,9 @@ Although the parser is quite robut and should warn about most syntaxic problems,
 be valid, or raise a ``ValueError`` exception with a meaningful message.
 
 
+Statechart elements
+^^^^^^^^^^^^^^^^^^^
+
 Statechart
 **********
 
@@ -184,7 +187,7 @@ Finally, to prevent trivial infinite loops on execution, an internal transition 
 
 
 Example
-*******
+^^^^^^^
 
 Full example of a statechart definition using YAML.
 
