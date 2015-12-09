@@ -25,14 +25,19 @@ def _parse_args():  # pragma: no cover
     execute_parser.add_argument('infile',
                                 type=argparse.FileType('r'),
                                 help='A YAML file describing a statechart')
-    execute_parser.add_argument('--no-code',
-                                action='store_true',
-                                dest='nocode',
-                                help='Ignore code to be evaluated and executed in the statechart')
     execute_parser.add_argument('-v', '--verbosity',
                                 help='set output verbosity: -v displays transitions, -vv displays events and configurations, and -vvv displays states',
                                 default=0,
                                 action='count')
+    execute_parser.add_argument('--no-code',
+                                action='store_true',
+                                dest='nocode',
+                                help='Ignore code to be evaluated and executed in the statechart')
+    execute_parser.add_argument('-l', '--limit',
+                                dest='maxsteps',
+                                type=int,
+                                help='limit the number of steps to given number, to prevent infinite loops',
+                                default=-1)
     execute_parser.add_argument('--events',
                                 help='send events to the statechart simulation',
                                 nargs='*',

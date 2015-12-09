@@ -9,9 +9,32 @@ class CommandLineInterfaceTests(unittest.TestCase):
             events = ['next', 'pause']
             verbosity = 3
             nocode = False
+            maxsteps = -1
 
         output = cli._cli_execute(DataTemp)
         self.assertTrue(len(output) > 0)
+
+    def test_infinite(self):
+        class DataTemp:
+            infile = open('examples/simple/infinite.yaml')
+            events = []
+            verbosity = 0
+            nocode = False
+            maxsteps = -1
+
+        output = cli._cli_execute(DataTemp)
+        self.assertEqual(output.strip(), 'Final: True')
+
+    def test_limited_infinite(self):
+        class DataTemp:
+            infile = open('examples/simple/infinite.yaml')
+            events = []
+            verbosity = 0
+            nocode = False
+            maxsteps = 10
+
+        output = cli._cli_execute(DataTemp)
+        self.assertEqual(output.strip(), 'Final: False')
 
     def test_validate(self):
         class DataTemp:

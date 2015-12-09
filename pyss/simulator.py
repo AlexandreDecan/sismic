@@ -140,13 +140,13 @@ class Simulator:
                 return True
         return False
 
-    def execute(self, max_steps: int=None) -> list:
+    def execute(self, max_steps: int=-1) -> list:
         """
         Repeatedly calls ``self.execute_once()`` and return a list containing
         the returned values of ``self.execute_once()``.
 
         :param max_steps: An upper bound on the number steps that are computed and returned.
-            Default is None. Set to an integer to avoid infinite loops in the statechart simulation.
+            Default is -1, no limit. Set to an integer to avoid infinite loops in the statechart simulation.
         :return: A list of ``MacroStep`` instances
         """
         steps = []
@@ -155,7 +155,7 @@ class Simulator:
         while step:
             steps.append(step)
             i += 1
-            if max_steps and i == max_steps:
+            if max_steps > 0 and i == max_steps:
                 break
             step = self.execute_once()
         return steps

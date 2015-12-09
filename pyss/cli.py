@@ -43,7 +43,7 @@ def _cli_execute(args):
     if args.verbosity >= 2:
         print('Events sent: ' + ', '.join(args.events), file=s)
 
-    for i, step in enumerate(simulator):
+    for i, step in enumerate(simulator.execute(args.maxsteps)):
         if args.verbosity >= 1:
             print('Step {} - '.format(i+1), file=s, end='')
         if args.verbosity >= 2:
