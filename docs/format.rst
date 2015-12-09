@@ -10,6 +10,9 @@ A YAML definition of a statechart can be easily imported to a :py:class:`~pyss.m
 The module :py:mod:`pyss.io` provides a convenient loader :py:func:`~pyss.io.import_from_yaml` which takes a textual YAML definition
 of a statechart. It also provides ways to export statechart to YAML (see :py:func:`~pyss.io.export_to_yaml`).
 
+.. automodule:: pyss.io
+    :members: import_from_yaml, export_from_yaml
+
 Although the parser is quite robut and should warn about most syntaxic problems, a :py:class:`~pyss.model.StateChart` instance has a
 :py:meth:`~pyss.model.StateChart.validate` method performs numerous other checks. This method either return ``True`` if the statechart *seems* to
 be valid, or raise a ``ValueError`` exception with a meaningful message.
@@ -108,7 +111,7 @@ Compound states
 ***************
 
 Except final states and history states, states can contain nested states.
-Such a state is a compound state or a region, we do not make any difference between those two concepts.
+Such a state is a *compound state*.
 
 .. code:: yaml
 
@@ -118,6 +121,9 @@ Such a state is a compound state or a region, we do not make any difference betw
       - name: nested state 2
         states:
           - name: nested state 2a
+
+**note:** PySS does not expose the *region* concept of a statechart.
+A *region* is an aggregate of several state, and can be expressed using a compound state.
 
 Orthogonal states
 *****************
@@ -208,8 +214,8 @@ states, transitions and events. Apart from
 Statecharts
 ***********
 
-The :py:class:`~pyss.model.StateChart` class is more interesting as your are more subject to deal
-with instances of this class.
+The :py:class:`~pyss.model.StateChart` class is probably more interesting in the sense that
+your are more subject to deal with instances of this class.
 
 .. autoclass:: pyss.model.StateChart
     :members:

@@ -33,55 +33,8 @@ The main methods of a simulator instance are:
     :members: configuration, running, send, execute_once, execute
 
 
-Consider the following example.
-
-.. code:: python
-
-    simulator = Simulator(my_statechart)
-    # We are now in a stable initial state
-    simulator.send(Event('click'))  # Send event to the simulator
-    simulator.execute_once()  # Will process the event if no eventless transitions are found at first
-
-
-For convenience, :py:meth:`~pyss.simulator.Simulator.send` returns ``self`` and thus can be chained:
-
-.. code:: python
-
-    simulator.send(Event('click')).send(Event('click')).execute_once()
-
-
-Notice that :py:meth:`~pyss.simulator.Simulator.execute_once` consumes at most one event at a time.
-In this example, the second *click* event is not processed.
-
-To process all events *at once*, repeatedly call :py:meth:`~pyss.simulator.Simulator.execute_once` until it returns a ``None`` value.
-For instance:
-
-.. code:: python
-
-    while simulator.execute_once():
-      pass
-
-
-As a shortcut, the `:py:meth:`~pyss.simulator.Simulator.execute` method will return a list of :py:class:`~pyss.simulator.Simulator.MacroStep` instances
-obtained by repeatedly calling :py:meth:`~pyss.simulator.Simulator.execute_once`:
-
-.. code:: python
-
-    steps = simulator.execute()
-    for step in steps:
-      assert isinstance(step, MacroStep)
-
-As a call to :py:meth:`~pyss.simulator.Simulator.execute` could lead to an infinite execution (see for example */examples/simple/infinite.yaml*),
-an additional parameter ``max_steps: int`` can be specified to limit the number of steps that are computed
-and executed by the method.
-
-.. code:: python
-
-    assert len(simulator.execute(max_steps=10)) <= 10
-
-
 Macro and micro steps
----------------------
+*********************
 
 The simulator is fully observable: its :py:meth:`~pyss.simulator.Simulator.execute_once` (resp. :py:meth:`~pyss.simulator.Simulator.execute`) method returns
 an instance of (resp. a list of) :py:class:`~pyss.simulator.MacroStep`.
@@ -115,33 +68,53 @@ and details of such a run can be obtained using the :py:class:`~pyss.simulator.M
 
 
 Example
--------
+*******
 
-Consider the following full-working example.
+Consider the following example.
 
 .. code:: python
 
-    import pyss
+    simulator = Simulator(my_statechart)
+    # We are now in a stable initial state
+    simulator.send(Event('click'))  # Send event to the simulator
+    simulator.execute_once()  # Will process the event if no eventless transitions are found at first
 
-    # Construct the statechart
-    sc = pyss.io.import_from_yaml(open('examples/concrete/elevator.yaml'))
 
-    sc.validate()  # Raise an exception if our statechart is not a valid one
+For convenience, :py:meth:`~pyss.simulator.Simulator.send` returns ``self`` and thus can be chained:
 
-    # Initialize the simulation (with a default PythonEvaluator for the code)
-    simulator = pyss.simulator.Simulator(sc)
+.. code:: python
 
-    print('Initial configuration = {}'.format(simulator.configuration))
+    simulator.send(Event('click')).send(Event('click')).execute_once()
 
-    # Create a new event with some data
-    event = pyss.model.Event('floorSelected', {'floor': 4})
 
-    # Send this event to the simulator
-    simulator.send(event)
+Notice that :py:meth:`~pyss.simulator.Simulator.execute_once` consumes at most one event at a time.
+In this example, the second *click* event is not processed.
 
-    # Process
-    for step in simulator.execute():
-        print(step)
+To process all events *at once*, repeatedly call :py:meth:`~pyss.simulator.Simulator.execute_once` until it returns a ``None`` value.
+For instance:
+
+.. code:: python
+
+    while simulator.execute_once():
+      pass
+
+
+As a shortcut, the :py:meth:`~pyss.simulator.Simulator.execute` method will return a list of :py:class:`~pyss.simulator.Simulator.MacroStep` instances
+obtained by repeatedly calling :py:meth:`~pyss.simulator.Simulator.execute_once`:
+
+.. code:: python
+
+    steps = simulator.execute()
+    for step in steps:
+      assert isinstance(step, MacroStep)
+
+As a call to :py:meth:`~pyss.simulator.Simulator.execute` could lead to an infinite execution (see for example */examples/simple/infinite.yaml*),
+an additional parameter ``max_steps: int`` can be specified to limit the number of steps that are computed
+and executed by the method.
+
+.. code:: python
+
+    assert len(simulator.execute(max_steps=10)) <= 10
 
 
 Advanced uses
@@ -150,8 +123,9 @@ Advanced uses
 A :py:class:`~pyss.simulator.Simulator` instance provides several other methods than can give useful information about
 the execution of a statechart.
 
-*Simulator* protected methods
-*****************************
+
+Additional (protected) methods
+******************************
 
 .. automethod:: pyss.simulator.Simulator._start
 .. automethod:: pyss.simulator.Simulator._execute_step

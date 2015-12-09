@@ -99,7 +99,7 @@ final configuration.
 Examples
 ********
 
-The following examples are relative to :ref:`yaml_example`.
+The following examples are relative to :ref:`this statechart <yaml_example>`.
 
 Destination is finally reached
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -153,6 +153,7 @@ The :py:mod:`pyss.testing` module essentially defines the following classes:
  - :py:class:`~pyss.testing.StateChartTester` initializes a test.
 
 .. autoclass:: pyss.testing.TesterConfiguration
+    :members:
 
 .. autoclass:: pyss.testing.StateChartTester
     :members:

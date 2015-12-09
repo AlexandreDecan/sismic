@@ -3,7 +3,7 @@ from .model import Event
 
 class Evaluator:
     """
-    Base class for any Evaluator.
+    Base class for any evaluator.
 
     An instance of this class defines what can be done with piece of codes
     contained in a statechart (condition, action, etc.).
@@ -12,7 +12,7 @@ class Evaluator:
     @property
     def context(self) -> dict:
         """
-        Return the context of this Evaluator. A context is a mapping between
+        Return the context of this evaluator. A context is a mapping between
         variables and values that is expected to be exposed through
         ``evaluate_condition`` and ``execute_action``.
 

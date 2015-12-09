@@ -309,7 +309,7 @@ class StateChart(object):
     @lru_cache()
     def least_common_ancestor(self, s1: str, s2: str) -> str:
         """
-        Return the deepest common ancestor for s1 and s2, or None if
+        Return the deepest common ancestor for *s1* and *s2*, or ``None`` if
         there is no common ancestor except root (top-level) state.
 
         :param s1: name of first state
