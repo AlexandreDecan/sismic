@@ -88,6 +88,15 @@ class Simulator:
         """
         return sorted(self._configuration, key=lambda s: self._statechart.depth_of(s))
 
+    @property
+    def evaluator(self) -> Evaluator:
+        """
+        Return the ``Evaluator`` instance associated with this simulator.
+
+        :return: The associated evaluator
+        """
+        return self._evaluator
+
     def send(self, event: model.Event, internal: bool=False):
         """
         Send an event to the simulator, and add it into the event queue.
@@ -131,21 +140,6 @@ class Simulator:
                 return True
         return False
 
-    def __iter__(self):
-        """
-        Return an iterator for current execution.
-        It corresponds to successive call to ``execute_once()``.
-        Event can be added using ``iterator.send()``.
-        """
-        return self
-
-    def __next__(self):
-        step = self.execute_once()
-        if step:
-            return step
-        else:
-            raise StopIteration
-
     def execute(self, max_steps: int=None) -> list:
         """
         Repeatedly calls ``self.execute_once()`` and return a list containing
@@ -157,11 +151,13 @@ class Simulator:
         """
         steps = []
         i = 0
-        for step in self:
+        step = self.execute_once()
+        while step:
             steps.append(step)
             i += 1
             if max_steps and i == max_steps:
                 break
+            step = self.execute_once()
         return steps
 
     def execute_once(self) -> MacroStep:

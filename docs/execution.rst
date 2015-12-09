@@ -68,16 +68,7 @@ For instance:
       pass
 
 
-As a shortcut, a ``Simulator`` instance provides an iterator:
-
-.. code:: python
-
-    for step in simulator:
-      assert isinstance(step, MacroStep)
-    assert simulator.execute_once() == None
-
-
-And as a better shortcut, the ``execute()`` method will return a list of ``MacroStep`` instances
+As a shortcut, the ``execute()`` method will return a list of ``MacroStep`` instances
 obtained by repeatedly calling ``execute_once()``:
 
 .. code:: python
@@ -135,8 +126,8 @@ the execution of a statechart.
 .. automethod:: pyss.simulator.Simulator._stabilize
 
 
-Implemeting other semantics
-***************************
+Implementing other semantics
+****************************
 
 It is also quite easy to extend (or adapt) parts of a simulator to implement other semantics.
 For example, if you are interested in a outer-first/source-state semantic (instead of the
