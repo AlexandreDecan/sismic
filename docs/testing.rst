@@ -117,7 +117,7 @@ If the execution ends (``stop`` event) before the destination is reached (ie. in
 another state than ``destinationReached``), the tester execution does not end
 in a final state, meaning that the test fails.
 
-.. literalinclude:: .//examples/tester/elevator/destination_reached.yaml
+.. literalinclude:: ../examples/tester/elevator/destination_reached.yaml
    :language: yaml
 
 
@@ -133,6 +133,7 @@ The ``on entry`` of ``error`` then raises an ``AssertionError``.
 
 .. literalinclude:: ../examples/tester/elevator/closed_doors_while_moving.yaml
    :language: yaml
+
 
 7th floor is never reached
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

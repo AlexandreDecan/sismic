@@ -51,8 +51,8 @@ Contents
     format
     execution
     evaluation
-    cli
     testing
+    cli
 
 
 Source code
