@@ -216,7 +216,7 @@ class Simulator:
         Return a stabilization step, ie. a step that lead to a more stable situation
         for the current statechart (expand to initial state, expand to history state, etc.).
 
-        :return: A ``MicroStep`` instance or ``None`` if this statechart can not be stabilized
+        :return: A ``MicroStep`` instance or ``None`` if this statechart can not be more stabilized
         """
         # Check if we are in a set of "stable" states
         leaves = self._statechart.leaf_for(list(self._configuration))
@@ -307,7 +307,7 @@ class Simulator:
 
     def _execute_step(self, step: MicroStep):
         """
-        Apply given MicroStep on this statechart
+        Apply given ``MicroStep`` on this statechart
 
         :param step: ``MicroStep`` instance
         """
