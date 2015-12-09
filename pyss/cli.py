@@ -33,7 +33,7 @@ def _cli_execute(args):
     s = StringIO()
 
     sc = import_from_yaml(args.infile)
-    simulator = Simulator(sc, PythonEvaluator() if args.python else DummyEvaluator())
+    simulator = Simulator(sc, DummyEvaluator() if args.nocode else PythonEvaluator())
 
     if args.verbosity >= 1:
         print('Initial configuration: ' + ', '.join(simulator.configuration), file=s)

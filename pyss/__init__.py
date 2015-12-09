@@ -25,9 +25,10 @@ def _parse_args():  # pragma: no cover
     execute_parser.add_argument('infile',
                                 type=argparse.FileType('r'),
                                 help='A YAML file describing a statechart')
-    execute_parser.add_argument('--python',
+    execute_parser.add_argument('--no-code',
                                 action='store_true',
-                                help='use Python to execute and evaluate the actions and conditions.')
+                                dest='nocode',
+                                help='Ignore code to be evaluated and executed in the statechart')
     execute_parser.add_argument('-v', '--verbosity',
                                 help='set output verbosity: -v displays transitions, -vv displays events and configurations, and -vvv displays states',
                                 default=0,

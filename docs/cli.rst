@@ -30,15 +30,15 @@ The CLI can used to execute statecharts.
 ::
 
     (shell) pyss execute -h
-    usage: pyss execute [-h] [--python] [-v] [--events [EVENT [EVENT ...]]] infile
+    usage: pyss execute [-h] [--no-code] [-v] [--events [EVENT [EVENT ...]]] infile
 
     positional arguments:
       infile                A YAML file describing a statechart
 
     optional arguments:
       -h, --help            show this help message and exit
-      --python              use Python to execute and evaluate the actions and
-                            conditions.
+      --no-code             Ignore code to be evaluated and executed in the
+                            statechart
       -v, --verbosity       set output verbosity: -v displays transitions, -vv
                             displays events and configurations, and -vvv displays
                             states

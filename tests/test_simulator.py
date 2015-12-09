@@ -1,20 +1,20 @@
 import unittest
 from pyss import io
 from pyss.simulator import Simulator
-from pyss.evaluator import PythonEvaluator
+from pyss.evaluator import DummyEvaluator
 from pyss.model import Event
 
 
 class SimulatorSimpleTest(unittest.TestCase):
     def test_init(self):
         sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
-        simulator = Simulator(sc)
+        simulator = Simulator(sc, DummyEvaluator)
         self.assertEqual(simulator.configuration, ['s1'])
         self.assertTrue(simulator.running)
 
     def test_simple_configuration(self):
         sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
-        simulator = Simulator(sc)
+        simulator = Simulator(sc, DummyEvaluator)
         simulator.execute_once()  # Should do nothing!
         self.assertEqual(simulator.configuration, ['s1'])
         simulator.send(Event('goto s2'))
@@ -25,7 +25,7 @@ class SimulatorSimpleTest(unittest.TestCase):
 
     def test_simple_entered(self):
         sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
-        simulator = Simulator(sc)
+        simulator = Simulator(sc, DummyEvaluator)
         simulator.send(Event('goto s2'))
         self.assertEqual(simulator.execute_once().entered_states, ['s2'])
         simulator.send(Event('goto final'))
@@ -35,7 +35,7 @@ class SimulatorSimpleTest(unittest.TestCase):
 
     def test_simple_final(self):
         sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
-        simulator = Simulator(sc)
+        simulator = Simulator(sc, DummyEvaluator)
         simulator.send(Event('goto s2')).send(Event('goto final'))
         simulator.execute()
         self.assertFalse(simulator.running)
@@ -44,13 +44,13 @@ class SimulatorSimpleTest(unittest.TestCase):
 class SimulatorElevatorTests(unittest.TestCase):
     def test_init(self):
         sc = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
-        simulator = Simulator(sc, PythonEvaluator())
+        simulator = Simulator(sc)
 
         self.assertEqual(len(simulator.configuration), 5)
 
     def test_floor_selection(self):
         sc = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
-        simulator = Simulator(sc, PythonEvaluator())
+        simulator = Simulator(sc)
 
         simulator.send(Event('floorSelected', {'floor': 4})).execute_once()
         self.assertEqual(simulator._evaluator.context['destination'], 4)
@@ -59,7 +59,7 @@ class SimulatorElevatorTests(unittest.TestCase):
 
     def test_doorsOpen(self):
         sc = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
-        simulator = Simulator(sc, PythonEvaluator())
+        simulator = Simulator(sc)
 
         simulator.send(Event('floorSelected', {'floor': 4}))
         simulator.execute()
@@ -74,7 +74,7 @@ class SimulatorElevatorTests(unittest.TestCase):
 class SimulatorNonDeterminismTests(unittest.TestCase):
     def test_nondeterminism(self):
         sc = io.import_from_yaml(open('examples/simple/nondeterministic.yaml'))
-        simulator = Simulator(sc)
+        simulator = Simulator(sc, DummyEvaluator)
 
         with self.assertRaises(Warning):
             simulator.execute_once()
@@ -83,11 +83,11 @@ class SimulatorNonDeterminismTests(unittest.TestCase):
 class SimulatorHistoryTests(unittest.TestCase):
     def test_init(self):
         sc = io.import_from_yaml(open('examples/concrete/history.yaml'))
-        simulator = Simulator(sc)
+        simulator = Simulator(sc, DummyEvaluator)
 
     def test_memory(self):
         sc = io.import_from_yaml(open('examples/concrete/history.yaml'))
-        simulator = Simulator(sc)
+        simulator = Simulator(sc, DummyEvaluator)
 
         simulator.send(Event('next')).execute_once()
         self.assertEqual(sorted(simulator.configuration), ['loop', 's2'])
@@ -98,7 +98,7 @@ class SimulatorHistoryTests(unittest.TestCase):
 
     def test_resume_memory(self):
         sc = io.import_from_yaml(open('examples/concrete/history.yaml'))
-        simulator = Simulator(sc)
+        simulator = Simulator(sc, DummyEvaluator)
 
         simulator.send(Event('next')).send(Event('pause')).send(Event('continue'))
         steps = simulator.execute()
@@ -110,7 +110,7 @@ class SimulatorHistoryTests(unittest.TestCase):
 
     def test_after_memory(self):
         sc = io.import_from_yaml(open('examples/concrete/history.yaml'))
-        simulator = Simulator(sc)
+        simulator = Simulator(sc, DummyEvaluator)
 
         simulator.send(Event('next')).send(Event('pause')).send(Event('continue'))
         simulator.send(Event('next')).send(Event('next'))
@@ -125,7 +125,7 @@ class SimulatorHistoryTests(unittest.TestCase):
 class SimulatorDeepHistoryTests(unittest.TestCase):
     def test_deep_memory(self):
         sc = io.import_from_yaml(open('examples/concrete/deep_history.yaml'))
-        simulator = Simulator(sc)
+        simulator = Simulator(sc, DummyEvaluator)
 
         simulator.send(Event('next1')).send(Event('next2'))
         simulator.execute()
@@ -143,7 +143,7 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
 
     def test_entered_order(self):
         sc = io.import_from_yaml(open('examples/concrete/deep_history.yaml'))
-        simulator = Simulator(sc)
+        simulator = Simulator(sc, DummyEvaluator)
 
         simulator.send(Event('next1')).send(Event('next2')).send(Event('pause'))
         step = simulator.execute()[-1]
@@ -164,7 +164,7 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
 
     def test_exited_order(self):
         sc = io.import_from_yaml(open('examples/concrete/deep_history.yaml'))
-        simulator = Simulator(sc)
+        simulator = Simulator(sc, DummyEvaluator)
 
         simulator.send(Event('next1')).send(Event('next2')).send(Event('pause'))
         step = simulator.execute()[-1]
@@ -182,7 +182,7 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
 class InfiniteExecutionTests(unittest.TestCase):
     def setUp(self):
         self.sc = io.import_from_yaml(open('examples/simple/infinite.yaml'))
-        self.sim = Simulator(self.sc, PythonEvaluator())
+        self.sim = Simulator(self.sc)
 
     def test_three_steps(self):
         self.assertEqual(self.sim.configuration, ['s1'])

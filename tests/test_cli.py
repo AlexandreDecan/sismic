@@ -8,7 +8,7 @@ class CommandLineInterfaceTests(unittest.TestCase):
             infile = open('examples/concrete/history.yaml')
             events = ['next', 'pause']
             verbosity = 3
-            python = False
+            nocode = False
 
         output = cli._cli_execute(DataTemp)
         self.assertTrue(len(output) > 0)

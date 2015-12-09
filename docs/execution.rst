@@ -24,7 +24,7 @@ In particular, eventless transitions are processed before evented transitions, i
 before external events, and the simulation follows a inner-first/source-state semantic.
 
 A ``Simulator`` instance is constructed upon a ``StateChart`` instance and an optional ``Evaluator`` (see :ref:`code_evaluation`).
-If no ``Evaluator`` instance is specified, a ``DummyEvaluator`` instance will be used by default.
+If no ``Evaluator`` instance is specified, a ``PythonEvaluator`` instance will be used by default.
 
 The main methods of a simulator instance are:
 

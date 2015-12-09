@@ -22,7 +22,7 @@ An ``Evaluator`` must provide two methods:
 By default, PySS provides two built-in ``Evaluator`` subclasses:
 
  - A ``DummyEvaluator`` that always evaluate a guard to ``True`` and silently ignores ``action``, ``on entry`` and ``on exit``.
- - A ``PythonEvaluator`` that brings Python into our statecharts.
+ - A ``PythonEvaluator`` that brings Python into our statecharts and which is used by default.
 
 
 Built-in Python code evaluator

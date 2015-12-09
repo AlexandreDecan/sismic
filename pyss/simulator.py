@@ -1,6 +1,6 @@
 from collections import deque
 from . import model
-from .evaluator import Evaluator, DummyEvaluator
+from .evaluator import Evaluator, PythonEvaluator
 
 
 class MicroStep:
@@ -70,9 +70,9 @@ class Simulator:
         A discrete simulator that interprets a statechart according to a semantic close to SCXML.
 
         :param statechart: statechart to interpret
-        :param evaluator: Code evaluator (optional)
+        :param evaluator: Code evaluator (optional, PythonEvaluator by default)
         """
-        self._evaluator = evaluator if evaluator else DummyEvaluator()
+        self._evaluator = evaluator if evaluator else PythonEvaluator()
         self._statechart = statechart
         self._configuration = set()  # Set of active states
         self._events = deque()  # Events queue
