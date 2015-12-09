@@ -62,12 +62,12 @@ class PythonEvaluator(Evaluator):
     """
     Evaluator that interprets Python code.
 
-    An initial context can be provided, as a dictionary (will be used as __locals__).
-    This context will be updated with __builtins__, Event and with send(), a function that
-    receive an Event instance that will be fired on the state machine.
+    An initial context can be provided, as a dictionary (will be used as ``__locals__``).
+    This context will be updated with ``__builtins__``, Event and with ``send()``, a function that
+    receive an ``Event`` instance that will be fired on the state machine.
 
-    When evaluate_condition or execute_action is called with an Event, this event
-    will be added to the context, as {'event': event_instance}.
+    When ``evaluate_condition`` or ``execute_action`` is called with an Event, this event
+    will be added to the context, as ``{'event': event_instance}``.
     """
 
     def __init__(self, initial_context: dict=None):
@@ -88,6 +88,11 @@ class PythonEvaluator(Evaluator):
 
     @property
     def context(self) -> dict:
+        """
+        The context of this evaluator.
+
+        :return: a mapping between variable name and value (a dict-like structure).
+        """
         return self._context
 
     def evaluate_condition(self, condition: str, event: Event=None) -> bool:

@@ -5,16 +5,12 @@ __author__ = 'Alexandre Decan'
 __email__ = 'alexandre.decan@lexpage.net'
 __licence__ = 'LGPL3'
 
-
 # "Export" most used elements
-from . import model
-from . import simulator
-from . import evaluator
-from . import io
+from . import evaluator, io, model, simulator, testing
 
 
 def _parse_args():  # pragma: no cover
-    from .cli import _cli_execute, _cli_validate
+    from .cli import cli_execute, cli_validate
     import argparse
 
     description = '{d} v{v} by {a}'.format(d=__description__, v=__version__, a=__author__)

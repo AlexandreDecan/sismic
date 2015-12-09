@@ -11,7 +11,7 @@ class CommandLineInterfaceTests(unittest.TestCase):
             nocode = False
             maxsteps = -1
 
-        output = cli._cli_execute(DataTemp)
+        output = cli.cli_execute(DataTemp)
         self.assertTrue(len(output) > 0)
 
     def test_infinite(self):
@@ -22,7 +22,7 @@ class CommandLineInterfaceTests(unittest.TestCase):
             nocode = False
             maxsteps = -1
 
-        output = cli._cli_execute(DataTemp)
+        output = cli.cli_execute(DataTemp)
         self.assertEqual(output.strip(), 'Final: True')
 
     def test_limited_infinite(self):
@@ -33,13 +33,13 @@ class CommandLineInterfaceTests(unittest.TestCase):
             nocode = False
             maxsteps = 10
 
-        output = cli._cli_execute(DataTemp)
+        output = cli.cli_execute(DataTemp)
         self.assertEqual(output.strip(), 'Final: False')
 
     def test_validate(self):
         class DataTemp:
             infile = open('examples/concrete/history.yaml')
 
-        output = cli._cli_validate(DataTemp)
+        output = cli.cli_validate(DataTemp)
         self.assertTrue(len(output) > 0)
 

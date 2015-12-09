@@ -65,3 +65,15 @@ by the standard library of Python.
 
 .. autoclass:: pyss.evaluator.PythonEvaluator
     :members:
+    :inherited-members:
+
+
+Examples
+--------
+
+As an example, consider the following statechart that performs simple arithmetic operations.
+
+.. literalinclude:: ../examples/simple/actions.yaml
+   language: yaml
+
+The statechart from :ref:`yaml_example` shows a more intricated example.

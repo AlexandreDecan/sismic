@@ -1,5 +1,5 @@
-Testing statecharts
-===================
+Testing statecharts with statecharts
+====================================
 
 Like software, statecharts can be tested too.
 
@@ -86,7 +86,7 @@ of a tested statechart:
            # ...
 
 
-Specific behavior
+Expected behavior
 *****************
 
 Importantly, and this is why this point deserves a subsection, you **must** ensure that valid execution
@@ -144,8 +144,8 @@ This example shows that assertion can be made on transition action too.
    :language: yaml
 
 
-The ``testing`` module
-----------------------
+The *testing* module
+--------------------
 
 The :py:mod:`pyss.testing` module essentially defines the following classes:
 
@@ -247,5 +247,5 @@ Failure of a test
 A test failed when one of the following occurs:
  - An AssertionError was raised by one of the tester.
  - There is at least one tester that is not in a final configuration after the execution (or when
-   :py:meth`~pyss.testing.StateChartTester.stop` is called).
+   :py:meth:`~pyss.testing.StateChartTester.stop` is called).
  - Any other exception occurred in the execution of the tested statechart or the statechart testers.

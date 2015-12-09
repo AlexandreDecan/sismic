@@ -16,8 +16,8 @@ In a nutshell::
 Please consult :ref:`cli_execute` for more information.
 
 
-The ``simulator`` module
-------------------------
+The *simulator* module
+----------------------
 
 The module :py:mod:`~pyss.simulator` contains a :py:class:`~pyss.simulator.Simulator` class that interprets a statechart following SCXML semantic.
 In particular, eventless transitions are processed before evented transitions, internal events are consumed
@@ -113,6 +113,35 @@ This way, a complete run of a state machine can be summarized as an ordered list
  :py:class:`~pyss.simulator.MacroStep` instances,
 and details of such a run can be obtained using the :py:class:`~pyss.simulator.MicroStep`'s of a
 :py:class:`~pyss.simulator.MacroStep`.
+
+
+Example
+-------
+
+Consider the following full-working example.
+
+.. code:: python
+    import pyss
+
+    # Construct the statechart
+    sc = pyss.io.import_from_yaml(open('examples/concrete/elevator.yaml'))
+
+    sc.validate()  # Raise an exception if our statechart is not a valid one
+
+    # Initialize the simulation (with a default PythonEvaluator for the code)
+    simulator = pyss.Simulator(sc)
+
+    print('Initial configuration = {}'.format(simulator.configuration))
+
+    # Create a new event with some data
+    event = pyss.model.Event('floorSelected', {'floor': 4})
+
+    # Send this event to the simulator
+    simulator.send(event)
+
+    # Process
+    for step in simulator.execute():
+        print(step)
 
 
 Advanced uses

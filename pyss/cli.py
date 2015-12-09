@@ -7,7 +7,7 @@ from .io import import_from_yaml
 from .model import Event
 
 
-def _cli_validate(args):
+def cli_validate(args):
     s = StringIO()
 
     try:
@@ -29,7 +29,7 @@ def _cli_validate(args):
     return s.getvalue()
 
 
-def _cli_execute(args):
+def cli_execute(args):
     s = StringIO()
 
     sc = import_from_yaml(args.infile)
