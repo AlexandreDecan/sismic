@@ -188,7 +188,7 @@ Example
 
 Full example of a statechart definition using YAML.
 
-.. literalinclude:: examples/concrete/elevator.yaml
+.. literalinclude:: ../examples/concrete/elevator.yaml
    :language: yaml
 
 

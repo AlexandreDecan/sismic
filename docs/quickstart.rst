@@ -27,7 +27,7 @@ Example
 
 Example of a YAML definition of a state chart for an elevator:
 
-.. literalinclude:: examples/concrete/elevator.yaml
+.. literalinclude:: ../examples/concrete/elevator.yaml
    :language: yaml
 
 
