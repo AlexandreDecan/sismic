@@ -146,7 +146,7 @@ class Simulator:
         the returned values of ``self.execute_once()``.
 
         :param max_steps: An upper bound on the number steps that are computed and returned.
-            Default is -1, no limit. Set to an integer to avoid infinite loops in the statechart simulation.
+            Default is -1, no limit. Set to a positive integer to avoid infinite loops in the statechart simulation.
         :return: A list of ``MacroStep`` instances
         """
         steps = []

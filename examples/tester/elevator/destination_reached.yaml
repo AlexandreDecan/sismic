@@ -1,0 +1,23 @@
+statechart:
+  name: Destination is reached
+  initial: waiting
+  states:
+    - name: waiting
+      transitions:
+        - target: floorSelected
+          event: step
+          guard: processed('floorSelected')  # Avoid consumed('floorSelected') here, as it does not imply its processing
+    - name: floorSelected
+      transitions:
+        - target: destinationReached
+          event: step
+          guard: context['current'] == context['destination']
+    - name: destinationReached
+      transitions:
+        - target: final
+          event: stop
+        - target: floorSelected
+          event: step
+          guard: processed('floorSelected')
+    - name: final
+      type: final

@@ -6,12 +6,12 @@ Defining statecharts in YAML
 
 Statecharts can be defined using a YAML format.
 
-A YAML definition of a statechart can be easily imported to a ``StateChart`` instance.
-The module ``pyss.io`` provides a convenient loader ``import_from_yaml(data)`` which takes a textual YAML definition
-of a statechart. It also provides ways to export statechart to YAML (see ``pyss.format.export_to_yaml``).
+A YAML definition of a statechart can be easily imported to a :py:class:`~pyss.model.StateChart` instance.
+The module :py:mod:`pyss.io` provides a convenient loader :py:func:`~pyss.io.import_from_yaml` which takes a textual YAML definition
+of a statechart. It also provides ways to export statechart to YAML (see :py:func:`~pyss.io.export_to_yaml`).
 
-Although the parser is quite robut and should warn about most syntaxic problems, a ``StateChart`` instance has a
-``validate()`` method performs numerous other checks. This method either return ``True`` if the statechart *seems* to
+Although the parser is quite robut and should warn about most syntaxic problems, a :py:class:`~pyss.model.StateChart` instance has a
+:py:meth:`~pyss.model.StateChart.validate` method performs numerous other checks. This method either return ``True`` if the statechart *seems* to
 be valid, or raise a ``ValueError`` exception with a meaningful message.
 
 
@@ -183,8 +183,10 @@ this is not very convenient.
 Events, transitions and states
 ******************************
 
-The module ``pyss.model`` contains several classes and mixins to define
-states, transitions and events. Apart from ``StateMixin``, ``ActionStateMixin``, ``TransitionStateMixin``, ``CompositeStateMixin``, it defines:
+The module :py:mod:`pyss.model` contains several classes and mixins to define
+states, transitions and events. Apart from
+:py:class:`~pyss.model.StateMixin`, :py:class:`~pyss.model.ActionStateMixin`,
+:py:class:`~pyss.model.TransitionStateMixin`, and :py:class:`~pyss.model.CompositeStateMixin`, it defines:
 
 .. automodule:: pyss.model
     :members: Event, Transition, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
@@ -194,10 +196,18 @@ states, transitions and events. Apart from ``StateMixin``, ``ActionStateMixin``,
 Statecharts
 ***********
 
-The ``StateChart`` class is more interesting as your are more subject to deal
+The :py:class:`~pyss.model.StateChart` class is more interesting as your are more subject to deal
 with instances of this class.
 
 .. autoclass:: pyss.model.StateChart
     :members:
 
-Consider the source of ``pyss.io`` as an how-to construct a statechart using ``pyss.model``.
+Consider the source of :py:mod:`pyss.io` as an how-to construct a statechart using :py:mod:`pyss.model`.
+
+.. _yaml_example:
+
+Full example using YAML
+-----------------------
+
+.. literalinclude:: ../examples/concrete/elevator.yaml
+   :language: yaml

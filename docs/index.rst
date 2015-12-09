@@ -52,6 +52,7 @@ Contents
     execution
     evaluation
     cli
+    testing
 
 
 Source code

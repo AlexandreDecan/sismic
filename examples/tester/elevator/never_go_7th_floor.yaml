@@ -1,0 +1,14 @@
+statechart:
+  name: Never go to 7th floor
+  initial: waiting
+  states:
+    - name: waiting
+      transitions:
+        - event: step
+          guard: context['current'] == 7
+          action: |
+            assert False, 'Should not go on 7th!'  # We can make assertion in action too!
+        - target: ok
+          event: stop
+    - name: ok
+      type: final
