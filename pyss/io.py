@@ -4,22 +4,22 @@ from .model import Event, Transition, StateChart, BasicState, CompoundState, Ort
 from .model import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 
 
-def import_from_yaml(data):
+def import_from_yaml(data) -> StateChart:
     """
     Import a statechart from a YAML representation.
 
-    :param str data: string or any equivalent object
-    :return StateChart: a StateChart instance
+    :param data: string or any equivalent object
+    :return: a StateChart instance
     """
     return import_from_dict(yaml.load(data)['statechart'])
 
 
-def import_from_dict(data):
+def import_from_dict(data: dict) -> StateChart:
     """
     Import a statechart from a (set of nested) dictionary.
 
-    :param dict of str data: dict-like structure
-    :return StateChart: a StateChart instance
+    :param data: dict-like structure
+    :return: a StateChart instance
     """
     sc = StateChart(data['name'], data['initial'], data.get('on entry', None))
 
@@ -53,29 +53,29 @@ def import_from_dict(data):
     return sc
 
 
-def _transition_from_dict(state_name, transition_d):
+def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
     """
     Return a Transition instance from given dict.
 
-    :param str state: name of the state in which the transition is defined
-    :param dict of str transition_d: a dictionary containing transition data
-    :return Transition: an instance of Transition
+    :param state: name of the state in which the transition is defined
+    :param transition_d: a dictionary containing transition data
+    :return: an instance of Transition
     """
     to_state = transition_d.get('target', None)
     event = transition_d.get('event', None)
-    if event is not None:
+    if event:
         event = Event(event)
     guard = transition_d.get('guard', None)
     action = transition_d.get('action', None)
     return Transition(state_name, to_state, event, guard, action)
 
 
-def _state_from_dict(state_d):
+def _state_from_dict(state_d: dict) -> StateMixin:
     """
     Return the appropriate type of state from given dict.
 
-    :param dict of str state_d: a dictionary containing state data
-    :return StateMixin: a specialized instance of State
+    :param state_d: a dictionary containing state data
+    :return: a specialized instance of State
     """
     # Guess the type of state
     if state_d.get('type', None) == 'final':
@@ -99,24 +99,24 @@ def _state_from_dict(state_d):
     return state
 
 
-def export_to_yaml(statechart):
+def export_to_yaml(statechart: StateChart) -> str:
     """
-    Export given statechart to YAML
+    Export given StateChart instance to YAML
 
-    :param StateChart statechart: statechart to export
-    :return str: A textual YAML representation
+    :param statechart:
+    :return: A textual YAML representation
     """
     return yaml.dump(export_to_dict(statechart, ordered=False),
                      width=1000, default_flow_style=False, default_style='"')
 
 
-def export_to_dict(statechart, ordered=True):
+def export_to_dict(statechart: StateChart, ordered=True) -> dict:
     """
     Export given StateChart instance to a dict.
 
-    :param StateChart statechart: a StateChart instance
-    :param bool ordered: set to True to use OrderedDict instead
-    :return dict of str: a dict that can be used in ``import_from_dict``
+    :param statechart: a StateChart instance
+    :param ordered: set to True to use OrderedDict instead
+    :return: a dict that can be used in ``import_from_dict``
     """
     d = OrderedDict() if ordered else dict()
     d['name'] = statechart.name
@@ -136,14 +136,14 @@ def export_to_dict(statechart, ordered=True):
     return {'statechart': d}
 
 
-def _export_element_to_dict(el, ordered=False):
+def _export_element_to_dict(el, ordered=False) -> dict:
     """
     Export an element (State, Transition, etc.) to a dict.
     Is used in ``export_to_dict`` to generate a global representation.
 
-    :param StateMixin or Transition or Event el: an instance of ``model.*``
-    :param bool ordered: set to True to use OrderedDict instead of dict
-    :return dict of str: a dict representation for this element
+    :param el: an instance of ``model.*``
+    :param ordered: set to True to use OrderedDict instead of dict
+    :return: a dict
     """
     d = OrderedDict() if ordered else dict()
 
