@@ -36,11 +36,11 @@ Specific events received
 In addition to (optional) internal events, a tester is expected to automatically
 receive a deterministic sequence of the three following events:
 
- - ``start``: this event is sent when a stable initial state is reached by the tested statechart.
- - ``stop``: this event is sent when the execution of the tested statechart ends (either because it reaches a final
+ - ``start`` -- this event is sent when a stable initial state is reached by the tested statechart.
+ - ``stop`` -- this event is sent when the execution of the tested statechart ends (either because it reaches a final
    configuration, or no more transition can be processed, or because its execution was interrupted by
    :py:meth:`~pyss.testing.StateChartTester.stop`, see below).
- - ``step``: this event is sent after the computation and the execution of a :py:class:`~pyss.simulator.MacroStep` in
+ - ``step`` -- this event is sent after the computation and the execution of a :py:class:`~pyss.simulator.MacroStep` in
    the tested statechart.
 
 
@@ -86,10 +86,10 @@ of a tested statechart:
            # ...
 
 
-Expected behavior
-*****************
+Specific expected behavior
+**************************
 
-Importantly, and this is why this point deserves a subsection, you **must** ensure that valid execution
+Importantly, and this is why this point deserves a dedicated subsection, **you must** ensure that valid execution
 of your testers end in a final configuration.
 
 At the end of the execution of a test, an assertion will be raised if there is a tester which is not in a
@@ -138,8 +138,10 @@ The ``on entry`` of ``error`` then raises an ``AssertionError``.
 7th floor is never reached
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This dummy example could fail if the current floor is ``7``.
 This example shows that assertion can be made on transition action too.
+
+This dummy example could fail if the current floor is ``7``.
+You could use it to test what happens when a test fails.
 
 .. literalinclude:: ../examples/tester/elevator/never_go_7th_floor.yaml
    :language: yaml
@@ -161,9 +163,9 @@ The :py:mod:`pyss.testing` module essentially defines the following classes:
 
 In order to test a statechart, you need to get:
 
-1. A statechart you want to test.
-2. At least one tester, ie. a statechart that checks some invariant or condition.
-3. A test scenario, which is in fact a list of :py:class:`~pyss.model.event` instances.
+    1. A statechart you want to test.
+    2. At least one tester, ie. a statechart that checks some invariant or condition.
+    3. A test scenario, which is in fact a list of :py:class:`~pyss.model.event` instances.
 
 
 Executing tests
@@ -251,3 +253,14 @@ A test failed when one of the following occurs:
  - There is at least one tester that is not in a final configuration after the execution (or when
    :py:meth:`~pyss.testing.StateChartTester.stop` is called).
  - Any other exception occurred in the execution of the tested statechart or the statechart testers.
+
+
+With Python ``unittest`` module
+-------------------------------
+
+It is very easy to use the :py:mod:`~pyss.testing` module with Python :py:mod:`unittest`.
+
+Consider the source of `tests/test_testing.py <https://github.com/AlexandreDecan/PySS/blob/master/tests/test_testing.py>`__:
+
+.. literalinclude:: ../tests/test_testing.py
+    :language: python

@@ -14,12 +14,12 @@ before external events, and the simulation follows a inner-first/source-state se
 
 A :py:class:`~pyss.simulator.Simulator` instance is constructed upon a :py:class:`~pyss.model.StateChart` instance and
 an optional callable that returns an :py:class:`~pyss.evaluator.Evaluator` (see :ref:`code_evaluation`).
-If no evaluator is specified, :py:class:`~pyss.evaluator.PythonEvaluator` class will be set.
+If no evaluator is specified, :py:class:`~pyss.evaluator.PythonEvaluator` class will be used.
 
-The main methods of a simulator instance are:
+The main methods and attributes of a simulator instance are:
 
 .. autoclass:: pyss.simulator.Simulator
-    :members: configuration, running, send, execute_once, execute
+    :members: send, execute_once, execute, configuration, running
 
 
 Macro and micro steps
@@ -31,10 +31,11 @@ A macro step corresponds to the process of either an eventless transition, or an
 or no transition (but consume the event), including the stabilization steps (ie. the steps that are needed
 to enter nested states, or to switch into the configuration of an history state).
 
-A :py:class:`~pyss.simulator.MacroStep` exposes an :py:class:`~pyss.model.Event`
-(``None`` in case of eventless transition), a :py:class:`~pyss.model.Transition` (``None`` if the
+A :py:class:`~pyss.simulator.MacroStep` exposes an ``event`` (:py:class:`~pyss.model.Event`
+or ``None`` in case of an eventless transition), a ``transition`` (:py:class:`~pyss.model.Transition` or ``None`` if the
 event was consumed without triggering a transition) and two sequences of state names: ``entered_states`` and
-``exited_states``. States order in those list indicates the order in which their ``on entry`` and ``on exit`` actions
+``exited_states``.
+States order in those list indicates the order in which their *on entry* and *on exit* actions
 were processed.
 
 .. autoclass:: pyss.simulator.MacroStep
@@ -52,12 +53,12 @@ A :py:class:`~pyss.simulator.MacroStep` instance thus can be viewed (and is!) an
 
 This way, a complete run of a state machine can be summarized as an ordered list of
 :py:class:`~pyss.simulator.MacroStep` instances,
-and details of such a run can be obtained using the :py:class:`~pyss.simulator.MicroStep`'s of a
+and details of such a run can be obtained using the :py:class:`~pyss.simulator.MicroStep` list of a
 :py:class:`~pyss.simulator.MacroStep`.
 
 
-Example
-*******
+Example of an execution
+-----------------------
 
 Consider the following example.
 
@@ -88,7 +89,7 @@ For instance:
       pass
 
 
-As a shortcut, the :py:meth:`~pyss.simulator.Simulator.execute` method will return a list of :py:class:`~pyss.simulator.Simulator.MacroStep` instances
+As a shortcut, the :py:meth:`~pyss.simulator.Simulator.execute` method will return a list of :py:class:`~pyss.simulator.MacroStep` instances
 obtained by repeatedly calling :py:meth:`~pyss.simulator.Simulator.execute_once`:
 
 .. code:: python
@@ -98,7 +99,7 @@ obtained by repeatedly calling :py:meth:`~pyss.simulator.Simulator.execute_once`
       assert isinstance(step, MacroStep)
 
 As a call to :py:meth:`~pyss.simulator.Simulator.execute` could lead to an infinite execution (see for example */examples/simple/infinite.yaml*),
-an additional parameter ``max_steps: int`` can be specified to limit the number of steps that are computed
+an additional parameter ``max_steps`` can be specified to limit the number of steps that are computed
 and executed by the method.
 
 .. code:: python
@@ -109,8 +110,10 @@ and executed by the method.
 Advanced uses
 -------------
 
-A :py:class:`~pyss.simulator.Simulator` instance provides several other methods than can give useful information about
-the execution of a statechart.
+A :py:class:`~pyss.simulator.Simulator` makes use of several protected methods for its initialization or to compute
+which transition should be processed next, which are the next steps, etc.
+
+These methods can be easily overriden or combined to define other semantics.
 
 
 Additional (protected) methods

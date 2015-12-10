@@ -128,6 +128,7 @@ For example::
     (shell) python -m pyss test examples/concrete/elevator.yaml --events floorSelected:floor=4 --tests examples/tester/elevator/*.yaml
     All tests passed
 
+The considered statechart is `examples/concrete/history.yaml <https://github.com/AlexandreDecan/PySS/blob/master/examples/concrete/history.yaml>`__.
 
 .. _cli_events:
 

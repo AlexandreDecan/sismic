@@ -21,7 +21,8 @@ An :py:class:`~pyss.evaluator.Evaluator` must provide two methods:
 
 By default, PySS provides two built-in :py:class:`~pyss.evaluator.Evaluator` subclasses:
 
- - A :py:class:`~pyss.evaluator.DummyEvaluator` that always evaluate a guard to ``True`` and silently ignores ``action``, ``on entry`` and ``on exit``.
+ - A :py:class:`~pyss.evaluator.DummyEvaluator` that always evaluate a guard to ``True`` and silently ignores
+    ``action``, ``on entry`` and ``on exit``. Its context is an empty dictionary.
  - A :py:class:`~pyss.evaluator.PythonEvaluator` that brings Python into our statecharts and which is used by default.
 
 .. _python_evaluator:
@@ -30,7 +31,7 @@ Built-in Python code evaluator
 ------------------------------
 
 An instance of :py:class:`~pyss.evaluator.PythonEvaluator` can evaluate and execute Python code expressed in the statechart.
-Such an instance relies on the concept of ``context``, which is a dictionary-like structure that contains the data
+The key point to understand how it works is the concept of ``context``, which is a dictionary-like structure that contains the data
 that are exposed to the pieces of code of the statechart (ie. override ``__locals__``).
 
 As an example, consider the following partial statechart definition.
@@ -57,15 +58,15 @@ When a :py:class:`~pyss.evaluator.PythonEvaluator` instance is initialized, a pr
     evaluator = PythonEvaluator({'x': 1, 'math': my_favorite_module})
 
 
-By default, the context will expose an ;py:class:`~pyss.model.Event` and a ``send`` function, that can be used
+By default, the context will expose an :py:class:`~pyss.model.Event` and a ``send`` function, that can be used
 to send internal event to the simulator (eg.: ``on entry: send(Event('Hello World!'))``).
 
 Additionally, the ``__builtins__`` of Python are also exposed, implying that you can use nearly everything provided
 by the standard library of Python.
 
 .. autoclass:: pyss.evaluator.PythonEvaluator
-    :members:
-    :inherited-members:
+   :members:
+
 
 
 Examples

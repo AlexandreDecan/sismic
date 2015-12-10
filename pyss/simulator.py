@@ -246,7 +246,7 @@ class Simulator:
 
     def _transition_step(self, event: model.Event=None) -> MicroStep:
         """
-        Return the MicroStep (if any) associated with the appropriate transition matching
+        Return the ``MicroStep`` (if any) associated with the appropriate transition matching
         given event (or eventless transition if event is None).
 
         :param event: ``Event`` to consider (or None)

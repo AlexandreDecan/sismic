@@ -8,14 +8,14 @@ Statecharts can be defined using a YAML format.
 
 A YAML definition of a statechart can be easily imported to a :py:class:`~pyss.model.StateChart` instance.
 The module :py:mod:`pyss.io` provides a convenient loader :py:func:`~pyss.io.import_from_yaml` which takes a textual YAML definition
-of a statechart. It also provides ways to export statechart to YAML (:py:func:`~pyss.io.export_to_yaml`).
+of a statechart. It also provides ways to export statechart to YAML.
 
 .. automodule:: pyss.io
     :members: import_from_yaml, export_to_yaml
 
 Although the parser is quite robut and should warn about most syntaxic problems, a :py:class:`~pyss.model.StateChart` instance has a
 :py:meth:`~pyss.model.StateChart.validate` method performs numerous other checks. This method either return ``True`` if the statechart *seems* to
-be valid, or raise a ``ValueError`` exception with a meaningful message.
+be valid, or raise an ``AssertionError`` exception with a meaningful message.
 
 
 Statechart elements
@@ -211,8 +211,7 @@ states, transitions and events. Apart from
 
 .. automodule:: pyss.model
     :members: Event, Transition, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
-    :undoc-members:
-    :exclude-members: StateChart
+    :member-order: bysource
 
 Statecharts
 ***********

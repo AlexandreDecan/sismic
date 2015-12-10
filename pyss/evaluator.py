@@ -88,17 +88,34 @@ class PythonEvaluator(Evaluator):
     @property
     def context(self) -> dict:
         """
-        The context of this evaluator.
+        Return the context of this evaluator. A context is a mapping between
+        variables and values that is expected to be exposed through
+        ``evaluate_condition`` and ``execute_action``.
 
-        :return: a mapping between variable name and value (a dict-like structure).
+        :return: A dict-like mapping.
         """
         return self._context
 
     def evaluate_condition(self, condition: str, event: Event=None) -> bool:
+        """
+        Evaluate the condition of a guarded transition.
+
+        :param condition: A one-line Boolean expression
+        :param event: The event (if any) that could fire the transition.
+        :return: True or False
+        """
         self._context['event'] = event
         return eval(condition, {'__builtins__': __builtins__}, self._context)
 
     def execute_action(self, action: str, event: Event=None) -> list:
+        """
+        Execute given action (multi-lines code) and return a (possibly empty) list
+        of internal events to be considered by a statechart simulator.
+
+        :param action: A (possibly multi-lined) code to execute.
+        :param event: an ``Event`` instance in case of a transition action.
+        :return: A possibly empty list of ``Event`` instances
+        """
         self._events = []  # Reset
         self._context['event'] = event
         exec(action, {'__builtins__': __builtins__}, self._context)

@@ -54,7 +54,6 @@ class Transition(object):
     @property
     def internal(self):
         """
-
         :return: True in case of internal transition
         """
         return self.to_state is None
@@ -62,7 +61,6 @@ class Transition(object):
     @property
     def eventless(self):
         """
-
         :return: True in case of eventless transition
         """
         return self.event is None
@@ -388,29 +386,29 @@ class StateChart(object):
          - C5. Check that orthogonal states have at least one child
          - C6. Check that there is no internal eventless guardless transition
 
-        :return: True or raise a ValueError
+        :return: True or raise an AssertionError
         """
         # C1 & C6
         for transition in self.transitions:
             if not(transition.from_state in self._states and (not transition.to_state or transition.to_state in self._states)):
-                raise ValueError('Transition {} refers to an unknown state'.format(transition))
+                raise AssertionError('Transition {} refers to an unknown state'.format(transition))
             if not transition.event and not transition.guard and not transition.to_state:
-                raise ValueError('Transition {} is an internal, eventless and guardless transition.'.format(transition))
+                raise AssertionError('Transition {} is an internal, eventless and guardless transition.'.format(transition))
 
         for name, state in self._states.items():
             if isinstance(state, HistoryState):  # C2 & C3
                 if not isinstance(self._states[self._parent[name]], CompoundState):
-                    raise ValueError('History state {} can only be defined in a compound (non-orthogonal) states'.format(state))
+                    raise AssertionError('History state {} can only be defined in a compound (non-orthogonal) states'.format(state))
                 if state.initial and not (self._parent[state.initial] == self._parent[name]):
-                    raise ValueError('Initial memory of {} should refer to a child of {}'.format(state, self._parent[name]))
+                    raise AssertionError('Initial memory of {} should refer to a child of {}'.format(state, self._parent[name]))
 
             if isinstance(state, CompositeStateMixin):  # C5
                 if len(state.children) <= 0:
-                    raise ValueError('Composite state {} should have at least one child'.format(state))
+                    raise AssertionError('Composite state {} should have at least one child'.format(state))
 
             if isinstance(state, CompoundState):  # C4
                 if self._parent[name] and state.initial and not (self._parent[state.initial] == name):
-                    raise ValueError('Initial state of {} should refer to one of its children'.format(state))
+                    raise AssertionError('Initial state of {} should refer to one of its children'.format(state))
 
         return True
 
