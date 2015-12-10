@@ -25,7 +25,7 @@ class CommandLineInterfaceTests(unittest.TestCase):
         args = CommandArgs(
             infile=open('examples/simple/simple.yaml'),
             events=['goto s2:a=1:b=True:c=\'blabla\'', 'goto final'],
-            verbosity=3,
+            verbosity=0,
             nocode=False,
             maxsteps=-1
         )
