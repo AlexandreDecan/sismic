@@ -60,10 +60,5 @@ https://github.com/AlexandreDecan/PySS
 You can use GitHub integrated services to contribute or to report bugs and suggestions.
 
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
