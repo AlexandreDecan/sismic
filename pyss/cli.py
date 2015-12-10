@@ -5,6 +5,19 @@ from .simulator import Simulator
 from .evaluator import PythonEvaluator, DummyEvaluator
 from .io import import_from_yaml
 from .model import Event
+from .testing import TesterConfiguration
+
+
+def parse_event(event_str):
+    if ':' in event_str:
+        name, *args = event_str.split(':')
+        data = {}
+        for arg in args:
+            arg_name, arg_value = arg.split('=', 1)
+            data[arg_name] = eval(arg_value, {}, {})
+        return Event(name, data)
+    else:
+        return Event(event_str)
 
 
 def cli_validate(args):
@@ -39,7 +52,7 @@ def cli_execute(args):
         print('Initial configuration: ' + ', '.join(simulator.configuration), file=s)
 
     for event in args.events:
-        simulator.send(Event(event))
+        simulator.send(parse_event(event))
     if args.verbosity >= 2:
         print('Events sent: ' + ', '.join(args.events), file=s)
 
@@ -58,3 +71,29 @@ def cli_execute(args):
 
     print('Final: {}'.format(not simulator.running), file=s)
     return s.getvalue()
+
+
+def cli_test(args):
+    s = StringIO()
+
+    sc = import_from_yaml(args.infile)
+    tests = [import_from_yaml(test) for test in args.tests]
+    events = [parse_event(name) for name in args.events]
+
+    config = TesterConfiguration(sc, DummyEvaluator() if args.nocode else PythonEvaluator())
+    for test in tests:
+        config.add_test(test)
+
+    tester = config.build_tester(events)
+
+    try:
+        tester.execute(args.maxsteps)
+        tester.stop()
+    except AssertionError as e:
+        print(e.args, file=s)
+    else:
+        print('All tests passed', file=s)
+
+    return s.getvalue()
+
+

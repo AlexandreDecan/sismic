@@ -1,5 +1,5 @@
 __description__ = 'Python Statechart Simulator'
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 __url__ = 'https://github.com/AlexandreDecan/PySS/'
 __author__ = 'Alexandre Decan'
 __email__ = 'alexandre.decan@lexpage.net'
@@ -8,9 +8,8 @@ __licence__ = 'LGPL3'
 # "Export" most used elements
 from . import evaluator, io, model, simulator, testing
 
-
 def _parse_args():  # pragma: no cover
-    from .cli import cli_execute, cli_validate
+    from .cli import cli_execute, cli_validate, cli_test
     import argparse
 
     description = '{d} v{v} by {a}'.format(d=__description__, v=__version__, a=__author__)
@@ -35,21 +34,47 @@ def _parse_args():  # pragma: no cover
                                 help='limit the number of steps to given number, to prevent infinite loops',
                                 default=-1)
     execute_parser.add_argument('--events',
-                                help='send events to the statechart simulation',
+                                help='send events to the statechart simulation, eg. name[:key=value[:key=value]]',
                                 nargs='*',
                                 metavar='EVENT',
                                 default=[])
 
     validate_parser = subparsers.add_parser('validate', help='validate a statechart')
     validate_parser.add_argument('infile',
-                                type=argparse.FileType('r'),
-                                help='A YAML file describing a statechart')
+                                 type=argparse.FileType('r'),
+                                 help='A YAML file describing a statechart')
+
+    test_parser = subparsers.add_parser('test', help='test a statechart')
+    test_parser.add_argument('infile',
+                             type=argparse.FileType('r'),
+                             help='A YAML file describing a statechart')
+    test_parser.add_argument('--tests',
+                             type=argparse.FileType('r'),
+                             nargs='+',
+                             required=True,
+                             help='YAML file describing a statechart tester')
+    test_parser.add_argument('--no-code',
+                             action='store_true',
+                             dest='nocode',
+                             help='Ignore code to be evaluated and executed in the statechart')
+    test_parser.add_argument('-l', '--limit',
+                             dest='maxsteps',
+                             type=int,
+                             help='limit the number of steps to given number, to prevent infinite loops',
+                             default=-1)
+    test_parser.add_argument('--events',
+                             help='send events to the statechart simulation, eg. name[:key=value[:key=value]]',
+                             nargs='*',
+                             metavar='EVENT',
+                             default=[])
 
     args = parser.parse_args()
 
     if args.subcommand == 'execute':
-        print(_cli_execute(args))
+        print(cli_execute(args))
     elif args.subcommand == 'validate':
-        print(_cli_validate(args))
+        print(cli_validate(args))
+    elif args.subcommand == 'test':
+        print(cli_test(args))
     else:
         parser.print_help()
