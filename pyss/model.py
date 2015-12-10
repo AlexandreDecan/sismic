@@ -4,6 +4,9 @@ from functools import lru_cache
 class Event:
     """
     Simple event with a name and (optionally) some data.
+
+    :param name: Name of the event
+    :param data: additional data (mapping, dict-like)
     """
     def __init__(self, name: str, data: dict=None):
         self.name = name
@@ -33,6 +36,12 @@ class Transition(object):
     A Transition between two states.
     Transition can be eventless or internal (but not both at once).
     A condition (code as string) can be specified as a guard.
+
+    :param from_state: name of the source state
+    :param to_state: name of the target state (if transition is not internal)
+    :param event: event (if any)
+    :param guard: condition as code (if any)
+    :param action: action as code (if any)
     """
 
     def __init__(self, from_state: str, to_state: str=None, event: Event=None, guard: str=None, action: str=None):
@@ -76,6 +85,8 @@ class Transition(object):
 class StateMixin:
     """
     State element with a name.
+
+    :param name: name of the state
     """
 
     def __init__(self, name: str):
@@ -94,6 +105,9 @@ class StateMixin:
 class ActionStateMixin:
     """
     State that can define actions on entry and on exit.
+
+    :param on_entry: code to execute when state is entered
+    :param on_exit: code to execute when state is exited
     """
     def __init__(self, on_entry: str=None, on_exit: str=None):
         self.on_entry = on_entry
@@ -129,6 +143,10 @@ class CompositeStateMixin:
 class BasicState(StateMixin, TransitionStateMixin, ActionStateMixin):
     """
     A basic state, with a name, transitions, actions, etc. but no children.
+
+    :param name: name of this state
+    :param on_entry: code to execute when state is entered
+    :param on_exit: code to execute when state is exited
     """
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
         StateMixin.__init__(self, name)
@@ -139,6 +157,11 @@ class BasicState(StateMixin, TransitionStateMixin, ActionStateMixin):
 class CompoundState(StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
     """
     Compound states must have children states.
+
+    :param name: name of this state
+    :param initial: name of the initial state
+    :param on_entry: code to execute when state is entered
+    :param on_exit: code to execute when state is exited
     """
     def __init__(self, name: str, initial: str=None, on_entry: str=None, on_exit: str=None):
         StateMixin.__init__(self, name)
@@ -151,6 +174,10 @@ class CompoundState(StateMixin, TransitionStateMixin, ActionStateMixin, Composit
 class OrthogonalState(StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
     """
     Orthogonal states run their children simultaneously.
+
+    :param name: name of this state
+    :param on_entry: code to execute when state is entered
+    :param on_exit: code to execute when state is exited
     """
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
         StateMixin.__init__(self, name)
@@ -165,6 +192,10 @@ class HistoryState(StateMixin):
     A shallow history state resumes the execution of its parent.
     A deep history state resumes the execution of its parent, and resume
     every (recursively) parent's substate execution.
+
+    :param name: name of this state
+    :param initial: name of the initial state
+    :param deep: Boolean indicating whether a deep semantic (True) or a shallow semantic (False) should be used
     """
 
     def __init__(self, name: str, initial: str=None, deep: bool=False):
@@ -178,6 +209,10 @@ class HistoryState(StateMixin):
 class FinalState(StateMixin, ActionStateMixin):
     """
     Final state has NO transition and is used to detect state machine termination.
+
+    :param name: name of this state
+    :param on_entry: code to execute when state is entered
+    :param on_exit: code to execute when state is exited
     """
 
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
@@ -186,14 +221,14 @@ class FinalState(StateMixin, ActionStateMixin):
 
 
 class StateChart(object):
-    def __init__(self, name: str, initial: str, on_entry: str=None):
-        """
-        Initialize a statechart.
+    """
+    Python structure for a statechart
 
-        :param name: Name of this statechart
-        :param initial: Initial state
-        :param on_entry: Code to execute_once before the execution
-        """
+    :param name: Name of this statechart
+    :param initial: Initial state
+    :param on_entry: Code to execute_once before the execution
+    """
+    def __init__(self, name: str, initial: str, on_entry: str=None):
         self.name = name
         self.initial = initial
         self.on_entry = on_entry

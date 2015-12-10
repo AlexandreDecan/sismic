@@ -4,7 +4,7 @@ from .model import Event, Transition, StateChart, BasicState, CompoundState, Ort
 from .model import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 
 
-def import_from_yaml(data) -> StateChart:
+def import_from_yaml(data: str) -> StateChart:
     """
     Import a statechart from a YAML representation.
 

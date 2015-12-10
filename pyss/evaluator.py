@@ -68,12 +68,11 @@ class PythonEvaluator(Evaluator):
 
     When ``evaluate_condition`` or ``execute_action`` is called with an Event, this event
     will be added to the context, as ``{'event': event_instance}``.
+
+    :param initial_context: a dictionary that will be used as __locals__
     """
 
     def __init__(self, initial_context: dict=None):
-        """
-        :param initial_context: a dictionary that will be used as __locals__
-        """
         self._context = {
             'Event': Event,
             'send': self._send_event

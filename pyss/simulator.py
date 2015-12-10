@@ -4,18 +4,18 @@ from .evaluator import Evaluator, PythonEvaluator
 
 
 class MicroStep:
+    """
+    Create a micro step. A step consider ``event``, takes ``transition`` and results in a list
+    of ``entered_states`` and a list of ``exited_states``.
+    Order in the two lists is REALLY important!
+
+    :param event: Event or None in case of eventless transition
+    :param transition: Transition or None if no processed transition
+    :param entered_states: possibly empty list of entered states
+    :param exited_states: possibly empty list of exited states
+    """
     def __init__(self, event: model.Event=None, transition: model.Transition=None,
                  entered_states: list=None, exited_states: list=None):
-        """
-        Create a micro step. A step consider ``event``, takes ``transition`` and results in a list
-        of ``entered_states`` and a list of ``exited_states``.
-        Order in the two lists is REALLY important!
-
-        :param event: Event or None in case of eventless transition
-        :param transition: Transition or None if no processed transition
-        :param entered_states: possibly empty list of entered states
-        :param exited_states: possibly empty list of exited states
-        """
         self.event = event
         self.transition = transition
         self.entered_states = entered_states if entered_states else []
@@ -26,15 +26,15 @@ class MicroStep:
 
 
 class MacroStep:
-    def __init__(self, main_step: MicroStep, micro_steps: list):
-        """
-        A macro step corresponds to the process of a Transition (given an ``Event`` or in case of an
-        eventless transition). A ``MacroStep`` contains one main step (the one who processes the
-        transition) and a (possibly empty) list of stabilization steps.
+    """
+    A macro step corresponds to the process of a Transition (given an ``Event`` or in case of an
+    eventless transition). A ``MacroStep`` contains one main step (the one who processes the
+    transition) and a (possibly empty) list of stabilization steps.
 
-        :param main_step: Main (``MicroStep`` instance) step.
-        :param micro_steps: A possibly empty list of ``MicroStep`` instances (stabilization steps).
-        """
+    :param main_step: Main (``MicroStep`` instance) step.
+    :param micro_steps: A possibly empty list of ``MicroStep`` instances (stabilization steps).
+    """
+    def __init__(self, main_step: MicroStep, micro_steps: list):
         self.main = main_step
         self.micro_steps = micro_steps
 
@@ -65,15 +65,15 @@ class MacroStep:
 
 
 class Simulator:
-    def __init__(self, statechart: model.StateChart, evaluator_klass=None):
-        """
-        A discrete simulator that interprets a statechart according to a semantic close to SCXML.
+    """
+    A discrete simulator that interprets a statechart according to a semantic close to SCXML.
 
-        :param statechart: statechart to interpret
-        :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
-            ``evaluator.Evaluator`` instance that will be used to initialize the simulator.
-            By default, an ``evaluator.PythonEvaluator`` will be used.
-        """
+    :param statechart: statechart to interpret
+    :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
+        ``evaluator.Evaluator`` instance that will be used to initialize the simulator.
+        By default, an ``evaluator.PythonEvaluator`` will be used.
+    """
+    def __init__(self, statechart: model.StateChart, evaluator_klass=None):
         self._evaluator = evaluator_klass() if evaluator_klass else PythonEvaluator()
         self._statechart = statechart
         self._configuration = set()  # Set of active states

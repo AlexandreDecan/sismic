@@ -6,15 +6,15 @@ from .evaluator import Evaluator
 
 
 class StateChartTester:
-    def __init__(self, simulator: Simulator, testers: list, events: list):
-        """
-        Construct a tester with given simulator (that simulates the statechart to test),
-        a list of testers (simulators that runs tests) and a list of events (scenari).
+    """
+    A tester with given simulator (that simulates the statechart to test),
+    a list of testers (simulators that runs tests) and a list of events (scenario).
 
-        :param simulator: The simulator containing the statechart to test
-        :param testers: A list of ``simulator.Simulator`` containing the tests
-        :param events: A list of ``model.Event`` that represents a scenario
-        """
+    :param simulator: The simulator containing the statechart to test
+    :param testers: A list of ``simulator.Simulator`` containing the tests
+    :param events: A list of ``model.Event`` that represents a scenario
+    """
+    def __init__(self, simulator: Simulator, testers: list, events: list):
         self._simulator = simulator
         self._testers = testers
         self._events = events
@@ -135,19 +135,19 @@ class StateChartTester:
 
 
 class TesterConfiguration:
-    def __init__(self, statechart: model.StateChart, evaluator_klass=None, simulator_klass=None):
-        """
-        Set a tester configuration, which mainly serves as a data class to prepare tests.
-        Such a configuration remembers which is the statechart to test, using which evaluator and
-        which simulator.
+    """
+    A tester configuration mainly serves as a data class to prepare tests.
+    Such a configuration remembers which is the statechart to test, using which evaluator and
+    which simulator.
 
-        :param statechart: A ``model.StateChart`` instance
-        :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
-            ``evaluator.Evaluator`` instance that will be used to initialize the simulator.
-        :param simulator_klass: An optional callable (eg. a class) that takes as input a ``model.StateChart`` instance
-            and an optional ``evaluator.Evaluator`` instance, and return an instance of ``simulator.Simulator``
-            (or anything that acts as such).
-        """
+    :param statechart: A ``model.StateChart`` instance
+    :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
+        ``evaluator.Evaluator`` instance that will be used to initialize the simulator.
+    :param simulator_klass: An optional callable (eg. a class) that takes as input a ``model.StateChart`` instance
+        and an optional ``evaluator.Evaluator`` instance, and return an instance of ``simulator.Simulator``
+        (or anything that acts as such).
+    """
+    def __init__(self, statechart: model.StateChart, evaluator_klass=None, simulator_klass=None):
         self._statechart = statechart
         self._evaluator_klass = evaluator_klass
         self._simulator_klass = simulator_klass
