@@ -44,11 +44,9 @@ or using the command-line interface, see :ref:`cli_execute`.
     import pyss
 
     statechart = pyss.io.import_from_yaml(open('examples/concrete/elevator.yaml'))
-    evaluator = pyss.evaluator.PythonEvaluator()
-    simulator = pyss.simulator.Simulator(statechart, evaluator)
-
+    simulator = pyss.simulator.Simulator(statechart)
     simulator.send(pyss.model.Event('floorSelected', data={'floor': 4}))
-    for step in simulator:
+    for step in simulator.execute():
         print('{}: {}'.format(step.transition, simulator.configuration))
 
 The output should be::
