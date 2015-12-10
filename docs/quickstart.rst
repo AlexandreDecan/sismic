@@ -22,10 +22,10 @@ You can isolate PySS installation by using virtual environments:
 5. Test PySS: ``python -m unittest discover``
 
 
-Example
--------
+Statechart in YAML
+------------------
 
-Example of a YAML definition of a state chart for an elevator:
+Example of a YAML definition of a statechart for an elevator:
 
 .. literalinclude:: ../examples/concrete/elevator.yaml
    :language: yaml
@@ -33,8 +33,8 @@ Example of a YAML definition of a state chart for an elevator:
 
 More examples are available in the *examples* directory.
 
-Execution
----------
+Statechart execution
+--------------------
 
 You can execute this example using the command-line interface or programmatically
 or using the command-line interface, see :ref:`cli_execute`.
@@ -51,10 +51,11 @@ or using the command-line interface, see :ref:`cli_execute`.
 
 The output should be::
 
-    doorsOpen -> doorsClosed: ['active', 'movingElevator', 'floorListener', 'floorSelecting', 'doorsClosed']
-    doorsClosed -> movingUp: ['active', 'floorListener', 'movingElevator', 'floorSelecting', 'moving', 'movingUp']
-    movingUp -> movingUp: ['active', 'floorListener', 'movingElevator', 'floorSelecting', 'moving', 'movingUp']
-    movingUp -> movingUp: ['active', 'floorListener', 'movingElevator', 'floorSelecting', 'moving', 'movingUp']
-    movingUp -> movingUp: ['active', 'floorListener', 'movingElevator', 'floorSelecting', 'moving', 'movingUp']
-    moving -> doorsOpen: ['active', 'floorListener', 'movingElevator', 'floorSelecting', 'doorsOpen']
+   floorSelecting+floorSelected -> floorSelecting: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
+   doorsOpen -> doorsClosed: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
+   doorsClosed -> movingUp: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
+   movingUp -> movingUp: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
+   movingUp -> movingUp: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
+   movingUp -> movingUp: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
+   moving -> doorsOpen: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
 
