@@ -17,16 +17,17 @@ Python Statechart Simulator for Python >=3.4
 .. image:: https://readthedocs.org/projects/pyss/badge
     :target: https://pyss.readthedocs.org/
 
+
+Overview
+--------
+
 PySS provides a set of tools related to statechart manipulation and
 execution. In particular, PySS provides:
 
 - An easy way to define and to import statecharts with YAML
-- Discrete, step-by-step, fully observable statechart simulation following SCXML (inner-first/source-state) semantic
-- Built-in support for Python code, can be easily extended to other languages
-- A base framework for model-based testing
-
-Overview
---------
+- Discrete, step-by-step, fully observable statechart simulation (SCXML semantic, can be easily tuned!)
+- Built-in support for statechart Python code (can be easily extended to other languages)
+- A framework for statechart-based testing
 
 PySS has a complete support for simple state, composite state,
 orthogonal (parallel) state, initial state, final state, history state
@@ -35,11 +36,6 @@ transition, eventless transition, statechart entry action, state entry
 action, state exit action, transition action, internal and external
 events and parametrized events.
 
-We aim to support the following features soon:
-
-- Static visualization (export to GraphViz)
-- Import statecharts from Yakindu
-- Runtime dynamic visualization and manipulation
 
 Contents
 --------

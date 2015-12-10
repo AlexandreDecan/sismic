@@ -5,17 +5,6 @@ A statechart can be executed from the command-line interface or, for a finer-gra
 execution, programmatically.
 
 
-From the command line
----------------------
-
-In a nutshell::
-
-    (shell) pyss execute -vvv  examples/concrete/history.yaml --events next pause
-
-
-Please consult :ref:`cli_execute` for more information.
-
-
 The *simulator* module
 ----------------------
 

@@ -16,9 +16,9 @@ PySS provides a set of tools related to statechart manipulation and
 execution. In particular, PySS provides:
 
 - An easy way to define and to import statecharts with YAML
-- Discrete, step-by-step, fully observable statechart simulation following SCXML (inner-first/source-state) semantic
-- Built-in support for Python code, can be easily extended to other languages
-- A base framework for model-based testing
+- Discrete, step-by-step, fully observable statechart simulation (SCXML semantic, can be easily tuned!)
+- Built-in support for statechart Python code (can be easily extended to other languages)
+- A framework for statechart-based testing
 
 Installation
 ------------

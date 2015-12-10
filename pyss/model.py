@@ -380,4 +380,4 @@ class StateChart(object):
         return True
 
     def __repr__(self):
-        return 'State machine: {}'.format(self.name)
+        return 'Statechart "{}"'.format(self.name)
