@@ -51,8 +51,7 @@ The CLI can used to execute statecharts.
 
 
 
-The events to be considered can be specified using ``--events``.
-Events can be parametrized (see :ref:`cli_events`).
+
 For example::
 
     (shell) pyss execute -vvv  examples/concrete/history.yaml --events next pause
@@ -100,6 +99,8 @@ Subcommand: `test`
 
 The CLI can be used to test statecharts using statechart testers.
 
+::
+
     (shell) pyss test -h
     usage: pyss test [-h] --tests TESTS [TESTS ...] [--no-code] [-l MAXSTEPS]
                      [--events [EVENT [EVENT ...]]]
@@ -122,7 +123,7 @@ The CLI can be used to test statecharts using statechart testers.
                             name[:key=value[:key=value]]
 
 
-For example:
+For example::
 
     (shell) python -m pyss test examples/concrete/elevator.yaml --events floorSelected:floor=4 --tests examples/tester/elevator/*.yaml
     All tests passed
@@ -141,7 +142,10 @@ with the event. The syntax follows:
 For example, the following call to *execute* subcommand sends an event ``floorSelected`` and passes
 an additional parameter ``floor`` whose value is ``4``.
 
-The value is evaluated using Python's :py:func:`eval` function, meaning that you can pass nearly everything you
-want to, including numbers, Boolean, string (enclosed by single or double quotes), etc.
+::
 
     (shell) pyss execute examples/concrete/elevator.yaml --events floorSelected:floor=4
+
+
+The value is evaluated using Python's :py:func:`eval` function, meaning that you can pass nearly everything you
+want to, including numbers, Boolean, string (enclosed by single or double quotes), etc.

@@ -11,7 +11,7 @@ The module :py:mod:`pyss.io` provides a convenient loader :py:func:`~pyss.io.imp
 of a statechart. It also provides ways to export statechart to YAML (see :py:func:`~pyss.io.export_to_yaml`).
 
 .. automodule:: pyss.io
-    :members: import_from_yaml, export_from_yaml
+    :members: import_from_yaml, export_to_yaml
 
 Although the parser is quite robut and should warn about most syntaxic problems, a :py:class:`~pyss.model.StateChart` instance has a
 :py:meth:`~pyss.model.StateChart.validate` method performs numerous other checks. This method either return ``True`` if the statechart *seems* to
