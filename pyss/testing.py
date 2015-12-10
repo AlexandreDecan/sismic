@@ -77,6 +77,12 @@ class StateChartTester:
                 #print(msg, file=sys.stderr)
                 raise
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.stop()
+
     def stop(self):
         """
         Stop the execution and raise an AssertionError if at least one tester is not in a final configuration.
@@ -106,9 +112,6 @@ class StateChartTester:
 
             # Execute testers
             self._execute_tester(step, event, context)
-        else:
-            # If the simulator stopped, testers should be not running
-            self.stop()
 
         return step
 

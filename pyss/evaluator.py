@@ -12,11 +12,9 @@ class Evaluator:
     @property
     def context(self) -> dict:
         """
-        Return the context of this evaluator. A context is a mapping between
+        The context of this evaluator. A context is a dict-like mapping between
         variables and values that is expected to be exposed through
         ``evaluate_condition`` and ``execute_action``.
-
-        :return: A dict-like mapping.
         """
         raise NotImplementedError()
 
@@ -63,13 +61,16 @@ class PythonEvaluator(Evaluator):
     Evaluator that interprets Python code.
 
     An initial context can be provided, as a dictionary (will be used as ``__locals__``).
-    This context will be updated with ``__builtins__``, Event and with ``send()``, a function that
-    receive an ``Event`` instance that will be fired on the state machine.
+    Unless overridden, the context also exposes:
 
-    When ``evaluate_condition`` or ``execute_action`` is called with an Event, this event
-    will be added to the context, as ``{'event': event_instance}``.
+     - The ``__builtins__`` of Python,
+     - The ``Event`` class and,
+     - A ``send`` method that takes ``Event`` instances and send them to the statechart.
 
-    :param initial_context: a dictionary that will be used as __locals__
+    When one of ``evaluate_condition`` or ``execute_action`` method is called with an event parameter,
+    it is also exposed by the context through the key ``event``.
+
+    :param initial_context: a dictionary that will be used as ``__locals__``
     """
 
     def __init__(self, initial_context: dict=None):
@@ -88,11 +89,9 @@ class PythonEvaluator(Evaluator):
     @property
     def context(self) -> dict:
         """
-        Return the context of this evaluator. A context is a mapping between
+        The context of this evaluator. A context is a dict-like mapping between
         variables and values that is expected to be exposed through
         ``evaluate_condition`` and ``execute_action``.
-
-        :return: A dict-like mapping.
         """
         return self._context
 
@@ -105,7 +104,7 @@ class PythonEvaluator(Evaluator):
         :return: True or False
         """
         self._context['event'] = event
-        return eval(condition, {'__builtins__': __builtins__}, self._context)
+        return eval(condition, {}, self._context)
 
     def execute_action(self, action: str, event: Event=None) -> list:
         """
@@ -118,6 +117,6 @@ class PythonEvaluator(Evaluator):
         """
         self._events = []  # Reset
         self._context['event'] = event
-        exec(action, {'__builtins__': __builtins__}, self._context)
+        exec(action, {}, self._context)
         return self._events
 

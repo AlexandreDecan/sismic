@@ -40,14 +40,23 @@ class MacroStep:
 
     @property
     def event(self) -> model.Event:
+        """
+        Event (or ``None``) that were consumed.
+        """
         return self.main.event
 
     @property
     def transition(self) -> model.Transition:
+        """
+        Transition (or ``None``) that were processed.
+        """
         return self.main.transition
 
     @property
     def entered_states(self) -> list:
+        """
+        List of the states names that were entered.
+        """
         states = self.main.entered_states
         for step in self.micro_steps:
             states += step.entered_states
@@ -55,6 +64,9 @@ class MacroStep:
 
     @property
     def exited_states(self) -> list:
+        """
+        List of the states names that were exited.
+        """
         states = self.main.exited_states
         for step in self.micro_steps:
             states += step.exited_states
@@ -83,19 +95,14 @@ class Simulator:
     @property
     def configuration(self) -> list:
         """
-        Return the list of active states.
-        States are ordered by depth.
-
-        :return: The list of active states names
+        List of active states names, ordered by depth.
         """
         return sorted(self._configuration, key=lambda s: self._statechart.depth_of(s))
 
     @property
     def evaluator(self) -> Evaluator:
         """
-        Return the ``Evaluator`` instance associated with this simulator.
-
-        :return: The associated evaluator
+        The ``Evaluator`` associated with this simulator.
         """
         return self._evaluator
 
@@ -135,7 +142,7 @@ class Simulator:
     @property
     def running(self) -> bool:
         """
-        :return: True if and only if statechart is not in a final configuration
+        Boolean indicating whether this simulator is not in a final configuration.
         """
         for state in self._statechart.leaf_for(list(self._configuration)):
             if not isinstance(self._statechart._states[state], model.FinalState):

@@ -16,49 +16,9 @@ A :py:class:`~pyss.simulator.Simulator` instance is constructed upon a :py:class
 an optional callable that returns an :py:class:`~pyss.evaluator.Evaluator` (see :ref:`code_evaluation`).
 If no evaluator is specified, :py:class:`~pyss.evaluator.PythonEvaluator` class will be used.
 
-The main methods and attributes of a simulator instance are:
-
-.. autoclass:: pyss.simulator.Simulator
-    :members: send, execute_once, execute, configuration, running
-
-
-Macro and micro steps
-*********************
-
-The simulator is fully observable: its :py:meth:`~pyss.simulator.Simulator.execute_once` (resp. :py:meth:`~pyss.simulator.Simulator.execute`) method returns
-an instance of (resp. a list of) :py:class:`~pyss.simulator.MacroStep`.
-A macro step corresponds to the process of either an eventless transition, or an evented transition,
-or no transition (but consume the event), including the stabilization steps (ie. the steps that are needed
-to enter nested states, or to switch into the configuration of an history state).
-
-A :py:class:`~pyss.simulator.MacroStep` exposes an ``event`` (:py:class:`~pyss.model.Event`
-or ``None`` in case of an eventless transition), a ``transition`` (:py:class:`~pyss.model.Transition` or ``None`` if the
-event was consumed without triggering a transition) and two sequences of state names: ``entered_states`` and
-``exited_states``.
-States order in those list indicates the order in which their *on entry* and *on exit* actions
-were processed.
-
-.. autoclass:: pyss.simulator.MacroStep
-    :members:
-
-The main step and the stabilization steps of a macro step are exposed through ``main_step`` and ``micro_steps``.
-The first is a :py:class:`~pyss.simulator.MicroStep` instance, and the second is an ordered list of
-:py:class:`~pyss.simulator.MicroStep` instances.
-A micro step is the smallest, atomic step that a statechart can execute.
-A :py:class:`~pyss.simulator.MacroStep` instance thus can be viewed (and is!) an aggregate of
-:py:class:`~pyss.simulator.MicroStep` instances.
-
-.. autoclass:: pyss.simulator.MicroStep
-    :members:
-
-This way, a complete run of a state machine can be summarized as an ordered list of
-:py:class:`~pyss.simulator.MacroStep` instances,
-and details of such a run can be obtained using the :py:class:`~pyss.simulator.MicroStep` list of a
-:py:class:`~pyss.simulator.MacroStep`.
-
 
 Example of an execution
------------------------
+***********************
 
 Consider the following example.
 
@@ -105,6 +65,49 @@ and executed by the method.
 .. code:: python
 
     assert len(simulator.execute(max_steps=10)) <= 10
+
+
+The main methods and attributes of a simulator instance are:
+
+.. autoclass:: pyss.simulator.Simulator
+    :members: send, execute_once, execute, configuration, running
+
+
+
+Macro and micro steps
+*********************
+
+The simulator is fully observable: its :py:meth:`~pyss.simulator.Simulator.execute_once` (resp. :py:meth:`~pyss.simulator.Simulator.execute`) method returns
+an instance of (resp. a list of) :py:class:`~pyss.simulator.MacroStep`.
+A macro step corresponds to the process of either an eventless transition, or an evented transition,
+or no transition (but consume the event), including the stabilization steps (ie. the steps that are needed
+to enter nested states, or to switch into the configuration of an history state).
+
+A :py:class:`~pyss.simulator.MacroStep` exposes an ``event`` (:py:class:`~pyss.model.Event`
+or ``None`` in case of an eventless transition), a ``transition`` (:py:class:`~pyss.model.Transition` or ``None`` if the
+event was consumed without triggering a transition) and two sequences of state names: ``entered_states`` and
+``exited_states``.
+States order in those list indicates the order in which their *on entry* and *on exit* actions
+were processed.
+
+.. autoclass:: pyss.simulator.MacroStep
+    :members:
+
+The main step and the stabilization steps of a macro step are exposed through ``main_step`` and ``micro_steps``.
+The first is a :py:class:`~pyss.simulator.MicroStep` instance, and the second is an ordered list of
+:py:class:`~pyss.simulator.MicroStep` instances.
+A micro step is the smallest, atomic step that a statechart can execute.
+A :py:class:`~pyss.simulator.MacroStep` instance thus can be viewed (and is!) an aggregate of
+:py:class:`~pyss.simulator.MicroStep` instances.
+
+.. autoclass:: pyss.simulator.MicroStep
+    :members:
+
+This way, a complete run of a state machine can be summarized as an ordered list of
+:py:class:`~pyss.simulator.MacroStep` instances,
+and details of such a run can be obtained using the :py:class:`~pyss.simulator.MicroStep` list of a
+:py:class:`~pyss.simulator.MacroStep`.
+
 
 
 Advanced uses

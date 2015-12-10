@@ -54,14 +54,14 @@ class Transition(object):
     @property
     def internal(self):
         """
-        :return: True in case of internal transition
+        Boolean indicating whether this transition is an internal transition.
         """
         return self.to_state is None
 
     @property
     def eventless(self):
         """
-        :return: True in case of eventless transition
+        Boolean indicating whether this transition is an eventless transition.
         """
         return self.event is None
 
@@ -140,7 +140,7 @@ class CompositeStateMixin:
 
 class BasicState(StateMixin, TransitionStateMixin, ActionStateMixin):
     """
-    A basic state, with a name, transitions, actions, etc. but no children.
+    A basic state, with a name, transitions, actions, etc. but no child state.
 
     :param name: name of this state
     :param on_entry: code to execute when state is entered
@@ -188,8 +188,8 @@ class HistoryState(StateMixin):
     """
     History state can be either 'shallow' (default) or 'deep'.
     A shallow history state resumes the execution of its parent.
-    A deep history state resumes the execution of its parent, and resume
-    every (recursively) parent's substate execution.
+    A deep history state resumes the execution of its parent, and of every nested
+    active states in its parent.
 
     :param name: name of this state
     :param initial: name of the initial state
@@ -224,7 +224,7 @@ class StateChart(object):
 
     :param name: Name of this statechart
     :param initial: Initial state
-    :param on_entry: Code to execute_once before the execution
+    :param on_entry: Code to execute when this statechart is initialized for execution
     """
     def __init__(self, name: str, initial: str, on_entry: str=None):
         self.name = name
@@ -237,10 +237,11 @@ class StateChart(object):
 
     def register_state(self, state: StateMixin, parent: str):
         """
-        Register given state in current statechart and register it to its parent
+        Register given state. This method also register the given state
+        to its parent.
 
-        :param state: instance of State to add
-        :param parent: name of parent state
+        :param state: state to add
+        :param parent: name of its parent
         """
         self._states[state.name] = state
         self._parent[state.name] = parent.name if isinstance(parent, StateMixin) else parent
@@ -255,9 +256,9 @@ class StateChart(object):
 
     def register_transition(self, transition: Transition):
         """
-        Register given transition in current statechart and register it on the source state
+        Register given transition and register it on the source state
 
-        :param transition: instance of Transition
+        :param transition: transition to add
         """
         self.transitions.append(transition)
         self._states[transition.from_state].add_transition(transition)
@@ -265,28 +266,22 @@ class StateChart(object):
     @property
     def states(self):
         """
-        A dictionary that associates a StateMixin instance to a state name
+        A dictionary that associates a ``StateMixin`` to a state name
         """
         return self._states
 
     @property
     def parent(self):
         """
-        A dictionary that associates a parent name state to a (child) state name
-        Return the name of the parent of given state name
-
-        :param name: Name of a child state
-        :return: name of the parent state, or None if state has no parent
+        A dictionary that associates to each state (name) the name of its parent,
+        or ``None`` if it has no parent.
         """
         return self._parent
 
     @property
     def events(self) -> list:
         """
-        Return a list of possible event names, according to the content of this
-        statechart.
-
-        :return: a list of possible event names
+        List of possible event names.
         """
         names = set()
         for transition in self.transitions:
@@ -297,9 +292,11 @@ class StateChart(object):
     @lru_cache()
     def ancestors_for(self, state: str) -> list:
         """
+        Return an ordered list of ancestors for the given state.
+        Ancestors are ordered by decreasing depth.
 
         :param state: name of the state
-        :return: ancestors, in decreasing depth
+        :return: state's ancestors
         """
         ancestors = []
         parent = self._parent[state]
@@ -311,9 +308,11 @@ class StateChart(object):
     @lru_cache()
     def descendants_for(self, state: str) -> list:
         """
+        Return an ordered list of descendants for the given state.
+        Descendants are ordered by increasing depth.
 
         :param state: name of the state
-        :return: descendants, in increasing depth
+        :return: state's descendants
         """
         descendants = []
         states_to_consider = [state]
@@ -329,10 +328,10 @@ class StateChart(object):
     @lru_cache()
     def depth_of(self, state: str) -> int:
         """
-        Return the depth of the given state, starting from 0 (root, top-level).
+        Return the depth of given state (0-indexed).
 
         :param state: name of the state
-        :return: depth of state
+        :return: state depth
         """
         if state is None:
             return 0
@@ -347,7 +346,7 @@ class StateChart(object):
 
         :param s1: name of first state
         :param s2: name of second state
-        :return: name of deepest common ancestor or None
+        :return: name of deepest common ancestor or ``None``
         """
         s1_anc = self.ancestors_for(s1)
         s2_anc = self.ancestors_for(s2)
@@ -357,11 +356,12 @@ class StateChart(object):
 
     def leaf_for(self, states: list) -> list:
         """
-        Return a subset of ``states`` that are leaves, ie. return each state from
-        ``states`` that has no descendant in ``states``.
+        Considering the list of states names in *states*, return a list containing each
+        element of *states* such that this element has no descendant in *states*.
+        In other words, this method returns the leaves from the given list of states.
 
-        :param states: A list of state names
-        :return: A list of state names
+        :param states: a list of names
+        :return: the names of the leaves in *states*
         """
         leaves = []
         # TODO: Need a more efficient way to compute this set
@@ -386,7 +386,8 @@ class StateChart(object):
          - C5. Check that orthogonal states have at least one child
          - C6. Check that there is no internal eventless guardless transition
 
-        :return: True or raise an AssertionError
+        :return: True if no check fails
+        :raise AssertionError: if a check fails
         """
         # C1 & C6
         for transition in self.transitions:

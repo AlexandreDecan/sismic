@@ -20,19 +20,17 @@ class ElevatorTests(unittest.TestCase):
 
     def test_destination_reached(self):
         self.tester.add_test(self.tests['destination_reached'])
-        tester = self.tester.build_tester(self.scenarios['4th floor'])
-
-        tester.execute()
+        with self.tester.build_tester(self.scenarios['4th floor']) as tester:
+            tester.execute()
 
     def test_doors_closed_while_moving(self):
         self.tester.add_test(self.tests['closed_doors_while_moving'])
-        tester = self.tester.build_tester(self.scenarios['4th floor'])
-
-        tester.execute()
+        with self.tester.build_tester(self.scenarios['4th floor']) as tester:
+            tester.execute()
 
     def test_never_go_underground(self):
         self.tester.add_test(self.tests['never_go_7th_floor'])
-        tester = self.tester.build_tester(self.scenarios['7th floor'])
 
         with self.assertRaises(AssertionError):
-            tester.execute()
+            with self.tester.build_tester(self.scenarios['7th floor']) as tester:
+                tester.execute()
