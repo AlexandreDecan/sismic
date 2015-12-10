@@ -65,14 +65,16 @@ class MacroStep:
 
 
 class Simulator:
-    def __init__(self, statechart: model.StateChart, evaluator: Evaluator=None):
+    def __init__(self, statechart: model.StateChart, evaluator_klass=None):
         """
         A discrete simulator that interprets a statechart according to a semantic close to SCXML.
 
         :param statechart: statechart to interpret
-        :param evaluator: Code evaluator (optional, PythonEvaluator by default)
+        :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
+            ``evaluator.Evaluator`` instance that will be used to initialize the simulator.
+            By default, an ``evaluator.PythonEvaluator`` will be used.
         """
-        self._evaluator = evaluator if evaluator else PythonEvaluator()
+        self._evaluator = evaluator_klass() if evaluator_klass else PythonEvaluator()
         self._statechart = statechart
         self._configuration = set()  # Set of active states
         self._events = deque()  # Events queue

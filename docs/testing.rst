@@ -47,7 +47,7 @@ receive a deterministic sequence of the three following events:
 Specific contextual data
 ************************
 
-Each tester is executed using a :py:class:`~pyss.evaluator.PythonEvaluator` and as such, contextual data
+Each tester is executed using by default a :py:class:`~pyss.evaluator.PythonEvaluator` and as such, contextual data
 (the *context*) are available during execution. In the case of a tester, this context is always populated and
 updated with the following items:
 
@@ -179,20 +179,19 @@ We first define a test configuration.
     config = TesterConfiguration(tested_sc)
 
 This configuration is mainly used to set a test environment (the ``setUp()`` of a unit test).
-We can specify which code evaluator will be used, by specifying a :py:class:`~pyss.evaluator.Evaluator` instance:
+We can specify which code evaluator will be used, by specifying a callable that return a
+:py:class:`~pyss.evaluator.Evaluator` instance:
 
 .. code:: python
 
-    config = TesterConfiguration(tested_sc, evaluator=DummyEvaluator)
+    config = TesterConfiguration(tested_sc, evaluator_klass=DummyEvaluator)
 
 It is also possible to specify a different semantic for the execution of the tested statechart (see :ref:`other_semantics`).
-This can be done using the ``simulator_class`` parameter. Importantly, as the name suggests,
-you should not provide an instance of a simulator, but a class (or any callable that takes a
-:py:class:`~pyss.model.StateChart` and a :py:class:`~pyss.evaluator.Evaluator` and that returns a simulator).
+This can be done using the ``simulator_klass`` parameter.
 
 .. code:: python
 
-    config = TesterConfiguration(tested_sc, simulator_class=MyOtherSimulatorClass)
+    config = TesterConfiguration(tested_sc, simulator_klass=MyOtherSimulatorClass)
 
 This way, you can for example test that your initial statechart is invariant under several distinct simulator.
 
@@ -211,7 +210,7 @@ the case for the tested statechart. The syntax is the same:
 
 .. code:: python
 
-    config.add_test(other_tester_sc, evaluator=DummyEvaluator, simulator_class=MyOtherSimulatorClass)
+    config.add_test(other_tester_sc, evaluator_klass=DummyEvaluator, simulator_klass=MyOtherSimulatorClass)
 
 
 Our test configuration is now ready, and we can go one step further.

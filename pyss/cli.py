@@ -52,7 +52,7 @@ def cli_execute(args):
     s = StringIO()
 
     sc = import_from_yaml(args.infile)
-    simulator = Simulator(sc, DummyEvaluator() if args.nocode else PythonEvaluator())
+    simulator = Simulator(sc, DummyEvaluator if args.nocode else PythonEvaluator)
 
     if args.verbosity >= 1:
         print('Initial configuration: ' + ', '.join(simulator.configuration), file=s)
@@ -86,7 +86,7 @@ def cli_test(args):
     tests = [import_from_yaml(test) for test in args.tests]
     events = [parse_event(name) for name in args.events]
 
-    config = TesterConfiguration(sc, DummyEvaluator() if args.nocode else PythonEvaluator())
+    config = TesterConfiguration(sc, evaluator_klass=DummyEvaluator if args.nocode else PythonEvaluator)
     for test in tests:
         config.add_test(test)
 

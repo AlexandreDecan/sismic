@@ -13,8 +13,8 @@ In particular, eventless transitions are processed before evented transitions, i
 before external events, and the simulation follows a inner-first/source-state semantic.
 
 A :py:class:`~pyss.simulator.Simulator` instance is constructed upon a :py:class:`~pyss.model.StateChart` instance and
-an optional :py:class:`~pyss.evaluator.Evaluator` (see :ref:`code_evaluation`).
-If no evaluator is specified, a :py:class:`~pyss.evaluator.PythonEvaluator` instance will be used by default.
+an optional callable that returns an :py:class:`~pyss.evaluator.Evaluator` (see :ref:`code_evaluation`).
+If no evaluator is specified, :py:class:`~pyss.evaluator.PythonEvaluator` class will be set.
 
 The main methods of a simulator instance are:
 

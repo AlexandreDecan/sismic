@@ -2,7 +2,7 @@ import sys
 
 from pyss import model
 from .simulator import Simulator, MacroStep
-from.evaluator import Evaluator
+from .evaluator import Evaluator
 
 
 class StateChartTester:
@@ -135,34 +135,36 @@ class StateChartTester:
 
 
 class TesterConfiguration:
-    def __init__(self, statechart: model.StateChart, evaluator: Evaluator=None, simulator_class=None):
+    def __init__(self, statechart: model.StateChart, evaluator_klass=None, simulator_klass=None):
         """
         Set a tester configuration, which mainly serves as a data class to prepare tests.
         Such a configuration remembers which is the statechart to test, using which evaluator and
         which simulator.
 
         :param statechart: A ``model.StateChart`` instance
-        :param evaluator: An ``evaluator.Evaluator`` instance. Default is ``evaluator.PythonEvaluator``.
-        :param simulator_class: A callable (eg. a class) that takes as input a ``model.StateChart`` instance
-            and an ``evaluator.Evaluator`` instance, and return an instance of ``simulator.Simulator``
+        :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
+            ``evaluator.Evaluator`` instance that will be used to initialize the simulator.
+        :param simulator_klass: An optional callable (eg. a class) that takes as input a ``model.StateChart`` instance
+            and an optional ``evaluator.Evaluator`` instance, and return an instance of ``simulator.Simulator``
             (or anything that acts as such).
         """
         self._statechart = statechart
-        self._evaluator = evaluator
-        self._simulator_class = simulator_class
+        self._evaluator_klass = evaluator_klass
+        self._simulator_klass = simulator_klass
         self._statechart_tests = []
 
-    def add_test(self, statechart: model.StateChart, evaluator: Evaluator=None, simulator_class=None):
+    def add_test(self, statechart: model.StateChart, evaluator_klass=None, simulator_klass=None):
         """
         Add the given statechart as a test.
 
         :param statechart: A ``model.StateChart`` instance.
-        :param evaluator: An ``evaluator.Evaluator`` instance. Default is ``evaluator.PythonEvaluator``.
-        :param simulator_class: A callable (eg. a class) that takes as input a ``model.StateChart`` instance
-            and an ``evaluator.Evaluator`` instance, and return an instance of ``simulator.Simulator``
+        :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
+            ``evaluator.Evaluator`` instance that will be used to initialize the simulator.
+        :param simulator_klass: An optional callable (eg. a class) that takes as input a ``model.StateChart`` instance
+            and an optional ``evaluator.Evaluator`` instance, and return an instance of ``simulator.Simulator``
             (or anything that acts as such).
         """
-        self._statechart_tests.append((statechart, evaluator, simulator_class))
+        self._statechart_tests.append((statechart, evaluator_klass, simulator_klass))
 
     def build_tester(self, events: list) -> StateChartTester:
         """
@@ -171,19 +173,15 @@ class TesterConfiguration:
         :param events: A list of ``model.Events`` instances that serves as a scenario
         :return: A ``StateChartTester`` instance.
         """
-        # Return to default if no simulator_class was specified
-        if self._simulator_class:
-            simulator = self._simulator_class(self._statechart, self._evaluator)
-        else:
-            simulator = Simulator(self._statechart, self._evaluator)
+        evaluator = self._evaluator_klass if self._evaluator_klass else None  # Explicit is better than implicit
+        simulator_klass = self._simulator_klass if self._simulator_klass else Simulator
+        simulator = simulator_klass(self._statechart, evaluator)
 
         testers = []
-        for statechart, evaluator, simulator_class in self._statechart_tests:
-            # Return to default if no simulator_class was specified
-            if simulator_class:
-                tester = simulator_class(statechart, evaluator)
-            else:
-                tester = Simulator(statechart, evaluator)
-            testers.append(tester)
+        for t_statechart, t_evaluator_klass, t_simulator_klass in self._statechart_tests:
+            t_evaluator = t_evaluator_klass if t_evaluator_klass else None  # Explicit is better than implicit
+            t_simulator_klass = t_simulator_klass if t_simulator_klass else Simulator
+            t_simulator = t_simulator_klass(t_statechart, t_evaluator)
+            testers.append(t_simulator)
         return StateChartTester(simulator, testers, events)
 
