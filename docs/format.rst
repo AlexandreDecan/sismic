@@ -8,7 +8,7 @@ Statecharts can be defined using a YAML format.
 
 A YAML definition of a statechart can be easily imported to a :py:class:`~pyss.model.StateChart` instance.
 The module :py:mod:`pyss.io` provides a convenient loader :py:func:`~pyss.io.import_from_yaml` which takes a textual YAML definition
-of a statechart. It also provides ways to export statechart to YAML (see :py:func:`~pyss.io.export_to_yaml`).
+of a statechart. It also provides ways to export statechart to YAML (:py:func:`~pyss.io.export_to_yaml`).
 
 .. automodule:: pyss.io
     :members: import_from_yaml, export_to_yaml
