@@ -9,6 +9,12 @@ from .testing import TesterConfiguration
 
 
 def parse_event(event_str):
+    """
+    Parse a string to identify an event name and (optionally) additional parameter.
+
+    :param str event_str: expects name[\:key=value[\:key=value[...]]]
+    :return Event: The constructed ``Event`` instance
+    """
     if ':' in event_str:
         name, *args = event_str.split(':')
         data = {}
