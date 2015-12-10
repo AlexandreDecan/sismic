@@ -10,34 +10,34 @@ class Evaluator:
     """
 
     @property
-    def context(self):
+    def context(self) -> dict:
         """
         Return the context of this evaluator. A context is a mapping between
         variables and values that is expected to be exposed through
         ``evaluate_condition`` and ``execute_action``.
 
-        :return dict: A dict-like mapping.
+        :return: A dict-like mapping.
         """
         raise NotImplementedError()
 
-    def evaluate_condition(self, condition, event=None):
+    def evaluate_condition(self, condition: str, event: Event) -> bool:
         """
         Evaluate the condition of a guarded transition.
 
-        :param str condition: A one-line Boolean expression
-        :param Event event: The event (if any) that could fire the transition.
-        :return bool: The result of the evaluation of the condition
+        :param condition: A one-line Boolean expression
+        :param event: The event (if any) that could fire the transition.
+        :return: True or False
         """
         raise NotImplementedError()
 
-    def execute_action(self, action, event=None):
+    def execute_action(self, action: str, event: Event=None) -> list:
         """
         Execute given action (multi-lines code) and return a (possibly empty) list
         of internal events to be considered by a statechart simulator.
 
-        :param str action: A (possibly multi-lined) code to execute.
-        :param Event event: an ``Event`` instance in case of a transition action.
-        :return list of Event: A (possibly empty) list of events sent while the execution
+        :param action: A (possibly multi-lined) code to execute.
+        :param event: an ``Event`` instance in case of a transition action.
+        :return: A possibly empty list of ``Event`` instances
         """
         raise NotImplementedError()
 
@@ -51,10 +51,10 @@ class DummyEvaluator(Evaluator):
     def context(self):
         return dict()
 
-    def evaluate_condition(self, condition, event=None):
+    def evaluate_condition(self, condition: str, event: Event):
         return True
 
-    def execute_action(self, action, event=None):
+    def execute_action(self, action: str, event: Event=None):
         return []
 
 
@@ -70,9 +70,9 @@ class PythonEvaluator(Evaluator):
     will be added to the context, as ``{'event': event_instance}``.
     """
 
-    def __init__(self, initial_context=None):
+    def __init__(self, initial_context: dict=None):
         """
-        :param dict initial_context: a dictionary that will be used as __locals__
+        :param initial_context: a dictionary that will be used as __locals__
         """
         self._context = {
             'Event': Event,
@@ -87,19 +87,19 @@ class PythonEvaluator(Evaluator):
         self._events.append(event)
 
     @property
-    def context(self):
+    def context(self) -> dict:
         """
         The context of this evaluator.
 
-        :return dict: a mapping between variable name and value (a dict-like structure).
+        :return: a mapping between variable name and value (a dict-like structure).
         """
         return self._context
 
-    def evaluate_condition(self, condition, event=None):
+    def evaluate_condition(self, condition: str, event: Event=None) -> bool:
         self._context['event'] = event
         return eval(condition, {'__builtins__': __builtins__}, self._context)
 
-    def execute_action(self, action, event=None):
+    def execute_action(self, action: str, event: Event=None) -> list:
         self._events = []  # Reset
         self._context['event'] = event
         exec(action, {'__builtins__': __builtins__}, self._context)
