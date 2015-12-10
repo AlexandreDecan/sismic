@@ -19,10 +19,10 @@ be valid, or raise a ``ValueError`` exception with a meaningful message.
 
 
 Statechart elements
-^^^^^^^^^^^^^^^^^^^
+*******************
 
 Statechart
-**********
+^^^^^^^^^^
 
 The root of the YAML file should declare a statechart:
 
@@ -54,7 +54,7 @@ Code can be written on multiple lines:
 
 
 States
-******
+^^^^^^
 
 A statechart has to declare a (nonempty) list of states using ``states``.
 Each state consist of at least a ``name``. Depending on the state type, several fields can be declared.
@@ -69,7 +69,7 @@ Each state consist of at least a ``name``. Depending on the state type, several 
 
 
 Entry and exit actions
-**********************
+^^^^^^^^^^^^^^^^^^^^^^
 
 For each state, it is possible to specify the code that has to be executed when entering and leaving the
 state using ``on entry`` and ``on exit`` as follows:
@@ -83,7 +83,7 @@ state using ``on entry`` and ``on exit`` as follows:
         y = 2
 
 Final and History states
-************************
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 Final state simply declares a ``type: final`` property.
 History state simply declares a ``type: history`` property. Default semantic is shallow history.
@@ -111,7 +111,7 @@ substate and will be used the first time the history state is reached if it has 
 
 
 Compound states
-***************
+^^^^^^^^^^^^^^^
 
 Except final states and history states, states can contain nested states.
 Such a state is a *compound state*.
@@ -129,7 +129,7 @@ Such a state is a *compound state*.
 A *region* is an aggregate of several state, and can be expressed using a compound state.
 
 Orthogonal states
-*****************
+^^^^^^^^^^^^^^^^^
 
 Orthogonal states (sometimes referred as parallel states) must be with ``parallel states`` instead of ``states``.
 For example, the following statechart declares two concurrent processes:
@@ -151,7 +151,7 @@ illustrated in the previous example. In other words, it is not allowed to define
 instead of ``states`` in this previous example.
 
 Transitions
-***********
+^^^^^^^^^^^
 
 Simple states, compound states and parallel states can declare transitions using ``transitions``:
 
@@ -187,7 +187,7 @@ Finally, to prevent trivial infinite loops on execution, an internal transition 
 
 
 Example
-^^^^^^^
+*******
 
 Full example of a statechart definition using YAML.
 
