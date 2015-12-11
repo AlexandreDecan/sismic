@@ -79,7 +79,8 @@ class PythonEvaluator(Evaluator):
             'send': self._send_event
         }
         if initial_context:
-            self._context.update(initial_context)
+            for key, value in initial_context.items():
+                self._context[key] = value
 
         self._events = []  # List of events that need to be fired
 
