@@ -39,7 +39,6 @@ For convenience, :py:meth:`~pyss.simulator.Simulator.send` returns ``self`` and 
 
     simulator.send(Event('click')).send(Event('click')).execute_once()
 
-
 Notice that :py:meth:`~pyss.simulator.Simulator.execute_once` consumes at most one event at a time.
 In this example, the second *click* event is not processed.
 
@@ -63,7 +62,8 @@ obtained by repeatedly calling :py:meth:`~pyss.simulator.Simulator.execute_once`
     for step in steps:
       assert isinstance(step, MacroStep)
 
-As a call to :py:meth:`~pyss.simulator.Simulator.execute` could lead to an infinite execution (see for example */examples/simple/infinite.yaml*),
+As a call to :py:meth:`~pyss.simulator.Simulator.execute` could lead to an infinite execution
+(see for example `simple/infinite.yaml <https://github.com/AlexandreDecan/PySS/blob/master/examples/simple/infinite.yaml>`__),
 an additional parameter ``max_steps`` can be specified to limit the number of steps that are computed
 and executed by the method.
 
@@ -71,11 +71,25 @@ and executed by the method.
 
     assert len(simulator.execute(max_steps=10)) <= 10
 
+At any time, you can reset the simulator by calling :py:meth:`~pyss.simulator.Simulator.reset`.
+
+For convenience, a :py:class:`~pyss.model.StateChart` has an :py:meth:`~pyss.model.StateChart.events` method
+that returns the list of all possible events that can be interpreted by this statechart (other events will
+be consumed and ignored).
+
+This method also accepts a state name or a list of state names to restrict the list of returned events,
+and is thus commonly used to get a list of the "interesting" events:
+
+.. code:: python
+
+    print(my_statechart.events(simulator.configuration))
+
+
 
 The main methods and attributes of a simulator instance are:
 
 .. autoclass:: pyss.simulator.Simulator
-    :members: send, execute_once, execute, configuration, running
+    :members: send, execute_once, execute, configuration, running, reset
 
 
 

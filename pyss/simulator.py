@@ -151,6 +151,13 @@ class Simulator:
                 return True
         return False
 
+    def reset(self):
+        """
+        Reset current simulator to its initial state.
+        This also resets history states memory.
+        """
+        self.__init__(self._statechart, self._evaluator_klass)
+
     def execute(self, max_steps: int=-1) -> list:
         """
         Repeatedly calls ``self.execute_once()`` and return a list containing
