@@ -25,6 +25,7 @@ class Evaluator:
         :param condition: A one-line Boolean expression
         :param event: The event (if any) that could fire the transition.
         :return: True or False
+        :raises RuntimeError: chained exception, if any occurred during the evaluation
         """
         raise NotImplementedError()
 
@@ -36,6 +37,7 @@ class Evaluator:
         :param action: A (possibly multi-lined) code to execute.
         :param event: an ``Event`` instance in case of a transition action.
         :return: A possibly empty list of ``Event`` instances
+        :raises RuntimeError: chained exception, if any occurred during the execution
         """
         raise NotImplementedError()
 
@@ -103,9 +105,13 @@ class PythonEvaluator(Evaluator):
         :param condition: A one-line Boolean expression
         :param event: The event (if any) that could fire the transition.
         :return: True or False
+        :raises RuntimeError: chained exception, if any occurred during the evaluation
         """
         self._context['event'] = event
-        return eval(condition, {}, self._context)
+        try:
+            return eval(condition, {}, self._context)
+        except Exception as e:
+            raise RuntimeError('An exception occurred (see above) while evaluating:\n{}'.format(condition)) from e
 
     def execute_action(self, action: str, event: Event=None) -> list:
         """
@@ -115,9 +121,13 @@ class PythonEvaluator(Evaluator):
         :param action: A (possibly multi-lined) code to execute.
         :param event: an ``Event`` instance in case of a transition action.
         :return: A possibly empty list of ``Event`` instances
+        :raises RuntimeError: chained exception, if any occurred during the execution
         """
         self._events = []  # Reset
         self._context['event'] = event
-        exec(action, {}, self._context)
-        return self._events
+        try:
+            exec(action, {}, self._context)
+            return self._events
+        except Exception as e:
+            raise RuntimeError('An exception occurred (see above) while executing:\n{}'.format(action)) from e
 

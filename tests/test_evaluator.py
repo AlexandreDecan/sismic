@@ -37,3 +37,12 @@ class PythonEvaluatorTests(unittest.TestCase):
     def test_execution_fire_events(self):
         events = self.e.execute_action('send(Event(\'test\'))\nsend(Event(\'test2\'))')
         self.assertEqual(events, [Event('test'), Event('test2')])
+
+    def test_invalid_condition(self):
+        with self.assertRaises(RuntimeError):
+            self.e.evaluate_condition('x.y')
+
+    def test_invalid_action(self):
+        with self.assertRaises(RuntimeError):
+            self.e.execute_action('x = x.y')
+        self.e.execute_action('x = x.y')
