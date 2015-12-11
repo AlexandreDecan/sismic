@@ -83,6 +83,7 @@ def _state_from_dict(state_d: dict) -> StateMixin:
         state = FinalState(state_d['name'])
     elif state_d.get('type', None) == 'history':
         # History pseudo state
+        deep = state_d.get('deep', False) in ['True', 'true', '1']
         state = HistoryState(state_d['name'], state_d.get('initial'), state_d.get('deep', False))
     else:
         name = state_d.get('name')
