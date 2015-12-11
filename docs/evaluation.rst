@@ -68,18 +68,12 @@ This implies you can use nearly everything from Python in your code.
 .. autoclass:: pyss.evaluator.PythonEvaluator
 
 
-Error handling
-**************
-
-Both :py:meth:`~pyss.evaluator.Evaluator.execute_action` and :py:meth:`~pyss.evaluator.Evaluator.evaluate_condition`
-raise a `RuntimeError` if an exception occurred during the execution.
-A detailed message containing the code that raises the error is made available.
-The original exception is also available (as a chained exception,
-see `Exceptions in Python 3 <http://python.readthedocs.org/en/latest/library/exceptions.html>`__).
+If an exception occurred while executing or evaluating a piece of code, it is propagated by the
+evaluator. Nevertheless, additional information are displayed on *stderr* to help debugging.
 
 
 Examples
-********
+--------
 
 Consider the following statechart that performs simple arithmetic operations.
 

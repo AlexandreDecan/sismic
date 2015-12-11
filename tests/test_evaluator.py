@@ -39,10 +39,9 @@ class PythonEvaluatorTests(unittest.TestCase):
         self.assertEqual(events, [Event('test'), Event('test2')])
 
     def test_invalid_condition(self):
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(AttributeError):
             self.e.evaluate_condition('x.y')
 
     def test_invalid_action(self):
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(AttributeError):
             self.e.execute_action('x = x.y')
-        self.e.execute_action('x = x.y')
