@@ -62,6 +62,9 @@ obtained by repeatedly calling :py:meth:`~pyss.simulator.Simulator.execute_once`
     for step in steps:
       assert isinstance(step, MacroStep)
 
+Notice that a call to :py:meth:`~pyss.simulator.Simulator.execute` first computes the list and **then** returns
+it, meaning that all the steps are already processed when the call returns.
+
 As a call to :py:meth:`~pyss.simulator.Simulator.execute` could lead to an infinite execution
 (see for example `simple/infinite.yaml <https://github.com/AlexandreDecan/PySS/blob/master/examples/simple/infinite.yaml>`__),
 an additional parameter ``max_steps`` can be specified to limit the number of steps that are computed
