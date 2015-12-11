@@ -14,7 +14,7 @@ statechart:
           event: pause
       states:
         - name: active.H*
-          type: history
+          type: deep history
           deep: True
         - name: concurrent_processes
           parallel states:

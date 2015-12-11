@@ -97,8 +97,8 @@ state using ``on entry`` and ``on exit`` as follows:
         x -= 1
         y = 2
 
-Final and History states
-^^^^^^^^^^^^^^^^^^^^^^^^
+Final states
+^^^^^^^^^^^^
 
 A state that declares a ``type: final`` property is a *final state*:
 
@@ -107,14 +107,16 @@ A state that declares a ``type: final`` property is a *final state*:
     - name: s1
       type: final
 
-A state that declares a ``type: history`` property is an *history state*.
-The semantic of an history state is the shallow semantic by default.
-If you want an history state to follow the deep semantic, add ``deep: True``.
+Shallow and deep history sates
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A state that declares a ``type: shallow history`` property is an *shallow history state*.
+If you want an history state to follow the deep semantic, set ``type`` to ``deep history``.
 
 .. code:: yaml
 
     - name: history state
-      type: history
+      type: shallow history
       deep: True
 
 An history state can optionally define an initial memory using ``initial``.
@@ -122,7 +124,7 @@ An history state can optionally define an initial memory using ``initial``.
 .. code:: yaml
 
   - name: history state
-    type: history
+    type: deep history
     initial: s1
 
 Importantly, the ``initial`` memory value **must** refer to a parent's substate.

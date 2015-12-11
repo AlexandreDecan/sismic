@@ -81,10 +81,12 @@ def _state_from_dict(state_d: dict) -> StateMixin:
     if state_d.get('type', None) == 'final':
         # Final pseudo state
         state = FinalState(state_d['name'])
-    elif state_d.get('type', None) == 'history':
-        # History pseudo state
-        deep = state_d.get('deep', False) in ['True', 'true', '1']
-        state = HistoryState(state_d['name'], state_d.get('initial'), state_d.get('deep', False))
+    elif state_d.get('type', None) == 'shallow history':
+        # Shallow history pseudo state
+        state = HistoryState(state_d['name'], state_d.get('initial'), deep=False)
+    elif state_d.get('type', None) == 'deep history':
+        # Deep history pseudo state
+        state = HistoryState(state_d['name'], state_d.get('initial'), deep=True)
     else:
         name = state_d.get('name')
         on_entry = state_d.get('on entry', None)
@@ -176,11 +178,12 @@ def _export_element_to_dict(el, ordered=False) -> dict:
         else:
             d['states'] = el.children
     if isinstance(el, HistoryState):
-        d['type'] = 'history'
+        if el.deep:
+            d['type'] = 'deep history'
+        else:
+            d['type'] = 'shallow history'
         if el.initial:
             d['initial'] = el.initial
-        if el.deep:
-            d['deep'] = True
     if isinstance(el, FinalState):
         d['type'] = 'final'
     return d
