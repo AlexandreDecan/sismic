@@ -362,5 +362,5 @@ class Simulator:
         self._configuration = self._configuration.union(step.entered_states)
 
     def __repr__(self):
-        return '{}[{}]'.format(self.__class__.__name__, ', '.join(self._configuration))
+        return '{}[{}]'.format(self.__class__.__name__, ', '.join(self.configuration))
 
