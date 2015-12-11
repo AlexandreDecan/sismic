@@ -179,6 +179,8 @@ We first define a test configuration.
 
 .. code:: python
 
+    from pyss.testing import TesterConfiguration, StateChartTester
+
     config = TesterConfiguration(tested_sc)
 
 This configuration is mainly used to set a test environment (the ``setUp()`` of a unit test).
@@ -187,6 +189,8 @@ We can specify which code evaluator will be used, by specifying a callable that 
 it is perfectly legit to write this:
 
 .. code:: python
+
+    from pyss.evaluator import DummyEvaluator
 
     config = TesterConfiguration(tested_sc, evaluator_klass=DummyEvaluator)
 
