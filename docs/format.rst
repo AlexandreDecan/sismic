@@ -13,6 +13,16 @@ of a statechart. It also provides ways to export statechart to YAML.
 .. automodule:: pyss.io
     :members: import_from_yaml, export_to_yaml
 
+For example:
+
+.. code:: python
+
+    from pyss import io, model
+
+    statechart = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
+    assert isinstance(statechart, model.StateChart)
+
+
 Although the parser is quite robut and should warn about most syntaxic problems, a :py:class:`~pyss.model.StateChart` instance has a
 :py:meth:`~pyss.model.StateChart.validate` method that can perform numerous other checks.
 This method either returns ``True`` if the statechart *seems* to
@@ -23,8 +33,8 @@ Statechart elements
 *******************
 
 This section explains how the elements that compose a statechart can be defined using YAML.
-
 If you are not familiar with YAML, have a look at `YAML official documentation <http://yaml.org/spec/1.1/>`__.
+
 
 Statechart
 ^^^^^^^^^^
