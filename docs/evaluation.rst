@@ -69,8 +69,7 @@ This implies you can use nearly everything from Python in your code.
 
 
 If an exception occurred while executing or evaluating a piece of code, it is propagated by the
-evaluator. Nevertheless, additional information are displayed on *stderr* to help debugging.
-
+evaluator.
 
 Examples
 --------

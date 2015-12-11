@@ -199,7 +199,6 @@ class HistoryState(StateMixin):
     def __init__(self, name: str, initial: str=None, deep: bool=False):
         StateMixin.__init__(self, name)
         self.name = name
-        self.memory = [initial]
         self.initial = initial
         self.deep = deep
 

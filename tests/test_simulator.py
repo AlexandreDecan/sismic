@@ -134,7 +134,7 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
         simulator.send(Event('error1'))
         simulator.execute()
         self.assertEqual(simulator.configuration, ['pause'])
-        self.assertEqual(sorted(sc.states['active.H*'].memory), ['concurrent_processes', 'process_1', 'process_2', 's12', 's22'])
+        self.assertEqual(sorted(simulator._memory['active.H*']), ['concurrent_processes', 'process_1', 'process_2', 's12', 's22'])
 
         simulator.send(Event('continue'))
         simulator.execute()

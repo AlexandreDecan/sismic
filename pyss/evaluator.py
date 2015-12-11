@@ -105,12 +105,7 @@ class PythonEvaluator(Evaluator):
         :return: True or False
         """
         self._context['event'] = event
-        try:
-            return eval(condition, {}, self._context)
-        except Exception as e:
-            from sys import stderr
-            print('An exception occurred while evaluating:\n{}'.format(condition), file=stderr)
-            raise
+        return eval(condition, {}, self._context)
 
     def execute_action(self, action: str, event: Event=None) -> list:
         """
@@ -123,11 +118,8 @@ class PythonEvaluator(Evaluator):
         """
         self._events = []  # Reset
         self._context['event'] = event
-        try:
-            exec(action, {}, self._context)
-            return self._events
-        except Exception as e:
-            from sys import stderr
-            print('An exception occurred while executing:\n{}'.format(action), file=stderr)
-            raise
+
+        exec(action, {}, self._context)
+        return self._events
+
 

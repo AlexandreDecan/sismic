@@ -86,8 +86,10 @@ class Simulator:
         By default, an ``evaluator.PythonEvaluator`` will be used.
     """
     def __init__(self, statechart: model.StateChart, evaluator_klass=None):
+        self._evaluator_klass = evaluator_klass
         self._evaluator = evaluator_klass() if evaluator_klass else PythonEvaluator()
         self._statechart = statechart
+        self._memory = {}  # History states memory
         self._configuration = set()  # Set of active states
         self._events = deque()  # Events queue
         self._start()
@@ -228,7 +230,7 @@ class Simulator:
         for leaf in leaves:
             leaf = self._statechart.states[leaf]
             if isinstance(leaf, model.HistoryState):
-                states_to_enter = leaf.memory
+                states_to_enter = self._memory.get(leaf.name, [leaf.initial])
                 states_to_enter.sort(key=lambda x: self._statechart.depth_of(x))
                 return MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, model.OrthogonalState):
@@ -337,12 +339,12 @@ class Simulator:
                         # This MUST contain at least one element!
                         active = self._configuration.intersection(self._statechart.descendants_for(state.name))
                         assert len(active) >= 1
-                        child.memory = list(active)
+                        self._memory[child.name] = list(active)
                     else:
                         # This MUST contain exactly one element!
                         active = self._configuration.intersection(state.children)
                         assert len(active) == 1
-                        child.memory = list(active)
+                        self._memory[child.name] = list(active)
 
         # Remove states from configuration
         self._configuration = self._configuration.difference(step.exited_states)
