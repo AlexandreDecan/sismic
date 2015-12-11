@@ -53,8 +53,9 @@ When a :py:class:`~pyss.evaluator.PythonEvaluator` instance is initialized, a pr
 
 .. code:: python
 
+    from pyss.evaluator import PythonEvaluator
     import math as my_favorite_module
-    # ...
+
     evaluator = PythonEvaluator({'x': 1, 'math': my_favorite_module})
 
 
