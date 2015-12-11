@@ -24,6 +24,9 @@ Consider the following example.
 
 .. code:: python
 
+    from pyss.simulator import Simulator
+    from pyss.model import Event
+
     simulator = Simulator(my_statechart)
     # We are now in a stable initial state
     simulator.send(Event('click'))  # Send event to the simulator
@@ -53,6 +56,8 @@ As a shortcut, the :py:meth:`~pyss.simulator.Simulator.execute` method will retu
 obtained by repeatedly calling :py:meth:`~pyss.simulator.Simulator.execute_once`:
 
 .. code:: python
+
+    from pyss.simulator import MacroStep
 
     steps = simulator.execute()
     for step in steps:
