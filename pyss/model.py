@@ -393,15 +393,14 @@ class StateChart(object):
 
          - C1. Check that transitions refer to existing states
          - C2. Check that history can only be defined as a child of a CompoundState
-         - C3. Check that history state's initial memory refer to a parent's child
-         - C4. Check that initial state refer to a parent's child
-         - C5. Check that orthogonal states have at least one child
-         - C6. Check that there is no internal eventless guardless transition
+         - C3. Check that initial state refer to a parent's child
+         - C4. Check that orthogonal states have at least one child
+         - C5. Check that there is no internal eventless guardless transition
 
         :return: True if no check fails
         :raise AssertionError: if a check fails
         """
-        # C1 & C6
+        # C1 & C5
         for transition in self.transitions:
             if not(transition.from_state in self._states and (not transition.to_state or transition.to_state in self._states)):
                 raise AssertionError('Transition {} refers to an unknown state'.format(transition))
@@ -412,14 +411,15 @@ class StateChart(object):
             if isinstance(state, HistoryState):  # C2 & C3
                 if not isinstance(self._states[self._parent[name]], CompoundState):
                     raise AssertionError('History state {} can only be defined in a compound (non-orthogonal) states'.format(state))
-                if state.initial and not (self._parent[state.initial] == self._parent[name]):
-                    raise AssertionError('Initial memory of {} should refer to a child of {}'.format(state, self._parent[name]))
+                # Remove because this can be helpful for orthogonal states
+                #if state.initial and not (self._parent[state.initial] == self._parent[name]):
+                #    raise AssertionError('Initial memory of {} should refer to a child of {}'.format(state, self._parent[name]))
 
-            if isinstance(state, CompositeStateMixin):  # C5
+            if isinstance(state, CompositeStateMixin):  # C4
                 if len(state.children) <= 0:
                     raise AssertionError('Composite state {} should have at least one child'.format(state))
 
-            if isinstance(state, CompoundState):  # C4
+            if isinstance(state, CompoundState):  # C3
                 if self._parent[name] and state.initial and not (self._parent[state.initial] == name):
                     raise AssertionError('Initial state of {} should refer to one of its children'.format(state))
 
