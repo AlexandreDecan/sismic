@@ -39,8 +39,8 @@ class StateChartTester:
         """
 
         try:
-            processed_event_name = step.transition.event.name
-        except AttributeError:
+            processed_event_name = step.transitions[0].event.name
+        except (AttributeError, IndexError):
             processed_event_name = None
         try:
             consumed_event_name = step.event.name
@@ -74,7 +74,6 @@ class StateChartTester:
                        'Active configuration: {simulator.configuration}\n'
                        'Step: {step}').format(simulator=self._simulator, tester=tester, step=step, exception=e)
                 e.args = [msg]
-                #print(msg, file=sys.stderr)
                 raise
 
     def __enter__(self):

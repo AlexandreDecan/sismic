@@ -58,7 +58,8 @@ There are several workarounds. For instance, one can define a shared object in t
 allows parallel states to communicate and to synchronize. Or, at a statechart level, one can define an additional
 parallel state that *resends* events for each other parallel state (ie. if the received event is *e1*, it raises
 an internal event *e1_i* for each other parallel region *i*).
-Finally, the restriction we implemented can also be overridden by subclassing the simulator (see :ref:`other_semantics`).
+Finally, the restriction we implemented can also be overridden by subclassing the simulator, as our implementation
+already consider that multiple transitions could be fired at once (see :ref:`other_semantics`).
 
 While it seems radical, our approach respects the UML specification which requires that the designer
 does not rely on any particular order for event instances to be dispatched to the relevant orthogonal regions.
@@ -150,18 +151,17 @@ The main methods and attributes of a simulator instance are:
 Macro and micro steps
 ---------------------
 
-The simulator is fully observable: its :py:meth:`~pyss.simulator.Simulator.execute_once` (resp. :py:meth:`~pyss.simulator.Simulator.execute`) method returns
+The simulator is fully observable: its :py:meth:`~pyss.simulator.Simulator.execute_once`
+(resp. :py:meth:`~pyss.simulator.Simulator.execute`) method returns
 an instance of (resp. a list of) :py:class:`~pyss.simulator.MacroStep`.
-A macro step corresponds to the process of either an eventless transition, or an evented transition,
-or no transition (but consume the event), including the stabilization steps (ie. the steps that are needed
-to enter nested states, or to switch into the configuration of an history state).
+A macro step corresponds to the process of consuming an event, regardless of the number and the type (eventless or not)
+of transitions triggered. A macro step also includes every consecutive stabilization step
+(ie. the steps that are needed to enter nested states, or to switch into the configuration of an history state).
 
-A :py:class:`~pyss.simulator.MacroStep` exposes an ``event`` (:py:class:`~pyss.model.Event`
-or ``None`` in case of an eventless transition), a ``transition`` (:py:class:`~pyss.model.Transition` or ``None`` if the
-event was consumed without triggering a transition) and two sequences of state names: ``entered_states`` and
-``exited_states``.
-States order in those list indicates the order in which their *on entry* and *on exit* actions
-were processed.
+A :py:class:`~pyss.simulator.MacroStep` exposes the consumed ``event`` (:py:class:`~pyss.model.Event`)
+if any, a (possibly empty) list of ``transitions`` (:py:class:`~pyss.model.Transition` and two sequences of state
+names: ``entered_states`` and ``exited_states``.
+States order in those list indicates the order in which their *on entry* and *on exit* actions were processed.
 
 .. autoclass:: pyss.simulator.MacroStep
     :members:
@@ -232,11 +232,15 @@ priority over external event, it is sufficient to override the :py:meth:`~pyss.s
         self.append(event)  # No distinction between internal and external events
         return self
 
+
 If you find that the way we deal with non-determinism is too radical or not enough permissive
-(remember :ref:`this <parallel_semantic>`), you can implement your own approach.
+(remember :ref:`this <parallel_semantic>`), you can implement your own approach to deal with non-determinism.
 The method :py:meth:`~pyss.simulator.Simulator._actionable_transitions` already returns all the transitions that
-can be triggered by an event.
-This method is actually called by :py:meth:`~pyss.simulator.Simulator._transition_step` which currently
-checks that at most one transition can be triggered.
+can be triggered by an event. This method is actually called by :py:meth:`~pyss.simulator.Simulator._transition_step`
+which currently checks that at most one transition can be triggered.
+
+You can override :py:meth:`~pyss.simulator.Simulator._transition_step` and define how situations in which several
+transitions are triggered are dealt. The remaining of the implementation is already conceived in a way to deal with
+multiple transitions fired at once.
 
 
