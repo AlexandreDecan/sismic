@@ -54,15 +54,16 @@ allow event to trigger **at most** one transition at a time. As a consequence, t
 states execution should be "event-independant", ie. a same event cannot trigger two (or more) transitions
 in distinct parallel state's substates.
 
-There are several workarounds. For instance, one can define a shared object in the context of an evaluator that
-allows parallel states to communicate and to synchronize. Or, at a statechart level, one can define an additional
+There exist several workarounds to this.
+For instance, one can define a shared object in the context of an evaluator that
+allows parallel states to communicate and to synchronize. Or, at statechart level, one can define an additional
 parallel state that *resends* events for each other parallel state (ie. if the received event is *e1*, it raises
 an internal event *e1_i* for each other parallel region *i*).
 Finally, the restriction we implemented can also be overridden by subclassing the simulator, as our implementation
-already consider that multiple transitions could be fired at once (see :ref:`other_semantics`).
+already considers that multiple transitions could be fired at once (see :ref:`other_semantics`).
 
-While it seems radical, our approach respects the UML specification which requires that the designer
-does not rely on any particular order for event instances to be dispatched to the relevant orthogonal regions.
+While it seems radical, our approach respects the UML specification which requires that "*the designer
+does not rely on any particular order for event instances to be dispatched to the relevant orthogonal regions*".
 
 
 Using *Simulator*
