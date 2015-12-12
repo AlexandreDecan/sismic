@@ -210,6 +210,10 @@ Implementing other semantics
 ****************************
 
 It is also quite easy to extend (or adapt) parts of a simulator to implement other semantics.
+
+Outer-first/source-state semantic
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 For example, if you are interested in a outer-first/source-state semantic (instead of the
 inner-first/source-state one that is currently provided), you can subclass :py:class:`~pyss.simulator.Simulator` as follows:
 
@@ -224,6 +228,9 @@ inner-first/source-state one that is currently provided), you can subclass :py:c
             transitions.reverse()
             return transitions
 
+Internal events have no priority
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 As another example, if you are interested in considering that internal event should not have
 priority over external event, it is sufficient to override the :py:meth:`~pyss.simulator.Simulator.send` method:
 
@@ -234,6 +241,9 @@ priority over external event, it is sufficient to override the :py:meth:`~pyss.s
         return self
 
 
+Custom way to deal with non-determinism
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 If you find that the way we deal with non-determinism is too radical or not enough permissive
 (remember :ref:`this <parallel_semantic>`), you can implement your own approach to deal with non-determinism.
 The method :py:meth:`~pyss.simulator.Simulator._actionable_transitions` already returns all the transitions that
@@ -243,5 +253,6 @@ which currently checks that at most one transition can be triggered.
 You can override :py:meth:`~pyss.simulator.Simulator._transition_step` and define how situations in which several
 transitions are triggered are dealt. The remaining of the implementation is already conceived in a way to deal with
 multiple transitions fired at once.
-
+In particular, your implementation should return an appropriate ``MicroStep`` instances where transitions,
+entered states and exited states are ordered according to your arbitrary choice to deal with non-determinism.
 
