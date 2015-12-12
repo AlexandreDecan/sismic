@@ -6,7 +6,7 @@
 Welcome to PySS's documentation!
 ================================
 
-Python Statechart Simulator for Python >=3.4
+Statechart Simulator for Python >=3.4
 
 .. image:: https://travis-ci.org/AlexandreDecan/PySS.svg
     :target: https://travis-ci.org/AlexandreDecan/PySS
@@ -17,25 +17,31 @@ Python Statechart Simulator for Python >=3.4
 .. image:: https://readthedocs.org/projects/pyss/badge
     :target: https://pyss.readthedocs.org/
 
+About statecharts
+-----------------
+
+Statecharts are a well-known visual language for modeling the executable behavior of complex reactive event-based systems. They were invented in the 1980s by David Harel, and have gained a more widespread adoption since they became part of the UML modeling standard. Statecharts offer more sophisticated modeling concepts than the more classical state diagrams of finite state machines. For example, they support hierarchical composition of states, orthogonal regions to express parallel execution, guarded transitions, and actions on transitions or states. Different flavours of executable semantics for statecharts have been proposed in the literature and in existing tools.
 
 Overview
 --------
 
-PySS provides a set of tools related to statechart manipulation and
-execution. In particular, PySS provides:
+The PySS library for Python provides a set of tools to define, simulate, execute and debug statecharts. More specifically, PySS provides:
 
-- An easy way to define and to import statecharts with YAML
-- Discrete, step-by-step, fully observable statechart simulation (SCXML semantic, can be easily tuned!)
-- Built-in support for statechart Python code (can be easily extended to other languages)
-- A framework for statechart-based testing
+- An easy way to define and to import statecharts, based on the human-friendly YAML markup language
+- A statechart simulator offering discrete, step-by-step, and fully observable simulation engine
+- Built-in support for expressing actions and guards using regular Python code
+- A unit testing framework for statecharts
 
-PySS has a complete support for simple state, composite state,
-orthogonal (parallel) state, initial state, final state, history state
-(including shallow and deep semantics), internal transition, guarded
-transition, eventless transition, statechart entry action, state entry
-action, state exit action, transition action, internal and external
-events and parametrized events.
+PySS provides full support for the majority of the concepts of UML statecharts:
+- simple states, composite states, orthogonal (parallel) states, initial and final states, shallow and deep history states
+- state transitions, guarded transitions, automatic (eventless) transitions
+- statechart variables and their initialisation
+- state entry and exit actions, transition actions
+- internal and external events, parametrized events
 
+The PySS library is written in a modular way:
+- The semantics of the statechart simulator is based on the specification of the SCXML semantics (with a few exceptions), and can be easily tuned to other semantics.
+- While currently, guards and actions are expressed in Python, this support can be easily extended to other languages.
 
 Contents
 --------
@@ -57,7 +63,7 @@ Source code
 The source code is available on GitHub:
 https://github.com/AlexandreDecan/PySS
 
-You can use GitHub integrated services to contribute or to report bugs and suggestions.
+Use GitHub's integrated services to contribute suggestions and feature requests for this library or to report bugs.
 
 
 
