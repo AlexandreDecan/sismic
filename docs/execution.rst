@@ -1,24 +1,45 @@
 Executing statecharts
 =====================
 
-A statechart can be executed from the command-line interface or, for a finer-grained
-execution, programmatically.
+Semantic
+--------
 
-
-The *simulator* module
-----------------------
-
-The module :py:mod:`~pyss.simulator` contains a :py:class:`~pyss.simulator.Simulator` class that interprets a statechart following SCXML semantic.
+The module :py:mod:`~pyss.simulator` contains a :py:class:`~pyss.simulator.Simulator` class that interprets a statechart
+mainly following `SCXML <http://www.w3.org/TR/scxml/>`__ semantic.
 In particular, eventless transitions are processed before evented transitions, internal events are consumed
-before external events, and the simulation follows a inner-first/source-state semantic.
+before external events, and the simulation follows a inner-first/source-state and run-to-completion semantic.
+
+The main difference between SCXML and our implementation comes when considering parallel states.
+The UML specification defines that several transitions in parallel regions can be triggered by a same event:
+
+    "Due to the presence of orthogonal Regions, it is possible that multiple Transitions (in different Regions) can be
+    triggered by the same Event occurrence. The **order in which these Transitions are executed is left undefined**."
+    --- `UML 2.5 Specification <http://www.omg.org/cgi-bin/doc?formal/15-03-01.pdf>`__
+
+This sometimes implies a non-deterministic choice in the order in which transitions must be processed, and
+in the order in which states must be exited and/or entered. This problem is addressed in SCXML specification:
+
+    "enabledTransitions will contain multiple transitions only if a parallel state is active.
+    In that case, we may have one transition selected for each of its children. [...]
+    If multiple states are active (i.e., we are in a parallel region), then there may be multiple transitions,
+    one per active atomic state (though some states may not select a transition.) In this case, the
+    transitions are taken **in the document order of the atomic states** that selected them."
+    --- `SCXML Specification <http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation>`__
+
+However, from our point of view, this solution is not satisfactory.
+The execution should not depend on the order in which items are defined in some document.
+
+Our implementation radically circumvents this by raising a ``Warning`` and stopping the execution if
+multiple transitions can be triggered at the same time. This is, we make no arbitrary choice to handle
+non-determinism, and a consumed event can at most trigger one transition at a time.
+
+
+Example of an execution
+-----------------------
 
 A :py:class:`~pyss.simulator.Simulator` instance is constructed upon a :py:class:`~pyss.model.StateChart` instance and
 an optional callable that returns an :py:class:`~pyss.evaluator.Evaluator` (see :ref:`code_evaluation`).
 If no evaluator is specified, :py:class:`~pyss.evaluator.PythonEvaluator` class will be used.
-
-
-Example of an execution
-***********************
 
 Consider the following example.
 
@@ -97,7 +118,7 @@ The main methods and attributes of a simulator instance are:
 
 
 Macro and micro steps
-*********************
+---------------------
 
 The simulator is fully observable: its :py:meth:`~pyss.simulator.Simulator.execute_once` (resp. :py:meth:`~pyss.simulator.Simulator.execute`) method returns
 an instance of (resp. a list of) :py:class:`~pyss.simulator.MacroStep`.
@@ -180,3 +201,6 @@ priority over external event, it is sufficient to override the :py:meth:`~pyss.s
      def send(self, event:model.Event, internal=False):
         self.append(event)  # No distinction between internal and external events
         return self
+
+
+

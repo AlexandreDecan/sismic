@@ -81,7 +81,7 @@ setup(
     # $ pip install -e .[dev,test]
     extras_require={
         #'dev': ['check-manifest'],
-        'test': ['coverage'],
+        'dev': ['coverage', 'sphinx'],
     },
 
     include_package_data=True,

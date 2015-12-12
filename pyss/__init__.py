@@ -1,12 +1,14 @@
-__description__ = 'Python Statechart Simulator'
-__version__ = '0.6.1'
+# "Export" most used elements
+from . import evaluator, io, model, simulator, testing
+
+
+__description__ = 'Statechart Simulator for Python'
+__version__ = '0.6.'
 __url__ = 'https://github.com/AlexandreDecan/PySS/'
 __author__ = 'Alexandre Decan'
 __email__ = 'alexandre.decan@lexpage.net'
 __licence__ = 'LGPL3'
 
-# "Export" most used elements
-from . import evaluator, io, model, simulator, testing
 
 def _parse_args():  # pragma: no cover
     from .cli import cli_execute, cli_validate, cli_test
