@@ -105,7 +105,10 @@ class PythonEvaluator(Evaluator):
         :return: True or False
         """
         self._context['event'] = event
-        return eval(condition, {}, self._context)
+        try:
+            return eval(condition, {}, self._context)
+        except Exception as e:
+            raise type(e)('The above exception occurred while evaluating:\n{}'.format(condition)) from e
 
     def execute_action(self, action: str, event: Event=None) -> list:
         """
@@ -119,7 +122,10 @@ class PythonEvaluator(Evaluator):
         self._events = []  # Reset
         self._context['event'] = event
 
-        exec(action, {}, self._context)
+        try:
+            exec(action, {}, self._context)
+        except Exception as e:
+            raise type(e)('The above exception occurred while executing:\n{}'.format(action)) from e
         return self._events
 
 
