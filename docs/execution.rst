@@ -1,8 +1,8 @@
 Executing statecharts
 =====================
 
-Semantic
---------
+Statechart semantic
+-------------------
 
 The module :py:mod:`~pyss.simulator` contains a :py:class:`~pyss.simulator.Simulator` class that interprets a statechart
 mainly following `SCXML <http://www.w3.org/TR/scxml/>`__ semantic.
@@ -28,14 +28,44 @@ in the order in which states must be exited and/or entered. This problem is addr
 
 However, from our point of view, this solution is not satisfactory.
 The execution should not depend on the order in which items are defined in some document.
+Our implementation circumvents this by raising a ``Warning`` and stopping the execution if
+multiple transitions can be triggered at the same time. To some extent, this is the same approach
+than in Rhapsody:
 
-Our implementation radically circumvents this by raising a ``Warning`` and stopping the execution if
-multiple transitions can be triggered at the same time. This is, we make no arbitrary choice to handle
-non-determinism, and a consumed event can at most trigger one transition at a time.
+    "Rhapsody detects such cases of nondeterminism during code generation
+    and does not allow them. The motivation for this is that the generated code
+    is intended to serve as a final implementation and for most embedded software
+    systems such nondeterminism is not acceptable."
+    --- `The Rhapsody Semantics of Statecharts <http://research.microsoft.com/pubs/148785/charts04.pdf>`__
+
+However, their approach only concerns conflicting transitions that are not fired in an orthogonal state.
+In orthogonal states, the order in which transitions are triggered in still non-determinist:
+
+    "The order of firing transitions of orthogonal components is not defined, and
+    depends on an arbitrary traversal in the implementation. Also, the actions on
+    the transitions of the orthogonal components are interleaved in an arbitrary
+    way."
+    --- `The Rhapsody Semantics of Statecharts <http://research.microsoft.com/pubs/148785/charts04.pdf>`__
+
+.. _parallel_semantic:
+
+To avoid such situations and to avoid defining arbitrary order on the execution, we decided to
+allow event to trigger **at most** one transition at a time. As a consequence, this means that parallel
+states execution should be "event-independant", ie. a same event cannot trigger two (or more) transitions
+in distinct parallel state's substates.
+
+There are several workarounds. For instance, one can define a shared object in the context of an evaluator that
+allows parallel states to communicate and to synchronize. Or, at a statechart level, one can define an additional
+parallel state that *resends* events for each other parallel state (ie. if the received event is *e1*, it raises
+an internal event *e1_i* for each other parallel region *i*).
+Finally, the restriction we implemented can also be overridden by subclassing the simulator (see :ref:`other_semantics`).
+
+While it seems radical, our approach respects the UML specification which requires that the designer
+does not rely on any particular order for event instances to be dispatched to the relevant orthogonal regions.
 
 
-Example of an execution
------------------------
+Using *Simulator*
+-----------------
 
 A :py:class:`~pyss.simulator.Simulator` instance is constructed upon a :py:class:`~pyss.model.StateChart` instance and
 an optional callable that returns an :py:class:`~pyss.evaluator.Evaluator` (see :ref:`code_evaluation`).
@@ -202,5 +232,11 @@ priority over external event, it is sufficient to override the :py:meth:`~pyss.s
         self.append(event)  # No distinction between internal and external events
         return self
 
+If you find that the way we deal with non-determinism is too radical or not enough permissive
+(remember :ref:`this <parallel_semantic>`), you can implement your own approach.
+The method :py:meth:`~pyss.simulator.Simulator._actionable_transitions` already returns all the transitions that
+can be triggered by an event.
+This method is actually called by :py:meth:`~pyss.simulator.Simulator._transition_step` which currently
+checks that at most one transition can be triggered.
 
 

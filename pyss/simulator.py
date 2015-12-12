@@ -5,24 +5,24 @@ from .evaluator import Evaluator, PythonEvaluator
 
 class MicroStep:
     """
-    Create a micro step. A step consider ``event``, takes ``transition`` and results in a list
+    Create a micro step. A step consider ``event``, takes ``transitions`` and results in a list
     of ``entered_states`` and a list of ``exited_states``.
     Order in the two lists is REALLY important!
 
     :param event: Event or None in case of eventless transition
-    :param transition: Transition or None if no processed transition
+    :param transitions: a list of transitions or None if no processed transition
     :param entered_states: possibly empty list of entered states
     :param exited_states: possibly empty list of exited states
     """
-    def __init__(self, event: model.Event=None, transition: model.Transition=None,
+    def __init__(self, event: model.Event=None, transitions: list=None,
                  entered_states: list=None, exited_states: list=None):
         self.event = event
-        self.transition = transition
+        self.transitions = transitions if transitions else []
         self.entered_states = entered_states if entered_states else []
         self.exited_states = exited_states if exited_states else []
 
     def __repr__(self):
-        return 'MicroStep({}, {}, {}, {})'.format(self.event, self.transition, self.entered_states, self.exited_states)
+        return 'MicroStep({}, {}, {}, {})'.format(self.event, self.transitions, self.entered_states, self.exited_states)
 
 
 class MacroStep:
@@ -46,11 +46,11 @@ class MacroStep:
         return self.main.event
 
     @property
-    def transition(self) -> model.Transition:
+    def transitions(self) -> list:
         """
-        Transition (or ``None``) that were processed.
+        A (possibly empty) list of transitions that were triggered.
         """
-        return self.main.transition
+        return self.main.transitions
 
     @property
     def entered_states(self) -> list:
@@ -73,7 +73,7 @@ class MacroStep:
         return states
 
     def __repr__(self):
-        return 'MacroStep({}, {}, {}, {})'.format(self.event, self.transition, self.entered_states, self.exited_states)
+        return 'MacroStep({}, {}, {}, {})'.format(self.event, self.transitions, self.entered_states, self.exited_states)
 
 
 class Simulator:
@@ -288,7 +288,7 @@ class Simulator:
 
         # Internal transition
         if transition.to_state is None:
-            return MicroStep(event, transition, [], [])
+            return MicroStep(event, [transition], [], [])
 
         lca = self._statechart.least_common_ancestor(transition.from_state, transition.to_state)
         from_ancestors = self._statechart.ancestors_for(transition.from_state)
@@ -321,7 +321,7 @@ class Simulator:
                 break
             entered_states.insert(0, state)
 
-        return MicroStep(event, transition, entered_states, exited_states)
+        return MicroStep(event, [transition], entered_states, exited_states)
 
     def _execute_step(self, step: MicroStep):
         """
@@ -361,8 +361,9 @@ class Simulator:
         self._configuration = self._configuration.difference(step.exited_states)
 
         # Execute transition
-        if step.transition and step.transition.action:
-            self._evaluator.execute_action(step.transition.action, step.event)
+        for transition in step.transitions:
+            if transition.action:
+                self._evaluator.execute_action(transition.action, step.event)
 
         for state in entered_states:
             # Execute entry action

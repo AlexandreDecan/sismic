@@ -68,7 +68,7 @@ def cli_execute(args):
         if args.verbosity >= 2:
             print('Considered event: {}'.format(step.event), file=s)
         if args.verbosity >= 1:
-            print('Transition: ' + str(step.transition), file=s)
+            print('Transition: ' + str(step.transitions), file=s)
         if args.verbosity >= 3:
             print('Exited states: ' + ', '.join(step.exited_states), file=s)
             print('Entered states: ' + ', '.join(step.entered_states), file=s)
