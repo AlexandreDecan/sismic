@@ -47,15 +47,15 @@ or using the command-line interface, see :ref:`cli_execute`.
     simulator = pyss.simulator.Simulator(statechart)
     simulator.send(pyss.model.Event('floorSelected', data={'floor': 4}))
     for step in simulator.execute():
-        print('{}: {}'.format(step.transition, simulator.configuration))
+        print('{}: {}'.format(step.transitions, simulator.configuration))
 
 The output should be::
 
-   floorSelecting+floorSelected -> floorSelecting: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
-   doorsOpen -> doorsClosed: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
-   doorsClosed -> movingUp: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
-   movingUp -> movingUp: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
-   movingUp -> movingUp: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
-   movingUp -> movingUp: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
-   moving -> doorsOpen: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
+   [floorSelecting+floorSelected -> floorSelecting]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
+   [doorsOpen -> doorsClosed]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
+   [doorsClosed -> movingUp]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
+   [movingUp -> movingUp]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
+   [movingUp -> movingUp]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
+   [movingUp -> movingUp]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
+   [moving -> doorsOpen]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
 

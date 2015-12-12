@@ -3,7 +3,7 @@ from . import evaluator, io, model, simulator, testing
 
 
 __description__ = 'Statechart Simulator for Python'
-__version__ = '0.6.'
+__version__ = '0.6.2'
 __url__ = 'https://github.com/AlexandreDecan/PySS/'
 __author__ = 'Alexandre Decan'
 __email__ = 'alexandre.decan@lexpage.net'
