@@ -253,6 +253,6 @@ which currently checks that at most one transition can be triggered.
 You can override :py:meth:`~pyss.simulator.Simulator._transition_step` and define how situations in which several
 transitions are triggered are dealt. The remaining of the implementation is already conceived in a way to deal with
 multiple transitions fired at once.
-In particular, your implementation should return an appropriate ``MicroStep`` instances where transitions,
+In particular, your implementation should return an appropriate ``MicroStep`` instances where selected transitions,
 entered states and exited states are ordered according to your arbitrary choice to deal with non-determinism.
 
