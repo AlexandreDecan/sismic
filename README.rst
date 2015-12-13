@@ -1,7 +1,7 @@
-Sismic Interactive State Machine Interpreter and Checker
-========================================================
+Sismic for Python >= 3.4
+========================
 
-For Python >=3.4
+Sismic Interactive State Machine Interpreter and Checker
 
 .. image:: https://travis-ci.org/AlexandreDecan/sismic.svg
     :target: https://travis-ci.org/AlexandreDecan/sismic
@@ -14,10 +14,10 @@ For Python >=3.4
 
 The Sismic library for Python provides a set of tools to define, simulate, execute and debug statecharts. More specifically, Sismic provides:
 
-    - An easy way to define and to import statecharts, based on the human-friendly YAML markup language
-    - A statechart simulator offering discrete, step-by-step, and fully observable simulation engine
-    - Built-in support for expressing actions and guards using regular Python code
-    - A unit testing framework for statecharts
+ - An easy way to define and to import statecharts, based on the human-friendly YAML markup language
+ - A statechart simulator offering discrete, step-by-step, and fully observable simulation engine
+ - Built-in support for expressing actions and guards using regular Python code
+ - A unit testing framework for statecharts
 
 Installation
 ------------

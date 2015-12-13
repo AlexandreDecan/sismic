@@ -187,7 +187,7 @@ and details of such a run can be obtained using the :py:class:`~sismic.simulator
 Advanced uses
 -------------
 
-A :py:class:`~pyss.simulator.Simulator` makes use of several protected methods for its initialization or to compute
+A :py:class:`~sismic.simulator.Simulator` makes use of several protected methods for its initialization or to compute
 which transition should be processed next, which are the next steps, etc.
 
 These methods can be easily overriden or combined to define other semantics.
@@ -196,12 +196,12 @@ These methods can be easily overriden or combined to define other semantics.
 Additional (protected) methods
 ******************************
 
-.. automethod:: pyss.simulator.Simulator._start
-.. automethod:: pyss.simulator.Simulator._execute_step
-.. automethod:: pyss.simulator.Simulator._actionable_transitions
-.. automethod:: pyss.simulator.Simulator._transition_step
-.. automethod:: pyss.simulator.Simulator._stabilize_step
-.. automethod:: pyss.simulator.Simulator._stabilize
+.. automethod:: sismic.simulator.Simulator._start
+.. automethod:: sismic.simulator.Simulator._execute_step
+.. automethod:: sismic.simulator.Simulator._actionable_transitions
+.. automethod:: sismic.simulator.Simulator._transition_step
+.. automethod:: sismic.simulator.Simulator._stabilize_step
+.. automethod:: sismic.simulator.Simulator._stabilize
 
 
 .. _other_semantics:
@@ -215,7 +215,7 @@ Outer-first/source-state semantic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For example, if you are interested in a outer-first/source-state semantic (instead of the
-inner-first/source-state one that is currently provided), you can subclass :py:class:`~pyss.simulator.Simulator` as follows:
+inner-first/source-state one that is currently provided), you can subclass :py:class:`~sismic.simulator.Simulator` as follows:
 
 .. code:: python
 
@@ -232,7 +232,7 @@ Internal events have no priority
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 As another example, if you are interested in considering that internal event should not have
-priority over external event, it is sufficient to override the :py:meth:`~pyss.simulator.Simulator.send` method:
+priority over external event, it is sufficient to override the :py:meth:`~sismic.simulator.Simulator.send` method:
 
 .. code:: python
 
@@ -246,11 +246,11 @@ Custom way to deal with non-determinism
 
 If you find that the way we deal with non-determinism is too radical or not enough permissive
 (remember :ref:`this <parallel_semantic>`), you can implement your own approach to deal with non-determinism.
-The method :py:meth:`~pyss.simulator.Simulator._actionable_transitions` already returns all the transitions that
-can be triggered by an event. This method is actually called by :py:meth:`~pyss.simulator.Simulator._transition_step`
+The method :py:meth:`~sismic.simulator.Simulator._actionable_transitions` already returns all the transitions that
+can be triggered by an event. This method is actually called by :py:meth:`~sismic.simulator.Simulator._transition_step`
 which currently checks that at most one transition can be triggered.
 
-You can override :py:meth:`~pyss.simulator.Simulator._transition_step` and define how situations in which several
+You can override :py:meth:`~sismic.simulator.Simulator._transition_step` and define how situations in which several
 transitions are triggered are dealt. The remaining of the implementation is already conceived in a way to deal with
 multiple transitions fired at once.
 In particular, your implementation should return an appropriate ``MicroStep`` instances where selected transitions,
