@@ -1,6 +1,8 @@
 Executing statecharts
 =====================
 
+.. _semantic:
+
 Statechart semantic
 -------------------
 
@@ -9,15 +11,49 @@ interprets a statechart mainly following `SCXML <http://www.w3.org/TR/scxml/>`__
 In particular, eventless transitions are processed before evented transitions, internal events are consumed
 before external events, and the simulation follows a inner-first/source-state and run-to-completion semantic.
 
-The main difference between SCXML and Sismic's default interpreter comes when considering parallel states.
-The UML specification defines that several transitions in parallel regions can be triggered by a same event:
+The main difference between SCXML and Sismic's default interpreter comes when considering that multiple transitions
+can be triggered at once. This may occurs when transitions sharing a same event have guards that are not mutually
+exclusive or for transitions in parallel states.
+
+Triggering multiple transitions at once implies a non-deterministic choice in the order in which transitions must be
+processed, and in the order in which states must be exited and/or entered.
+This is problematic as even the UML specification does not enforce an order:
 
     "Due to the presence of orthogonal Regions, it is possible that multiple Transitions (in different Regions) can be
     triggered by the same Event occurrence. The **order in which these Transitions are executed is left undefined**."
     --- `UML 2.5 Specification <http://www.omg.org/cgi-bin/doc?formal/15-03-01.pdf>`__
 
-This sometimes implies a non-deterministic choice in the order in which transitions must be processed, and
-in the order in which states must be exited and/or entered. This problem is addressed in SCXML specification:
+The problem is currently addressed by the SCXML specification which defines document order as the order
+in which (non-parallel) transitions should be processed.
+
+    "If multiple matching transitions are present, take the **first in document order**."
+    --- `SCXML Specification <http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation>`__
+
+However, from our point of view, this solution is not satisfactory.
+The execution should not depend on the order in which items are defined in some document, in particular when
+there are many different ways to construct or to import a statechart.
+
+Some other tools do not even define any order on the transitions in such situations:
+
+    "Rhapsody detects such cases of nondeterminism during code generation
+    and **does not allow them**. The motivation for this is that the generated code
+    is intended to serve as a final implementation and for most embedded software
+    systems such nondeterminism is not acceptable."
+    --- `The Rhapsody Semantics of Statecharts <http://research.microsoft.com/pubs/148785/charts04.pdf>`__
+
+We decide to follow Rhapsody and to raise an error (in fact, a ``Warning``) if such cases of
+nondeterminism occur during the execution. Notice that this only concerns multiple transitions in the same
+component, not in parallel component.
+
+When multiple transitions are triggered from distinct parallel components, the situation is even more intricate.
+
+    "The order of firing transitions of orthogonal components is not defined, and
+    depends on an arbitrary traversal in the implementation. Also, the actions on
+    the transitions of the orthogonal components are **interleaved in an arbitrary
+    way**."
+    --- `The Rhapsody Semantics of Statecharts <http://research.microsoft.com/pubs/148785/charts04.pdf>`__
+
+SCXML circumvents this problem using again document definition order.
 
     "enabledTransitions will contain multiple transitions only if a parallel state is active.
     In that case, we may have one transition selected for each of its children. [...]
@@ -26,44 +62,14 @@ in the order in which states must be exited and/or entered. This problem is addr
     transitions are taken **in the document order of the atomic states** that selected them."
     --- `SCXML Specification <http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation>`__
 
-However, from our point of view, this solution is not satisfactory.
-The execution should not depend on the order in which items are defined in some document.
-Sismic circumvents this by raising a ``Warning`` and stopping the execution if
-multiple transitions can be triggered at the same time. To some extent, this is the same approach
-than in Rhapsody:
-
-    "Rhapsody detects such cases of nondeterminism during code generation
-    and does not allow them. The motivation for this is that the generated code
-    is intended to serve as a final implementation and for most embedded software
-    systems such nondeterminism is not acceptable."
-    --- `The Rhapsody Semantics of Statecharts <http://research.microsoft.com/pubs/148785/charts04.pdf>`__
-
-However, their approach only concerns conflicting transitions that are not fired in an orthogonal state.
-In orthogonal states, the order in which transitions are triggered in still non-determinist:
-
-    "The order of firing transitions of orthogonal components is not defined, and
-    depends on an arbitrary traversal in the implementation. Also, the actions on
-    the transitions of the orthogonal components are interleaved in an arbitrary
-    way."
-    --- `The Rhapsody Semantics of Statecharts <http://research.microsoft.com/pubs/148785/charts04.pdf>`__
-
-.. _parallel_semantic:
-
-To avoid such situations and to avoid defining arbitrary order on the execution, we decided to
-allow event to trigger **at most** one transition at a time. As a consequence, this means that parallel
-states execution should be "event-independant", ie. a same event cannot trigger two (or more) transitions
-in distinct parallel state's substates.
-
-There exist several workarounds to this.
-For instance, one can define a shared object in the context of an evaluator that
-allows parallel states to communicate and to synchronize. Or, at statechart level, one can define an additional
-parallel state that *resends* events for each other parallel state (ie. if the received event is *e1*, it raises
-an internal event *e1_i* for each other parallel region *i*).
-Finally, the restriction we implemented can also be overridden by subclassing the default interpreter, as
-our implementation already considers that multiple transitions could be fired at once (see :ref:`other_semantics`).
-
-While it seems radical, our approach respects the UML specification which requires that "*the designer
-does not rely on any particular order for event instances to be dispatched to the relevant orthogonal regions*".
+Sismic does not agree with SCXML on the chosen order, and defines that multiple orthogonal transitions
+should be processed by decreasing depth of the source state.
+This is perfectly coherent with the inner-first/source-state semantic, as "deeper" transitions are processed
+before "less nested" ones. Ties are broken by lexicographic order of the source states names.
+ 
+Notice that orthogonal regions should ideally be independent, implying that such situations should not
+arise ("*the designer does not rely on any particular order for event instances to be dispatched
+to the relevant orthogonal regions*", UML specification).
 
 
 Using *Interpreter*
@@ -240,15 +246,16 @@ priority over external event, it is sufficient to override the :py:meth:`~sismic
 Custom way to deal with non-determinism
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you find that the way we deal with non-determinism is too radical or not enough permissive
-(remember :ref:`this <parallel_semantic>`), you can implement your own approach to deal with non-determinism.
+If you find that the way we deal with non-determinism is too far from other semantics like SCXML or Rhapsody,
+(remember :ref:`semantic`), you can implement your own approach to deal with non-determinism.
 The method :py:meth:`~sismic.interpreter.Interpreter._enabled_transitions` already returns all the transitions that
 can be triggered by an event. This method is actually called by :py:meth:`~sismic.interpreter.Interpreter._transition_step`
-which currently checks that at most one transition can be triggered.
+which currently checks that (1) transitions come from distinct parallel regions and that (2) they are not in conflict,
+meaning that one of the transitions does not make the statechart leaves one of the concerned parallel region.
 
-You can override :py:meth:`~sismic.interpreter.Interpreter._transition_step` and define how situations in which several
-transitions are triggered are dealt. The remaining of the implementation is already conceived in a way to deal with
-multiple transitions fired at once.
-In particular, your implementation should return an appropriate list of ``MicroStep`` instances where selected transitions,
-entered states and exited states are ordered according to your arbitrary choice to deal with non-determinism.
+This method then computes an order in which the transitions should be processed, and the order in which states
+should be exited and entered.
+Your modifications will probably targets this part of the method.
+Ensure that your implementation still returns an appropriate list of ``MicroStep``
+instances where selected transitions, entered states and exited states are ordered according to your needs.
 

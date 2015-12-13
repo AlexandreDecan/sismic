@@ -1,4 +1,5 @@
 from collections import deque
+from itertools import combinations
 from . import model
 from .evaluator import Evaluator, PythonEvaluator
 
@@ -278,32 +279,58 @@ class Interpreter:
 
     def _transition_step(self, event: model.Event=None) -> list:
         """
-        Return a possibly empty list of ``MicroStep`` instances
-        associated with the appropriate transition matching
-        given event (or eventless transition if event is None).
+        Return a (possibly empty) list of micro steps. Each micro step corresponds to the process of a transition
+        matching given event. The transitions are ordered by decreasing depth of their source state and, for ties,
+        by the name of their source state.
 
         :param event: ``Event`` to consider (or None)
         :return: A list of ``MicroStep`` instances
-        :raise: a Warning in case of non determinism
+        :raise: a Warning in case of non-determinist or conflicting transitions
         """
         transitions = self._actionable_transitions(event)
 
-
         if len(transitions) > 1:
-            # If more than one transition, check that they are from separate parallel regions
-            if False:
-                pass
-            else:  # Or else, generate a warning for non-determinism
-                raise Warning('More than one transition can be processed: non-determinism!' +
-                                  '\nConfiguration is {}\nEvent is {}\nTransitions are:{}\n'
-                                  .format(self.configuration, event, transitions))
+            # If more than one transition, we check (1) they are from separate regions and (2) they do not conflict
+            # Two transitions conflict if one of them leaves the parallel state
+            for t1, t2 in combinations(transitions, 2):
+                # Check (1)
+                lca = self._statechart.least_common_ancestor(t1.from_state, t2.from_state)
+                lca_state = self._statechart.states.get(lca, None)
 
+                # Their LCA must be an orthogonal state!
+                if not isinstance(lca_state, model.OrthogonalState):
+                    raise Warning('Non-determinist transitions: {t1} and {t2}' +
+                                  '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
+                                  .format(c=self.configuration, e=event, t=transitions, t1=t1, t2=t2))
+
+                # Check (2)
+                # This check must be done wrt. to LCA, as the combination of from_states could
+                # come from nested parallel regions!
+                for t in [t1, t2]:
+                    last_before_lca = t.from_state
+                    for state in self._statechart.ancestors_for(t.from_state):
+                        if state == lca:
+                            break
+                        last_before_lca = state
+                    # Target must be a descendant (or self) of this state
+                    if t.to_state not in [last_before_lca] + self._statechart.descendants_for(last_before_lca):
+                        raise Warning('Conflicting transitions: {t1} and {t2}' +
+                                      '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
+                                      .format(c=self.configuration, e=event, t=transitions, t1=t1, t2=t2))
+
+            # Define an arbitrary order based on the depth and the name of source states.
+            # Sort is **stable** in Python. We should sort by depth desc, then by name asc.
+            # We do it first by name desc, then by depth asc, then we reverse the list.
+            transitions = sorted(transitions, key=lambda t: t.from_state, reverse=True)
+            transitions = sorted(transitions, key=lambda t: self._statechart.depth_of(t.from_state))
+            transitions.reverse()
 
         returned_steps = []
         for transition in transitions:
             # Internal transition
             if transition.to_state is None:
-                return [MicroStep(event, transition, [], [])]
+                returned_steps.append(MicroStep(event, transition, [], []))
+                continue
 
             lca = self._statechart.least_common_ancestor(transition.from_state, transition.to_state)
             from_ancestors = self._statechart.ancestors_for(transition.from_state)
@@ -337,9 +364,6 @@ class Interpreter:
                 entered_states.insert(0, state)
 
             returned_steps.append(MicroStep(event, transition, entered_states, exited_states))
-
-            # Our radical approach to deal with non-determinism
-            break
 
         return returned_steps
 
