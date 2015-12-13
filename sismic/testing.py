@@ -1,8 +1,7 @@
 import sys
 
-from sismic import model
+from .model import Event, StateChart
 from .simulator import Simulator, MacroStep
-from .evaluator import Evaluator
 
 
 class StateChartTester:
@@ -20,7 +19,7 @@ class StateChartTester:
         self._events = events
 
         # Initialize testers with a start event
-        event = model.Event('start')
+        event = Event('start')
         context = self._create_context()
         self._execute_tester(None, event, context)
 
@@ -56,7 +55,7 @@ class StateChartTester:
             'context': self._simulator.evaluator.context
         }
 
-    def _execute_tester(self, step: MacroStep, event: model.Event, context: dict):
+    def _execute_tester(self, step: MacroStep, event: Event, context: dict):
         """
         Send the event and update the context of the testers.
         """
@@ -88,7 +87,7 @@ class StateChartTester:
 
         :raises AssertionError: if a tester is not in a final configuration
         """
-        event = model.Event('stop')
+        event = Event('stop')
         context = self._create_context()
 
         for tester in self._testers:
@@ -106,7 +105,7 @@ class StateChartTester:
         step = self._simulator.execute_once()
 
         if step:
-            event = model.Event('step')
+            event = Event('step')
             context = self._create_context(step)
 
             # Execute testers
@@ -149,13 +148,13 @@ class TesterConfiguration:
         and an optional ``evaluator.Evaluator`` instance, and return an instance of ``simulator.Simulator``
         (or anything that acts as such).
     """
-    def __init__(self, statechart: model.StateChart, evaluator_klass=None, simulator_klass=None):
+    def __init__(self, statechart: StateChart, evaluator_klass=None, simulator_klass=None):
         self._statechart = statechart
         self._evaluator_klass = evaluator_klass
         self._simulator_klass = simulator_klass
         self._statechart_tests = []
 
-    def add_test(self, statechart: model.StateChart, evaluator_klass=None, simulator_klass=None):
+    def add_test(self, statechart: StateChart, evaluator_klass=None, simulator_klass=None):
         """
         Add the given statechart as a test.
 

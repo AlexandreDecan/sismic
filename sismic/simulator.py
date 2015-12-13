@@ -212,7 +212,7 @@ class Simulator:
     def _actionable_transitions(self, event: model.Event=None) -> list:
         """
         Return a list of transitions that can be actioned wrt.
-        the current configuration. The list is ordered: deepest states first.
+        the current configuration. The list is ordered in increasing state depth.
 
         :param event: Event to considered or None for eventless transitions
         :return: A (possibly empty) ordered list of ``Transition`` instances
@@ -227,7 +227,7 @@ class Simulator:
                 transitions.append(transition)
 
         # Order by deepest first
-        return sorted(transitions, key=lambda t: self._statechart.depth_of(t.from_state), reverse=True)
+        return sorted(transitions, key=lambda t: self._statechart.depth_of(t.from_state))
 
     def _stabilize_step(self) -> MicroStep:
         """
@@ -273,12 +273,16 @@ class Simulator:
         :return: A ``MicroStep`` instance or None
         :raise: a Warning in case of non determinism
         """
+
+        # Inner-first/source-state semantic
         transitions = self._actionable_transitions(event)
+        transitions.reverse()  # In-place reverse
 
         if len(transitions) == 0:
             return None
 
         transition = transitions[0]
+
         transition_depth = self._statechart.depth_of(transition.from_state)
         for other_transition in transitions:
             if not(other_transition is transition) and self._statechart.depth_of(other_transition.from_state) == transition_depth:

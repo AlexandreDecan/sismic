@@ -1,6 +1,19 @@
 Defining statecharts
 ====================
 
+About statecharts
+-----------------
+
+Statecharts are a well-known visual language for modeling the executable behavior of complex reactive event-based systems.
+They were invented in the 1980s by David Harel, and have gained a more widespread adoption since they became part of
+the UML modeling standard.
+
+Statecharts offer more sophisticated modeling concepts than the more classical state diagrams of finite state machines.
+For example, they support hierarchical composition of states, orthogonal regions
+to express parallel execution, guarded transitions, and actions on transitions or states. Different flavours of
+executable semantics for statecharts have been proposed in the literature and in existing tools.
+
+
 Defining statecharts in YAML
 ----------------------------
 

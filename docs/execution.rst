@@ -28,7 +28,7 @@ in the order in which states must be exited and/or entered. This problem is addr
 
 However, from our point of view, this solution is not satisfactory.
 The execution should not depend on the order in which items are defined in some document.
-Sismiccircumvents this by raising a ``Warning`` and stopping the execution if
+Sismic circumvents this by raising a ``Warning`` and stopping the execution if
 multiple transitions can be triggered at the same time. To some extent, this is the same approach
 than in Rhapsody:
 
@@ -159,9 +159,9 @@ A macro step corresponds to the process of consuming an event, regardless of the
 of transitions triggered. A macro step also includes every consecutive stabilization step
 (ie. the steps that are needed to enter nested states, or to switch into the configuration of an history state).
 
-A :py:class:`~sismic.simulator.MacroStep` exposes the consumed ``event`` (:py:class:`~sismic.model.Event`)
-if any, a (possibly empty) list of ``transitions`` (:py:class:`~sismic.model.Transition` and two sequences of state
-names: ``entered_states`` and ``exited_states``.
+A :py:class:`~sismic.simulator.MacroStep` exposes the consumed ``event`` (an :py:class:`~sismic.model.Event` instance)
+if any, a (possibly empty) list ``transitions`` of :py:class:`~sismic.model.Transition` instances, and two
+oredered sequences of state names, ``entered_states`` and ``exited_states``.
 States order in those list indicates the order in which their *on entry* and *on exit* actions were processed.
 
 .. autoclass:: sismic.simulator.MacroStep
@@ -190,7 +190,7 @@ Advanced uses
 A :py:class:`~sismic.simulator.Simulator` makes use of several protected methods for its initialization or to compute
 which transition should be processed next, which are the next steps, etc.
 
-These methods can be easily overriden or combined to define other semantics.
+These methods can be easily overridden or combined to define other semantics.
 
 
 Additional (protected) methods

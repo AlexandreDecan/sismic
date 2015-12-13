@@ -1,12 +1,10 @@
-.. PySS documentation master file, created by
+.. Sismic documentation master file, created by
    sphinx-quickstart on Sun Dec  6 10:35:52 2015.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
 Welcome to Sismic's documentation!
 ==================================
-
-Sismic Interactive State Machine Interpreter and Checker, for Python >= 3.4
 
 .. image:: https://travis-ci.org/AlexandreDecan/sismic.svg
     :target: https://travis-ci.org/AlexandreDecan/sismic
@@ -18,23 +16,12 @@ Sismic Interactive State Machine Interpreter and Checker, for Python >= 3.4
     :target: https://sismic.readthedocs.org/
 
 
-About statecharts
------------------
-
-Statecharts are a well-known visual language for modeling the executable behavior of complex reactive event-based systems.
-They were invented in the 1980s by David Harel, and have gained a more widespread adoption since they became part of
-the UML modeling standard.
-
-Statecharts offer more sophisticated modeling concepts than the more classical state diagrams of finite state machines.
-For example, they support hierarchical composition of states, orthogonal regions
-to express parallel execution, guarded transitions, and actions on transitions or states. Different flavours of
-executable semantics for statecharts have been proposed in the literature and in existing tools.
+Sismic Interactive State Machine Interpreter and Checker
+--------------------------------------------------------
 
 
-Overview
---------
-
-The Sismic library for Python provides a set of tools to define, simulate, execute and debug statecharts. More specifically, Sismic provides:
+The Sismic library for Python >= 3.4 provides a set of tools to define, simulate, execute and debug statecharts.
+More specifically, Sismic provides:
 
  - An easy way to define and to import statecharts, based on the human-friendly YAML markup language
  - A statechart simulator offering discrete, step-by-step, and fully observable simulation engine
@@ -70,7 +57,7 @@ Contents
 
 
 Source code
-===========
+-----------
 
 The source code is available on GitHub:
 https://github.com/AlexandreDecan/sismic
