@@ -203,7 +203,7 @@ Additional (protected) methods
 
 .. automethod:: sismic.interpreter.Interpreter._start
 .. automethod:: sismic.interpreter.Interpreter._execute_step
-.. automethod:: sismic.interpreter.Interpreter._actionable_transitions
+.. automethod:: sismic.interpreter.Interpreter._enabled_transitions
 .. automethod:: sismic.interpreter.Interpreter._transition_step
 .. automethod:: sismic.interpreter.Interpreter._stabilize_step
 .. automethod:: sismic.interpreter.Interpreter._stabilize
@@ -220,18 +220,9 @@ Outer-first/source-state semantic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For example, if you are interested in a outer-first/source-state semantic (instead of the
-inner-first/source-state one that is currently provided), you can subclass :py:class:`~sismic.interpreter.Interpreter` as follows:
+inner-first/source-state one that is currently provided), you can subclass :py:class:`~sismic.interpreter.Interpreter`
+and override :py:class:`~sismic.interpreted.Interpreted._enabled_transitions`.
 
-.. code:: python
-
-    class OuterFirstSemantic(Interpreter):
-        def __init__(self, *args, **kwargs):
-            super().__init__(self, *args, **kwargs)
-
-        def _actionable_transitions(*args, **kwargs):
-            transitions = super()._actionable_transitions(*args, **kwargs)
-            transitions.reverse()
-            return transitions
 
 Internal events have no priority
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -251,7 +242,7 @@ Custom way to deal with non-determinism
 
 If you find that the way we deal with non-determinism is too radical or not enough permissive
 (remember :ref:`this <parallel_semantic>`), you can implement your own approach to deal with non-determinism.
-The method :py:meth:`~sismic.interpreter.Interpreter._actionable_transitions` already returns all the transitions that
+The method :py:meth:`~sismic.interpreter.Interpreter._enabled_transitions` already returns all the transitions that
 can be triggered by an event. This method is actually called by :py:meth:`~sismic.interpreter.Interpreter._transition_step`
 which currently checks that at most one transition can be triggered.
 

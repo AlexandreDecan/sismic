@@ -215,22 +215,31 @@ class Interpreter:
     def _actionable_transitions(self, event: model.Event=None) -> list:
         """
         Return a list of transitions that can be actioned wrt.
-        the current configuration. The list is ordered in increasing state depth.
+        the current configuration. The choice follows a inner-first/source-state semantic.
 
         :param event: Event to considered or None for eventless transitions
-        :return: A (possibly empty) ordered list of ``Transition`` instances
+        :return: A (possibly empty) list of ``Transition`` instances
         """
-        transitions = []
-        for transition in self._statechart.transitions:
-            if transition.event != event:
-                continue
-            if transition.from_state not in self._configuration:
-                continue
-            if transition.guard is None or self._evaluator.evaluate_condition(transition.guard, event):
-                transitions.append(transition)
 
-        # Order by deepest first
-        return sorted(transitions, key=lambda t: self._statechart.depth_of(t.from_state))
+        transitions = []
+
+        for leaf in self._statechart.leaf_for(self._configuration):
+            for leaf_ancestor in [leaf] + self._statechart.ancestors_for(leaf):
+                transition_found = False
+                for transition in getattr(self._statechart.states[leaf_ancestor], 'transitions', []):
+                    if transition.event != event or transition.from_state not in self._configuration:
+                        continue
+                    if transition.guard is None or self._evaluator.evaluate_condition(transition.guard, event):
+                        transition_found = True
+                        # Prevent duplicate
+                        if transition not in transitions:
+                            transitions.append(transition)
+
+                # Do not consider current's parent if we already have a transition!
+                if transition_found:
+                    break
+
+        return transitions
 
     def _stabilize_step(self) -> MicroStep:
         """
@@ -277,59 +286,62 @@ class Interpreter:
         :return: A list of ``MicroStep`` instances
         :raise: a Warning in case of non determinism
         """
-
-        # Inner-first/source-state semantic
         transitions = self._actionable_transitions(event)
-        transitions.reverse()  # In-place reverse
 
-        if len(transitions) == 0:
-            return []
 
-        transition = transitions[0]
-
-        transition_depth = self._statechart.depth_of(transition.from_state)
-        for other_transition in transitions:
-            if not(other_transition is transition) and self._statechart.depth_of(other_transition.from_state) == transition_depth:
+        if len(transitions) > 1:
+            # If more than one transition, check that they are from separate parallel regions
+            if False:
+                pass
+            else:  # Or else, generate a warning for non-determinism
                 raise Warning('More than one transition can be processed: non-determinism!' +
-                              '\nConfiguration is {}\nEvent is {}\nTransitions are:{}\n'
-                              .format(self.configuration, event, transitions))
+                                  '\nConfiguration is {}\nEvent is {}\nTransitions are:{}\n'
+                                  .format(self.configuration, event, transitions))
 
-        # Internal transition
-        if transition.to_state is None:
-            return [MicroStep(event, transition, [], [])]
 
-        lca = self._statechart.least_common_ancestor(transition.from_state, transition.to_state)
-        from_ancestors = self._statechart.ancestors_for(transition.from_state)
-        to_ancestors = self._statechart.ancestors_for(transition.to_state)
+        returned_steps = []
+        for transition in transitions:
+            # Internal transition
+            if transition.to_state is None:
+                return [MicroStep(event, transition, [], [])]
 
-        # Exited states
-        exited_states = []
+            lca = self._statechart.least_common_ancestor(transition.from_state, transition.to_state)
+            from_ancestors = self._statechart.ancestors_for(transition.from_state)
+            to_ancestors = self._statechart.ancestors_for(transition.to_state)
 
-        # last_before_lca is the "highest" ancestor or from_state that is a child of LCA
-        last_before_lca = transition.from_state
-        for state in from_ancestors:
-            if state == lca:
-                break
-            last_before_lca = state
+            # Exited states
+            exited_states = []
 
-        # Take all the descendants of this state and list the ones that are active
-        for descendant in self._statechart.descendants_for(last_before_lca)[::-1]:  # Mind the reversed order!
-            # Only leave states that are currently active
-            if descendant in self._configuration:
-                exited_states.append(descendant)
+            # last_before_lca is the "highest" ancestor or from_state that is a child of LCA
+            last_before_lca = transition.from_state
+            for state in from_ancestors:
+                if state == lca:
+                    break
+                last_before_lca = state
 
-        # Add last_before_lca as it is a child of LCA that must be exited
-        if last_before_lca in self._configuration:
-            exited_states.append(last_before_lca)
+            # Take all the descendants of this state and list the ones that are active
+            for descendant in self._statechart.descendants_for(last_before_lca)[::-1]:  # Mind the reversed order!
+                # Only leave states that are currently active
+                if descendant in self._configuration:
+                    exited_states.append(descendant)
 
-        # Entered states
-        entered_states = [transition.to_state]
-        for state in to_ancestors:
-            if state == lca:
-                break
-            entered_states.insert(0, state)
+            # Add last_before_lca as it is a child of LCA that must be exited
+            if last_before_lca in self._configuration:
+                exited_states.append(last_before_lca)
 
-        return [MicroStep(event, transition, entered_states, exited_states)]
+            # Entered states
+            entered_states = [transition.to_state]
+            for state in to_ancestors:
+                if state == lca:
+                    break
+                entered_states.insert(0, state)
+
+            returned_steps.append(MicroStep(event, transition, entered_states, exited_states))
+
+            # Our radical approach to deal with non-determinism
+            break
+
+        return returned_steps
 
     def _execute_step(self, step: MicroStep):
         """
