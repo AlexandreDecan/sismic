@@ -1,11 +1,11 @@
 from io import StringIO
 import traceback
 
-from .simulator import Simulator
+from .interpreter import Interpreter
 from .evaluator import PythonEvaluator, DummyEvaluator
 from .io import import_from_yaml
 from .model import Event
-from .testing import TesterConfiguration
+from .checker import TesterConfiguration
 
 
 def parse_event(event_str: str) -> Event:
@@ -52,7 +52,7 @@ def cli_execute(args):
     s = StringIO()
 
     sc = import_from_yaml(args.infile)
-    simulator = Simulator(sc, DummyEvaluator if args.nocode else PythonEvaluator)
+    simulator = Interpreter(sc, DummyEvaluator if args.nocode else PythonEvaluator)
 
     if args.verbosity >= 1:
         print('Initial configuration: ' + ', '.join(simulator.configuration), file=s)

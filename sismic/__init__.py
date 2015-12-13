@@ -1,5 +1,5 @@
 # "Export" most used elements
-from . import evaluator, io, model, simulator, testing
+from . import evaluator, io, model, interpreter, checker
 
 
 __description__ = 'Sismic Interactive State Machine Interpreter and Checker'

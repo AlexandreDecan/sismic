@@ -1,20 +1,18 @@
-import sys
-
 from .model import Event, StateChart
-from .simulator import Simulator, MacroStep
+from .interpreter import Interpreter, MacroStep
 
 
 class StateChartTester:
     """
-    A tester with given simulator (that simulates the statechart to test),
-    a list of testers (simulators that runs tests) and a list of events (scenario).
+    A tester with given interpreter (that interprets the statechart to test),
+    a list of testers (interpreters that runs tests) and a list of events (scenario).
 
-    :param simulator: The simulator containing the statechart to test
-    :param testers: A list of ``simulator.Simulator`` containing the tests
+    :param simulator: The interpreter containing the statechart to test
+    :param testers: A list of ``interpreter.Interpreter`` containing the tests
     :param events: A list of ``model.Event`` that represents a scenario
     """
-    def __init__(self, simulator: Simulator, testers: list, events: list):
-        self._simulator = simulator
+    def __init__(self, interpreter: Interpreter, testers: list, events: list):
+        self._interpreter = interpreter
         self._testers = testers
         self._events = events
 
@@ -25,7 +23,7 @@ class StateChartTester:
 
         # Send the events to the simulator to be tested
         for event in self._events:
-            self._simulator.send(event)
+            self._interpreter.send(event)
 
     def _create_context(self, step: MacroStep=None):
         """
@@ -49,10 +47,10 @@ class StateChartTester:
         return {
             'entered': lambda s: s in getattr(step, 'entered_states', []),
             'exited': lambda s: s in getattr(step, 'exited_states', []),
-            'active': lambda s: s in self._simulator.configuration,
+            'active': lambda s: s in self._interpreter.configuration,
             'processed': lambda e: processed_event_name == e,
             'consumed': lambda e: consumed_event_name == e,
-            'context': self._simulator.evaluator.context
+            'context': self._interpreter.evaluator.context
         }
 
     def _execute_tester(self, step: MacroStep, event: Event, context: dict):
@@ -66,12 +64,12 @@ class StateChartTester:
             try:
                 tester.execute()
             except AssertionError as e:
-                msg = ('An AssertionError occurred while testing "{simulator._statechart.name}".\n'
+                msg = ('An AssertionError occurred while testing "{interpreter._statechart.name}".\n'
                        'Test statechart "{tester._statechart.name}" returned:\n'
                        '{exception.args}\n\n'
                        'Tester active configuration: {tester.configuration}\n'
-                       'Active configuration: {simulator.configuration}\n'
-                       'Step: {step}').format(simulator=self._simulator, tester=tester, step=step, exception=e)
+                       'Active configuration: {interpreter.configuration}\n'
+                       'Step: {step}').format(interpreter=self._interpreter, tester=tester, step=step, exception=e)
                 e.args = [msg]
                 raise
 
@@ -96,13 +94,13 @@ class StateChartTester:
 
     def execute_once(self) -> MacroStep:
         """
-        Call execute_once() on the underlying simulator, and consequently call execute() on the testers.
+        Call execute_once() on the underlying interpreter, and consequently call execute() on the testers.
 
-        :return: The ``simulator.MacroStep`` instance returned by the underlying call.
-        :raises AssertionError: if simulation terminates and a tester is not in a final configuration
+        :return: The ``interpreter.MacroStep`` instance returned by the underlying call.
+        :raises AssertionError: if execution terminates and a tester is not in a final configuration
         """
         # Execute the simulator to be tested
-        step = self._simulator.execute_once()
+        step = self._interpreter.execute_once()
 
         if step:
             event = Event('step')
@@ -119,8 +117,8 @@ class StateChartTester:
         the returned values of ``self.execute_once()``.
 
         :param max_steps: An upper bound on the number steps that are computed and returned.
-            Default is -1, no limit. Set to a positive integer to avoid infinite loops in the statechart simulation.
-        :return: A list of ``MacroStep`` instances produced by the underlying simulator.
+            Default is -1, no limit. Set to a positive integer to avoid infinite loops in the statechart execution.
+        :return: A list of ``MacroStep`` instances produced by the underlying interpreter.
         :raises AssertionError: if simulation terminates and a tester is not in a final configuration
         """
         steps = []
@@ -144,28 +142,28 @@ class TesterConfiguration:
     :param statechart: A ``model.StateChart`` instance
     :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
         ``evaluator.Evaluator`` instance that will be used to initialize the simulator.
-    :param simulator_klass: An optional callable (eg. a class) that takes as input a ``model.StateChart`` instance
+    :param interpreter_klass: An optional callable (eg. a class) that takes as input a ``model.StateChart`` instance
         and an optional ``evaluator.Evaluator`` instance, and return an instance of ``simulator.Simulator``
         (or anything that acts as such).
     """
-    def __init__(self, statechart: StateChart, evaluator_klass=None, simulator_klass=None):
+    def __init__(self, statechart: StateChart, evaluator_klass=None, interpreter_klass=None):
         self._statechart = statechart
         self._evaluator_klass = evaluator_klass
-        self._simulator_klass = simulator_klass
+        self._interpreter_klass = interpreter_klass
         self._statechart_tests = []
 
-    def add_test(self, statechart: StateChart, evaluator_klass=None, simulator_klass=None):
+    def add_test(self, statechart: StateChart, evaluator_klass=None, interpreter_klass=None):
         """
         Add the given statechart as a test.
 
         :param statechart: A ``model.StateChart`` instance.
         :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
             ``evaluator.Evaluator`` instance that will be used to initialize the simulator.
-        :param simulator_klass: An optional callable (eg. a class) that takes as input a ``model.StateChart`` instance
-            and an optional ``evaluator.Evaluator`` instance, and return an instance of ``simulator.Simulator``
+        :param interpreter_klass: An optional callable (eg. a class) that takes as input a ``model.StateChart`` instance
+            and an optional ``evaluator.Evaluator`` instance, and return an instance of ``interpreter.Interpreter``
             (or anything that acts as such).
         """
-        self._statechart_tests.append((statechart, evaluator_klass, simulator_klass))
+        self._statechart_tests.append((statechart, evaluator_klass, interpreter_klass))
 
     def build_tester(self, events: list) -> StateChartTester:
         """
@@ -175,14 +173,14 @@ class TesterConfiguration:
         :return: A ``StateChartTester`` instance.
         """
         evaluator = self._evaluator_klass if self._evaluator_klass else None  # Explicit is better than implicit
-        simulator_klass = self._simulator_klass if self._simulator_klass else Simulator
-        simulator = simulator_klass(self._statechart, evaluator)
+        interpreter_klass = self._interpreter_klass if self._interpreter_klass else Interpreter
+        interpreter = interpreter_klass(self._statechart, evaluator)
 
         testers = []
-        for t_statechart, t_evaluator_klass, t_simulator_klass in self._statechart_tests:
+        for t_statechart, t_evaluator_klass, t_interpreter_klass in self._statechart_tests:
             t_evaluator = t_evaluator_klass if t_evaluator_klass else None  # Explicit is better than implicit
-            t_simulator_klass = t_simulator_klass if t_simulator_klass else Simulator
-            t_simulator = t_simulator_klass(t_statechart, t_evaluator)
-            testers.append(t_simulator)
-        return StateChartTester(simulator, testers, events)
+            t_interpreter_klass = t_interpreter_klass if t_interpreter_klass else Interpreter
+            t_interpreter = t_interpreter_klass(t_statechart, t_evaluator)
+            testers.append(t_interpreter)
+        return StateChartTester(interpreter, testers, events)
 

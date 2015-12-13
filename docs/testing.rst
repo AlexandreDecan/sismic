@@ -4,15 +4,15 @@ Testing statecharts with statecharts
 Like software, statecharts can be tested too.
 
 It is always possible to test the execution of a statechart *by hand*.
-The simulator stores and returns several values that can be inspected during the execution, including
+The interpreter stores and returns several values that can be inspected during the execution, including
 the active configuration, the list of entered or exited states, etc.
-The functional tests in *tests/test_simulator.py* on the GitHub repository are several examples
+The functional tests in *tests/test_interpreter.py* on the GitHub repository are several examples
 of this kind of tests.
 
 However, this approach is not really pleasant to test statecharts, and even less when it comes to specify
 invariants or behavioral conditions.
 
-Thanks to Sismic, module :py:mod:`sismic.testing` makes it easy to test statecharts.
+Thanks to Sismic, module :py:mod:`sismic.checker` makes it easy to test statecharts.
 In particular, this module brings a way to test statecharts using... statecharts!
 
 
@@ -38,8 +38,8 @@ receive a deterministic sequence of the three following events:
  - ``start`` -- this event is sent when a stable initial state is reached by the tested statechart.
  - ``stop`` -- this event is sent when the execution of the tested statechart ends (either because it reaches a final
    configuration, or no more transition can be processed, or because its execution was interrupted by
-   :py:meth:`~sismic.testing.StateChartTester.stop`, see below).
- - ``step`` -- this event is sent after the computation and the execution of a :py:class:`~sismic.simulator.MacroStep` in
+   :py:meth:`~sismic.checker.StateChartTester.stop`, see below).
+ - ``step`` -- this event is sent after the computation and the execution of a :py:class:`~sismic.checker.MacroStep` in
    the tested statechart.
 
 
@@ -151,15 +151,15 @@ You could use it to test what happens when a test fails.
 The *testing* module
 --------------------
 
-The :py:mod:`sismic.testing` module essentially defines the following classes:
+The :py:mod:`sismic.checker` module essentially defines the following classes:
 
- - :py:class:`~sismic.testing.TesterConfiguration` defines the configuration of a test
- - :py:class:`~sismic.testing.StateChartTester` initializes a test.
+ - :py:class:`~sismic.checker.TesterConfiguration` defines the configuration of a test
+ - :py:class:`~sismic.checker.StateChartTester` initializes a test.
 
-.. autoclass:: sismic.testing.TesterConfiguration
+.. autoclass:: sismic.checker.TesterConfiguration
     :members:
 
-.. autoclass:: sismic.testing.StateChartTester
+.. autoclass:: sismic.checker.StateChartTester
     :members:
 
 
@@ -179,7 +179,7 @@ We first define a test configuration.
 
 .. code:: python
 
-    from sismic.testing import TesterConfiguration, StateChartTester
+    from sismic.checker import TesterConfiguration, StateChartTester
 
     config = TesterConfiguration(tested_sc)
 
@@ -195,15 +195,15 @@ it is perfectly legit to write this:
     config = TesterConfiguration(tested_sc, evaluator_klass=DummyEvaluator)
 
 It is also possible to specify a different semantic for the execution of the tested statechart (see :ref:`other_semantics`).
-This can be done using the ``simulator_klass`` parameter.
+This can be done using the ``interpreter_klass`` parameter.
 
 .. code:: python
 
-    config = TesterConfiguration(tested_sc, simulator_klass=MyOtherSimulatorClass)
+    config = TesterConfiguration(tested_sc, interpreter_klass=MyOtherInterpreterClass)
 
-This way, you can for example test that your initial statechart is invariant under several distinct simulator.
+This way, you can for example test that your initial statechart is invariant under several distinct interpreter.
 It is now time to specify which are the testers we want to use.
-Not surprisingly, :py:meth:`~sismic.testing.TesterConfiguration.add_test` method does the job.
+Not surprisingly, :py:meth:`~sismic.checker.TesterConfiguration.add_test` method does the job.
 This method takes a :py:class:`~sismic.model.StateChart` instance that is a statechart tester.
 
 .. code:: python
@@ -211,19 +211,19 @@ This method takes a :py:class:`~sismic.model.StateChart` instance that is a stat
     config.add_test(tester_sc)
 
 You could add as many testers as you want.
-It is also possible to provide specific code evaluator and specific simulator for each tester, as it was
+It is also possible to provide specific code evaluator and specific interpreter for each tester, as it was
 the case for the tested statechart. The syntax is the same:
 
 .. code:: python
 
-    config.add_test(other_tester_sc, evaluator_klass=DummyEvaluator, simulator_klass=MyOtherSimulatorClass)
+    config.add_test(other_tester_sc, evaluator_klass=DummyEvaluator, interpreter_klass=MyOtherInterpreterClass)
 
 
 Our test configuration is now ready, and we can go one step further.
-We now need to create a test. This can be done using :py:meth:`~sismic.testing.TesterConfiguration.build_tester`.
+We now need to create a test. This can be done using :py:meth:`~sismic.checker.TesterConfiguration.build_tester`.
 This method takes a list of :py:class:`~sismic.model.Event` which will be sent to the tested statechart.
 This list can be viewed as a *scenario* for the test.
-The method returns an instance of :py:class:`~sismic.testing.StateChartTester`.
+The method returns an instance of :py:class:`~sismic.checker.StateChartTester`.
 
 .. code:: python
 
@@ -232,23 +232,23 @@ The method returns an instance of :py:class:`~sismic.testing.StateChartTester`.
    events = [Event('event1'), Event('event2'), Event('event3')]
    test = config.build_tester(events)
 
-Using a ``test``, you can execute the test by calling :py:meth:`~sismic.testing.StateChartTester.execute_once` or
-:py:meth:`~sismic.testing.StateChartTester.execute` (which repeatedly calls the first one).
+Using a ``test``, you can execute the test by calling :py:meth:`~sismic.checker.StateChartTester.execute_once` or
+:py:meth:`~sismic.checker.StateChartTester.execute` (which repeatedly calls the first one).
 A test mainly executes the tested statechart, step by step, and sends specific events to the tester.
-The tester are then executed (using the :py:meth:`~sismic.simulator.Simulator.execute` method of the simulator).
+The tester are then executed (using the :py:meth:`~sismic.interpreter.Interpreter.execute` method of the interpreter).
 
-A test is considered as a success if the call to :py:meth:`~sismic.testing.StateChartTester.execute` ends, and
+A test is considered as a success if the call to :py:meth:`~sismic.checker.StateChartTester.execute` ends, and
 no ``AssertionError`` was raised.
 
-Depending on the underlying simulator (but this at least concerns the default one!), the execution of a statechart
-can be infinite. As for simulator's :py:meth:`~sismic.simulator.Simulator.execute`, you can specify a
+Depending on the underlying interpreter (but this at least concerns the default one!), the execution of a statechart
+can be infinite. As for interpreter's :py:meth:`~sismic.interpreter.Interpreter.execute`, you can specify a
 ``max_steps`` parameter to limit the number of steps that are executed.
 
 .. code:: python
 
     test.execute(max_steps=10)
 
-At the end of the execution, you must call the :py:meth:`~sismic.testing.StateChartTester.stop` method.
+At the end of the execution, you must call the :py:meth:`~sismic.checker.StateChartTester.stop` method.
 This method sends a ``stop`` event to the statechart testers, and checks whether they are all in a final
 configuration.
 
@@ -265,16 +265,16 @@ A test fails when one of the following occurs:
 
     1. An ``AssertionError`` is raised by one of the statechart testers.
     2. There is at least one tester that is not in a final configuration when
-       :py:meth:`~sismic.testing.StateChartTester.stop` is called (or when the context manager
+       :py:meth:`~sismic.checker.StateChartTester.stop` is called (or when the context manager
        is exited).
 
 
 Integrating with *unittest*
 ---------------------------
 
-It is very easy to use the :py:mod:`~sismic.testing` module with Python :py:mod:`unittest`.
+It is very easy to use the :py:mod:`~sismic.checker` module with Python :py:mod:`unittest`.
 
-Consider the source of `tests/test_testing.py <https://github.com/AlexandreDecan/sismic/blob/master/tests/test_testing.py>`__:
+Consider the source of `tests/test_testing.py <https://github.com/AlexandreDecan/sismic/blob/master/tests/test_checker.py>`__:
 
-.. literalinclude:: ../tests/test_testing.py
+.. literalinclude:: ../tests/test_checker.py
     :language: python

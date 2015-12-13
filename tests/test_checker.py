@@ -1,7 +1,7 @@
 import unittest
 from sismic import io
 from sismic.model import Event
-from sismic.testing import TesterConfiguration
+from sismic.checker import TesterConfiguration
 
 
 class ElevatorTests(unittest.TestCase):

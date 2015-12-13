@@ -1,0 +1,206 @@
+import unittest
+from sismic import io
+from sismic.interpreter import Interpreter
+from sismic.evaluator import DummyEvaluator
+from sismic.model import Event
+
+
+class SimulatorSimpleTest(unittest.TestCase):
+    def test_init(self):
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
+        interpreter = Interpreter(sc, DummyEvaluator)
+        self.assertEqual(interpreter.configuration, ['s1'])
+        self.assertTrue(interpreter.running)
+
+    def test_simple_configuration(self):
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
+        interpreter = Interpreter(sc, DummyEvaluator)
+        interpreter.execute_once()  # Should do nothing!
+        self.assertEqual(interpreter.configuration, ['s1'])
+        interpreter.send(Event('goto s2'))
+        interpreter.execute_once()
+        self.assertEqual(interpreter.configuration, ['s2'])
+        interpreter.execute_once()
+        self.assertEqual(interpreter.configuration, ['s3'])
+
+    def test_simple_entered(self):
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
+        interpreter = Interpreter(sc, DummyEvaluator)
+        interpreter.send(Event('goto s2'))
+        self.assertEqual(interpreter.execute_once().entered_states, ['s2'])
+        interpreter.send(Event('goto final'))
+        self.assertEqual(interpreter.execute_once().entered_states, ['s3'])
+        self.assertEqual(interpreter.execute_once().entered_states, ['final'])
+        self.assertEqual(interpreter.configuration, ['final'])
+
+    def test_simple_final(self):
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
+        interpreter = Interpreter(sc, DummyEvaluator)
+        interpreter.send(Event('goto s2')).send(Event('goto final'))
+        interpreter.execute()
+        self.assertFalse(interpreter.running)
+
+
+class SimulatorElevatorTests(unittest.TestCase):
+    def test_init(self):
+        sc = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
+        interpreter = Interpreter(sc)
+
+        self.assertEqual(len(interpreter.configuration), 5)
+
+    def test_floor_selection(self):
+        sc = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
+        interpreter = Interpreter(sc)
+
+        interpreter.send(Event('floorSelected', {'floor': 4})).execute_once()
+        self.assertEqual(interpreter._evaluator.context['destination'], 4)
+        interpreter.execute_once()
+        self.assertEqual(sorted(interpreter.configuration), ['active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'])
+
+    def test_doorsOpen(self):
+        sc = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
+        interpreter = Interpreter(sc)
+
+        interpreter.send(Event('floorSelected', {'floor': 4}))
+        interpreter.execute()
+        self.assertEqual(interpreter._evaluator.context['current'], 4)
+        interpreter.send(Event('after10s'))
+        interpreter.execute()
+
+        self.assertTrue('doorsOpen' in interpreter.configuration)
+        self.assertEqual(interpreter._evaluator.context['current'], 0)
+
+
+class SimulatorNonDeterminismTests(unittest.TestCase):
+    def test_nondeterminism(self):
+        sc = io.import_from_yaml(open('examples/simple/nondeterministic.yaml'))
+        interpreter = Interpreter(sc, DummyEvaluator)
+
+        with self.assertRaises(Warning):
+            interpreter.execute_once()
+
+
+class SimulatorHistoryTests(unittest.TestCase):
+    def test_init(self):
+        sc = io.import_from_yaml(open('examples/concrete/history.yaml'))
+        Interpreter(sc, DummyEvaluator)
+
+    def test_memory(self):
+        sc = io.import_from_yaml(open('examples/concrete/history.yaml'))
+        interpreter = Interpreter(sc, DummyEvaluator)
+
+        interpreter.send(Event('next')).execute_once()
+        self.assertEqual(sorted(interpreter.configuration), ['loop', 's2'])
+
+        step = interpreter.send(Event('pause')).execute_once()
+        self.assertEqual(step.exited_states, ['s2', 'loop'])
+        self.assertEqual(sorted(interpreter.configuration), ['pause'])
+
+    def test_resume_memory(self):
+        sc = io.import_from_yaml(open('examples/concrete/history.yaml'))
+        interpreter = Interpreter(sc, DummyEvaluator)
+
+        interpreter.send(Event('next')).send(Event('pause')).send(Event('continue'))
+        steps = interpreter.execute()
+        step = steps[-1]
+
+        self.assertEqual(step.entered_states, ['loop', 'loop.H', 's2'])
+        self.assertEqual(step.exited_states, ['pause', 'loop.H'])
+        self.assertEqual(sorted(interpreter.configuration), ['loop', 's2'])
+
+    def test_after_memory(self):
+        sc = io.import_from_yaml(open('examples/concrete/history.yaml'))
+        interpreter = Interpreter(sc, DummyEvaluator)
+
+        interpreter.send(Event('next')).send(Event('pause')).send(Event('continue'))
+        interpreter.send(Event('next')).send(Event('next'))
+        interpreter.execute()
+        self.assertEqual(sorted(interpreter.configuration), ['loop', 's1'])
+
+        interpreter.send(Event('pause')).send(Event('stop'))
+        interpreter.execute()
+        self.assertFalse(interpreter.running)
+
+
+class SimulatorDeepHistoryTests(unittest.TestCase):
+    def test_deep_memory(self):
+        sc = io.import_from_yaml(open('examples/concrete/deep_history.yaml'))
+        interpreter = Interpreter(sc, DummyEvaluator)
+
+        interpreter.send(Event('next1')).send(Event('next2'))
+        interpreter.execute()
+        self.assertEqual(sorted(interpreter.configuration), ['active', 'concurrent_processes', 'process_1', 'process_2', 's12', 's22'])
+
+        interpreter.send(Event('error1'))
+        interpreter.execute()
+        self.assertEqual(interpreter.configuration, ['pause'])
+        self.assertEqual(sorted(interpreter._memory['active.H*']), ['concurrent_processes', 'process_1', 'process_2', 's12', 's22'])
+
+        interpreter.send(Event('continue'))
+        interpreter.execute()
+        self.assertEqual(sorted(interpreter.configuration), ['active', 'concurrent_processes', 'process_1',
+                                                           'process_2', 's12', 's22'])
+
+    def test_entered_order(self):
+        sc = io.import_from_yaml(open('examples/concrete/deep_history.yaml'))
+        interpreter = Interpreter(sc, DummyEvaluator)
+
+        interpreter.send(Event('next1')).send(Event('next2')).send(Event('pause'))
+        step = interpreter.execute()[-1]
+
+        self.assertEqual(step.entered_states, ['pause'])
+        self.assertEqual(sorted(interpreter.configuration), ['pause'])
+
+        step = interpreter.send(Event('continue')).execute_once()
+        self.assertTrue(step.entered_states.index('active') < step.entered_states.index('active.H*'))
+        self.assertTrue(step.entered_states.index('active.H*') < step.entered_states.index('concurrent_processes'))
+        self.assertTrue(step.entered_states.index('concurrent_processes') < step.entered_states.index('process_1'))
+        self.assertTrue(step.entered_states.index('concurrent_processes') < step.entered_states.index('process_2'))
+        self.assertTrue(step.entered_states.index('process_1') < step.entered_states.index('s12'))
+        self.assertTrue(step.entered_states.index('process_2') < step.entered_states.index('s22'))
+
+        interpreter.send(Event('next1')).send(Event('next2')).execute()
+        self.assertFalse(interpreter.running)
+
+    def test_exited_order(self):
+        sc = io.import_from_yaml(open('examples/concrete/deep_history.yaml'))
+        interpreter = Interpreter(sc, DummyEvaluator)
+
+        interpreter.send(Event('next1')).send(Event('next2')).send(Event('pause'))
+        step = interpreter.execute()[-1]
+
+        self.assertEqual(step.exited_states, ['s12', 's22', 'process_1', 'process_2', 'concurrent_processes', 'active'])
+        self.assertEqual(sorted(interpreter.configuration), ['pause'])
+
+        step = interpreter.send(Event('continue')).execute_once()
+        self.assertEqual(step.exited_states, ['pause', 'active.H*'])
+
+        interpreter.send(Event('next1')).send(Event('next2')).execute()
+        self.assertFalse(interpreter.running)
+
+
+class InfiniteExecutionTests(unittest.TestCase):
+    def setUp(self):
+        self.sc = io.import_from_yaml(open('examples/simple/infinite.yaml'))
+        self.interpreter = Interpreter(self.sc)
+
+    def test_three_steps(self):
+        self.assertEqual(self.interpreter.configuration, ['s1'])
+        self.interpreter.execute_once()
+        self.assertEqual(self.interpreter.configuration, ['s2'])
+        self.interpreter.execute_once()
+        self.assertEqual(self.interpreter.configuration, ['s1'])
+        self.interpreter.execute_once()
+        self.assertEqual(self.interpreter.configuration, ['s2'])
+        self.assertEqual(self.interpreter._evaluator.context['x'], 2)  # x is incremented in s1.on_entry
+
+    def test_auto_three_steps(self):
+        self.interpreter.execute(max_steps=3)
+        self.assertEqual(self.interpreter.configuration, ['s2'])
+        self.assertEqual(self.interpreter._evaluator.context['x'], 2)  # x is incremented in s1.on_entry
+
+    def test_auto_stop(self):
+        self.interpreter.execute()
+        self.assertFalse(self.interpreter.running)
+        self.assertEqual(self.interpreter._evaluator.context['x'], 100)
+

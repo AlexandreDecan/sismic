@@ -76,13 +76,13 @@ class MacroStep:
         return 'MacroStep({}, {}, {}, {})'.format(self.event, self.transitions, self.entered_states, self.exited_states)
 
 
-class Simulator:
+class Interpreter:
     """
-    A discrete simulator that interprets a statechart according to a semantic close to SCXML.
+    A discrete interpreter that executes a statechart according to a semantic close to SCXML.
 
     :param statechart: statechart to interpret
     :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
-        ``evaluator.Evaluator`` instance that will be used to initialize the simulator.
+        ``evaluator.Evaluator`` instance that will be used to initialize the interpreter.
         By default, an ``evaluator.PythonEvaluator`` will be used.
     """
     def __init__(self, statechart: model.StateChart, evaluator_klass=None):
@@ -110,7 +110,7 @@ class Simulator:
 
     def send(self, event: model.Event, internal: bool=False):
         """
-        Send an event to the simulator, and add it into the event queue.
+        Send an event to the interpreter, and add it into the event queue.
 
         :param event: an ``Event`` instance
         :param internal: set to True if the provided ``Event`` should be considered as
@@ -144,7 +144,7 @@ class Simulator:
     @property
     def running(self) -> bool:
         """
-        Boolean indicating whether this simulator is not in a final configuration.
+        Boolean indicating whether this interpreter is not in a final configuration.
         """
         for state in self._statechart.leaf_for(list(self._configuration)):
             if not isinstance(self._statechart._states[state], model.FinalState):
@@ -153,7 +153,7 @@ class Simulator:
 
     def reset(self):
         """
-        Reset current simulator to its initial state.
+        Reset current interpreter to its initial state.
         This also resets history states memory.
         """
         self.__init__(self._statechart, self._evaluator_klass)
@@ -168,7 +168,7 @@ class Simulator:
 
         :param max_steps: An upper bound on the number steps that are computed and returned.
             Default is -1, no limit. Set to a positive integer to avoid infinite loops
-            in the statechart simulation.
+            in the statechart execution.
         :return: A list of ``MacroStep`` instances
         """
         steps = []
@@ -185,7 +185,7 @@ class Simulator:
     def execute_once(self) -> MacroStep:
         """
         Processes a transition based on the oldest queued event (or no event if an eventless transition
-        can be processed), and stabilizes the simulator in a stable situation (ie. processes initial states,
+        can be processed), and stabilizes the interpreter in a stable situation (ie. processes initial states,
         history states, etc.).
 
         :return: an instance of ``MacroStep`` or ``None`` if (1) no eventless transition can be processed,

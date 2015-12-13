@@ -24,7 +24,7 @@ The Sismic library for Python >= 3.4 provides a set of tools to define, simulate
 More specifically, Sismic provides:
 
  - An easy way to define and to import statecharts, based on the human-friendly YAML markup language
- - A statechart simulator offering discrete, step-by-step, and fully observable simulation engine
+ - A statechart interpreter offering discrete, step-by-step, and fully observable simulation engine
  - Built-in support for expressing actions and guards using regular Python code
  - A unit testing framework for statecharts
 
@@ -38,7 +38,7 @@ Sismic provides full support for the majority of the concepts of UML statecharts
 
 The Sismic library is written in a modular way:
 
- - The semantics of the statechart simulator is based on the specification of the SCXML semantics (with a few exceptions),
+ - The semantics of the statechart interpreter is based on the specification of the SCXML semantics (with a few exceptions),
    and can be easily tuned to other semantics.
  - While currently, guards and actions are expressed in Python, this support can be easily extended to other languages.
 
