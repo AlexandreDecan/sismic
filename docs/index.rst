@@ -34,21 +34,21 @@ executable semantics for statecharts have been proposed in the literature and in
 Overview
 --------
 
-The SISMIC library for Python provides a set of tools to define, simulate, execute and debug statecharts. More specifically, SISMIC provides:
+The Sismic library for Python provides a set of tools to define, simulate, execute and debug statecharts. More specifically, Sismic provides:
 
  - An easy way to define and to import statecharts, based on the human-friendly YAML markup language
  - A statechart simulator offering discrete, step-by-step, and fully observable simulation engine
  - Built-in support for expressing actions and guards using regular Python code
  - A unit testing framework for statecharts
 
-SISMIC provides full support for the majority of the concepts of UML statecharts:
+Sismic provides full support for the majority of the concepts of UML statecharts:
  - simple states, composite states, orthogonal (parallel) states, initial and final states, shallow and deep history states
  - state transitions, guarded transitions, automatic (eventless) transitions
  - statechart variables and their initialisation
  - state entry and exit actions, transition actions
  - internal and external events, parametrized events
 
-The SISMIC library is written in a modular way:
+The Sismic library is written in a modular way:
  - The semantics of the statechart simulator is based on the specification of the SCXML semantics (with a few exceptions),
    and can be easily tuned to other semantics.
  - While currently, guards and actions are expressed in Python, this support can be easily extended to other languages.
