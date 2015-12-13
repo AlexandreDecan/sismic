@@ -85,6 +85,9 @@ Consider the following example.
     interpreter.send(Event('click'))  # Send event to the interpreter
     interpreter.execute_once()  # Will process the event if no eventless transitions are found at first
 
+The method :py:meth:`~sismic.interpreter.Interpreted.execute_once` returns information about what happened
+during the execution, including the transitions that were processed, the event that was consumed and the
+sequences of entered and exited states (see :ref:`step`).
 
 For convenience, :py:meth:`~sismic.interpreter.Interpreter.send` returns ``self`` and thus can be chained:
 
@@ -149,6 +152,7 @@ The main methods and attributes of a simulator instance are:
     :members: send, execute_once, execute, configuration, running, reset
 
 
+.. _steps:
 
 Macro and micro steps
 ---------------------
@@ -157,20 +161,20 @@ The interpreter is fully observable: its :py:meth:`~sismic.interpreter.Interpret
 (resp. :py:meth:`~sismic.interpreter.Interpreter.execute`) method returns
 an instance of (resp. a list of) :py:class:`~sismic.interpreter.MacroStep`.
 A macro step corresponds to the process of consuming an event, regardless of the number and the type (eventless or not)
-of transitions triggered. A macro step also includes every consecutive stabilization step
+of triggered transitions. A macro step also includes every consecutive stabilization step
 (ie. the steps that are needed to enter nested states, or to switch into the configuration of an history state).
 
 A :py:class:`~sismic.interpreter.MacroStep` exposes the consumed ``event`` (an :py:class:`~sismic.model.Event` instance)
 if any, a (possibly empty) list ``transitions`` of :py:class:`~sismic.model.Transition` instances, and two
-oredered sequences of state names, ``entered_states`` and ``exited_states``.
+aggregated ordered sequences of state names, ``entered_states`` and ``exited_states``.
 States order in those list indicates the order in which their *on entry* and *on exit* actions were processed.
 
 .. autoclass:: sismic.interpreter.MacroStep
     :members:
 
-The main step and the stabilization steps of a macro step are exposed through ``main_step`` and ``micro_steps``.
-The first is a :py:class:`~sismic.interpreter.MicroStep` instance, and the second is an ordered list of
-:py:class:`~sismic.interpreter.MicroStep` instances.
+A macro step also exposes a ``steps`` attribute, which is the ordered list of :py:class:`~sismic.interpreter.MicroStep`
+instances that were executed.
+
 A micro step is the smallest, atomic step that a statechart can execute.
 A :py:class:`~sismic.interpreter.MacroStep` instance thus can be viewed (and is!) an aggregate of
 :py:class:`~sismic.interpreter.MicroStep` instances.
@@ -254,6 +258,6 @@ which currently checks that at most one transition can be triggered.
 You can override :py:meth:`~sismic.interpreter.Interpreter._transition_step` and define how situations in which several
 transitions are triggered are dealt. The remaining of the implementation is already conceived in a way to deal with
 multiple transitions fired at once.
-In particular, your implementation should return an appropriate ``MicroStep`` instances where selected transitions,
+In particular, your implementation should return an appropriate list of ``MicroStep`` instances where selected transitions,
 entered states and exited states are ordered according to your arbitrary choice to deal with non-determinism.
 

@@ -8,8 +8,8 @@ class StateChartTester:
     a list of testers (interpreters that runs tests) and a list of events (scenario).
 
     :param simulator: The interpreter containing the statechart to test
-    :param testers: A list of ``interpreter.Interpreter`` containing the tests
-    :param events: A list of ``model.Event`` that represents a scenario
+    :param testers: A list of ``Interpreter`` containing the tests
+    :param events: A list of ``Event`` that represents a scenario
     """
     def __init__(self, interpreter: Interpreter, testers: list, events: list):
         self._interpreter = interpreter
@@ -31,7 +31,7 @@ class StateChartTester:
         Boolean functions: entered(state_name), exited(state_name), active(state_name),
         processed(event_name), consumed(event_name), and a dictionary structure representing
         the current context of the simulator to test.
-        :param step: A ``simulator.MacroStep`` instance from which the context is (optionally) build upon.
+        :param step: A ``MacroStep`` instance from which the context is (optionally) build upon.
         :return: A context to be passed to the tests.
         """
 

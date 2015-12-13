@@ -5,60 +5,60 @@ from .evaluator import Evaluator, PythonEvaluator
 
 class MicroStep:
     """
-    Create a micro step. A step consider ``event``, takes ``transitions`` and results in a list
+    Create a micro step. A step consider ``event``, takes ``transition`` and results in a list
     of ``entered_states`` and a list of ``exited_states``.
     Order in the two lists is REALLY important!
 
     :param event: Event or None in case of eventless transition
-    :param transitions: a list of transitions or None if no processed transition
+    :param transition: a ''Transition`` or None if no processed transition
     :param entered_states: possibly empty list of entered states
     :param exited_states: possibly empty list of exited states
     """
-    def __init__(self, event: model.Event=None, transitions: list=None,
+    def __init__(self, event: model.Event=None, transition: model.Transition=None,
                  entered_states: list=None, exited_states: list=None):
         self.event = event
-        self.transitions = transitions if transitions else []
+        self.transition = transition if transition else []
         self.entered_states = entered_states if entered_states else []
         self.exited_states = exited_states if exited_states else []
 
     def __repr__(self):
-        return 'MicroStep({}, {}, {}, {})'.format(self.event, self.transitions, self.entered_states, self.exited_states)
+        return 'MicroStep({}, {}, {}, {})'.format(self.event, self.transition, self.entered_states, self.exited_states)
 
 
 class MacroStep:
     """
-    A macro step corresponds to the process of a Transition (given an ``Event`` or in case of an
-    eventless transition). A ``MacroStep`` contains one main step (the one who processes the
-    transition) and a (possibly empty) list of stabilization steps.
+    A macro step is a list of micro steps instances, corresponding to the process of at most one transition and
+    the conseuctive stabilization micro steps.
 
-    :param main_step: Main (``MicroStep`` instance) step.
-    :param micro_steps: A possibly empty list of ``MicroStep`` instances (stabilization steps).
+    :param steps: a list of ``MicroStep`` instances
     """
-    def __init__(self, main_step: MicroStep, micro_steps: list):
-        self.main = main_step
-        self.micro_steps = micro_steps
+    def __init__(self, steps: list):
+        self.steps = steps
 
     @property
     def event(self) -> model.Event:
         """
         Event (or ``None``) that were consumed.
         """
-        return self.main.event
+        try:
+            self.steps[0].event
+        except IndexError:
+            return None
 
     @property
     def transitions(self) -> list:
         """
         A (possibly empty) list of transitions that were triggered.
         """
-        return self.main.transitions
+        return [step.transition for step in self.steps if step.transition]
 
     @property
     def entered_states(self) -> list:
         """
         List of the states names that were entered.
         """
-        states = self.main.entered_states
-        for step in self.micro_steps:
+        states = []
+        for step in self.steps:
             states += step.entered_states
         return states
 
@@ -67,8 +67,8 @@ class MacroStep:
         """
         List of the states names that were exited.
         """
-        states = self.main.exited_states
-        for step in self.micro_steps:
+        states = []
+        for step in self.steps:
             states += step.exited_states
         return states
 
@@ -171,16 +171,16 @@ class Interpreter:
             in the statechart execution.
         :return: A list of ``MacroStep`` instances
         """
-        steps = []
+        returned_steps = []
         i = 0
-        step = self.execute_once()
-        while step:
-            steps.append(step)
+        macro_step = self.execute_once()
+        while macro_step:
+            returned_steps.append(macro_step)
             i += 1
             if max_steps > 0 and i == max_steps:
                 break
-            step = self.execute_once()
-        return steps
+            macro_step = self.execute_once()
+        return returned_steps
 
     def execute_once(self) -> MacroStep:
         """
@@ -188,26 +188,29 @@ class Interpreter:
         can be processed), and stabilizes the interpreter in a stable situation (ie. processes initial states,
         history states, etc.).
 
-        :return: an instance of ``MacroStep`` or ``None`` if (1) no eventless transition can be processed,
-            (2) there is no event in the event queue.
+        :return: a macro step or ``None`` if nothing happened
         """
         # Try eventless transitions
-        main_step = self._transition_step(event=None)  # Explicit is better than implicit
+        main_steps = self._transition_step(event=None)  # Explicit is better than implicit
 
         # If there is no eventless transition, and there exists at least one event to process
-        if not main_step and len(self._events) > 0:
+        if len(main_steps) == 0 and len(self._events) > 0:
             event = self._events.popleft()
-            main_step = self._transition_step(event=event)
+            main_steps = self._transition_step(event=event)
 
             # If this event can not be processed, discard it
-            if not main_step:
-                main_step = MicroStep(event=event)
+            if len(main_steps) == 0:
+                main_steps = [MicroStep(event=event)]
 
-        if not main_step:  # No actionable eventless nor evented transition
-            return None
+        if len(main_steps) > 0:
+            returned_steps = []
+            for step in main_steps:
+                self._execute_step(step)
+                returned_steps.append(step)
+
+            return MacroStep(returned_steps + self._stabilize())
         else:
-            self._execute_step(main_step)
-            return MacroStep(main_step, self._stabilize())
+            return None
 
     def _actionable_transitions(self, event: model.Event=None) -> list:
         """
@@ -264,13 +267,14 @@ class Interpreter:
             step = self._stabilize_step()
         return steps
 
-    def _transition_step(self, event: model.Event=None) -> MicroStep:
+    def _transition_step(self, event: model.Event=None) -> list:
         """
-        Return the ``MicroStep`` (if any) associated with the appropriate transition matching
+        Return a possibly empty list of ``MicroStep`` instances
+        associated with the appropriate transition matching
         given event (or eventless transition if event is None).
 
         :param event: ``Event`` to consider (or None)
-        :return: A ``MicroStep`` instance or None
+        :return: A list of ``MicroStep`` instances
         :raise: a Warning in case of non determinism
         """
 
@@ -279,7 +283,7 @@ class Interpreter:
         transitions.reverse()  # In-place reverse
 
         if len(transitions) == 0:
-            return None
+            return []
 
         transition = transitions[0]
 
@@ -292,7 +296,7 @@ class Interpreter:
 
         # Internal transition
         if transition.to_state is None:
-            return MicroStep(event, [transition], [], [])
+            return [MicroStep(event, transition, [], [])]
 
         lca = self._statechart.least_common_ancestor(transition.from_state, transition.to_state)
         from_ancestors = self._statechart.ancestors_for(transition.from_state)
@@ -325,7 +329,7 @@ class Interpreter:
                 break
             entered_states.insert(0, state)
 
-        return MicroStep(event, [transition], entered_states, exited_states)
+        return [MicroStep(event, transition, entered_states, exited_states)]
 
     def _execute_step(self, step: MicroStep):
         """
@@ -365,9 +369,8 @@ class Interpreter:
         self._configuration = self._configuration.difference(step.exited_states)
 
         # Execute transition
-        for transition in step.transitions:
-            if transition.action:
-                self._evaluator.execute_action(transition.action, step.event)
+        if step.transition and step.transition.action:
+            self._evaluator.execute_action(step.transition.action, step.event)
 
         for state in entered_states:
             # Execute entry action
