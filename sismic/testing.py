@@ -1,6 +1,6 @@
 import sys
 
-from pyss import model
+from sismic import model
 from .simulator import Simulator, MacroStep
 from .evaluator import Evaluator
 

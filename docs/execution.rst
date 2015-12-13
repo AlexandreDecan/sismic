@@ -4,12 +4,12 @@ Executing statecharts
 Statechart semantic
 -------------------
 
-The module :py:mod:`~pyss.simulator` contains a :py:class:`~pyss.simulator.Simulator` class that interprets a statechart
+The module :py:mod:`~sismic.simulator` contains a :py:class:`~sismic.simulator.Simulator` class that interprets a statechart
 mainly following `SCXML <http://www.w3.org/TR/scxml/>`__ semantic.
 In particular, eventless transitions are processed before evented transitions, internal events are consumed
 before external events, and the simulation follows a inner-first/source-state and run-to-completion semantic.
 
-The main difference between SCXML and our implementation comes when considering parallel states.
+The main difference between SCXML and Sismic's default simulator comes when considering parallel states.
 The UML specification defines that several transitions in parallel regions can be triggered by a same event:
 
     "Due to the presence of orthogonal Regions, it is possible that multiple Transitions (in different Regions) can be
@@ -28,7 +28,7 @@ in the order in which states must be exited and/or entered. This problem is addr
 
 However, from our point of view, this solution is not satisfactory.
 The execution should not depend on the order in which items are defined in some document.
-Our implementation circumvents this by raising a ``Warning`` and stopping the execution if
+Sismiccircumvents this by raising a ``Warning`` and stopping the execution if
 multiple transitions can be triggered at the same time. To some extent, this is the same approach
 than in Rhapsody:
 
@@ -69,16 +69,16 @@ does not rely on any particular order for event instances to be dispatched to th
 Using *Simulator*
 -----------------
 
-A :py:class:`~pyss.simulator.Simulator` instance is constructed upon a :py:class:`~pyss.model.StateChart` instance and
-an optional callable that returns an :py:class:`~pyss.evaluator.Evaluator` (see :ref:`code_evaluation`).
-If no evaluator is specified, :py:class:`~pyss.evaluator.PythonEvaluator` class will be used.
+A :py:class:`~sismic.simulator.Simulator` instance is constructed upon a :py:class:`~sismic.model.StateChart` instance and
+an optional callable that returns an :py:class:`~sismic.evaluator.Evaluator` (see :ref:`code_evaluation`).
+If no evaluator is specified, :py:class:`~sismic.evaluator.PythonEvaluator` class will be used.
 
 Consider the following example.
 
 .. code:: python
 
-    from pyss.simulator import Simulator
-    from pyss.model import Event
+    from sismic.simulator import Simulator
+    from sismic.model import Event
 
     simulator = Simulator(my_statechart)
     # We are now in a stable initial state
@@ -86,16 +86,16 @@ Consider the following example.
     simulator.execute_once()  # Will process the event if no eventless transitions are found at first
 
 
-For convenience, :py:meth:`~pyss.simulator.Simulator.send` returns ``self`` and thus can be chained:
+For convenience, :py:meth:`~sismic.simulator.Simulator.send` returns ``self`` and thus can be chained:
 
 .. code:: python
 
     simulator.send(Event('click')).send(Event('click')).execute_once()
 
-Notice that :py:meth:`~pyss.simulator.Simulator.execute_once` consumes at most one event at a time.
+Notice that :py:meth:`~sismic.simulator.Simulator.execute_once` consumes at most one event at a time.
 In this example, the second *click* event is not processed.
 
-To process all events *at once*, repeatedly call :py:meth:`~pyss.simulator.Simulator.execute_once` until it returns a ``None`` value.
+To process all events *at once*, repeatedly call :py:meth:`~sismic.simulator.Simulator.execute_once` until it returns a ``None`` value.
 For instance:
 
 .. code:: python
@@ -104,22 +104,22 @@ For instance:
       pass
 
 
-As a shortcut, the :py:meth:`~pyss.simulator.Simulator.execute` method will return a list of :py:class:`~pyss.simulator.MacroStep` instances
-obtained by repeatedly calling :py:meth:`~pyss.simulator.Simulator.execute_once`:
+As a shortcut, the :py:meth:`~sismic.simulator.Simulator.execute` method will return a list of :py:class:`~sismic.simulator.MacroStep` instances
+obtained by repeatedly calling :py:meth:`~sismic.simulator.Simulator.execute_once`:
 
 .. code:: python
 
-    from pyss.simulator import MacroStep
+    from sismic.simulator import MacroStep
 
     steps = simulator.execute()
     for step in steps:
       assert isinstance(step, MacroStep)
 
-Notice that a call to :py:meth:`~pyss.simulator.Simulator.execute` first computes the list and **then** returns
+Notice that a call to :py:meth:`~sismic.simulator.Simulator.execute` first computes the list and **then** returns
 it, meaning that all the steps are already processed when the call returns.
 
-As a call to :py:meth:`~pyss.simulator.Simulator.execute` could lead to an infinite execution
-(see for example `simple/infinite.yaml <https://github.com/AlexandreDecan/PySS/blob/master/examples/simple/infinite.yaml>`__),
+As a call to :py:meth:`~sismic.simulator.Simulator.execute` could lead to an infinite execution
+(see for example `simple/infinite.yaml <https://github.com/AlexandreDecan/sismic/blob/master/examples/simple/infinite.yaml>`__),
 an additional parameter ``max_steps`` can be specified to limit the number of steps that are computed
 and executed by the method.
 
@@ -127,9 +127,9 @@ and executed by the method.
 
     assert len(simulator.execute(max_steps=10)) <= 10
 
-At any time, you can reset the simulator by calling :py:meth:`~pyss.simulator.Simulator.reset`.
+At any time, you can reset the simulator by calling :py:meth:`~sismic.simulator.Simulator.reset`.
 
-For convenience, a :py:class:`~pyss.model.StateChart` has an :py:meth:`~pyss.model.StateChart.events` method
+For convenience, a :py:class:`~sismic.model.StateChart` has an :py:meth:`~sismic.model.StateChart.events` method
 that returns the list of all possible events that can be interpreted by this statechart (other events will
 be consumed and ignored).
 
@@ -144,7 +144,7 @@ and is thus commonly used to get a list of the "interesting" events:
 
 The main methods and attributes of a simulator instance are:
 
-.. autoclass:: pyss.simulator.Simulator
+.. autoclass:: sismic.simulator.Simulator
     :members: send, execute_once, execute, configuration, running, reset
 
 
@@ -152,35 +152,35 @@ The main methods and attributes of a simulator instance are:
 Macro and micro steps
 ---------------------
 
-The simulator is fully observable: its :py:meth:`~pyss.simulator.Simulator.execute_once`
-(resp. :py:meth:`~pyss.simulator.Simulator.execute`) method returns
-an instance of (resp. a list of) :py:class:`~pyss.simulator.MacroStep`.
+The simulator is fully observable: its :py:meth:`~sismic.simulator.Simulator.execute_once`
+(resp. :py:meth:`~sismic.simulator.Simulator.execute`) method returns
+an instance of (resp. a list of) :py:class:`~sismic.simulator.MacroStep`.
 A macro step corresponds to the process of consuming an event, regardless of the number and the type (eventless or not)
 of transitions triggered. A macro step also includes every consecutive stabilization step
 (ie. the steps that are needed to enter nested states, or to switch into the configuration of an history state).
 
-A :py:class:`~pyss.simulator.MacroStep` exposes the consumed ``event`` (:py:class:`~pyss.model.Event`)
-if any, a (possibly empty) list of ``transitions`` (:py:class:`~pyss.model.Transition` and two sequences of state
+A :py:class:`~sismic.simulator.MacroStep` exposes the consumed ``event`` (:py:class:`~sismic.model.Event`)
+if any, a (possibly empty) list of ``transitions`` (:py:class:`~sismic.model.Transition` and two sequences of state
 names: ``entered_states`` and ``exited_states``.
 States order in those list indicates the order in which their *on entry* and *on exit* actions were processed.
 
-.. autoclass:: pyss.simulator.MacroStep
+.. autoclass:: sismic.simulator.MacroStep
     :members:
 
 The main step and the stabilization steps of a macro step are exposed through ``main_step`` and ``micro_steps``.
-The first is a :py:class:`~pyss.simulator.MicroStep` instance, and the second is an ordered list of
-:py:class:`~pyss.simulator.MicroStep` instances.
+The first is a :py:class:`~sismic.simulator.MicroStep` instance, and the second is an ordered list of
+:py:class:`~sismic.simulator.MicroStep` instances.
 A micro step is the smallest, atomic step that a statechart can execute.
-A :py:class:`~pyss.simulator.MacroStep` instance thus can be viewed (and is!) an aggregate of
-:py:class:`~pyss.simulator.MicroStep` instances.
+A :py:class:`~sismic.simulator.MacroStep` instance thus can be viewed (and is!) an aggregate of
+:py:class:`~sismic.simulator.MicroStep` instances.
 
-.. autoclass:: pyss.simulator.MicroStep
+.. autoclass:: sismic.simulator.MicroStep
     :members:
 
 This way, a complete run of a state machine can be summarized as an ordered list of
-:py:class:`~pyss.simulator.MacroStep` instances,
-and details of such a run can be obtained using the :py:class:`~pyss.simulator.MicroStep` list of a
-:py:class:`~pyss.simulator.MacroStep`.
+:py:class:`~sismic.simulator.MacroStep` instances,
+and details of such a run can be obtained using the :py:class:`~sismic.simulator.MicroStep` list of a
+:py:class:`~sismic.simulator.MacroStep`.
 
 
 

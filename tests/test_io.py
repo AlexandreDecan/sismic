@@ -1,5 +1,5 @@
 import unittest
-from pyss import io
+from sismic import io
 
 
 class ImportFromYamlTests(unittest.TestCase):

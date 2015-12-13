@@ -1,17 +1,18 @@
 Command-line interface
 ======================
 
-PySS is expected to be imported as a Python module, but it also provides
-a command-line interface. The CLI can be used by calling the ``pyss``
-module (``python -m pyss``) or, if PySS is installed on your system
-(e.g. using ``pip``), by directly calling ``pyss`` in your shell.
+Sismic is expected to be imported as a Python module, but it also provides
+a command-line interface. The CLI can be used by calling the ``sismic``
+module (``python -m sismic``) or, if PySS is installed on your system
+(e.g. using ``pip``), by directly calling ``sismic`` in your shell.
 
 ::
 
-    (shell) pyss -h
-    usage: pyss [-h] {execute,validate,test} ...
+    (shell) sismic -h
+    usage: sismic [-h] {execute,validate,test} ...
 
-    Python Statechart Simulator v0.5.2 by Alexandre Decan
+    Sismic Interactive State Machine Interpreter and Checker v0.6.3 (by Alexandre
+    Decan -- https://github.com/AlexandreDecan/sismic/)
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -32,29 +33,33 @@ The CLI can used to execute statecharts.
 
 ::
 
-    (shell) pyss execute -h
-    usage: pyss execute [-h] [--no-code] [-v] [--events [EVENT [EVENT ...]]] infile
+    (shell) sismic execute -h
+    usage: sismic execute [-h] [-v] [--no-code] [-l MAXSTEPS]
+                          [--events [EVENT [EVENT ...]]]
+                          infile
 
     positional arguments:
       infile                A YAML file describing a statechart
 
     optional arguments:
       -h, --help            show this help message and exit
-      --no-code             Ignore code to be evaluated and executed in the
-                            statechart
       -v, --verbosity       set output verbosity: -v displays transitions, -vv
                             displays events and configurations, and -vvv displays
                             states
+      --no-code             Ignore code to be evaluated and executed in the
+                            statechart
+      -l MAXSTEPS, --limit MAXSTEPS
+                            limit the number of steps to given number, to prevent
+                            infinite loops
       --events [EVENT [EVENT ...]]
                             send events to the statechart simulation, eg.
                             name[:key=value[:key=value]]
 
 
 
-
 For example::
 
-    (shell) pyss execute -vvv  examples/concrete/history.yaml --events next pause
+    (shell) sismic execute -vvv  examples/concrete/history.yaml --events next pause
     Initial configuration: loop, s1
     Events sent: next, pause
     Step 1 - Considered event: next
@@ -69,7 +74,7 @@ For example::
     Configuration: pause
     Final: False
 
-The considered statechart is `examples/concrete/history.yaml <https://github.com/AlexandreDecan/PySS/blob/master/examples/concrete/history.yaml>`__.
+The considered statechart is `examples/concrete/history.yaml <https://github.com/AlexandreDecan/sismic/blob/master/examples/concrete/history.yaml>`__.
 
 
 .. _cli_validate:
@@ -77,10 +82,10 @@ The considered statechart is `examples/concrete/history.yaml <https://github.com
 Subcommand: `validate`
 ----------------------
 
-YAML statecharts can be validated against PySS format::
+YAML statecharts can be validated against Sismic format::
 
-    (shell) pyss validate -h
-    usage: pyss validate [-h] infile
+    (shell) sismic validate -h
+    usage: sismic validate [-h] infile
 
     positional arguments:
       infile      A YAML file describing a statechart
@@ -101,10 +106,10 @@ The CLI can be used to test statecharts using statechart testers.
 
 ::
 
-    (shell) pyss test -h
-    usage: pyss test [-h] --tests TESTS [TESTS ...] [--no-code] [-l MAXSTEPS]
-                     [--events [EVENT [EVENT ...]]]
-                     infile
+    (shell) sismic test -h
+    usage: sismic test [-h] --tests TESTS [TESTS ...] [--no-code] [-l MAXSTEPS]
+                       [--events [EVENT [EVENT ...]]]
+                       infile
 
     positional arguments:
       infile                A YAML file describing a statechart
@@ -123,12 +128,13 @@ The CLI can be used to test statecharts using statechart testers.
                             name[:key=value[:key=value]]
 
 
+
 For example::
 
-    (shell) python -m pyss test examples/concrete/elevator.yaml --events floorSelected:floor=4 --tests examples/tester/elevator/*.yaml
+    (shell) sismic test examples/concrete/elevator.yaml --events floorSelected:floor=4 --tests examples/tester/elevator/*.yaml
     All tests passed
 
-The considered statechart is `examples/concrete/history.yaml <https://github.com/AlexandreDecan/PySS/blob/master/examples/concrete/history.yaml>`__.
+The considered statechart is `examples/concrete/history.yaml <https://github.com/AlexandreDecan/sismic/blob/master/examples/concrete/history.yaml>`__.
 
 .. _cli_events:
 
@@ -145,7 +151,7 @@ an additional parameter ``floor`` whose value is ``4``.
 
 ::
 
-    (shell) pyss execute examples/concrete/elevator.yaml --events floorSelected:floor=4
+    (shell) sismic execute examples/concrete/elevator.yaml --events floorSelected:floor=4
 
 
 The value is evaluated using Python's :py:func:`eval` function, meaning that you can pass nearly everything you

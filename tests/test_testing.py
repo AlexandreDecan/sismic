@@ -1,7 +1,7 @@
 import unittest
-from pyss import io
-from pyss.model import Event
-from pyss.testing import TesterConfiguration
+from sismic import io
+from sismic.model import Event
+from sismic.testing import TesterConfiguration
 
 
 class ElevatorTests(unittest.TestCase):

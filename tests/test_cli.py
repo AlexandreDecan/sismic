@@ -1,5 +1,5 @@
 import unittest
-from pyss import cli
+from sismic import cli
 
 
 class CommandArgs:

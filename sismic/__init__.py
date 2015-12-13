@@ -2,9 +2,9 @@
 from . import evaluator, io, model, simulator, testing
 
 
-__description__ = 'Statechart Simulator for Python'
-__version__ = '0.6.2'
-__url__ = 'https://github.com/AlexandreDecan/PySS/'
+__description__ = 'Sismic Interactive State Machine Interpreter and Checker'
+__version__ = '0.6.3'
+__url__ = 'https://github.com/AlexandreDecan/sismic/'
 __author__ = 'Alexandre Decan'
 __email__ = 'alexandre.decan@lexpage.net'
 __licence__ = 'LGPL3'
@@ -14,9 +14,9 @@ def _parse_args():  # pragma: no cover
     from .cli import cli_execute, cli_validate, cli_test
     import argparse
 
-    description = '{d} v{v} by {a}'.format(d=__description__, v=__version__, a=__author__)
+    description = '{d} v{v} (by {a} -- {u})'.format(d=__description__, v=__version__, a=__author__, u=__url__)
 
-    parser = argparse.ArgumentParser(prog='pyss', description=description)
+    parser = argparse.ArgumentParser(prog='sismic', description=description)
     subparsers = parser.add_subparsers(title='subcommands', dest='subcommand')
     execute_parser = subparsers.add_parser('execute', help='execute a statechart')
     execute_parser.add_argument('infile',

@@ -3,7 +3,7 @@ from setuptools import setup
 from codecs import open
 from os import path
 
-import pyss
+import sismic
 
 # python setup.py register
 # python setup.py sdist bdist_wheel upload
@@ -15,25 +15,25 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='PySS',
+    name='sismic',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version=pyss.__version__,
+    version=sismic.__version__,
 
-    description=pyss.__description__,
+    description=sismic.__description__,
     long_description=long_description,
 
     # The project's main homepage.
-    url=pyss.__url__,
+    url=sismic.__url__,
 
     # Author details
-    author=pyss.__author__,
-    author_email=pyss.__email__,
+    author=sismic.__author__,
+    author_email=sismic.__email__,
 
     # Choose your license
-    license=pyss.__licence__,
+    license=sismic.__licence__,
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -58,16 +58,16 @@ setup(
     ],
 
     # What does your project relate to?
-    keywords='statechart interpreter model uml scxml harel state machine',
+    keywords='statechart state machine interpreter model uml scxml harel',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=['pyss'],
+    packages=['sismic'],
     #packages=find_packages(exclude=['docs', 'examples', 'tests']),
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:
-    #py_modules=['pyss'],
+    #py_modules=['sismic'],
 
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's
@@ -91,7 +91,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'pyss=pyss:_parse_args',
+            'sismic=sismic:_parse_args',
         ],
     },
 )

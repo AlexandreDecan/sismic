@@ -1,6 +1,6 @@
 import unittest
-from pyss import evaluator
-from pyss.model import Event
+from sismic import evaluator
+from sismic.model import Event
 
 
 class PythonEvaluatorTests(unittest.TestCase):

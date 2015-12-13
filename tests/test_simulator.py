@@ -1,8 +1,8 @@
 import unittest
-from pyss import io
-from pyss.simulator import Simulator
-from pyss.evaluator import DummyEvaluator
-from pyss.model import Event
+from sismic import io
+from sismic.simulator import Simulator
+from sismic.evaluator import DummyEvaluator
+from sismic.model import Event
 
 
 class SimulatorSimpleTest(unittest.TestCase):

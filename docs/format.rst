@@ -6,25 +6,25 @@ Defining statecharts in YAML
 
 Statecharts can be defined using a YAML format.
 
-A YAML definition of a statechart can be easily imported to a :py:class:`~pyss.model.StateChart` instance.
-The module :py:mod:`pyss.io` provides a convenient loader :py:func:`~pyss.io.import_from_yaml` which takes a textual YAML definition
+A YAML definition of a statechart can be easily imported to a :py:class:`~sismic.model.StateChart` instance.
+The module :py:mod:`sismic.io` provides a convenient loader :py:func:`~sismic.io.import_from_yaml` which takes a textual YAML definition
 of a statechart. It also provides ways to export statechart to YAML.
 
-.. automodule:: pyss.io
+.. automodule:: sismic.io
     :members: import_from_yaml, export_to_yaml
 
 For example:
 
 .. code:: python
 
-    from pyss import io, model
+    from sismic import io, model
 
     statechart = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
     assert isinstance(statechart, model.StateChart)
 
 
-Although the parser is quite robut and should warn about most syntaxic problems, a :py:class:`~pyss.model.StateChart` instance has a
-:py:meth:`~pyss.model.StateChart.validate` method that can perform numerous other checks.
+Although the parser is quite robut and should warn about most syntaxic problems, a :py:class:`~sismic.model.StateChart` instance has a
+:py:meth:`~sismic.model.StateChart.validate` method that can perform numerous other checks.
 This method either returns ``True`` if the statechart *seems* to
 be valid, or raises an ``AssertionError`` exception with a meaningful message.
 
@@ -217,13 +217,13 @@ While it is not very convenient, it is still possible to define the statechart u
 The following sections detail the Python structure of a statechart.
 
 
-The module :py:mod:`pyss.model` contains several classes and mixins to define
+The module :py:mod:`sismic.model` contains several classes and mixins to define
 states, transitions and events. Apart from
-:py:class:`~pyss.model.StateMixin`, :py:class:`~pyss.model.ActionStateMixin`,
-:py:class:`~pyss.model.TransitionStateMixin`, and :py:class:`~pyss.model.CompositeStateMixin`, it defines:
+:py:class:`~sismic.model.StateMixin`, :py:class:`~sismic.model.ActionStateMixin`,
+:py:class:`~sismic.model.TransitionStateMixin`, and :py:class:`~sismic.model.CompositeStateMixin`, it defines:
 
-.. automodule:: pyss.model
+.. automodule:: sismic.model
     :members: Event, Transition, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState, StateChart
     :member-order: bysource
 
-Consider the source of :py:mod:`pyss.io` as an example of how to construct a statechart using :py:mod:`pyss.model`.
+Consider the source of :py:mod:`sismic.io` as an example of how to construct a statechart using :py:mod:`sismic.model`.

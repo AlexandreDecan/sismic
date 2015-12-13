@@ -6,14 +6,14 @@ Quickstart
 Installation
 ------------
 
-PySS can be installed using ``pip`` as usual: ``pip install pyss``.
+Sismic can be installed using ``pip`` as usual: ``pip install sismic``.
 This will install the latest stable version.
 
-You can also install PySS from this repository by cloning it.
+You can also install Sismic from its repository by cloning it.
 The development occurs in the *master* branch, the latest stable distributed version is in the *stable* branch.
 
-PySS requires Python >=3.4 but should also work with Python 3.3.
-You can isolate PySS installation by using virtual environments:
+Sismic requires Python >=3.4 but should also work with Python 3.3.
+You can isolate Sismic installation by using virtual environments:
 
 1. Get the tool to create environment: ``pip install virtualenv``
 2. Create the environment: ``virtualenv -p python3.4 env``
@@ -41,11 +41,11 @@ or using the command-line interface, see :ref:`cli_execute`.
 
 .. code:: python
 
-    import pyss
+    import sismic
 
-    statechart = pyss.io.import_from_yaml(open('examples/concrete/elevator.yaml'))
-    simulator = pyss.simulator.Simulator(statechart)
-    simulator.send(pyss.model.Event('floorSelected', data={'floor': 4}))
+    statechart = sismic.io.import_from_yaml(open('examples/concrete/elevator.yaml'))
+    simulator = sismic.simulator.Simulator(statechart)
+    simulator.send(sismic.model.Event('floorSelected', data={'floor': 4}))
     for step in simulator.execute():
         print('{}: {}'.format(step.transitions, simulator.configuration))
 
