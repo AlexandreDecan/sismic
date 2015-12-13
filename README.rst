@@ -12,13 +12,12 @@ Python Statechart Simulator for Python >=3.4
 .. image:: https://readthedocs.org/projects/pyss/badge
     :target: https://pyss.readthedocs.org/
 
-PySS provides a set of tools related to statechart manipulation and
-execution. In particular, PySS provides:
+The PySS library for Python provides a set of tools to define, simulate, execute and debug statecharts. More specifically, PySS provides:
 
-- An easy way to define and to import statecharts with YAML
-- Discrete, step-by-step, fully observable statechart simulation (SCXML semantic, can be easily tuned!)
-- Built-in support for statechart Python code (can be easily extended to other languages)
-- A framework for statechart-based testing
+- An easy way to define and to import statecharts, based on the human-friendly YAML markup language
+- A statechart simulator offering discrete, step-by-step, and fully observable simulation engine
+- Built-in support for expressing actions and guards using regular Python code
+- A unit testing framework for statecharts
 
 Installation
 ------------
