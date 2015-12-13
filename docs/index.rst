@@ -42,6 +42,7 @@ The Sismic library for Python provides a set of tools to define, simulate, execu
  - A unit testing framework for statecharts
 
 Sismic provides full support for the majority of the concepts of UML statecharts:
+
  - simple states, composite states, orthogonal (parallel) states, initial and final states, shallow and deep history states
  - state transitions, guarded transitions, automatic (eventless) transitions
  - statechart variables and their initialisation
@@ -49,6 +50,7 @@ Sismic provides full support for the majority of the concepts of UML statecharts
  - internal and external events, parametrized events
 
 The Sismic library is written in a modular way:
+
  - The semantics of the statechart simulator is based on the specification of the SCXML semantics (with a few exceptions),
    and can be easily tuned to other semantics.
  - While currently, guards and actions are expressed in Python, this support can be easily extended to other languages.
