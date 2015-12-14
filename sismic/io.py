@@ -80,7 +80,10 @@ def _state_from_dict(state_d: dict) -> StateMixin:
     # Guess the type of state
     if state_d.get('type', None) == 'final':
         # Final pseudo state
-        state = FinalState(state_d['name'])
+        name = state_d.get('name')
+        on_entry = state_d.get('on entry', None)
+        on_exit = state_d.get('on exit', None)
+        state = FinalState(name, on_entry, on_exit)
     elif state_d.get('type', None) == 'shallow history':
         # Shallow history pseudo state
         state = HistoryState(state_d['name'], state_d.get('initial'), deep=False)
