@@ -10,7 +10,7 @@ class PythonEvaluatorTests(unittest.TestCase):
             'y': 2,
             'z': 3
         }
-        self.e = evaluator.PythonEvaluator(context)
+        self.e = evaluator.PythonEvaluator(None, context)
 
     def test_condition(self):
         self.assertTrue(self.e.evaluate_condition('True'))
@@ -29,14 +29,6 @@ class PythonEvaluatorTests(unittest.TestCase):
         self.assertEqual(self.e.context['a'], 1)
         self.e.execute_action('x = 2')
         self.assertEqual(self.e.context['x'], 2)
-
-    def test_execution_fire_event(self):
-        events = self.e.execute_action('send(Event(\'test\'))')
-        self.assertEqual(events, [Event('test')])
-
-    def test_execution_fire_events(self):
-        events = self.e.execute_action('send(Event(\'test\'))\nsend(Event(\'test2\'))')
-        self.assertEqual(events, [Event('test'), Event('test2')])
 
     def test_invalid_condition(self):
         with self.assertRaises(AttributeError):

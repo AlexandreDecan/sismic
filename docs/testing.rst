@@ -50,23 +50,23 @@ Each tester is executed using by default a :py:class:`~sismic.evaluator.PythonEv
 (the *context*) are available during execution. The context is exposed through a ``step`` variable to the tester,
 and contains the following items:
 
-.. :function:: entered(state_name: str) -> bool
+.. :function:: step.entered(state_name: str) -> bool
 
    Return *True* if given state name was entered in the last executed step.
 
-.. :function:: exited(state_name: str) -> bool
+.. :function:: step.exited(state_name: str) -> bool
 
    Return *True* if given state name was exited in the last executed step.
 
-.. :function:: active(state_name: str) -> bool
+.. :function:: step.active(state_name: str) -> bool
 
    Return *True* if given state name was active in the last executed step.
 
-.. :function:: processed(event_name: str) -> bool
+.. :function:: step.processed(event_name: str) -> bool
 
    Return *True* if given event was part of the last executed transition.
 
-.. :function:: consumed(event_name: str) -> bool
+.. :function:: step.consumed(event_name: str) -> bool
 
    Return *True* if given event was consumed in the last executed step, no matter if
    it lead to the execution of a transition.

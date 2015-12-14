@@ -58,9 +58,16 @@ When a :py:class:`~sismic.evaluator.PythonEvaluator` instance is initialized, a 
 
     evaluator = PythonEvaluator({'x': 1, 'math': my_favorite_module})
 
+By default, the context already exposes several values:
 
-By default, the context exposes an :py:class:`~sismic.model.Event` and a ``send`` function.
-They can be used to send internal event to the simulator, eg., ``on entry: send(Event('Hello World!'))``.
+ - The :py:class:`~sismic.model.Event` class to allow the creation of internal events.
+ - A ``send`` function that takes an :py:class:`~sismic.model.Event` instance and fires an internal event with.
+ - An ``active`` Boolean function that takes a state name and return ``True`` if and only if this state is currently
+   active, ie. it is in the active configuration of the :py:class:`~sismic.interpreter.Interpreter` instance
+   that makes use of this evaluator.
+ - An ``event`` variable that (possibly) contains the :py:class:`~sismic.model.Event` instance associated to
+   the transitions (either when :py:meth:`~sismic.evaluator.Evaluator.evaluate_condition` is called or when
+   :py:meth:`~sismic.evaluator.Evaluator.execute_action` is called for a transition action).
 
 Unless you override its entry in the context, the ``__builtins__`` of Python are automatically exposed.
 This implies you can use nearly everything from Python in your code.

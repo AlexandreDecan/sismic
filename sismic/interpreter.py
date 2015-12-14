@@ -88,7 +88,7 @@ class Interpreter:
     """
     def __init__(self, statechart: model.StateChart, evaluator_klass=None):
         self._evaluator_klass = evaluator_klass
-        self._evaluator = evaluator_klass() if evaluator_klass else PythonEvaluator()
+        self._evaluator = evaluator_klass(self) if evaluator_klass else PythonEvaluator(self)
         self._statechart = statechart
         self._memory = {}  # History states memory
         self._configuration = set()  # Set of active states
@@ -400,9 +400,7 @@ class Interpreter:
         for state in exited_states:
             # Execute exit action
             if isinstance(state, model.ActionStateMixin) and state.on_exit:
-                for event in self._evaluator.execute_action(state.on_exit):
-                    # Internal event
-                    self.send(event, internal=True)
+                self._evaluator.execute_action(state.on_exit)
 
         # Deal with history: this only concerns compound states
         exited_compound_states = list(filter(lambda s: isinstance(s, model.CompoundState), exited_states))
@@ -432,9 +430,7 @@ class Interpreter:
         for state in entered_states:
             # Execute entry action
             if isinstance(state, model.ActionStateMixin) and state.on_entry:
-                for event in self._evaluator.execute_action(state.on_entry):
-                    # Internal event
-                    self.send(event, internal=True)
+                self._evaluator.execute_action(state.on_entry)
 
         # Add state to configuration
         self._configuration = self._configuration.union(step.entered_states)
