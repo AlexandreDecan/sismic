@@ -6,7 +6,7 @@ Executing statecharts
 Statechart semantic
 -------------------
 
-The module :py:mod:`~sismic.interpreter` contains a :py:class:`~sismic.interpreter.Interpreter` class that
+The module :py:mod:`~sismic.interpreter` contains an :py:class:`~sismic.interpreter.Interpreter` class that
 interprets a statechart mainly following `SCXML <http://www.w3.org/TR/scxml/>`__ semantic.
 In particular, eventless transitions are processed before evented transitions, internal events are consumed
 before external events, and the simulation follows a inner-first/source-state and run-to-completion semantic.
@@ -32,7 +32,6 @@ in which (non-parallel) transitions should be processed.
 However, from our point of view, this solution is not satisfactory.
 The execution should not depend on the order in which items are defined in some document, in particular when
 there are many different ways to construct or to import a statechart.
-
 Some other tools do not even define any order on the transitions in such situations:
 
     "Rhapsody detects such cases of nondeterminism during code generation
@@ -44,7 +43,6 @@ Some other tools do not even define any order on the transitions in such situati
 We decide to follow Rhapsody and to raise an error (in fact, a ``Warning``) if such cases of
 nondeterminism occur during the execution. Notice that this only concerns multiple transitions in the same
 component, not in parallel component.
-
 When multiple transitions are triggered from distinct parallel components, the situation is even more intricate.
 
     "The order of firing transitions of orthogonal components is not defined, and
@@ -63,7 +61,7 @@ SCXML circumvents this problem using again document definition order.
     --- `SCXML Specification <http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation>`__
 
 Sismic does not agree with SCXML on the chosen order, and defines that multiple orthogonal transitions
-should be processed by decreasing depth of the source state.
+should be processed in a decreasing source state depth order.
 This is perfectly coherent with the inner-first/source-state semantic, as "deeper" transitions are processed
 before "less nested" ones. Ties are broken by lexicographic order of the source states names.
 
@@ -103,7 +101,7 @@ For convenience, :py:meth:`~sismic.interpreter.Interpreter.send` returns ``self`
 
 Notice that :py:meth:`~sismic.interpreter.Interpreter.execute_once` consumes at most one event at a time.
 In this example, the second *click* event is not processed.
-
+..
 To process all events *at once*, repeatedly call :py:meth:`~sismic.interpreter.Interpreter.execute_once` until
 it returns a ``None`` value. For instance:
 
@@ -127,7 +125,7 @@ As a shortcut, the :py:meth:`~sismic.interpreter.Interpreter.execute` method wil
 
 Notice that a call to :py:meth:`~sismic.interpreter.Interpreter.execute` first computes the list and **then** returns
 it, meaning that all the steps are already processed when the call returns.
-
+..
 As a call to :py:meth:`~sismic.interpreter.Interpreter.execute` could lead to an infinite execution
 (see for example `simple/infinite.yaml <https://github.com/AlexandreDecan/sismic/blob/master/examples/simple/infinite.yaml>`__),
 an additional parameter ``max_steps`` can be specified to limit the number of steps that are computed
@@ -138,11 +136,11 @@ and executed by the method.
     assert len(interpreter.execute(max_steps=10)) <= 10
 
 At any time, you can reset the simulator by calling :py:meth:`~sismic.interpreter.Interpreter.reset`.
-
+..
 For convenience, a :py:class:`~sismic.model.StateChart` has an :py:meth:`~sismic.model.StateChart.events` method
 that returns the list of all possible events that can be interpreted by this statechart (other events will
 be consumed and ignored).
-
+..
 This method also accepts a state name or a list of state names to restrict the list of returned events,
 and is thus commonly used to get a list of the "interesting" events:
 
@@ -152,7 +150,7 @@ and is thus commonly used to get a list of the "interesting" events:
 
 
 
-The main methods and attributes of a simulator instance are:
+Putting all together, the main methods and attributes of a simulator instance are:
 
 .. autoclass:: sismic.interpreter.Interpreter
     :members: send, execute_once, execute, configuration, running, reset
@@ -174,12 +172,16 @@ A :py:class:`~sismic.interpreter.MacroStep` exposes the consumed ``event`` (an :
 if any, a (possibly empty) list ``transitions`` of :py:class:`~sismic.model.Transition` instances, and two
 aggregated ordered sequences of state names, ``entered_states`` and ``exited_states``.
 States order in those list indicates the order in which their *on entry* and *on exit* actions were processed.
+..
+As transitions are atomically processed, this means that they could exist a state in ``entered_states`` that is
+entered before some state in ``exited_states`` is exited.
+The exact order in which states are exited and entered is indirectly available through the ``steps`` attribute that
+is a list of all the :py:class:`~sismic.interpreter.MicroStep`` that were executed. Each of them contains the states
+that were exited and entered during its execution.
+
 
 .. autoclass:: sismic.interpreter.MacroStep
     :members:
-
-A macro step also exposes a ``steps`` attribute, which is the ordered list of :py:class:`~sismic.interpreter.MicroStep`
-instances that were executed.
 
 A micro step is the smallest, atomic step that a statechart can execute.
 A :py:class:`~sismic.interpreter.MacroStep` instance thus can be viewed (and is!) an aggregate of
@@ -195,17 +197,16 @@ and details of such a run can be obtained using the :py:class:`~sismic.interpret
 
 
 
-Advanced uses
--------------
+.. _other_semantics:
+
+Implementing other semantics
+----------------------------
 
 A :py:class:`~sismic.interpreter.Interpreter` makes use of several protected methods for its initialization or to compute
 which transition should be processed next, which are the next steps, etc.
 
 These methods can be easily overridden or combined to define other semantics.
 
-
-Additional (protected) methods
-******************************
 
 .. automethod:: sismic.interpreter.Interpreter._start
 
@@ -226,15 +227,8 @@ The :py:class:`~sismic.interpreter.Interpreter.execute_once` mainly calls these 
     :pyobject: Interpreter.execute_once
 
 
-.. _other_semantics:
-
-Implementing other semantics
-****************************
-
-It is also quite easy to extend (or adapt) parts of an interpreter to implement other semantics.
-
-Outer-first/source-state semantic
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Example: Outer-first/source-state semantic
+******************************************
 
 For example, if you are interested in a outer-first/source-state semantic (instead of the
 inner-first/source-state one that is currently provided), you can subclass :py:class:`~sismic.interpreter.Interpreter`
@@ -244,8 +238,8 @@ Actually, as the former relies on the second, your changes will only concern the
 :py:class:`~sismic.interpreter.Interpreted._select_transitions` method.
 
 
-Internal events have no priority
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Example: Internal events have no priority
+*****************************************
 
 As another example, if you are interested in considering that internal event should not have
 priority over external event, it is sufficient to override the :py:meth:`~sismic.interpreter.Interpreter.send` method:
@@ -257,8 +251,8 @@ priority over external event, it is sufficient to override the :py:meth:`~sismic
         return self
 
 
-Custom way to deal with non-determinism
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Example: Custom way to deal with non-determinism
+************************************************
 
 If you find that the way we deal with non-determinism is too far from other semantics like SCXML or Rhapsody,
 (remember :ref:`semantic`), you can implement your own approach to deal with non-determinism.

@@ -12,7 +12,7 @@ class Evaluator:
         is expected to be an ``Interpreter`` instance
     :param initial_context: an optional dictionary to populate the context
     """
-    def __init__(self, interpreter, initial_context: dict=None):
+    def __init__(self, interpreter=None, initial_context: dict=None):
         self._context = initial_context if initial_context else {}
         self._interpreter = interpreter
 
@@ -79,7 +79,7 @@ class PythonEvaluator(Evaluator):
     :param initial_context: a dictionary that will be used as ``__locals__``
     """
 
-    def __init__(self, interpreter, initial_context: dict=None):
+    def __init__(self, interpreter=None, initial_context: dict=None):
         super().__init__(interpreter, initial_context)
 
         # Add Event to the context

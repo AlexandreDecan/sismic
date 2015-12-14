@@ -4,8 +4,8 @@ Code contained in statecharts
 =============================
 
 A statechart can write code to be executed under some circumstances.
-For example, the ``on entry`` property on a ``statechart``, ``guard`` or ``action`` on a transition or the
-``on entry`` and ``on exit`` property for a state.
+For example, the ``on entry`` property on a statechart, the ``guard`` or ``action`` on a transition or the
+``on entry`` and ``on exit`` properties for a state.
 
 In Sismic, these pieces of code can be evaluated and executed by :py:class:`~sismic.evaluator.Evaluator` instances.
 
@@ -56,13 +56,13 @@ When a :py:class:`~sismic.evaluator.PythonEvaluator` instance is initialized, a 
     from sismic.evaluator import PythonEvaluator
     import math as my_favorite_module
 
-    evaluator = PythonEvaluator({'x': 1, 'math': my_favorite_module})
+    evaluator = PythonEvaluator(initial_context={'x': 1, 'math': my_favorite_module})
 
 By default, the context already exposes several values:
 
  - The :py:class:`~sismic.model.Event` class to allow the creation of internal events.
  - A ``send`` function that takes an :py:class:`~sismic.model.Event` instance and fires an internal event with.
- - An ``active`` Boolean function that takes a state name and return ``True`` if and only if this state is currently
+ - An ``active(name) -> bool`` Boolean function that takes a state name and return ``True`` if and only if this state is currently
    active, ie. it is in the active configuration of the :py:class:`~sismic.interpreter.Interpreter` instance
    that makes use of this evaluator.
  - An ``event`` variable that (possibly) contains the :py:class:`~sismic.model.Event` instance associated to
