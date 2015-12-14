@@ -211,11 +211,12 @@ class FinalState(StateMixin, ActionStateMixin):
 
     :param name: name of this state
     :param on_entry: code to execute when state is entered
+    :param on_exit: code to execute when state is exited
     """
 
-    def __init__(self, name: str, on_entry: str=None):
+    def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
         StateMixin.__init__(self, name)
-        ActionStateMixin.__init__(self, on_entry, None)
+        ActionStateMixin.__init__(self, on_entry, on_exit)
 
 
 class StateChart(object):
