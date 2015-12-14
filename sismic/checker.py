@@ -84,23 +84,17 @@ class StateChartTester:
 
     def stop(self):
         """
-        Stop the execution and raise an AssertionError if at least one tester is not in a final configuration.
-
-        :raises AssertionError: if a tester is not in a final configuration
+        Stop the execution of the testers.
         """
         event = Event('stop')
         context = self._create_context()
-
-        for tester in self._testers:
-            self._execute_tester(None, event, context)
-            assert not tester.running, '"{}" is not in a final configuration!\nConfiguration: {}'.format(tester._statechart.name, tester.configuration)
+        self._execute_tester(None, event, context)
 
     def execute_once(self) -> MacroStep:
         """
         Call execute_once() on the underlying interpreter, and consequently call execute() on the testers.
 
         :return: The ``interpreter.MacroStep`` instance returned by the underlying call.
-        :raises AssertionError: if execution terminates and a tester is not in a final configuration
         """
         # Execute the simulator to be tested
         step = self._interpreter.execute_once()
@@ -122,7 +116,6 @@ class StateChartTester:
         :param max_steps: An upper bound on the number steps that are computed and returned.
             Default is -1, no limit. Set to a positive integer to avoid infinite loops in the statechart execution.
         :return: A list of ``MacroStep`` instances produced by the underlying interpreter.
-        :raises AssertionError: if simulation terminates and a tester is not in a final configuration
         """
         steps = []
         i = 0

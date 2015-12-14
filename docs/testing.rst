@@ -90,21 +90,6 @@ in tested statechart's current step, and checks the value of tested statechart's
          - guard: step.active('moving') and step.context['destination'] > 0
            # ...
 
-
-Specific expected behavior
-**************************
-
-It is expected that your testers ends in a final configuration (ie. all the leaves of the active configuration
-are *final states*) when a valid execution of a tested statechart ends.
-
-.. highlights::
-
-    This is **very important**, and this is why its deserves a dedicated subsection.
-
-At the end of the execution of a test, an assertion will be raised if there is a tester which is not in a
-final configuration.
-
-
 Examples
 ********
 
@@ -117,27 +102,14 @@ This tester is an example of a test that needs to end in a final configuration.
 It ensures that a destination is always reached before the end
 of the execution of the ``elevator`` statechart.
 
-The state ``waiting`` awaits that a ``floorSelected`` event is processed.
-When the floor is selected, it waits until ``current == destination`` to go
-in ``destinationReached`` state.
+The state ``accepting`` awaits that a ``floorSelected`` event is processed.
+When the floor is selected, the configuration is ``awaiting destination`` until
+``current == destination``, when it goes to ``accepting`` again.
 If the execution ends (``stop`` event) before the destination is reached (ie. in
-another state than ``destinationReached``), the tester execution does not end
-in a final state, meaning that the test fails.
+another state than ``accepting``), the state ``assertion failed`` is reached where
+the ``on entry`` raises an ``AssertionError``, meaning that the test failed.
 
 .. literalinclude:: ../examples/tester/elevator/destination_reached.yaml
-   :language: yaml
-
-
-Doors are closed while moving
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This tester is an example of a test that raises an ``AssertionError``.
-It checks that the elevator can not move (ie. be in ``moving`` state)
-while the doors are opened.
-If this happens, a transition to ``error`` occurs.
-The ``on entry`` of ``error`` then raises an ``AssertionError``.
-
-.. literalinclude:: ../examples/tester/elevator/closed_doors_while_moving.yaml
    :language: yaml
 
 
@@ -146,9 +118,20 @@ The ``on entry`` of ``error`` then raises an ``AssertionError``.
 
 This example shows that assertion can be made on transition action too.
 This dummy example could fail if the current floor is ``7``.
-You could use it to test what happens when a test fails.
 
 .. literalinclude:: ../examples/tester/elevator/never_go_7th_floor.yaml
+   :language: yaml
+
+
+Doors are closed while moving
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This tester checks that the elevator can not move (ie. be in ``moving`` state)
+while the doors are opened.
+If this happens, a transition to ``error`` occurs.
+The ``on entry`` of ``error`` then raises an ``AssertionError``.
+
+.. literalinclude:: ../examples/tester/elevator/closed_doors_while_moving.yaml
    :language: yaml
 
 
@@ -253,8 +236,8 @@ can be infinite. As for interpreter's :py:meth:`~sismic.interpreter.Interpreter.
     test.execute(max_steps=10)
 
 At the end of the execution, you must call the :py:meth:`~sismic.checker.StateChartTester.stop` method.
-This method sends a ``stop`` event to the statechart testers, and checks whether they are all in a final
-configuration.
+This method sends a ``stop`` event to the statechart testers.
+This permits testers to check that some condition still holds at the end of the execution.
 
 As a shortcut, :py:class:`~sismic.testing.StateChartTester` exposes a context manager that does the job
 for you. This context manager can be used as follows:
@@ -265,13 +248,8 @@ for you. This context manager can be used as follows:
         test.execute()
 
 
-A test fails when one of the following occurs:
-
-    1. An ``AssertionError`` is raised by one of the statechart testers.
-    2. There is at least one tester that is not in a final configuration when
-       :py:meth:`~sismic.checker.StateChartTester.stop` is called (or when the context manager
-       is exited).
-
+A test fails when one of ``execute`` or ``stop`` (called implicitly by the context manager) raises
+an ``AssertionError``.
 
 Integrating with *unittest*
 ---------------------------

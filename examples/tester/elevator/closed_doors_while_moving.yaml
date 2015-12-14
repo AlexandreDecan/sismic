@@ -1,33 +1,26 @@
 statechart:
   name: Doors are closed while moving
-  initial: start
+  initial: check_doors
   states:
-    - name: start
-      initial: check_doors
+    - name: check_doors  # Check if the doors are initially opened or not
       transitions:
-        - target: ok  # If nothing bad happens, then we should go in a final state
-          event: stop
-      states:
-        - name: check_doors  # Check if the doors are initially opened or not
-          transitions:
-            - target: opened
-              guard: not step.context['doors'].opened
-            - target: closed
-              guard: step.context['doors'].opened
-        - name: opened
-          transitions:
-            - target: closed
-              event: step
-              guard: not step.context['doors'].opened
-            - target: error  # If we are moving and the doors are opened, error!
-              event: step
-              guard: step.active('moving')
-        - name: closed
-          transitions:
-            - target: opened
-              event: step
-              guard: step.context['doors'].opened
+        - target: opened
+          guard: not step.context['doors'].opened
+        - target: closed
+          guard: step.context['doors'].opened
+    - name: opened
+      transitions:
+        - target: closed
+          event: step
+          guard: not step.context['doors'].opened
+        - target: error  # If we are moving and the doors are opened, error!
+          event: step
+          guard: step.active('moving')
+    - name: closed
+      transitions:
+        - target: opened
+          event: step
+          guard: step.context['doors'].opened
     - name: error
       on entry: assert False, 'doors not closed and elevator is moving'
-    - name: ok
-      type: final
+

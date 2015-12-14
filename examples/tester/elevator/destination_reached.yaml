@@ -1,23 +1,18 @@
 statechart:
   name: Destination is reached
-  initial: waiting
+  initial: accepting
   states:
-    - name: waiting
+    - name: accepting
       transitions:
-        - target: floorSelected
-          event: step
-          guard: step.processed('floorSelected')  # Avoid step.consumed('floorSelected') here, as it does not imply its processing
-    - name: floorSelected
-      transitions:
-        - target: destinationReached
-          event: step
-          guard: step.context['current'] == step.context['destination']
-    - name: destinationReached
-      transitions:
-        - target: final
-          event: stop
-        - target: floorSelected
-          event: step
+        - event: step
           guard: step.processed('floorSelected')
-    - name: final
-      type: final
+          target : awaiting destination
+    - name: awaiting destination
+      transitions:
+        - event: step
+          guard: step.context['current'] == step.context['destination']
+          target: accepting
+        - event: stop
+          target: assertion failed
+    - name: assertion failed
+      on entry: assert False, 'Destination not reached!'
