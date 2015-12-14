@@ -31,7 +31,8 @@ class SimulatorSimpleTest(unittest.TestCase):
         interpreter.send(Event('goto final'))
         self.assertEqual(interpreter.execute_once().entered_states, ['s3'])
         self.assertEqual(interpreter.execute_once().entered_states, ['final'])
-        self.assertEqual(interpreter.configuration, ['final'])
+        self.assertEqual(interpreter.configuration, [])
+        self.assertFalse(interpreter.running)
 
     def test_simple_final(self):
         sc = io.import_from_yaml(open('examples/simple/simple.yaml'))

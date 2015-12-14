@@ -149,10 +149,10 @@ class Interpreter:
         """
         Boolean indicating whether this interpreter is not in a final configuration.
         """
-        for state in self._statechart.leaf_for(list(self._configuration)):
-            if not isinstance(self._statechart._states[state], model.FinalState):
-                return True
-        return False
+        # for state in self._statechart.leaf_for(list(self._configuration)):
+        #    if not isinstance(self._statechart._states[state], model.FinalState):
+        #        return True
+        return len(self._configuration) != 0
 
     def reset(self):
         """
@@ -193,7 +193,6 @@ class Interpreter:
 
         :return: a macro step or ``None`` if nothing happened
         """
-
         # Eventless transitions first
         event = None
         transitions = self._select_eventless_transitions()
@@ -354,16 +353,27 @@ class Interpreter:
     def _compute_stabilization_step(self) -> MicroStep:
         """
         Return a stabilization step, ie. a step that lead to a more stable situation
-        for the current statechart (expand to initial state, expand to history state, etc.).
+        for the current statechart. Stabilization means:
+
+         - Enter the initial state of a compound state with no active child
+         - Enter the memory of a history state
+         - Enter the children of an orthogonal state with no active child
+         - Exit active states if all "deepest" (leaves) states are final
 
         :return: A ``MicroStep`` instance or ``None`` if this statechart can not be more stabilized
         """
         # Check if we are in a set of "stable" states
-        leaves = self._statechart.leaf_for(list(self._configuration))
+        leaves_names = self._statechart.leaf_for(list(self._configuration))
+        leaves = list(map(lambda s: self._statechart.states[s], leaves_names))
 
+        # Final states?
+        if len(leaves) > 0 and all([isinstance(s, model.FinalState) for s in leaves]):
+            # Leave all states
+            exited_states = sorted(self._configuration, key=lambda s: (-self._statechart.depth_of(s), s))
+            return MicroStep(exited_states=exited_states)
+
+        # Otherwise, develop history, compound and orthogonal states.
         for leaf in leaves:
-            leaf = self._statechart.states[leaf]
-
             if isinstance(leaf, model.HistoryState):
                 states_to_enter = self._memory.get(leaf.name, [leaf.initial])
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_of(x), x))
