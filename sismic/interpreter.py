@@ -41,10 +41,11 @@ class MacroStep:
         """
         Event (or ``None``) that were consumed.
         """
-        try:
-            self.steps[0].event
-        except IndexError:
-            return None
+        for step in self.steps:
+            if step.event:
+                return step.event
+        return None
+
 
     @property
     def transitions(self) -> list:
@@ -83,8 +84,8 @@ class Interpreter:
 
     :param statechart: statechart to interpret
     :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
-        ``evaluator.Evaluator`` instance that will be used to initialize the interpreter.
-        By default, an ``evaluator.PythonEvaluator`` will be used.
+        ``Evaluator`` instance that will be used to initialize the interpreter.
+        By default, an ``PythonEvaluator`` will be used.
     """
     def __init__(self, statechart: model.StateChart, evaluator_klass=None):
         self._evaluator_klass = evaluator_klass
@@ -216,7 +217,8 @@ class Interpreter:
         for step in steps:
             self._execute_step(step)
             returned_steps.append(step)
-            returned_steps += self._stabilize()
+            for stab_step in self._stabilize():
+                returned_steps.append(stab_step)
 
         return MacroStep(returned_steps)
 

@@ -3,7 +3,7 @@ from . import evaluator, io, model, interpreter, checker
 
 
 __description__ = 'Sismic Interactive State Machine Interpreter and Checker'
-__version__ = '0.6.3'
+__version__ = '0.7.1'
 __url__ = 'https://github.com/AlexandreDecan/sismic/'
 __author__ = 'Alexandre Decan'
 __email__ = 'alexandre.decan@lexpage.net'

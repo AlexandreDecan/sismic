@@ -9,7 +9,7 @@ class Evaluator:
     contained in a statechart (condition, action, etc.).
 
     :param interpreter: the interpreter that will use this evaluator,
-        is expected to be an ``interpreter.Interpreter`` instance
+        is expected to be an ``Interpreter`` instance
     :param initial_context: an optional dictionary to populate the context
     """
     def __init__(self, interpreter, initial_context: dict=None):
@@ -75,7 +75,7 @@ class PythonEvaluator(Evaluator):
      - active: a Boolean function that takes a state name and return True iff state is active
 
     :param interpreter: the interpreter that will use this evaluator,
-        is expected to be an ``interpreter.Interpreter`` instance
+        is expected to be an ``Interpreter`` instance
     :param initial_context: a dictionary that will be used as ``__locals__``
     """
 

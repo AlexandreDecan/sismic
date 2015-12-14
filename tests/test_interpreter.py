@@ -41,6 +41,34 @@ class SimulatorSimpleTest(unittest.TestCase):
         self.assertFalse(interpreter.running)
 
 
+class InternalTests(unittest.TestCase):
+    def setUp(self):
+        self.sc = io.import_from_yaml(open('examples/simple/internal.yaml'))
+        self.interpreter = Interpreter(self.sc)
+
+    def testInternalSent(self):
+        step = self.interpreter.execute_once()
+        self.assertEqual(step.event.name, 'next')
+
+    def testInternalBeforeExternal(self):
+        self.interpreter.send(Event('not_next'))
+        step = self.interpreter.execute_once()
+        print(step.steps)
+        self.assertEqual(step.event.name, 'next')
+
+        step = self.interpreter.execute_once()
+        print(step.steps)
+        self.assertEqual(step.event, None)
+        self.assertEqual(step.entered_states, ['s2'])
+
+        step = self.interpreter.execute_once()
+        self.assertEqual(step.event.name, 'not_next')
+
+    def testActiveGuard(self):
+        self.interpreter.execute()
+        self.assertFalse(self.interpreter.running)
+
+
 class SimulatorElevatorTests(unittest.TestCase):
     def test_init(self):
         sc = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
