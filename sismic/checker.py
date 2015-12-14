@@ -1,6 +1,11 @@
 from .model import Event, StateChart
 from .interpreter import Interpreter, MacroStep
 
+from collections import namedtuple
+
+
+TestedContext = namedtuple('TestedContext', ['entered', 'exited', 'active', 'processed', 'consumed', 'context'])
+
 
 class StateChartTester:
     """
@@ -44,23 +49,21 @@ class StateChartTester:
         except AttributeError:
             consumed_event_name = None
 
-        return {
-            'entered': lambda s: s in getattr(step, 'entered_states', []),
-            'exited': lambda s: s in getattr(step, 'exited_states', []),
-            'active': lambda s: s in self._interpreter.configuration,
-            'processed': lambda e: processed_event_name == e,
-            'consumed': lambda e: consumed_event_name == e,
-            'context': self._interpreter.evaluator.context
-        }
+        return TestedContext(
+            entered=lambda s: s in getattr(step, 'entered_states', []),
+            exited=lambda s: s in getattr(step, 'exited_states', []),
+            active=lambda s: s in self._interpreter.configuration,
+            processed=lambda e: processed_event_name == e,
+            consumed=lambda e: consumed_event_name == e,
+            context=self._interpreter.evaluator.context)
 
-    def _execute_tester(self, step: MacroStep, event: Event, context: dict):
+    def _execute_tester(self, step: MacroStep, event: Event, context: TestedContext):
         """
         Send the event and update the context of the testers.
         """
         for tester in self._testers:
             tester.send(event)
-            for key, value in context.items():
-                tester.evaluator._context[key] = value
+            tester.evaluator._context['step'] = context
             try:
                 tester.execute()
             except AssertionError as e:

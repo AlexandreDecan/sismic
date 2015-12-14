@@ -47,8 +47,8 @@ Specific contextual data
 ************************
 
 Each tester is executed using by default a :py:class:`~sismic.evaluator.PythonEvaluator` and as such, contextual data
-(the *context*) are available during execution. In the case of a tester, this context is always populated and
-updated with the following items:
+(the *context*) are available during execution. The context is exposed through a ``step`` variable to the tester,
+and contains the following items:
 
 .. :function:: entered(state_name: str) -> bool
 
@@ -72,18 +72,18 @@ updated with the following items:
    it lead to the execution of a transition.
 
 
-Moreover, the context of a tester also expose the context of the tested statechart through the key ``context``.
+Moreover, the context of a tester also expose the context of the tested statechart through ``step.context``.
 This way, you can define guards (or actions) that rely on the data available in the tested statechart.
 
-For example, the guard in the following transition (in a statechart tester) accesses the ``destination``
-value of its tested statechart context.
+For example, the guard in the following transition (in a statechart tester) checks that ``moving`` is an active state
+in tested statechart's current step, and checks the value of tested statechart's ``destination``:
 
 .. code:: yaml
 
     statemachine:
         # ...
         transitions:
-         - guard: context['destination'] > 0
+         - guard: step.active('moving') and step.context['destination'] > 0
            # ...
 
 

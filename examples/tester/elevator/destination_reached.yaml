@@ -6,18 +6,18 @@ statechart:
       transitions:
         - target: floorSelected
           event: step
-          guard: processed('floorSelected')  # Avoid consumed('floorSelected') here, as it does not imply its processing
+          guard: step.processed('floorSelected')  # Avoid step.consumed('floorSelected') here, as it does not imply its processing
     - name: floorSelected
       transitions:
         - target: destinationReached
           event: step
-          guard: context['current'] == context['destination']
+          guard: step.context['current'] == step.context['destination']
     - name: destinationReached
       transitions:
         - target: final
           event: stop
         - target: floorSelected
           event: step
-          guard: processed('floorSelected')
+          guard: step.processed('floorSelected')
     - name: final
       type: final

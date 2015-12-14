@@ -5,7 +5,7 @@ statechart:
     - name: waiting
       transitions:
         - event: step
-          guard: context['current'] == 7
+          guard: step.context['current'] == 7
           action: |
             assert False, 'Should not go on 7th!'  # We can make assertion in action too!
         - target: ok
