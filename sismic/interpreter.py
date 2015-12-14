@@ -369,7 +369,7 @@ class Interpreter:
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_of(x), x))
                 return MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, model.OrthogonalState):
-                return MicroStep(entered_states=leaf.children)
+                return MicroStep(entered_states=sorted(leaf.children))
             elif isinstance(leaf, model.CompoundState) and leaf.initial:
                 return MicroStep(entered_states=[leaf.initial])
 
