@@ -1,0 +1,54 @@
+statechart:
+  name: Simplified writer. Supported events are keyPress (with key attribute), leave, toggle, toggle_italic, toggle_bold
+  initial: active
+  on entry: |
+    output = []
+  states:
+    - name: active
+      parallel states:
+        - name: listening
+          transitions:
+            - target: listening
+              event: keyPress
+              action: output.append(event.data['key'])
+            - target: finished
+              event: leave
+        - name: options
+          parallel states:
+            - name: bold
+              initial: bold.off
+              states:
+                - name: bold.off
+                  transitions:
+                    - target: bold.on
+                      event: toggle_bold
+                    - target: bold.on
+                      event: toggle
+                - name: bold.on
+                  on entry: output.append('[b]')
+                  on exit: output.append('[/b]')
+                  transitions:
+                    - target: bold.off
+                      event: toggle_bold
+                    - target: bold.off
+                      event: toggle
+            - name: italic
+              initial: italic.off
+              states:
+                - name: italic.off
+                  transitions:
+                    - target: italic.on
+                      event: toggle_italic
+                    - target: italic.on
+                      event: toggle
+                - name: italic.on
+                  on entry: output.append('[i]')
+                  on exit: output.append('[/i]')
+                  transitions:
+                    - target: italic.off
+                      event: toggle_italic
+                    - target: italic.off
+                      event: toggle
+    - name: finished
+      on entry: print(''.join(output))
+      type: final

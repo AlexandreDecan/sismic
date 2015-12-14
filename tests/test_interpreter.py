@@ -331,3 +331,28 @@ class NestedParallelExecutionTests(unittest.TestCase):
         self.assertLess(step.entered_states.index('y'), step.entered_states.index('z'))
 
         self.assertEqual([t.from_state for t in step.transitions], ['k1', 'x', 'y', 'z'])
+
+
+class WriterExecutionTests(unittest.TestCase):
+    def setUp(self):
+        self.sc = io.import_from_yaml(open('examples/concrete/writer_options.yaml'))
+        self.interpreter = Interpreter(self.sc)
+
+    def testOutput(self):
+        scenario = [
+             Event('keyPress', {'key': 'bonjour '}),
+             Event('toggle'),
+             Event('keyPress', {'key': 'a '}),
+             Event('toggle'),
+             Event('toggle_bold'),
+             Event('keyPress', {'key': 'tous !'}),
+             Event('leave')
+        ]
+
+        for event in scenario:
+            self.interpreter.send(event)
+
+        self.interpreter.execute()
+
+        self.assertFalse(self.interpreter.running)
+        self.assertEqual(self.interpreter.evaluator.context['output'], ['bonjour ', '[b]', '[i]', 'a ', '[/b]', '[/i]', '[b]', 'tous !', '[/b]'])
