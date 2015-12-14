@@ -191,37 +191,49 @@ class Interpreter:
 
         :return: a macro step or ``None`` if nothing happened
         """
-        # Try eventless transitions
-        main_steps = self._transition_step(event=None)  # Explicit is better than implicit
 
-        # If there is no eventless transition, and there exists at least one event to process
-        if len(main_steps) == 0 and len(self._events) > 0:
-            event = self._events.popleft()
-            main_steps = self._transition_step(event=event)
+        # Eventless transitions first
+        event = None
+        transitions = self._select_eventless_transitions()
 
-            # If this event can not be processed, discard it
-            if len(main_steps) == 0:
-                main_steps = [MicroStep(event=event)]
+        if len(transitions) == 0:
+            # Consumes event if any
+            if len(self._events) > 0:
+                event = self._events.popleft()  # consumes event
+                transitions = self._select_transitions(event)
+                # If the event can not be processed, discard it
+                if len(transitions) == 0:
+                    return MacroStep([MicroStep(event=event)])
+            else:
+                return None  # No step to do!
 
-        if len(main_steps) > 0:
-            returned_steps = []
-            for step in main_steps:
-                self._execute_step(step)
-                returned_steps.append(step)
+        transitions = self._sort_transitions(transitions)
 
-            return MacroStep(returned_steps + self._stabilize())
-        else:
-            return None
+        # Compute and execute the steps for the transitions
+        steps = self._compute_transitions_steps(event, transitions)
+        for step in steps:
+            self._execute_step(step)
 
-    def _actionable_transitions(self, event: model.Event=None) -> list:
+        # Compute and execute the stabilization steps
+        stabilization_steps = self._stabilize()
+
+        return MacroStep(steps + stabilization_steps)
+
+    def _select_eventless_transitions(self) -> list:
         """
-        Return a list of transitions that can be actioned wrt.
-        the current configuration. The choice follows a inner-first/source-state semantic.
+        Return a list of eventless transitions that can be triggered.
 
-        :param event: Event to considered or None for eventless transitions
-        :return: A (possibly empty) list of ``Transition`` instances
+        :return: a list of ``Transition`` instances
         """
+        return self._select_transitions(None)
 
+    def _select_transitions(self, event: model.Event) -> list:
+        """
+        Return a list of transitions that can be triggered according to the given event.
+
+        :param event: event to consider
+        :return: a list of ``Transition`` instances
+        """
         transitions = []
 
         for leaf in self._statechart.leaf_for(self._configuration):
@@ -242,53 +254,15 @@ class Interpreter:
 
         return transitions
 
-    def _stabilize_step(self) -> MicroStep:
+    def _sort_transitions(self, transitions: list) -> list:
         """
-        Return a stabilization step, ie. a step that lead to a more stable situation
-        for the current statechart (expand to initial state, expand to history state, etc.).
+        Given a list of triggered transitions, return a list of transitions in an order that represents
+        the order in which they have to be processed.
 
-        :return: A ``MicroStep`` instance or ``None`` if this statechart can not be more stabilized
+        :param transitions: a list of ``Transition`` instances
+        :return: an ordered list of ``Transition`` instances
+        :raise Warning: In case of non-determinism or conflicting transitions.
         """
-        # Check if we are in a set of "stable" states
-        leaves = self._statechart.leaf_for(list(self._configuration))
-        for leaf in leaves:
-            leaf = self._statechart.states[leaf]
-            if isinstance(leaf, model.HistoryState):
-                states_to_enter = self._memory.get(leaf.name, [leaf.initial])
-                states_to_enter.sort(key=lambda x: self._statechart.depth_of(x))
-                return MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
-            elif isinstance(leaf, model.OrthogonalState):
-                return MicroStep(entered_states=leaf.children)
-            elif isinstance(leaf, model.CompoundState) and leaf.initial:
-                return MicroStep(entered_states=[leaf.initial])
-
-    def _stabilize(self) -> list:
-        """
-        Compute, apply and return stabilization steps.
-
-        :return: A list of ``MicroStep`` instances
-        """
-        # Stabilization
-        steps = []
-        step = self._stabilize_step()
-        while step:
-            steps.append(step)
-            self._execute_step(step)
-            step = self._stabilize_step()
-        return steps
-
-    def _transition_step(self, event: model.Event=None) -> list:
-        """
-        Return a (possibly empty) list of micro steps. Each micro step corresponds to the process of a transition
-        matching given event. The transitions are ordered by decreasing depth of their source state and, for ties,
-        by the name of their source state.
-
-        :param event: ``Event`` to consider (or None)
-        :return: A list of ``MicroStep`` instances
-        :raise: a Warning in case of non-determinist or conflicting transitions
-        """
-        transitions = self._actionable_transitions(event)
-
         if len(transitions) > 1:
             # If more than one transition, we check (1) they are from separate regions and (2) they do not conflict
             # Two transitions conflict if one of them leaves the parallel state
@@ -301,7 +275,7 @@ class Interpreter:
                 if not isinstance(lca_state, model.OrthogonalState):
                     raise Warning('Non-determinist transitions: {t1} and {t2}' +
                                   '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
-                                  .format(c=self.configuration, e=event, t=transitions, t1=t1, t2=t2))
+                                  .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
 
                 # Check (2)
                 # This check must be done wrt. to LCA, as the combination of from_states could
@@ -316,7 +290,7 @@ class Interpreter:
                     if t.to_state not in [last_before_lca] + self._statechart.descendants_for(last_before_lca):
                         raise Warning('Conflicting transitions: {t1} and {t2}' +
                                       '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
-                                      .format(c=self.configuration, e=event, t=transitions, t1=t1, t2=t2))
+                                      .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
 
             # Define an arbitrary order based on the depth and the name of source states.
             # Sort is **stable** in Python. We should sort by depth desc, then by name asc.
@@ -325,6 +299,17 @@ class Interpreter:
             transitions = sorted(transitions, key=lambda t: self._statechart.depth_of(t.from_state))
             transitions.reverse()
 
+        return transitions
+
+    def _compute_transitions_steps(self, event: model.Event, transitions: list) -> list:
+        """
+        Return a (possibly empty) list of micro steps. Each micro step corresponds to the process of a transition
+        matching given event.
+
+        :param event: the event to consider, if any
+        :param transitions: the transitions that should be processed
+        :return: a list of micro steps.
+        """
         returned_steps = []
         for transition in transitions:
             # Internal transition
@@ -366,6 +351,41 @@ class Interpreter:
             returned_steps.append(MicroStep(event, transition, entered_states, exited_states))
 
         return returned_steps
+
+    def _compute_stabilization_step(self) -> MicroStep:
+        """
+        Return a stabilization step, ie. a step that lead to a more stable situation
+        for the current statechart (expand to initial state, expand to history state, etc.).
+
+        :return: A ``MicroStep`` instance or ``None`` if this statechart can not be more stabilized
+        """
+        # Check if we are in a set of "stable" states
+        leaves = self._statechart.leaf_for(list(self._configuration))
+        for leaf in leaves:
+            leaf = self._statechart.states[leaf]
+            if isinstance(leaf, model.HistoryState):
+                states_to_enter = self._memory.get(leaf.name, [leaf.initial])
+                states_to_enter.sort(key=lambda x: self._statechart.depth_of(x))
+                return MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
+            elif isinstance(leaf, model.OrthogonalState):
+                return MicroStep(entered_states=leaf.children)
+            elif isinstance(leaf, model.CompoundState) and leaf.initial:
+                return MicroStep(entered_states=[leaf.initial])
+
+    def _stabilize(self) -> list:
+        """
+        Compute, apply and return stabilization steps.
+
+        :return: A list of ``MicroStep`` instances
+        """
+        # Stabilization
+        steps = []
+        step = self._compute_stabilization_step()
+        while step:
+            steps.append(step)
+            self._execute_step(step)
+            step = self._compute_stabilization_step()
+        return steps
 
     def _execute_step(self, step: MicroStep):
         """

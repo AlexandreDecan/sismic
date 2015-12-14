@@ -66,7 +66,7 @@ Sismic does not agree with SCXML on the chosen order, and defines that multiple 
 should be processed by decreasing depth of the source state.
 This is perfectly coherent with the inner-first/source-state semantic, as "deeper" transitions are processed
 before "less nested" ones. Ties are broken by lexicographic order of the source states names.
- 
+
 Notice that orthogonal regions should ideally be independent, implying that such situations should not
 arise ("*the designer does not rely on any particular order for event instances to be dispatched
 to the relevant orthogonal regions*", UML specification).
@@ -91,9 +91,9 @@ Consider the following example.
     interpreter.send(Event('click'))  # Send event to the interpreter
     interpreter.execute_once()  # Will process the event if no eventless transitions are found at first
 
-The method :py:meth:`~sismic.interpreter.Interpreted.execute_once` returns information about what happened
+The method :py:meth:`~sismic.interpreter.Interpreter.execute_once` returns information about what happened
 during the execution, including the transitions that were processed, the event that was consumed and the
-sequences of entered and exited states (see :ref:`step`).
+sequences of entered and exited states (see :ref:`steps`).
 
 For convenience, :py:meth:`~sismic.interpreter.Interpreter.send` returns ``self`` and thus can be chained:
 
@@ -208,11 +208,22 @@ Additional (protected) methods
 ******************************
 
 .. automethod:: sismic.interpreter.Interpreter._start
+
+.. automethod:: sismic.interpreter.Interpreter._select_eventless_transitions
+.. automethod:: sismic.interpreter.Interpreter._select_transitions
+.. automethod:: sismic.interpreter.Interpreter._sort_transitions
+.. automethod:: sismic.interpreter.Interpreter._compute_transitions_steps
 .. automethod:: sismic.interpreter.Interpreter._execute_step
-.. automethod:: sismic.interpreter.Interpreter._enabled_transitions
-.. automethod:: sismic.interpreter.Interpreter._transition_step
-.. automethod:: sismic.interpreter.Interpreter._stabilize_step
+.. automethod:: sismic.interpreter.Interpreter._compute_stabilization_step
 .. automethod:: sismic.interpreter.Interpreter._stabilize
+
+
+The :py:class:`~sismic.interpreter.Interpreter.execute_once` mainly calls these methods as follows:
+
+
+.. literalinclude:: ../sismic/interpreter.py
+    :language: python
+    :pyobject: Interpreter.execute_once
 
 
 .. _other_semantics:
@@ -227,7 +238,10 @@ Outer-first/source-state semantic
 
 For example, if you are interested in a outer-first/source-state semantic (instead of the
 inner-first/source-state one that is currently provided), you can subclass :py:class:`~sismic.interpreter.Interpreter`
-and override :py:class:`~sismic.interpreted.Interpreted._enabled_transitions`.
+and override :py:class:`~sismic.interpreter.Interpreted._select_eventless_transitions` and
+:py:class:`~sismic.interpreter.Interpreted._select_transitions`.
+Actually, as the former relies on the second, your changes will only concern the traversal order in
+:py:class:`~sismic.interpreter.Interpreted._select_transitions` method.
 
 
 Internal events have no priority
@@ -248,14 +262,11 @@ Custom way to deal with non-determinism
 
 If you find that the way we deal with non-determinism is too far from other semantics like SCXML or Rhapsody,
 (remember :ref:`semantic`), you can implement your own approach to deal with non-determinism.
-The method :py:meth:`~sismic.interpreter.Interpreter._enabled_transitions` already returns all the transitions that
-can be triggered by an event. This method is actually called by :py:meth:`~sismic.interpreter.Interpreter._transition_step`
-which currently checks that (1) transitions come from distinct parallel regions and that (2) they are not in conflict,
-meaning that one of the transitions does not make the statechart leaves one of the concerned parallel region.
+The method :py:meth:`~sismic.interpreter.Interpreter._sort_transitions` is where the whole job is done:
 
-This method then computes an order in which the transitions should be processed, and the order in which states
-should be exited and entered.
-Your modifications will probably targets this part of the method.
-Ensure that your implementation still returns an appropriate list of ``MicroStep``
-instances where selected transitions, entered states and exited states are ordered according to your needs.
+1. It looks for non-determinism in (non-parallel) transitions,
+2. It looks for conflicting transitions in parallel transitions,
+3. It sorts the kept transitions based on our semantic.
+
+According to your needs, adapt the content of this method.
 
