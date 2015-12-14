@@ -296,11 +296,7 @@ class Interpreter:
                                       .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
 
             # Define an arbitrary order based on the depth and the name of source states.
-            # Sort is **stable** in Python. We should sort by depth desc, then by name asc.
-            # We do it first by name desc, then by depth asc, then we reverse the list.
-            transitions = sorted(transitions, key=lambda t: t.from_state, reverse=True)
-            transitions = sorted(transitions, key=lambda t: self._statechart.depth_of(t.from_state))
-            transitions.reverse()
+            transitions = sorted(transitions, key=lambda t: (-self._statechart.depth_of(t.from_state), t.from_state))
 
         return transitions
 
@@ -364,8 +360,10 @@ class Interpreter:
         """
         # Check if we are in a set of "stable" states
         leaves = self._statechart.leaf_for(list(self._configuration))
+
         for leaf in leaves:
             leaf = self._statechart.states[leaf]
+
             if isinstance(leaf, model.HistoryState):
                 states_to_enter = self._memory.get(leaf.name, [leaf.initial])
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_of(x), x))

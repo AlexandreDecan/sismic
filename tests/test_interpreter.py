@@ -53,11 +53,9 @@ class InternalTests(unittest.TestCase):
     def testInternalBeforeExternal(self):
         self.interpreter.send(Event('not_next'))
         step = self.interpreter.execute_once()
-        print(step.steps)
         self.assertEqual(step.event.name, 'next')
 
         step = self.interpreter.execute_once()
-        print(step.steps)
         self.assertEqual(step.event, None)
         self.assertEqual(step.entered_states, ['s2'])
 
