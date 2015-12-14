@@ -1,0 +1,54 @@
+statechart:
+  name: Statechart to test parallel transitions
+  initial: s1
+  states:
+    - name: s1
+      transitions:
+        - target: s1
+          event: nextA  # should be ignored
+      parallel states:
+        - name: p1
+          initial: initial1
+          transitions:
+            - target: p1
+              event: nextA  # should be ignored
+          states:
+            - name: initial1
+              transitions:
+                - target: a1
+                  event: nextA
+            - name: a1
+              transitions:
+                - target: b1
+                  event: nextB
+                - target: p1
+                  event: reset1
+            - name: b1
+              transitions:
+                - target: c1
+                  event: conflict1  # should conflict
+                - target: c1
+                  event: conflict2  # should conflict
+                - target: p1
+                  event: reset1
+            - name: c1
+        - name: p2
+          initial: initial2
+          states:
+            - name: initial2
+              transitions:
+                - target: a2
+                  event: nextA
+            - name: a2
+              transitions:
+                - target: b2
+                  event: nextB
+            - name: b2
+              transitions:
+                - target: s1
+                  event: conflict1  # should conflict
+                - target: c1
+                  event: conflict2  # should conflict
+                - target: c2
+                  event: reset1
+            - name: c2

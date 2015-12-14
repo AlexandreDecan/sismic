@@ -196,11 +196,138 @@ class InfiniteExecutionTests(unittest.TestCase):
 
     def test_auto_three_steps(self):
         self.interpreter.execute(max_steps=3)
+
         self.assertEqual(self.interpreter.configuration, ['s2'])
         self.assertEqual(self.interpreter._evaluator.context['x'], 2)  # x is incremented in s1.on_entry
 
     def test_auto_stop(self):
         self.interpreter.execute()
+
         self.assertFalse(self.interpreter.running)
         self.assertEqual(self.interpreter._evaluator.context['x'], 100)
 
+
+class ParallelExecutionTests(unittest.TestCase):
+    def setUp(self):
+        self.sc = io.import_from_yaml(open('examples/simple/test_parallel.yaml'))
+        self.interpreter = Interpreter(self.sc)
+
+    def test_concurrent_transitions(self):
+        step = self.interpreter.send(Event('nextA')).execute_once()
+
+        self.assertEqual(self.interpreter.configuration, ['s1', 'p1', 'p2', 'a1', 'a2'])
+        self.assertLess(step.exited_states.index('initial1'), step.exited_states.index('initial2'))
+        self.assertLess(step.entered_states.index('a1'), step.entered_states.index('a2'))
+
+    def test_concurrent_transitions_nested_target(self):
+        self.interpreter.send(Event('nextA')).send(Event('reset1'))
+        self.interpreter.execute()
+
+        self.assertEqual(self.interpreter.configuration, ['s1', 'p1', 'p2', 'a2', 'initial1'])
+
+    def test_unnested_transitions(self):
+        self.interpreter.send(Event('nextA')).send(Event('nextA'))
+        self.interpreter.execute()
+
+        self.assertEqual(self.interpreter.configuration, ['s1', 'p1', 'p2', 'a2', 'initial1'])
+
+    def test_unnested_transitions_2(self):
+        self.interpreter.send(Event('nextA')).send(Event('nextB'))
+        self.interpreter.execute()
+
+        self.assertEqual(self.interpreter.configuration, ['s1', 'p1', 'p2', 'b1', 'b2'])
+
+    def test_conflicting_transitions(self):
+        self.interpreter.send(Event('nextA')).send(Event('nextB')).send(Event('conflict1'))
+        self.interpreter.execute_once()
+        self.interpreter.execute_once()
+
+        with self.assertRaises(Warning):
+            self.interpreter.execute_once()
+
+    def test_conflicting_transitions_2(self):
+        self.interpreter.send(Event('nextA')).send(Event('nextB')).send(Event('conflict2'))
+        self.interpreter.execute_once()
+        self.interpreter.execute_once()
+
+        with self.assertRaises(Warning):
+            self.interpreter.execute_once()
+
+
+class NestedParallelExecutionTests(unittest.TestCase):
+    def setUp(self):
+        self.sc = io.import_from_yaml(open('examples/simple/test_nested_parallel.yaml'))
+        self.interpreter = Interpreter(self.sc)
+        self.common_states = ['s1', 'p1', 'p2', 'r1', 'r2', 'r3', 'r4']
+
+    def test_initial(self):
+        self.assertEqual(self.interpreter.configuration, self.common_states + ['i1', 'i2', 'i3', 'i4'])
+
+    def test_parallel_order(self):
+        self.interpreter.send(Event('next'))
+        step = self.interpreter.execute_once()
+
+        self.assertEqual(self.interpreter.configuration, self.common_states + ['j1', 'j2', 'j3', 'j4'])
+        self.assertEqual(step.exited_states, ['i1', 'i2', 'i3', 'i4'])
+        self.assertEqual(step.entered_states, ['j1', 'j2', 'j3', 'j4'])
+        self.assertEqual([t.from_state for t in step.transitions], ['i1', 'i2', 'i3', 'i4'])
+
+    def test_partial_parallel_order(self):
+        self.interpreter.send(Event('next')).send(Event('click'))
+        self.interpreter.execute_once()
+        step = self.interpreter.execute_once()
+
+        self.assertEqual(self.interpreter.configuration, self.common_states + ['j1', 'j3', 'k2', 'k4'])
+        self.assertEqual(step.exited_states, ['j2', 'j4'])
+        self.assertEqual(step.entered_states, ['k2', 'k4'])
+        self.assertEqual([t.from_state for t in step.transitions], ['j2', 'j4'])
+
+    def test_partial_unnested_transition(self):
+        self.interpreter.send(Event('next')).send(Event('reset'))
+        self.interpreter.execute_once()
+        step = self.interpreter.execute_once()
+
+        self.assertEqual(self.interpreter.configuration, self.common_states + ['i1', 'i2', 'i3', 'i4'])
+        self.assertLess(step.exited_states.index('r2'), step.exited_states.index('r4'))
+        self.assertLess(step.exited_states.index('p1'), step.exited_states.index('p2'))
+        self.assertLess(step.exited_states.index('r2'), step.exited_states.index('p1'))
+        self.assertLess(step.exited_states.index('r4'), step.exited_states.index('p2'))
+        self.assertLess(step.entered_states.index('p1'), step.entered_states.index('p2'))
+        self.assertLess(step.entered_states.index('p1'), step.entered_states.index('r1'))
+        self.assertLess(step.entered_states.index('p1'), step.entered_states.index('r2'))
+        self.assertLess(step.entered_states.index('r1'), step.entered_states.index('p2'))
+        self.assertLess(step.entered_states.index('r2'), step.entered_states.index('p2'))
+        self.assertLess(step.entered_states.index('p2'), step.entered_states.index('r3'))
+        self.assertLess(step.entered_states.index('p2'), step.entered_states.index('r4'))
+        self.assertEqual([t.from_state for t in step.transitions], ['r2', 'r4'])
+
+    def test_name_order(self):
+        self.interpreter.send(Event('next')).send(Event('click')).send(Event('next')).send(Event('next'))
+        self.interpreter.execute_once()
+        self.interpreter.execute_once()
+        self.interpreter.execute_once()
+
+        self.assertEqual(self.interpreter.configuration, self.common_states + ['k1', 'k3', 'x', 'y'])
+
+        step = self.interpreter.execute_once()
+        self.assertLess(step.exited_states.index('k1'), step.exited_states.index('k3'))
+        self.assertLess(step.exited_states.index('k3'), step.exited_states.index('x'))
+        self.assertLess(step.exited_states.index('x'), step.exited_states.index('y'))
+        self.assertEqual(self.interpreter.configuration, self.common_states + ['k1', 'x', 'y', 'z'])
+        self.assertLess(step.entered_states.index('k1'), step.entered_states.index('z'))
+        self.assertLess(step.entered_states.index('z'), step.entered_states.index('x'))
+        self.assertLess(step.entered_states.index('x'), step.entered_states.index('y'))
+
+        self.assertEqual([t.from_state for t in step.transitions], ['k1', 'k3', 'x', 'y'])
+
+        step = self.interpreter.send(Event('next')).execute_once()
+
+        self.assertLess(step.exited_states.index('k1'), step.exited_states.index('x'))
+        self.assertLess(step.exited_states.index('x'), step.exited_states.index('y'))
+        self.assertLess(step.exited_states.index('y'), step.exited_states.index('z'))
+        self.assertEqual(self.interpreter.configuration, self.common_states + ['k1', 'x', 'y', 'z'])
+        self.assertLess(step.entered_states.index('k1'), step.entered_states.index('x'))
+        self.assertLess(step.entered_states.index('x'), step.entered_states.index('y'))
+        self.assertLess(step.entered_states.index('y'), step.entered_states.index('z'))
+
+        self.assertEqual([t.from_state for t in step.transitions], ['k1', 'x', 'y', 'z'])

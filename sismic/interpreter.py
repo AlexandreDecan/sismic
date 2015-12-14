@@ -98,9 +98,10 @@ class Interpreter:
     @property
     def configuration(self) -> list:
         """
-        List of active states names, ordered by depth.
+        List of active states names, ordered by depth. Ties are broken according to the lexicographic order
+        on the state name.
         """
-        return sorted(self._configuration, key=lambda s: self._statechart.depth_of(s))
+        return sorted(self._configuration, key=lambda s: (self._statechart.depth_of(s), s))
 
     @property
     def evaluator(self) -> Evaluator:
@@ -210,14 +211,14 @@ class Interpreter:
         transitions = self._sort_transitions(transitions)
 
         # Compute and execute the steps for the transitions
+        returned_steps = []
         steps = self._compute_transitions_steps(event, transitions)
         for step in steps:
             self._execute_step(step)
+            returned_steps.append(step)
+            returned_steps += self._stabilize()
 
-        # Compute and execute the stabilization steps
-        stabilization_steps = self._stabilize()
-
-        return MacroStep(steps + stabilization_steps)
+        return MacroStep(returned_steps)
 
     def _select_eventless_transitions(self) -> list:
         """
@@ -230,29 +231,29 @@ class Interpreter:
     def _select_transitions(self, event: model.Event) -> list:
         """
         Return a list of transitions that can be triggered according to the given event.
-
+        Transitions are kept according to a inner-first/source-state semantic.
         :param event: event to consider
         :return: a list of ``Transition`` instances
         """
-        transitions = []
+        transitions = set()
 
-        for leaf in self._statechart.leaf_for(self._configuration):
-            for leaf_ancestor in [leaf] + self._statechart.ancestors_for(leaf):
-                transition_found = False
-                for transition in getattr(self._statechart.states[leaf_ancestor], 'transitions', []):
-                    if transition.event != event or transition.from_state not in self._configuration:
-                        continue
-                    if transition.guard is None or self._evaluator.evaluate_condition(transition.guard, event):
-                        transition_found = True
-                        # Prevent duplicate
-                        if transition not in transitions:
-                            transitions.append(transition)
+        # Retrieve the firable transitions for all active state
+        for transition in self._statechart.transitions:
+            if transition.event == event and \
+                transition.from_state in self._configuration and \
+                    (transition.guard is None or self._evaluator.evaluate_condition(transition.guard, event)):
+                transitions.add(transition)
 
-                # Do not consider current's parent if we already have a transition!
-                if transition_found:
+        # inner-first/source-state
+        removed_transitions = set()
+        for transition in transitions:
+            source_state_descendants = self._statechart.descendants_for(transition.from_state)
+            for other_transition in transitions:
+                if other_transition.from_state in source_state_descendants:
+                    removed_transitions.add(transition)
                     break
 
-        return transitions
+        return transitions.difference(removed_transitions)
 
     def _sort_transitions(self, transitions: list) -> list:
         """
@@ -273,7 +274,7 @@ class Interpreter:
 
                 # Their LCA must be an orthogonal state!
                 if not isinstance(lca_state, model.OrthogonalState):
-                    raise Warning('Non-determinist transitions: {t1} and {t2}' +
+                    raise Warning('Non-determinist transitions: {t1} and {t2}'
                                   '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
                                   .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
 
@@ -288,7 +289,7 @@ class Interpreter:
                         last_before_lca = state
                     # Target must be a descendant (or self) of this state
                     if t.to_state not in [last_before_lca] + self._statechart.descendants_for(last_before_lca):
-                        raise Warning('Conflicting transitions: {t1} and {t2}' +
+                        raise Warning('Conflicting transitions: {t1} and {t2}'
                                       '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
                                       .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
 
@@ -365,7 +366,7 @@ class Interpreter:
             leaf = self._statechart.states[leaf]
             if isinstance(leaf, model.HistoryState):
                 states_to_enter = self._memory.get(leaf.name, [leaf.initial])
-                states_to_enter.sort(key=lambda x: self._statechart.depth_of(x))
+                states_to_enter.sort(key=lambda x: (self._statechart.depth_of(x), x))
                 return MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, model.OrthogonalState):
                 return MicroStep(entered_states=leaf.children)

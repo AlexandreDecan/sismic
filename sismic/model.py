@@ -79,6 +79,8 @@ class Transition(object):
         event = '+' + self.event.name if self.event else ''
         return self.from_state + event + ' -> ' + to_state
 
+    def __hash__(self):
+        return id(self)
 
 class StateMixin:
     """

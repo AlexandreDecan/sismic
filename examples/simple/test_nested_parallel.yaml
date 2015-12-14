@@ -1,0 +1,88 @@
+statechart:
+  name: Statechart to test nested parallel transitions
+  initial: s1
+  states:
+    - name: s1
+      parallel states:
+        - name: p1
+          parallel states:
+            - name: r1
+              initial: i1
+              states:
+                - name: i1
+                  transitions:
+                    - target: j1
+                      event: next
+                - name: j1
+                  transitions:
+                    - target: k1
+                      event: next
+                - name: k1
+                  transitions:
+                    - target: k1
+                      event: next
+            - name: r2
+              initial: i2
+              transitions:
+                - target: p1
+                  event: reset
+              states:
+                - name: i2
+                  transitions:
+                    - target: j2
+                      event: next
+                - name: j2
+                  transitions:
+                    - target: k2
+                      event: click
+                - name: k2
+                  transitions:
+                    - target: y
+                      event: next
+                - name: y
+                  transitions:
+                    - target: y
+                      event: next
+        - name: p2
+          parallel states:
+            - name: r3
+              initial: i3
+              states:
+                - name: i3
+                  transitions:
+                    - target: j3
+                      event: next
+                - name: j3
+                  transitions:
+                    - target: k3
+                      event: next
+                - name: k3
+                  transitions:
+                    - target: z
+                      event: next
+                - name: z
+                  transitions:
+                    - target: z
+                      event: next
+            - name: r4
+              initial: i4
+              transitions:
+                - target: p2
+                  event: reset
+              states:
+                - name: i4
+                  transitions:
+                    - target: j4
+                      event: next
+                - name: j4
+                  transitions:
+                    - target: k4
+                      event: click
+                - name: k4
+                  transitions:
+                    - target: x
+                      event: next
+                - name: x
+                  transitions:
+                    - target: x
+                      event: next
