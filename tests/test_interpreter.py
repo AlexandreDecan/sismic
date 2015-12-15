@@ -427,6 +427,19 @@ class ElevatorContractTests(unittest.TestCase):
         with self.assertRaises(PostconditionFailed):
             self.interpreter.execute()
 
+    def test_statechart_precondition(self):
+        self.sc.preconditions.append('False')
+        with self.assertRaises(PreconditionFailed):
+            self.interpreter = Interpreter(self.sc)
+
+    def test_statechart_postcondition(self):
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
+        sc.postconditions.append('False')
+        interpreter = Interpreter(sc)
+        interpreter.send(Event('goto s2')).send(Event('goto final'))
+        with self.assertRaises(PostconditionFailed):
+            interpreter.execute()
+
     def test_statechart_invariant(self):
         self.sc.invariants.append('False')
         self.interpreter.send(Event('floorSelected', {'floor': 4}))

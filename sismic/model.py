@@ -110,13 +110,14 @@ class Event:
             return self.name
 
 
-class ConditionsMixin:
+class ContractMixin:
     """
-    Mixin with a list of preconditions and a list of postconditions.
+    Mixin with a contract: preconditions, postconditions and invariants.
     """
     def __init__(self):
         self._preconditions = []
         self._postconditions = []
+        self._invariants = []
 
     @property
     def preconditions(self):
@@ -131,14 +132,6 @@ class ConditionsMixin:
         A list of postconditions (str).
         """
         return self._postconditions
-
-
-class InvariantsMixin:
-    """
-    Mixin with a list of invariants
-    """
-    def __init__(self):
-        self._invariants = []
 
     @property
     def invariants(self):
@@ -213,7 +206,7 @@ class CompositeStateMixin:
         return self._children
 
 
-class BasicState(ConditionsMixin, InvariantsMixin, StateMixin, TransitionStateMixin, ActionStateMixin):
+class BasicState(ContractMixin, StateMixin, TransitionStateMixin, ActionStateMixin):
     """
     A basic state, with a name, transitions, actions, etc. but no child state.
 
@@ -222,14 +215,13 @@ class BasicState(ConditionsMixin, InvariantsMixin, StateMixin, TransitionStateMi
     :param on_exit: code to execute when state is exited
     """
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
-        ConditionsMixin.__init__(self)
-        InvariantsMixin.__init__(self)
+        ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
 
 
-class CompoundState(ConditionsMixin, InvariantsMixin, StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
+class CompoundState(ContractMixin, StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
     """
     Compound states must have children states.
 
@@ -239,8 +231,7 @@ class CompoundState(ConditionsMixin, InvariantsMixin, StateMixin, TransitionStat
     :param on_exit: code to execute when state is exited
     """
     def __init__(self, name: str, initial: str=None, on_entry: str=None, on_exit: str=None):
-        ConditionsMixin.__init__(self)
-        InvariantsMixin.__init__(self)
+        ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
@@ -248,7 +239,7 @@ class CompoundState(ConditionsMixin, InvariantsMixin, StateMixin, TransitionStat
         self.initial = initial
 
 
-class OrthogonalState(ConditionsMixin, InvariantsMixin, StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
+class OrthogonalState(ContractMixin, StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
     """
     Orthogonal states run their children simultaneously.
 
@@ -257,15 +248,14 @@ class OrthogonalState(ConditionsMixin, InvariantsMixin, StateMixin, TransitionSt
     :param on_exit: code to execute when state is exited
     """
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
-        ConditionsMixin.__init__(self)
-        InvariantsMixin.__init__(self)
+        ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
         CompositeStateMixin.__init__(self)
 
 
-class HistoryState(ConditionsMixin, InvariantsMixin, StateMixin):
+class HistoryState(ContractMixin, StateMixin):
     """
     History state can be either 'shallow' (default) or 'deep'.
     A shallow history state resumes the execution of its parent.
@@ -278,15 +268,14 @@ class HistoryState(ConditionsMixin, InvariantsMixin, StateMixin):
     """
 
     def __init__(self, name: str, initial: str=None, deep: bool=False):
-        ConditionsMixin.__init__(self)
-        InvariantsMixin.__init__(self)
+        ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         self.name = name
         self.initial = initial
         self.deep = deep
 
 
-class FinalState(ConditionsMixin, InvariantsMixin, StateMixin, ActionStateMixin):
+class FinalState(ContractMixin, StateMixin, ActionStateMixin):
     """
     Final state has NO transition and is used to detect state machine termination.
 
@@ -296,13 +285,12 @@ class FinalState(ConditionsMixin, InvariantsMixin, StateMixin, ActionStateMixin)
     """
 
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
-        ConditionsMixin.__init__(self)
-        InvariantsMixin.__init__(self)
+        ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
 
 
-class Transition(ConditionsMixin):
+class Transition(ContractMixin):
     """
     A Transition between two states.
     Transition can be eventless or internal (but not both at once).
@@ -317,7 +305,7 @@ class Transition(ConditionsMixin):
 
     def __init__(self, from_state: str, to_state: str=None, event: Event=None, guard: str=None,
                  action: str=None):
-        ConditionsMixin.__init__(self)
+        ContractMixin.__init__(self)
         self.from_state = from_state
         self.to_state = to_state
         self.event = event
@@ -356,7 +344,7 @@ class Transition(ConditionsMixin):
         return id(self)
 
 
-class StateChart(InvariantsMixin, StateMixin, ActionStateMixin, CompositeStateMixin):
+class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixin):
     """
     Python structure for a statechart
 
@@ -365,7 +353,7 @@ class StateChart(InvariantsMixin, StateMixin, ActionStateMixin, CompositeStateMi
     :param on_entry: Code to execute when this statechart is initialized for execution
     """
     def __init__(self, name: str, initial: str, on_entry: str=None):
-        InvariantsMixin.__init__(self)
+        ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, None)
         CompositeStateMixin.__init__(self)

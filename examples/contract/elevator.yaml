@@ -19,6 +19,7 @@ statechart:
 
     doors = Doors()
   contract:
+    - pre: current == 0
     - inv: current >= 0  # Floor must be valid
   states:
     - name: active

@@ -138,6 +138,12 @@ class Interpreter:
         if self._statechart.on_entry:
             self._evaluator.execute_action(self._statechart.on_entry)
 
+        # Check statechart preconditions
+        for condition in self._statechart.preconditions:
+            if not self._evaluator.evaluate_condition(condition):
+                raise model.PreconditionFailed(obj=self._statechart, assertion=condition,
+                                               context=self._evaluator.context)
+
         # Initial step and stabilization
         step = MicroStep(entered_states=[self._statechart.initial])
         self._execute_step(step)
@@ -234,6 +240,14 @@ class Interpreter:
                 if not self._evaluator.evaluate_condition(condition):
                     raise model.InvariantFailed(configuration=self.configuration, step=macro_step, obj=state,
                                                 assertion=condition, context=self._evaluator.context)
+
+        # Check statechart postconditions if statechart is not running
+        if not self.running:
+            for condition in self._statechart.postconditions:
+                if not self._evaluator.evaluate_condition(condition):
+                    raise model.PostconditionFailed(configuration=self.configuration, step=macro_step,
+                                                    obj=self._statechart, assertion=condition,
+                                                    context=self._evaluator.context)
 
         return macro_step
 
@@ -456,18 +470,23 @@ class Interpreter:
 
         # Execute transition
         if step.transition and step.transition.action:
-            # Preconditions
-            for condition in step.transition.preconditions:
-                if not self._evaluator.evaluate_condition(condition, step.event):
-                    raise model.PreconditionFailed(configuration=self.configuration, step=step, obj=step.transition,
+            # Preconditions and invariants
+            for (conditions, exception) in [(step.transition.preconditions, model.PreconditionFailed),
+                                            (step.transition.invariants, model.InvariantFailed)]:
+                for condition in conditions:
+                    if not self._evaluator.evaluate_condition(condition, step.event):
+                        raise exception(configuration=self.configuration, step=step, obj=step.transition,
                                                    assertion=condition, context=self._evaluator.context)
             # Execution
             self._evaluator.execute_action(step.transition.action, step.event)
-            # Postconditions
-            for condition in step.transition.postconditions:
-                if not self._evaluator.evaluate_condition(condition, step.event):
-                    raise model.PostconditionFailed(configuration=self.configuration, step=step, obj=step.transition,
-                                                    assertion=condition, context=self._evaluator.context)
+
+            # Postconditions and invariants
+            for (conditions, exception) in [(step.transition.postconditions, model.PostconditionFailed),
+                                            (step.transition.invariants, model.InvariantFailed)]:
+                for condition in conditions:
+                    if not self._evaluator.evaluate_condition(condition, step.event):
+                        raise exception(configuration=self.configuration, step=step, obj=step.transition,
+                                                   assertion=condition, context=self._evaluator.context)
 
         # Enter states
         for state in entered_states:
