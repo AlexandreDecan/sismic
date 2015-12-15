@@ -178,8 +178,16 @@ class ActionStateMixin:
     :param on_exit: code to execute when state is exited
     """
     def __init__(self, on_entry: str=None, on_exit: str=None):
-        self.on_entry = on_entry
-        self.on_exit = on_exit
+        self._on_entry = on_entry
+        self._on_exit = on_exit
+
+    @property
+    def on_entry(self):
+        return self._on_entry
+
+    @property
+    def on_exit(self):
+        return self._on_exit
 
 
 class TransitionStateMixin:
@@ -188,13 +196,11 @@ class TransitionStateMixin:
     """
 
     def __init__(self):
-        self.transitions = []
+        self._transitions = []
 
-    def add_transition(self, transition):
-        """
-        :param transition: an instance of Transition
-        """
-        self.transitions.append(transition)
+    @property
+    def transitions(self):
+        return self._transitions
 
 
 class CompositeStateMixin:
@@ -202,10 +208,11 @@ class CompositeStateMixin:
     Composite state can have children states.
     """
     def __init__(self):
-        self.children = []
+        self._children = []
 
-    def add_child(self, state_name):
-        self.children.append(state_name)
+    @property
+    def children(self):
+        return self._children
 
 
 class BasicState(StateMixin, TransitionStateMixin, ActionStateMixin):
@@ -372,7 +379,7 @@ class StateChart(object):
         # Register on parent state
         parent_state = self._states.get(self._parent[state.name], None)
         if parent_state is not None:
-            self._states[self._parent[state.name]].add_child(state.name)
+            self._states[self._parent[state.name]].children.append(state.name)
         else:
             # ... or on top-level state (self!)
             self.children.append(state.name)
@@ -384,7 +391,7 @@ class StateChart(object):
         :param transition: transition to add
         """
         self.transitions.append(transition)
-        self._states[transition.from_state].add_transition(transition)
+        self._states[transition.from_state].transitions.append(transition)
 
     @property
     def states(self):

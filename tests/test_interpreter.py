@@ -4,6 +4,8 @@ from sismic.interpreter import Interpreter
 from sismic.evaluator import DummyEvaluator
 from sismic.model import Event
 
+from sismic.model import ConditionFailed, PreconditionFailed, PostconditionFailed, InvariantFailed
+
 
 class SimulatorSimpleTest(unittest.TestCase):
     def test_init(self):
@@ -365,7 +367,7 @@ class WriterExecutionTests(unittest.TestCase):
         self.sc = io.import_from_yaml(open('examples/concrete/writer_options.yaml'))
         self.interpreter = Interpreter(self.sc)
 
-    def testOutput(self):
+    def test_output(self):
         scenario = [
              Event('keyPress', {'key': 'bonjour '}),
              Event('toggle'),
@@ -383,3 +385,45 @@ class WriterExecutionTests(unittest.TestCase):
 
         self.assertFalse(self.interpreter.running)
         self.assertEqual(self.interpreter.evaluator.context['output'], ['bonjour ', '[b]', '[i]', 'a ', '[/b]', '[/i]', '[b]', 'tous !', '[/b]'])
+
+
+class ElevatorContractTests(unittest.TestCase):
+    def setUp(self):
+        self.sc = io.import_from_yaml(open('examples/contract/elevator.yaml'))
+        self.interpreter = Interpreter(self.sc)
+
+    def test_no_error(self):
+        self.interpreter.send(Event('floorSelected', {'floor': 4}))
+        self.interpreter.execute()
+        self.assertTrue(self.interpreter.running)
+
+    def test_state_precondition(self):
+        self.sc.states['movingUp'].preconditions.append('False')
+        self.interpreter.send(Event('floorSelected', {'floor': 4}))
+        with self.assertRaises(PreconditionFailed):
+            self.interpreter.execute()
+
+    def test_state_postcondition(self):
+        self.sc.states['movingUp'].postconditions.append('False')
+        self.interpreter.send(Event('floorSelected', {'floor': 4}))
+        with self.assertRaises(PostconditionFailed):
+            self.interpreter.execute()
+
+    def test_state_invariant(self):
+        self.sc.states['movingUp'].invariants.append('False')
+        self.interpreter.send(Event('floorSelected', {'floor': 4}))
+        with self.assertRaises(InvariantFailed):
+            self.interpreter.execute()
+
+    def test_transition_precondition(self):
+        self.sc.states['floorSelecting'].transitions[0].preconditions.append('False')
+        self.interpreter.send(Event('floorSelected', {'floor': 4}))
+        with self.assertRaises(PreconditionFailed):
+            self.interpreter.execute()
+
+    def test_transition_postcondition(self):
+        self.sc.states['floorSelecting'].transitions[0].postconditions.append('False')
+        self.interpreter.send(Event('floorSelected', {'floor': 4}))
+        with self.assertRaises(PostconditionFailed):
+            self.interpreter.execute()
+

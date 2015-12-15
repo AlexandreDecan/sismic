@@ -1,6 +1,6 @@
 import unittest
 from sismic import io
-from sismic.model import Event
+from sismic.model import Event, ConditionFailed
 from sismic.checker import TesterConfiguration
 
 
@@ -31,6 +31,6 @@ class ElevatorTests(unittest.TestCase):
     def test_never_go_underground(self):
         self.tester.add_test(self.tests['never_go_7th_floor'])
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ConditionFailed):
             with self.tester.build_tester(self.scenarios['7th floor']) as tester:
                 tester.execute()
