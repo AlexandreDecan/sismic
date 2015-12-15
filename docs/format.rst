@@ -233,10 +233,11 @@ The following sections detail the Python structure of a statechart.
 
 
 The module :py:mod:`sismic.model` contains several classes and mixins to define
-states, transitions and events. Apart from internal mixin classes, it defines:
+states, transitions and events. Apart from the mixin classes, it defines:
 
 .. automodule:: sismic.model
     :members: Event, Transition, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState, StateChart
     :member-order: bysource
 
 Consider the source of :py:mod:`sismic.io` as an example of how to construct a statechart using :py:mod:`sismic.model`.
+

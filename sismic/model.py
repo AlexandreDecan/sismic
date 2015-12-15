@@ -148,7 +148,7 @@ class InvariantsMixin:
         return self._invariants
 
 
-class StateMixin(ConditionsMixin, InvariantsMixin):
+class StateMixin:
     """
     State element with a name.
 
@@ -156,8 +156,6 @@ class StateMixin(ConditionsMixin, InvariantsMixin):
     """
 
     def __init__(self, name: str):
-        ConditionsMixin.__init__(self)
-        InvariantsMixin.__init__(self)
         self.name = name
 
     def __repr__(self):
@@ -215,7 +213,7 @@ class CompositeStateMixin:
         return self._children
 
 
-class BasicState(StateMixin, TransitionStateMixin, ActionStateMixin):
+class BasicState(ConditionsMixin, InvariantsMixin, StateMixin, TransitionStateMixin, ActionStateMixin):
     """
     A basic state, with a name, transitions, actions, etc. but no child state.
 
@@ -224,12 +222,14 @@ class BasicState(StateMixin, TransitionStateMixin, ActionStateMixin):
     :param on_exit: code to execute when state is exited
     """
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
+        ConditionsMixin.__init__(self)
+        InvariantsMixin.__init__(self)
         StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
 
 
-class CompoundState(StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
+class CompoundState(ConditionsMixin, InvariantsMixin, StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
     """
     Compound states must have children states.
 
@@ -239,6 +239,8 @@ class CompoundState(StateMixin, TransitionStateMixin, ActionStateMixin, Composit
     :param on_exit: code to execute when state is exited
     """
     def __init__(self, name: str, initial: str=None, on_entry: str=None, on_exit: str=None):
+        ConditionsMixin.__init__(self)
+        InvariantsMixin.__init__(self)
         StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
@@ -246,7 +248,7 @@ class CompoundState(StateMixin, TransitionStateMixin, ActionStateMixin, Composit
         self.initial = initial
 
 
-class OrthogonalState(StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
+class OrthogonalState(ConditionsMixin, InvariantsMixin, StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
     """
     Orthogonal states run their children simultaneously.
 
@@ -255,13 +257,15 @@ class OrthogonalState(StateMixin, TransitionStateMixin, ActionStateMixin, Compos
     :param on_exit: code to execute when state is exited
     """
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
+        ConditionsMixin.__init__(self)
+        InvariantsMixin.__init__(self)
         StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
         CompositeStateMixin.__init__(self)
 
 
-class HistoryState(StateMixin):
+class HistoryState(ConditionsMixin, InvariantsMixin, StateMixin):
     """
     History state can be either 'shallow' (default) or 'deep'.
     A shallow history state resumes the execution of its parent.
@@ -274,13 +278,15 @@ class HistoryState(StateMixin):
     """
 
     def __init__(self, name: str, initial: str=None, deep: bool=False):
+        ConditionsMixin.__init__(self)
+        InvariantsMixin.__init__(self)
         StateMixin.__init__(self, name)
         self.name = name
         self.initial = initial
         self.deep = deep
 
 
-class FinalState(StateMixin, ActionStateMixin):
+class FinalState(ConditionsMixin, InvariantsMixin, StateMixin, ActionStateMixin):
     """
     Final state has NO transition and is used to detect state machine termination.
 
@@ -290,6 +296,8 @@ class FinalState(StateMixin, ActionStateMixin):
     """
 
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
+        ConditionsMixin.__init__(self)
+        InvariantsMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
 
@@ -348,7 +356,7 @@ class Transition(ConditionsMixin):
         return id(self)
 
 
-class StateChart(InvariantsMixin):
+class StateChart(InvariantsMixin, StateMixin, ActionStateMixin, CompositeStateMixin):
     """
     Python structure for a statechart
 
@@ -357,14 +365,15 @@ class StateChart(InvariantsMixin):
     :param on_entry: Code to execute when this statechart is initialized for execution
     """
     def __init__(self, name: str, initial: str, on_entry: str=None):
-        super().__init__()
-        self.name = name
+        InvariantsMixin.__init__(self)
+        StateMixin.__init__(self, name)
+        ActionStateMixin.__init__(self, on_entry, None)
+        CompositeStateMixin.__init__(self)
+
         self.initial = initial
-        self.on_entry = on_entry
         self._states = {}  # name -> State object
         self._parent = {}  # name -> parent.name
         self.transitions = []  # list of Transition objects
-        self.children = []
 
     def register_state(self, state: StateMixin, parent: str):
         """

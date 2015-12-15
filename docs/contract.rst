@@ -35,6 +35,9 @@ The three exceptions inherit from the following subclass of ``AssertionError``:
 
 The semantic of pre/postconditions and invariants is not surprising:
 
+ - For statecharts:
+    - the invariants are checked at the end of each macro step.
+    - preconditions and postconditions cannot be defined
  - For states:
     - the preconditions are checked before the state is entered (and before executing ``on entry``).
     - the postconditions are checked after the state is exited (and after executing ``on exit``).
@@ -42,8 +45,7 @@ The semantic of pre/postconditions and invariants is not surprising:
  - For transitions:
     - the preconditions are checked before the process of the transition (and before executing transition action).
     - the postconditions are checked after the process of the transition (and after executing transition action).
- - For statecharts:
-    - the invariants are checked at the end of each macro step.
+    - invariants cannot be defined
 
 
 Defining contracts in YAML
@@ -108,9 +110,13 @@ Defining contracts in Python
 
 The class :py:class:`~sismic.model.Transition` inherits from :py:class:`~sismic.model.ConditionsMixin`
 which makes available two lists of strings, namely ``preconditions`` and ``postconditions``.
-Similarly, every subclass of :py:class:`~sismic.model.StateMixin` inherits from :py:class:`~sismic.model.ConditionsMixin`
-and from :py:class:`~sismic.model.InvariantsMixin`.
-The later adds a ``invariants`` list of strings representing the conditions.
+
+The class :py:class:`~sismic.model.StateChart` inherits from :py:class:`~sismic.model.InvariantsMixin`.
+This mixin adds an ``invariants`` list of strings representing the conditions.
+
+Each class that represent a state or a pseudo-state inherits from both :py:class:`~sismic.model.ConditionsMixin`
+and :py:class:`~sismic.model.InvariantsMixin`.
+
 
 .. autoclass:: sismic.model.ConditionsMixin
     :members:
