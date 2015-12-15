@@ -13,6 +13,7 @@ For example, they support hierarchical composition of states, orthogonal regions
 to express parallel execution, guarded transitions, and actions on transitions or states. Different flavours of
 executable semantics for statecharts have been proposed in the literature and in existing tools.
 
+.. _yaml_statecharts`:
 
 Defining statecharts in YAML
 ----------------------------

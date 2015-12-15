@@ -218,13 +218,10 @@ These methods can be easily overridden or combined to define other semantics.
 .. automethod:: sismic.interpreter.Interpreter._compute_stabilization_step
 .. automethod:: sismic.interpreter.Interpreter._stabilize
 
+These methods are called directly (or not) by :py:class:`~sismic.interpreter.Interpreter.execute_once`.
+Consider looking at the source of :py:class:`~sismic.interpreter.Interpreter.execute_once` to understand
+how these methods are related and organized.
 
-The :py:class:`~sismic.interpreter.Interpreter.execute_once` mainly calls these methods as follows:
-
-
-.. literalinclude:: ../sismic/interpreter.py
-    :language: python
-    :pyobject: Interpreter.execute_once
 
 
 Example: Outer-first/source-state semantic

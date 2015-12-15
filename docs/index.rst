@@ -52,6 +52,7 @@ Contents
     format
     execution
     evaluation
+    contract
     testing
     cli
 

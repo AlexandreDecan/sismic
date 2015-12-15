@@ -225,7 +225,7 @@ A test mainly executes the tested statechart, step by step, and sends specific e
 The tester are then executed (using the :py:meth:`~sismic.interpreter.Interpreter.execute` method of the interpreter).
 
 A test is considered as a success if the call to :py:meth:`~sismic.checker.StateChartTester.execute` ends, and
-no ``AssertionError`` was raised.
+no :py:exc:`~sismic.model.ConditionFailed` (subclasses ``AssertionError``) was raised.
 
 Depending on the underlying interpreter (but this at least concerns the default one!), the execution of a statechart
 can be infinite. As for interpreter's :py:meth:`~sismic.interpreter.Interpreter.execute`, you can specify a
@@ -249,7 +249,7 @@ for you. This context manager can be used as follows:
 
 
 A test fails when one of ``execute`` or ``stop`` (called implicitly by the context manager) raises
-an ``AssertionError``.
+a :py:exc:`~sismic.model.ConditionFailed`.
 
 Integrating with *unittest*
 ---------------------------

@@ -1,6 +1,30 @@
 from functools import lru_cache
 
 
+class ConditionFailed(AssertionError):
+    @classmethod
+    def from_step(cls, configuration=None, step=None, obj=None, condition=None):
+        configuration = ', '.join(configuration) if configuration else 'unknown'
+        step = step if step else 'unknown'
+        obj = obj if obj else 'unknown'
+        condition = condition if condition else 'unknown'
+
+        message = 'Assertion not satisfied!\nObject: {object}\nCondition: {condition}\nConfiguration: {conf}\nStep: {step}'
+        return cls(message.format(object=obj, condition=condition, conf=configuration, step=step))
+
+
+class PreconditionFailed(ConditionFailed):
+    pass
+
+
+class PostconditionFailed(ConditionFailed):
+    pass
+
+
+class InvariantFailed(ConditionFailed):
+    pass
+
+
 class Event:
     """
     Simple event with a name and (optionally) some data.
@@ -31,58 +55,36 @@ class Event:
             return self.name
 
 
-class Transition(object):
+class ConditionsMixin:
     """
-    A Transition between two states.
-    Transition can be eventless or internal (but not both at once).
-    A condition (code as string) can be specified as a guard.
-
-    :param from_state: name of the source state
-    :param to_state: name of the target state (if transition is not internal)
-    :param event: event (if any)
-    :param guard: condition as code (if any)
-    :param action: action as code (if any)
+    Mixin with a list of preconditions and a list of postconditions.
     """
-
-    def __init__(self, from_state: str, to_state: str=None, event: Event=None, guard: str=None, action: str=None):
-        self.from_state = from_state
-        self.to_state = to_state
-        self.event = event
-        self.guard = guard
-        self.action = action
+    def __init__(self):
+        self._preconditions = []
+        self._postconditions = []
 
     @property
-    def internal(self):
-        """
-        Boolean indicating whether this transition is an internal transition.
-        """
-        return self.to_state is None
+    def preconditions(self):
+        return self._preconditions
 
     @property
-    def eventless(self):
-        """
-        Boolean indicating whether this transition is an eventless transition.
-        """
-        return self.event is None
+    def postconditions(self):
+        return self._postconditions
 
-    def __eq__(self, other):
-        return (isinstance(other, Transition) and
-                self.from_state == other.from_state and
-                self.to_state == other.to_state and
-                self.event == other.event)
 
-    def __repr__(self):
-        return 'Transition({0}, {2}, {1})'.format(self.from_state, self.to_state, self.event)
+class InvariantsMixin:
+    """
+    Mixin with a list of invariants
+    """
+    def __init__(self):
+        self._invariants = []
 
-    def __str__(self):
-        to_state = self.to_state if self.to_state else '['+self.from_state+']'
-        event = '+' + self.event.name if self.event else ''
-        return self.from_state + event + ' -> ' + to_state
+    @property
+    def invariants(self):
+        return self._invariants
 
-    def __hash__(self):
-        return id(self)
 
-class StateMixin:
+class StateMixin(ConditionsMixin, InvariantsMixin):
     """
     State element with a name.
 
@@ -90,6 +92,8 @@ class StateMixin:
     """
 
     def __init__(self, name: str):
+        ConditionsMixin.__init__(self)
+        InvariantsMixin.__init__(self)
         self.name = name
 
     def __repr__(self):
@@ -217,6 +221,60 @@ class FinalState(StateMixin, ActionStateMixin):
     def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
+
+
+class Transition(ConditionsMixin):
+    """
+    A Transition between two states.
+    Transition can be eventless or internal (but not both at once).
+    A condition (code as string) can be specified as a guard.
+
+    :param from_state: name of the source state
+    :param to_state: name of the target state (if transition is not internal)
+    :param event: event (if any)
+    :param guard: condition as code (if any)
+    :param action: action as code (if any)
+    """
+
+    def __init__(self, from_state: str, to_state: str=None, event: Event=None, guard: str=None,
+                 action: str=None):
+        ConditionsMixin.__init__(self)
+        self.from_state = from_state
+        self.to_state = to_state
+        self.event = event
+        self.guard = guard
+        self.action = action
+
+    @property
+    def internal(self):
+        """
+        Boolean indicating whether this transition is an internal transition.
+        """
+        return self.to_state is None
+
+    @property
+    def eventless(self):
+        """
+        Boolean indicating whether this transition is an eventless transition.
+        """
+        return self.event is None
+
+    def __eq__(self, other):
+        return (isinstance(other, Transition) and
+                self.from_state == other.from_state and
+                self.to_state == other.to_state and
+                self.event == other.event)
+
+    def __repr__(self):
+        return 'Transition({0}, {2}, {1})'.format(self.from_state, self.to_state, self.event)
+
+    def __str__(self):
+        to_state = self.to_state if self.to_state else '['+self.from_state+']'
+        event = '+' + self.event.name if self.event else ''
+        return self.from_state + event + ' -> ' + to_state
+
+    def __hash__(self):
+        return id(self)
 
 
 class StateChart(object):
@@ -428,4 +486,4 @@ class StateChart(object):
         return True
 
     def __repr__(self):
-        return 'Statechart "{}"'.format(self.name)
+        return 'statechart "{}"'.format(self.name)

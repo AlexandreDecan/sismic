@@ -407,10 +407,16 @@ class Interpreter:
         entered_states = list(map(lambda s: self._statechart.states[s], step.entered_states))
         exited_states = list(map(lambda s: self._statechart.states[s], step.exited_states))
 
+        # Exit states
         for state in exited_states:
             # Execute exit action
             if isinstance(state, model.ActionStateMixin) and state.on_exit:
                 self._evaluator.execute_action(state.on_exit)
+            # Postconditions
+            for condition in state.postconditions:
+                if not self._evaluator.evaluate_condition(condition):
+                    raise model.PostconditionFailed.from_step(configuration=self.configuration, step=step,
+                                                              obj=state, condition=condition)
 
         # Deal with history: this only concerns compound states
         exited_compound_states = list(filter(lambda s: isinstance(s, model.CompoundState), exited_states))
@@ -429,22 +435,46 @@ class Interpreter:
                         active = self._configuration.intersection(state.children)
                         assert len(active) == 1
                         self._memory[child.name] = list(active)
-
-        # Remove states from configuration
+        # Update configuration
         self._configuration = self._configuration.difference(step.exited_states)
 
         # Execute transition
         if step.transition and step.transition.action:
+            # Preconditions
+            for condition in step.transition.preconditions:
+                if not self._evaluator.evaluate_condition(condition):
+                    raise model.PreconditionFailed.from_step(configuration=self.configuration, step=step,
+                                                             obj=step.transition, condition=condition)
+            # Execution
             self._evaluator.execute_action(step.transition.action, step.event)
+            # Postconditions
+            for condition in step.transition.postconditions:
+                if not self._evaluator.evaluate_condition(condition):
+                    raise model.PostconditionFailed.from_step(configuration=self.configuration, step=step,
+                                                              obj=step.transition, condition=condition)
 
+        # Enter states
         for state in entered_states:
+            # Preconditions
+            for condition in state.preconditions:
+                if not self._evaluator.evaluate_condition(condition):
+                    raise model.PreconditionFailed.from_step(configuration=self.configuration, step=step,
+                                                             obj=state, condition=condition)
             # Execute entry action
             if isinstance(state, model.ActionStateMixin) and state.on_entry:
                 self._evaluator.execute_action(state.on_entry)
 
-        # Add state to configuration
+        # Update configuration
         self._configuration = self._configuration.union(step.entered_states)
 
+        # Check invariants
+        for name in self._configuration:
+            state = self._statechart.states[name]
+            for condition in state.invariants:
+                if not self._evaluator.evaluate_condition(condition):
+                    raise model.InvariantFailed.from_step(configuration=self.configuration, step=step,
+                                                          obj=state, condition=condition)
+
     def __repr__(self):
-        return '{}[{}]'.format(self.__class__.__name__, ', '.join(self.configuration))
+        return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))
 

@@ -61,13 +61,19 @@ def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
     :param transition_d: a dictionary containing transition data
     :return: an instance of Transition
     """
-    to_state = transition_d.get('target', None)
     event = transition_d.get('event', None)
     if event:
         event = Event(event)
-    guard = transition_d.get('guard', None)
-    action = transition_d.get('action', None)
-    return Transition(state_name, to_state, event, guard, action)
+    transition = Transition(state_name, transition_d.get('target', None), event,
+                            transition_d.get('guard', None), transition_d.get('action', None))
+
+    # Preconditions and postconditions
+    for condition in transition_d.get('conditions', []):
+        if condition.get('pre', None):
+            transition.preconditions.append(condition['pre'])
+        elif condition.get('post', None):
+            transition.postconditions.append(condition['post'])
+    return transition
 
 
 def _state_from_dict(state_d: dict) -> StateMixin:
@@ -102,6 +108,15 @@ def _state_from_dict(state_d: dict) -> StateMixin:
         else:
             # Simple state
             state = BasicState(name, on_entry, on_exit)
+
+    # Preconditions, postconditions and invariants
+    for condition in state_d.get('contract', []):
+        if condition.get('pre', None):
+            state.preconditions.append(condition['pre'])
+        elif condition.get('post', None):
+            state.postconditions.append(condition['post'])
+        elif condition.get('inv', None):
+            state.invariants.append(condition['inv'])
     return state
 
 
@@ -172,6 +187,20 @@ def _export_element_to_dict(el, ordered=False) -> dict:
             d['on entry'] = el.on_entry
         if el.on_exit:
             d['on exit'] = el.on_exit
+
+    preconditions = getattr(el, 'preconditions', [])
+    postconditions = getattr(el, 'postconditions', [])
+    invariants = getattr(el, 'invariants', [])
+    if preconditions or postconditions or invariants:
+        conditions = []
+        for condition in preconditions:
+            conditions.append({'pre': condition})
+        for condition in postconditions:
+            conditions.append({'post': condition})
+        for condition in invariants:
+            conditions.append({'inv': condition})
+        d['contract'] = conditions
+
     if isinstance(el, TransitionStateMixin):
         if len(el.transitions) > 0:
             d['transitions'] = [_export_element_to_dict(t) for t in el.transitions]

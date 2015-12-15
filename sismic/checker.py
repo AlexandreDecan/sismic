@@ -1,3 +1,4 @@
+from sismic import model
 from .model import Event, StateChart
 from .interpreter import Interpreter, MacroStep
 
@@ -67,14 +68,7 @@ class StateChartTester:
             try:
                 tester.execute()
             except AssertionError as e:
-                msg = ('An AssertionError occurred while testing "{interpreter._statechart.name}".\n'
-                       'Test statechart "{tester._statechart.name}" returned:\n'
-                       '{exception.args}\n\n'
-                       'Tester active configuration: {tester.configuration}\n'
-                       'Active configuration: {interpreter.configuration}\n'
-                       'Step: {step}').format(interpreter=self._interpreter, tester=tester, step=step, exception=e)
-                e.args = [msg]
-                raise
+                raise model.ConditionFailed.from_step(configuration=self._interpreter.configuration, step=step, obj=tester) from e
 
     def __enter__(self):
         return self
