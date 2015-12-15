@@ -13,7 +13,7 @@ For example, they support hierarchical composition of states, orthogonal regions
 to express parallel execution, guarded transitions, and actions on transitions or states. Different flavours of
 executable semantics for statecharts have been proposed in the literature and in existing tools.
 
-.. _yaml_statecharts`:
+.. _yaml_statecharts:
 
 Defining statecharts in YAML
 ----------------------------
@@ -33,8 +33,9 @@ For example:
 
     from sismic import io, model
 
-    statechart = io.import_from_yaml(open('examples/concrete/elevator.yaml'))
-    assert isinstance(statechart, model.StateChart)
+    with open('examples/concrete/elevator.yaml') as f:
+        statechart = io.import_from_yaml(f)
+        assert isinstance(statechart, model.StateChart)
 
 
 Although the parser is quite robut and should warn about most syntaxic problems, a :py:class:`~sismic.model.StateChart` instance has a
@@ -232,9 +233,7 @@ The following sections detail the Python structure of a statechart.
 
 
 The module :py:mod:`sismic.model` contains several classes and mixins to define
-states, transitions and events. Apart from
-:py:class:`~sismic.model.StateMixin`, :py:class:`~sismic.model.ActionStateMixin`,
-:py:class:`~sismic.model.TransitionStateMixin`, and :py:class:`~sismic.model.CompositeStateMixin`, it defines:
+states, transitions and events. Apart from internal mixin classes, it defines:
 
 .. automodule:: sismic.model
     :members: Event, Transition, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState, StateChart

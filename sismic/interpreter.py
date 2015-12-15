@@ -415,8 +415,8 @@ class Interpreter:
             # Postconditions
             for condition in state.postconditions:
                 if not self._evaluator.evaluate_condition(condition):
-                    raise model.PostconditionFailed.from_step(configuration=self.configuration, step=step,
-                                                              obj=state, condition=condition)
+                    raise model.PostconditionFailed(configuration=self.configuration, step=step, obj=state,
+                                                    assertion=condition, context=self._evaluator.context)
 
         # Deal with history: this only concerns compound states
         exited_compound_states = list(filter(lambda s: isinstance(s, model.CompoundState), exited_states))
@@ -443,23 +443,23 @@ class Interpreter:
             # Preconditions
             for condition in step.transition.preconditions:
                 if not self._evaluator.evaluate_condition(condition):
-                    raise model.PreconditionFailed.from_step(configuration=self.configuration, step=step,
-                                                             obj=step.transition, condition=condition)
+                    raise model.PreconditionFailed(configuration=self.configuration, step=step, obj=step.transition,
+                                                   assertion=condition, context=self._evaluator.context)
             # Execution
             self._evaluator.execute_action(step.transition.action, step.event)
             # Postconditions
             for condition in step.transition.postconditions:
                 if not self._evaluator.evaluate_condition(condition):
-                    raise model.PostconditionFailed.from_step(configuration=self.configuration, step=step,
-                                                              obj=step.transition, condition=condition)
+                    raise model.PostconditionFailed(configuration=self.configuration, step=step, obj=step.transition,
+                                                    assertion=condition, context=self._evaluator.context)
 
         # Enter states
         for state in entered_states:
             # Preconditions
             for condition in state.preconditions:
                 if not self._evaluator.evaluate_condition(condition):
-                    raise model.PreconditionFailed.from_step(configuration=self.configuration, step=step,
-                                                             obj=state, condition=condition)
+                    raise model.PreconditionFailed(configuration=self.configuration, step=step, obj=state,
+                                                   assertion=condition, context=self._evaluator.context)
             # Execute entry action
             if isinstance(state, model.ActionStateMixin) and state.on_entry:
                 self._evaluator.execute_action(state.on_entry)
@@ -472,8 +472,8 @@ class Interpreter:
             state = self._statechart.states[name]
             for condition in state.invariants:
                 if not self._evaluator.evaluate_condition(condition):
-                    raise model.InvariantFailed.from_step(configuration=self.configuration, step=step,
-                                                          obj=state, condition=condition)
+                    raise model.InvariantFailed(configuration=self.configuration, step=step, obj=state,
+                                                assertion=condition, context=self._evaluator.context)
 
     def __repr__(self):
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))

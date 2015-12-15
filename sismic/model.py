@@ -2,26 +2,81 @@ from functools import lru_cache
 
 
 class ConditionFailed(AssertionError):
-    @classmethod
-    def from_step(cls, configuration=None, step=None, obj=None, condition=None):
-        configuration = ', '.join(configuration) if configuration else 'unknown'
-        step = step if step else 'unknown'
-        obj = obj if obj else 'unknown'
-        condition = condition if condition else 'unknown'
+    """
+    Base exception for situations in which an assertion is not satisfied.
+    All the parameters are optional, and will be exposed to ease debug.
 
-        message = 'Assertion not satisfied!\nObject: {object}\nCondition: {condition}\nConfiguration: {conf}\nStep: {step}'
-        return cls(message.format(object=obj, condition=condition, conf=configuration, step=step))
+    :param configuration: list of active states
+    :param step: a ``MicroStep`` or ``MacroStep`` instance.
+    :param obj: the object that is concerned by the assertion
+    :param condition: the assertion that failed
+    :param context: the context in which the condition failed
+    """
+
+    def __init__(self, configuration=None, step=None, obj=None, assertion=None, context=None):
+        super().__init__(self)
+        self._configuration = configuration
+        self._step = step
+        self._obj = obj
+        self._assertion = assertion
+        self._context = context
+
+    @property
+    def configuration(self):
+        return self._configuration
+
+    @property
+    def step(self):
+        return self._step
+
+    @property
+    def obj(self):
+        return self._obj
+
+    @property
+    def condition(self):
+        return self._assertion
+
+    @property
+    def context(self):
+        return self._context
+
+    def __str__(self):
+        message = ['Assertion not satisfied!']
+        if self._obj:
+            message.append('Object: {}'.format(self._obj))
+        if self._assertion:
+            message.append('Assertion: {}'.format(self._assertion))
+        if self._configuration:
+            message.append('Configuration: {}'.format(self._configuration))
+        if self._step:
+            message.append('Step: {}'.format(self._step))
+        if self._context:
+            message.append('Evaluation context:')
+            for key, value in self._context.items():
+                message.append(' - {key} = {value}'.format(key=key, value=value))
+
+        return '\n'.join(message)
 
 
 class PreconditionFailed(ConditionFailed):
+    """
+    A precondition is not satisfied.
+    """
     pass
 
 
 class PostconditionFailed(ConditionFailed):
+    """
+    A postcondition is not satisfied.
+    """
     pass
 
 
 class InvariantFailed(ConditionFailed):
+    """
+    An invariant is not satisfied.
+    """
     pass
 
 
@@ -65,10 +120,16 @@ class ConditionsMixin:
 
     @property
     def preconditions(self):
+        """
+        A list of preconditions (str).
+        """
         return self._preconditions
 
     @property
     def postconditions(self):
+        """
+        A list of postconditions (str).
+        """
         return self._postconditions
 
 
@@ -81,6 +142,9 @@ class InvariantsMixin:
 
     @property
     def invariants(self):
+        """
+        A list of invariants (str).
+        """
         return self._invariants
 
 

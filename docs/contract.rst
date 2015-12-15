@@ -13,6 +13,9 @@ Sismic has a built-in support for contract programming for statecharts.
     --- `Wikipedia <https://en.wikipedia.org/wiki/Design_by_contract>`__
 
 
+Preconditions, postconditions and invariants
+--------------------------------------------
+
 Preconditions, postconditions and invariants can be defined for statecharts, and Sismic
 will check these conditions at runtime. If a condition is not satisfied, an ``AssertionError``
 will be raised. More specifically, one of the three following subclasses will be raised:
@@ -30,8 +33,20 @@ The three exceptions inherit from the following subclass of ``AssertionError``:
     :members:
 
 
-Including conditions in YAML
-----------------------------
+The semantic of pre/postconditions and invariants is not surprising:
+
+ - For states:
+    - the preconditions are checked before the state is entered (and before executing ``on entry``).
+    - the postconditions are checked after the state is exited (and after executing ``on exit``).
+    - the invariants are checked at the end of each micro step. The state must be in the active configuration.
+ - For transitions:
+    - the preconditions are checked before the process of the transition (and before executing transition action).
+    - the postconditions are checked after the process of the transition (and after executing transition action).
+
+
+
+Defining contracts in YAML
+--------------------------
 
 A YAML definition of a statechart (see :ref:`yaml_statecharts`) can embed the contract definitions.
 Preconditions, postconditions and invariants are defined as nested items of a ``contract`` property,
@@ -83,16 +98,71 @@ preconditions (``pre``) and postconditions (``post``) but no invariant (``inv``)
            contract:
             - pre: x >= 0
 
-The semantic is quite intuitive:
-
- - For states:
-    - the preconditions are checked before the state is entered (and before executing the ``on entry`` property).
-    - the postconditions are checked after the state is exited (and after executing the ``on exit`` property).
-    - the invariants are checked at the end of each micro step. The state must be in the active configuration.
- - For transitions:
-    - the preconditions are checked before the process of the transition (and before executing the ``action`` property).
-    - the postconditions are checked after the process of the transition (and after executing the ``action`` property).
 
 Example
--------
+*******
 
+The following example shows some invariants, preconditions and postconditions added
+to the `Elevator example <https://github.com/AlexandreDecan/sismic/blob/master/examples/concrete/elevator.yaml>`__.
+
+.. literalinclude:: ../examples/contract/elevator.yaml
+   :language: yaml
+   :diff: ../examples/concrete/elevator.yaml
+
+
+Defining contracts in Python
+----------------------------
+
+The class :py:class:`~sismic.model.Transition` inherits from :py:class:`~sismic.model.ConditionsMixin`
+which makes available two lists of strings, namely ``preconditions`` and ``postconditions``.
+Similarly, every subclass of :py:class:`~sismic.model.StateMixin` inherits from :py:class:`~sismic.model.ConditionsMixin`
+and from :py:class:`~sismic.model.InvariantsMixin`.
+The later adds a ``invariants`` list of strings representing the conditions.
+
+.. autoclass:: sismic.model.ConditionsMixin
+    :members:
+    :inherited-members:
+    :undoc-members:
+
+.. autoclass:: sismic.model.InvariantsMixin
+    :members:
+    :inherited-members:
+    :undoc-members:
+
+
+Executing statecharts with contract
+-----------------------------------
+
+The execution of a statechart that contains preconditions, postconditions and invariants does not differ
+from the execution of a statechart that does not. The only difference is that conditions are checked
+at runtime and may raise a subclass of :py:exc:`~sismic.model.ConditionFailed`.
+
+.. code:: python
+
+    from sismic.model import Event
+    from sismic.interpreter import Interpreter
+    from sismic.io import import_from_yaml
+
+    with open('examples/contract/elevator.yaml') as f:
+        statechart = import_from_yaml(f)
+        interpreter = Interpreter(statechart)
+        interpreter.send(Event('floorSelected', {'floor': 4}))
+        interpreter.execute()
+
+Here we manually changed one of the precondition such that it failed at runtime.
+The exception displays several information to help debug.
+
+    PreconditionFailed: Assertion not satisfied!
+    Object: BasicState(movingUp)
+    Assertion: current > destination
+    Configuration: ['active', 'floorListener', 'movingElevator', 'floorSelecting']
+    Step: MicroStep(None, doorsClosed -> movingUp, ['moving', 'movingUp'], ['doorsClosed'])
+    Evaluation context:
+     - send = <function PythonEvaluator.__init__.<locals>.<lambda> at 0x7ff07fd1d620>
+     - active = <function PythonEvaluator.__init__.<locals>.<lambda> at 0x7ff0709ce950>
+     - doors = <Doors object at 0x7ff070942da0>
+     - event = None
+     - current = 0
+     - Doors = <class 'Doors'>
+     - Event = <class 'sismic.model.Event'>
+     - destination = 4

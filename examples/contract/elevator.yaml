@@ -1,0 +1,77 @@
+statechart:
+  name: Elevator
+  initial: active
+  on entry: |
+    current = 0
+    destination = 0
+
+    class Doors:
+      def __init__(self):
+        self.opened = True
+
+      def open(self):
+        print('Opening doors')
+        self.opened = True
+
+      def close(self):
+        print('Closing doors')
+        self.opened = False
+
+    doors = Doors()
+  states:
+    - name: active
+      parallel states:
+        - name: movingElevator
+          initial: doorsOpen
+          states:
+            - name: doorsOpen
+              transitions:
+                - target: doorsClosed
+                  guard: destination != current
+                  action: doors.close()
+                - target: doorsClosed
+                  event: after10s
+                  guard: current > 0
+                  action: destination = 0
+            - name: doorsClosed
+              transitions:
+                - target: movingUp
+                  guard: destination > current
+                - target: movingDown
+                  guard: destination < current and destination >= 0
+            - name: moving
+              contract:
+                - inv: not doors.opened
+                - pre: destination != current
+                - post: destination == current
+              transitions:
+                - target: doorsOpen
+                  guard: destination == current
+                  action: doors.open()
+              states:
+                - name: movingUp
+                  on entry: current = current + 1
+                  contract:
+                    - pre: current < destination
+                    - inv: current <= destination
+                  transitions:
+                    - target: movingUp
+                      guard: destination > current
+                - name: movingDown
+                  contract:
+                    - pre: current > destination
+                    - inv: current >= destination
+                  on entry: current = current - 1
+                  transitions:
+                    - target: movingDown
+                      guard: destination < current
+        - name: floorListener
+          initial: floorSelecting
+          states:
+            - name: floorSelecting
+              transitions:
+                - target: floorSelecting
+                  event: floorSelected
+                  action: destination = event.data['floor']
+                  contract:
+                    - post: destination >= 0

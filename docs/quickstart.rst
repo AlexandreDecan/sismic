@@ -41,13 +41,15 @@ or using the command-line interface, see :ref:`cli_execute`.
 
 .. code:: python
 
-    import sismic
+   import sismic
 
-    statechart = sismic.io.import_from_yaml(open('examples/concrete/elevator.yaml'))
-    interpreter = sismic.interpreter.Interpreter(statechart)
-    interpreter.send(sismic.model.Event('floorSelected', data={'floor': 4}))
-    for step in interpreter.execute():
-        print('{}: {}'.format(step.transitions, interpreter.configuration))
+   with open('examples/concrete/elevator.yaml') as f:
+      statechart = sismic.io.import_from_yaml(f)
+      interpreter = sismic.interpreter.Interpreter(statechart)
+      interpreter.send(sismic.model.Event('floorSelected', data={'floor': 4}))
+      for step in interpreter.execute():
+         print('{}: {}'.format(step.transitions, interpreter.configuration))
+
 
 The output should be::
 
