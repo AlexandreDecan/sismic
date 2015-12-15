@@ -26,12 +26,13 @@ More specifically, Sismic provides:
  - An easy way to define and to import statecharts, based on the human-friendly YAML markup language
  - A statechart interpreter offering discrete, step-by-step, and fully observable simulation engine
  - Built-in support for expressing actions and guards using regular Python code
+ - A design-by-contract programming approach for statecharts
  - A unit testing framework for statecharts
 
 Sismic provides full support for the majority of the concepts of UML statecharts:
 
  - simple states, composite states, orthogonal (parallel) states, initial and final states, shallow and deep history states
- - state transitions, guarded transitions, automatic (eventless) transitions
+ - state transitions, guarded transitions, automatic (eventless) transitions, internal transitions
  - statechart variables and their initialisation
  - state entry and exit actions, transition actions
  - internal and external events, parametrized events
