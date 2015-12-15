@@ -41,7 +41,7 @@ class ConditionFailed(AssertionError):
     def context(self):
         return self._context
 
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         message = ['Assertion not satisfied!']
         if self._obj:
             message.append('Object: {}'.format(self._obj))
@@ -397,14 +397,6 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
         A dictionary that associates a ``StateMixin`` to a state name
         """
         return self._states
-
-    @property
-    def parent(self):
-        """
-        A dictionary that associates to each state (name) the name of its parent,
-        or ``None`` if it has no parent.
-        """
-        return self._parent
 
     def events(self, state_or_states=None) -> list:
         """

@@ -28,6 +28,11 @@ class ImportFromYamlTests(unittest.TestCase):
         sc = io.import_from_yaml(content)
         self.assertTrue(sc.validate())
 
+    def test_contract(self):
+        content = open('examples/contract/elevator.yaml')
+        sc = io.import_from_yaml(content)
+        self.assertTrue(sc.validate())
+
 
 class ExportToDictYAMLTests(unittest.TestCase):
     def test_simple(self):
@@ -46,3 +51,6 @@ class ExportToDictYAMLTests(unittest.TestCase):
         io.export_to_dict(io.import_from_yaml(open('examples/simple/actions.yaml')))
         io.export_to_yaml(io.import_from_yaml(open('examples/simple/actions.yaml')))
 
+    def test_contract(self):
+        io.export_to_dict(io.import_from_yaml(open('examples/contract/elevator.yaml')))
+        io.export_to_yaml(io.import_from_yaml(open('examples/contract/elevator.yaml')))
