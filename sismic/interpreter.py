@@ -195,7 +195,9 @@ class Interpreter:
         """
         Processes a transition based on the oldest queued event (or no event if an eventless transition
         can be processed), and stabilizes the interpreter in a stable situation (ie. processes initial states,
-        history states, etc.).
+        history states, etc.). When multiple transitions are selected, they are atomically processed:
+        states are exited, transition is processed, states are entered, statechart is stabilized and only
+        after that, the next transition is processed.
 
         :return: a macro step or ``None`` if nothing happened
         """

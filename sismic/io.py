@@ -78,12 +78,12 @@ def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
 
     # Preconditions, postconditions and invariants
     for condition in transition_d.get('contract', []):
-        if condition.get('pre', None):
-            transition.preconditions.append(condition['pre'])
-        elif condition.get('post', None):
-            transition.postconditions.append(condition['post'])
-        elif condition.get('inv', None):
-            transition.invariants.append(condition['inv'])
+        if condition.get('before', None):
+            transition.preconditions.append(condition['before'])
+        elif condition.get('after', None):
+            transition.postconditions.append(condition['after'])
+        elif condition.get('always', None):
+            transition.invariants.append(condition['always'])
 
     return transition
 
@@ -123,12 +123,12 @@ def _state_from_dict(state_d: dict) -> StateMixin:
 
     # Preconditions, postconditions and invariants
     for condition in state_d.get('contract', []):
-        if condition.get('pre', None):
-            state.preconditions.append(condition['pre'])
-        elif condition.get('post', None):
-            state.postconditions.append(condition['post'])
-        elif condition.get('inv', None):
-            state.invariants.append(condition['inv'])
+        if condition.get('before', None):
+            state.preconditions.append(condition['before'])
+        elif condition.get('after', None):
+            state.postconditions.append(condition['after'])
+        elif condition.get('always', None):
+            state.invariants.append(condition['always'])
     return state
 
 
@@ -164,11 +164,11 @@ def export_to_dict(statechart: StateChart, ordered=True) -> dict:
     if preconditions or postconditions or invariants:
         conditions = []
         for condition in preconditions:
-            conditions.append({'pre': condition})
+            conditions.append({'before': condition})
         for condition in postconditions:
-            conditions.append({'post': condition})
+            conditions.append({'after': condition})
         for condition in invariants:
-            conditions.append({'inv': condition})
+            conditions.append({'always': condition})
         d['contract'] = conditions
 
     statelist_to_expand = [d['states']]
@@ -219,11 +219,11 @@ def _export_element_to_dict(el, ordered=False) -> dict:
     if preconditions or postconditions or invariants:
         conditions = []
         for condition in preconditions:
-            conditions.append({'pre': condition})
+            conditions.append({'before': condition})
         for condition in postconditions:
-            conditions.append({'post': condition})
+            conditions.append({'after': condition})
         for condition in invariants:
-            conditions.append({'inv': condition})
+            conditions.append({'always': condition})
         d['contract'] = conditions
 
     if isinstance(el, TransitionStateMixin):

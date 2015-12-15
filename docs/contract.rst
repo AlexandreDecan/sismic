@@ -54,25 +54,26 @@ Defining contracts in YAML
 --------------------------
 
 A YAML definition of a statechart (see :ref:`yaml_statecharts`) can embed the contract definitions.
-Preconditions, postconditions and invariants are defined as nested items of a ``contract`` property,
+Preconditions, postconditions and invariants are defined as nested items of a ``contract`` property.
+The name of these items is either ``before`` (precondition), ``after`` (postcondition) or ``always`` (invariant),
 as follows:
 
 .. code:: yaml
 
     contract:
-     - pre: ...
-     - post: ...
-     - inv: ...
+     - before: ...
+     - after: ...
+     - always: ...
 
 Obviously, more than one condition of each type can be specified:
 
 .. code:: yaml
 
     contract:
-     - pre: ...
-     - pre: ...
-     - pre: ...
-     - post: ...
+     - before: ...
+     - before: ...
+     - before: ...
+     - after: ...
 
 A condition is an expression that will be evaluated by the :py:meth:`~sismic.evaluator.Evaluator.evaluate_condition`
 method of an :py:class:`~sismic.evaluator.Evaluator` instance (see :doc:`evaluation`).
@@ -80,10 +81,10 @@ method of an :py:class:`~sismic.evaluator.Evaluator` instance (see :doc:`evaluat
 .. code:: yaml
 
     contract:
-     - pre: x > 0
-     - pre: y > 0
-     - post: x + y == 0
-     - inv: x + y >= 0
+     - before: x > 0
+     - before: y > 0
+     - after: x + y == 0
+     - always: x + y >= 0
 
 Contracts can be defined for statecharts too:
 
@@ -92,8 +93,8 @@ Contracts can be defined for statecharts too:
     statechart:
       name: example
       contract:
-       - inv: x >= 0
-       - inv: not active('initial') or x > 0
+       - always: x >= 0
+       - always: not active('initial') or x > 0
 
 Example
 *******

@@ -19,8 +19,8 @@ statechart:
 
     doors = Doors()
   contract:
-    - pre: current == 0
-    - inv: current >= 0  # Floor must be valid
+    - before: current == 0
+    - always: current >= 0  # Floor must be valid
   states:
     - name: active
       parallel states:
@@ -44,9 +44,9 @@ statechart:
                   guard: destination < current and destination >= 0
             - name: moving
               contract:
-                - inv: not doors.opened  # Keep doors closed while moving
-                - pre: destination != current  # Move only if destination is not reached
-                - post: destination == current  # Destination should be reached
+                - always: not doors.opened  # Keep doors closed while moving
+                - before: destination != current  # Move only if destination is not reached
+                - after: destination == current  # Destination should be reached
               transitions:
                 - target: doorsOpen
                   guard: destination == current
@@ -55,15 +55,15 @@ statechart:
                 - name: movingUp
                   on entry: current = current + 1
                   contract:
-                    - pre: current < destination  # Move up only if below
-                    - inv: current <= destination  # Never go above destination
+                    - before: current < destination  # Move up only if below
+                    - always: current <= destination  # Never go above destination
                   transitions:
                     - target: movingUp
                       guard: destination > current
                 - name: movingDown
                   contract:
-                    - pre: current > destination  # Move down only if above
-                    - inv: current >= destination  # Never go below destination
+                    - before: current > destination  # Move down only if above
+                    - always: current >= destination  # Never go below destination
                   on entry: current = current - 1
                   transitions:
                     - target: movingDown
@@ -77,4 +77,4 @@ statechart:
                   event: floorSelected
                   action: destination = event.data['floor']
                   contract:
-                    - post: destination >= 0  # Destination should be valid
+                    - after: destination >= 0  # Destination should be valid
