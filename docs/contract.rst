@@ -38,11 +38,12 @@ The semantic of pre/postconditions and invariants is not surprising:
  - For states:
     - the preconditions are checked before the state is entered (and before executing ``on entry``).
     - the postconditions are checked after the state is exited (and after executing ``on exit``).
-    - the invariants are checked at the end of each micro step. The state must be in the active configuration.
+    - the invariants are checked at the end of each macro step. The state must be in the active configuration.
  - For transitions:
     - the preconditions are checked before the process of the transition (and before executing transition action).
     - the postconditions are checked after the process of the transition (and after executing transition action).
-
+ - For statecharts:
+    - the invariants are checked at the end of each macro step.
 
 
 Defining contracts in YAML
@@ -69,10 +70,8 @@ Obviously, more than one condition of each type can be specified:
      - pre: ...
      - post: ...
 
-A condition is an expression that will be evaluated by method :py:meth:`~sismic.evaluator.Evaluator.evaluate_condition`
-of an :py:class:`~sismic.evaluator.Evaluator` instance (see :doc:`evaluation`).
-..
-The following example expects a :py:class:`~sismic.evaluator.PythonEvaluator`, which is the default one.
+A condition is an expression that will be evaluated by the :py:meth:`~sismic.evaluator.Evaluator.evaluate_condition`
+method of an :py:class:`~sismic.evaluator.Evaluator` instance (see :doc:`evaluation`).
 
 .. code:: yaml
 
@@ -84,20 +83,15 @@ The following example expects a :py:class:`~sismic.evaluator.PythonEvaluator`, w
 
 While a ``contract`` can be defined both for states and transitions, a contract for a transition can only contain
 preconditions (``pre``) and postconditions (``post``) but no invariant (``inv``).
+Similarly, a ``contract`` for a statechart can only contain ``inv``:
 
 .. code:: yaml
 
-    states:
-     - name: s1
-       on entry: x = x - 1
-       contract:
-         - pre: x > 0
-       transitions:
-         - event: tick
-           target: s2
-           contract:
-            - pre: x >= 0
-
+    statechart:
+      name: example
+      contract:
+       - inv: x >= 0
+       - inv: not active('initial') or x > 0
 
 Example
 *******
@@ -107,7 +101,6 @@ to the `Elevator example <https://github.com/AlexandreDecan/sismic/blob/master/e
 
 .. literalinclude:: ../examples/contract/elevator.yaml
    :language: yaml
-   :diff: ../examples/concrete/elevator.yaml
 
 
 Defining contracts in Python
@@ -150,7 +143,7 @@ at runtime and may raise a subclass of :py:exc:`~sismic.model.ConditionFailed`.
         interpreter.execute()
 
 Here we manually changed one of the precondition such that it failed at runtime.
-The exception displays several information to help debug.
+The exception displays several information to help debug::
 
     PreconditionFailed: Assertion not satisfied!
     Object: BasicState(movingUp)

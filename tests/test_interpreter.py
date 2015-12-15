@@ -427,3 +427,9 @@ class ElevatorContractTests(unittest.TestCase):
         with self.assertRaises(PostconditionFailed):
             self.interpreter.execute()
 
+    def test_statechart_invariant(self):
+        self.sc.invariants.append('False')
+        self.interpreter.send(Event('floorSelected', {'floor': 4}))
+        with self.assertRaises(InvariantFailed):
+            self.interpreter.execute()
+

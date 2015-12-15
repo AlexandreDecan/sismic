@@ -23,6 +23,11 @@ def import_from_dict(data: dict) -> StateChart:
     """
     sc = StateChart(data['name'], data['initial'], data.get('on entry', None))
 
+    # Invariants
+    for condition in data.get('contract', []):
+        if condition.get('inv', None):
+            sc.invariants.append(condition['inv'])
+
     states_to_add = []  # list of (state, parent) to be added
     for state in data['states']:
         states_to_add.append((state, None))
@@ -68,7 +73,7 @@ def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
                             transition_d.get('guard', None), transition_d.get('action', None))
 
     # Preconditions and postconditions
-    for condition in transition_d.get('conditions', []):
+    for condition in transition_d.get('contract', []):
         if condition.get('pre', None):
             transition.preconditions.append(condition['pre'])
         elif condition.get('post', None):
@@ -145,6 +150,10 @@ def export_to_dict(statechart: StateChart, ordered=True) -> dict:
     d['states'] = statechart.children
     if statechart.on_entry:
         d['on entry'] = statechart.on_entry
+    if len(statechart.invariants) > 0:
+        d['contract'] = []
+        for condition in statechart.invariants:
+            d['contract'].append({'inv': condition})
 
     statelist_to_expand = [d['states']]
     while statelist_to_expand:

@@ -219,7 +219,23 @@ class Interpreter:
             for stab_step in self._stabilize():
                 returned_steps.append(stab_step)
 
-        return MacroStep(returned_steps)
+        macro_step = MacroStep(returned_steps)
+
+        # Check statechart invariants
+        for condition in self._statechart.invariants:
+            if not self._evaluator.evaluate_condition(condition):
+                    raise model.InvariantFailed(configuration=self.configuration, step=macro_step, obj=self._statechart,
+                                                assertion=condition, context=self._evaluator.context)
+
+        # Check state invariants
+        for name in self._configuration:
+            state = self._statechart.states[name]
+            for condition in state.invariants:
+                if not self._evaluator.evaluate_condition(condition):
+                    raise model.InvariantFailed(configuration=self.configuration, step=macro_step, obj=state,
+                                                assertion=condition, context=self._evaluator.context)
+
+        return macro_step
 
     def _select_eventless_transitions(self) -> list:
         """
@@ -442,14 +458,14 @@ class Interpreter:
         if step.transition and step.transition.action:
             # Preconditions
             for condition in step.transition.preconditions:
-                if not self._evaluator.evaluate_condition(condition):
+                if not self._evaluator.evaluate_condition(condition, step.event):
                     raise model.PreconditionFailed(configuration=self.configuration, step=step, obj=step.transition,
                                                    assertion=condition, context=self._evaluator.context)
             # Execution
             self._evaluator.execute_action(step.transition.action, step.event)
             # Postconditions
             for condition in step.transition.postconditions:
-                if not self._evaluator.evaluate_condition(condition):
+                if not self._evaluator.evaluate_condition(condition, step.event):
                     raise model.PostconditionFailed(configuration=self.configuration, step=step, obj=step.transition,
                                                     assertion=condition, context=self._evaluator.context)
 
@@ -466,14 +482,6 @@ class Interpreter:
 
         # Update configuration
         self._configuration = self._configuration.union(step.entered_states)
-
-        # Check invariants
-        for name in self._configuration:
-            state = self._statechart.states[name]
-            for condition in state.invariants:
-                if not self._evaluator.evaluate_condition(condition):
-                    raise model.InvariantFailed(configuration=self.configuration, step=step, obj=state,
-                                                assertion=condition, context=self._evaluator.context)
 
     def __repr__(self):
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))

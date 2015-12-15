@@ -18,6 +18,8 @@ statechart:
         self.opened = False
 
     doors = Doors()
+  contract:
+    - inv: current >= 0  # Floor must be valid
   states:
     - name: active
       parallel states:
@@ -41,9 +43,9 @@ statechart:
                   guard: destination < current and destination >= 0
             - name: moving
               contract:
-                - inv: not doors.opened
-                - pre: destination != current
-                - post: destination == current
+                - inv: not doors.opened  # Keep doors closed while moving
+                - pre: destination != current  # Move only if destination is not reached
+                - post: destination == current  # Destination should be reached
               transitions:
                 - target: doorsOpen
                   guard: destination == current
@@ -52,15 +54,15 @@ statechart:
                 - name: movingUp
                   on entry: current = current + 1
                   contract:
-                    - pre: current < destination
-                    - inv: current <= destination
+                    - pre: current < destination  # Move up only if below
+                    - inv: current <= destination  # Never go above destination
                   transitions:
                     - target: movingUp
                       guard: destination > current
                 - name: movingDown
                   contract:
-                    - pre: current > destination
-                    - inv: current >= destination
+                    - pre: current > destination  # Move down only if above
+                    - inv: current >= destination  # Never go below destination
                   on entry: current = current - 1
                   transitions:
                     - target: movingDown
@@ -74,4 +76,4 @@ statechart:
                   event: floorSelected
                   action: destination = event.data['floor']
                   contract:
-                    - post: destination >= 0
+                    - post: destination >= 0  # Destination should be valid

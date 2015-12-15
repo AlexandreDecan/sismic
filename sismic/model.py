@@ -9,7 +9,7 @@ class ConditionFailed(AssertionError):
     :param configuration: list of active states
     :param step: a ``MicroStep`` or ``MacroStep`` instance.
     :param obj: the object that is concerned by the assertion
-    :param condition: the assertion that failed
+    :param assertion: the assertion that failed
     :param context: the context in which the condition failed
     """
 
@@ -348,7 +348,7 @@ class Transition(ConditionsMixin):
         return id(self)
 
 
-class StateChart(object):
+class StateChart(InvariantsMixin):
     """
     Python structure for a statechart
 
@@ -357,6 +357,7 @@ class StateChart(object):
     :param on_entry: Code to execute when this statechart is initialized for execution
     """
     def __init__(self, name: str, initial: str, on_entry: str=None):
+        super().__init__()
         self.name = name
         self.initial = initial
         self.on_entry = on_entry
