@@ -221,26 +221,17 @@ class Interpreter:
 
         macro_step = MacroStep(returned_steps)
 
-        # Check statechart invariants
-        for condition in self._statechart.invariants:
-            if not self._evaluator.evaluate_condition(condition):
-                self.__condition_failed(step=macro_step, obj=self._statechart, assertion=condition,
-                                        exception_klass=model.InvariantFailed)
-
         # Check state invariants
         for name in self._configuration:
             state = self._statechart.states[name]
-            for condition in state.invariants:
-                if not self._evaluator.evaluate_condition(condition):
-                    self.__condition_failed(step=macro_step, obj=state, assertion=condition,
-                                            exception_klass=model.InvariantFailed)
+            self.__evaluate_contract_conditions(state, 'invariants', macro_step)
+
+        # Check statechart invariants
+        self.__evaluate_contract_conditions(self._statechart, 'invariants', macro_step)
 
         # Check statechart postconditions if statechart is not running
         if not self.running:
-            for condition in self._statechart.postconditions:
-                if not self._evaluator.evaluate_condition(condition):
-                    self.__condition_failed(step=macro_step, obj=self._statechart, assertion=condition,
-                                            exception_klass=model.PostconditionFailed)
+            self.__evaluate_contract_conditions(self._statechart, 'postconditions', macro_step)
 
         return macro_step
 
@@ -421,10 +412,7 @@ class Interpreter:
             if isinstance(state, model.ActionStateMixin) and state.on_exit:
                 self._evaluator.execute_action(state.on_exit)
             # Postconditions
-            for condition in state.postconditions:
-                if not self._evaluator.evaluate_condition(condition):
-                    self.__condition_failed(step=step, obj=state, assertion=condition,
-                                            exception_klass=model.PostconditionFailed)
+            self.__evaluate_contract_conditions(state, 'postconditions', step)
 
         # Deal with history: this only concerns compound states
         exited_compound_states = list(filter(lambda s: isinstance(s, model.CompoundState), exited_states))
@@ -449,31 +437,21 @@ class Interpreter:
         # Execute transition
         if step.transition and step.transition.action:
             # Preconditions and invariants
-            for (conditions, exception) in [(step.transition.preconditions, model.PreconditionFailed),
-                                            (step.transition.invariants, model.InvariantFailed)]:
-                for condition in conditions:
-                    if not self._evaluator.evaluate_condition(condition, step.event):
-                        self.__condition_failed(step=step, obj=step.transition, assertion=condition,
-                                                exception_klass=exception)
+            self.__evaluate_contract_conditions(step.transition, 'preconditions', step)
+            self.__evaluate_contract_conditions(step.transition, 'invariants', step)
 
             # Execution
             self._evaluator.execute_action(step.transition.action, step.event)
 
             # Postconditions and invariants
-            for (conditions, exception) in [(step.transition.postconditions, model.PostconditionFailed),
-                                            (step.transition.invariants, model.InvariantFailed)]:
-                for condition in conditions:
-                    if not self._evaluator.evaluate_condition(condition, step.event):
-                        self.__condition_failed(step=step, obj=step.transition, assertion=condition,
-                                                exception_klass=exception)
+            self.__evaluate_contract_conditions(step.transition, 'postconditions', step)
+            self.__evaluate_contract_conditions(step.transition, 'invariants', step)
+
 
         # Enter states
         for state in entered_states:
             # Preconditions
-            for condition in state.preconditions:
-                if not self._evaluator.evaluate_condition(condition):
-                    self.__condition_failed(step=step, obj=state, assertion=condition,
-                                            exception_klass=model.PreconditionFailed)
+            self.__evaluate_contract_conditions(state, 'preconditions', step)
 
             # Execute entry action
             if isinstance(state, model.ActionStateMixin) and state.on_entry:
@@ -495,10 +473,7 @@ class Interpreter:
             self._evaluator.execute_action(self._statechart.on_entry)
 
         # Check statechart preconditions
-        for condition in self._statechart.preconditions:
-            if not self._evaluator.evaluate_condition(condition):
-                self.__condition_failed(step=None, obj=self._statechart, assertion=condition,
-                                        exception_klass=model.PreconditionFailed)
+        self.__evaluate_contract_conditions(self._statechart, 'preconditions')
 
         # Initial step and stabilization
         step = MicroStep(entered_states=[self._statechart.initial])
@@ -521,22 +496,28 @@ class Interpreter:
             step = self._compute_stabilization_step()
         return steps
 
-    def __condition_failed(self, obj, assertion, step, exception_klass):
+    def __evaluate_contract_conditions(self, obj, cond_type: str, step=None):
         """
-        Raise or store given exception according to the value of ``silent_contract`` when
-        this interpreter was initialized.
+        Evaluate the conditions for given object.
 
-        :param obj: object for which the assertion was not satisfied
-        :param assertion: assertion not satisfied
-        :param step: step in which the assertion was not satisfied
-        :param exception_klass: the exception class to raise or to store
+        :param obj: object with preconditions, postconditions or invariants
+        :param cond_type: either *preconditions*, *postconditions* or *invariants*
+        :param step: step in which the check occurs.
+        :raises ConditionFailed: if a condition fails and ``silent_contract`` was set to False.
         """
-        exception = exception_klass(configuration=self.configuration, step=step, obj=obj, assertion=assertion,
-                                    context=self._evaluator.context)
-        if self._silent_contract:
-            self._failed_conditions.append(exception)
-        else:
-            raise exception
+        conditions = getattr(obj, cond_type, [])
+        exception_klass = {'preconditions': model.PreconditionFailed,
+                           'postconditions': model.PostconditionFailed,
+                           'invariants': model.InvariantFailed}[cond_type]
+
+        for condition in conditions:
+            if not self._evaluator.evaluate_condition(condition, getattr(step, 'event', None)):
+                exception = exception_klass(configuration=self.configuration, step=step, obj=obj,
+                                            assertion=condition, context=self._evaluator.context)
+                if self._silent_contract:
+                    self._failed_conditions.append(exception)
+                else:
+                  raise exception
 
     def __repr__(self):
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))
