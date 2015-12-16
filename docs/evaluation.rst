@@ -9,26 +9,39 @@ For example, the ``on entry`` property on a statechart, the ``guard`` or ``actio
 
 In Sismic, these pieces of code can be evaluated and executed by :py:class:`~sismic.evaluator.Evaluator` instances.
 
+The documentation below explains how an evaluator is organized and what does the default built-in Python evaluator.
+You could skip this part of the documentation if you are not interesting in tuning existing evaluators or in
+creating new evaluators.
+
 
 Code evaluator
 --------------
 
-An :py:class:`~sismic.evaluator.Evaluator` must provide two methods and an attribute:
+An :py:class:`~sismic.evaluator.Evaluator` must provide two main methods and an attribute:
+
+.. automethod:: sismic.evaluator.Evaluator._evaluate_code
+.. automethod:: sismic.evaluator.Evaluator._execute_code
+.. autoattribute:: sismic.evaluator.Evaluator.context
+
+Notice that none of the two methods are actually called by the interpreter during the execution of a
+statechart. These methods are fallback methods, meaning they are implicitly called when one of the
+following methods is not defined in a concrete evaluator instance:
 
 .. autoclass:: sismic.evaluator.Evaluator
     :members:
+    :exclude-members: _evaluate_code, _execute_code, context
 
+
+Built-in Python code evaluator
+------------------------------
 
 By default, Sismic provides two built-in :py:class:`~sismic.evaluator.Evaluator` subclasses:
 
- - A :py:class:`~sismic.evaluator.DummyEvaluator` that always evaluate a guard to ``True`` and silently ignores
+ - A :py:class:`~sismic.evaluator.DummyEvaluator` that always evaluates to ``True`` and silently ignores
    ``action``, ``on entry`` and ``on exit``. Its context is an empty dictionary.
  - A :py:class:`~sismic.evaluator.PythonEvaluator` that brings Python into our statecharts and which is used by default.
 
 .. _python_evaluator:
-
-Built-in Python code evaluator
-------------------------------
 
 An instance of :py:class:`~sismic.evaluator.PythonEvaluator` can evaluate and execute Python code expressed in the statechart.
 The key point to understand how it works is the concept of ``context``, which is a dictionary-like structure that contains the data
@@ -58,25 +71,8 @@ When a :py:class:`~sismic.evaluator.PythonEvaluator` instance is initialized, a 
 
     evaluator = PythonEvaluator(initial_context={'x': 1, 'math': my_favorite_module})
 
-By default, the context already exposes several values:
-
- - The :py:class:`~sismic.model.Event` class to allow the creation of internal events.
- - A ``send`` function that takes an :py:class:`~sismic.model.Event` instance and fires an internal event with.
- - An ``active(name) -> bool`` Boolean function that takes a state name and return ``True`` if and only if this state is currently
-   active, ie. it is in the active configuration of the :py:class:`~sismic.interpreter.Interpreter` instance
-   that makes use of this evaluator.
- - An ``event`` variable that (possibly) contains the :py:class:`~sismic.model.Event` instance associated to
-   the transitions (either when :py:meth:`~sismic.evaluator.Evaluator.evaluate_condition` is called or when
-   :py:meth:`~sismic.evaluator.Evaluator.execute_action` is called for a transition action).
-
-Unless you override its entry in the context, the ``__builtins__`` of Python are automatically exposed.
-This implies you can use nearly everything from Python in your code.
-
 .. autoclass:: sismic.evaluator.PythonEvaluator
 
-
-If an exception occurred while executing or evaluating a piece of code, it is propagated by the
-evaluator.
 
 Examples
 --------

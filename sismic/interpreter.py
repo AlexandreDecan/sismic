@@ -256,7 +256,7 @@ class Interpreter:
         for transition in self._statechart.transitions:
             if transition.event == event and \
                             transition.from_state in self._configuration and \
-                    (transition.guard is None or self._evaluator.evaluate_condition(transition.guard, event)):
+                    (transition.guard is None or self._evaluator.ev_transition_guard(transition, transition.guard, event)):
                 transitions.add(transition)
 
         # inner-first/source-state
@@ -410,7 +410,7 @@ class Interpreter:
         for state in exited_states:
             # Execute exit action
             if isinstance(state, model.ActionStateMixin) and state.on_exit:
-                self._evaluator.execute_action(state.on_exit)
+                self._evaluator.ex_state_onexit(state, state.on_exit)
             # Postconditions
             self.__evaluate_contract_conditions(state, 'postconditions', step)
 
@@ -441,7 +441,7 @@ class Interpreter:
             self.__evaluate_contract_conditions(step.transition, 'invariants', step)
 
             # Execution
-            self._evaluator.execute_action(step.transition.action, step.event)
+            self._evaluator.ex_transition_action(step.transition, step.transition.action, step.event)
 
             # Postconditions and invariants
             self.__evaluate_contract_conditions(step.transition, 'postconditions', step)
@@ -455,7 +455,7 @@ class Interpreter:
 
             # Execute entry action
             if isinstance(state, model.ActionStateMixin) and state.on_entry:
-                self._evaluator.execute_action(state.on_entry)
+                self._evaluator.ex_state_onentry(state, state.on_entry)
 
         # Update configuration
         self._configuration = self._configuration.union(step.entered_states)
@@ -470,7 +470,7 @@ class Interpreter:
         :return: A (possibly empty) list of executed MicroStep.
         """
         if self._statechart.on_entry:
-            self._evaluator.execute_action(self._statechart.on_entry)
+            self._evaluator.ex_state_onentry(self._statechart, self._statechart.on_entry)
 
         # Check statechart preconditions
         self.__evaluate_contract_conditions(self._statechart, 'preconditions')
@@ -509,9 +509,16 @@ class Interpreter:
         exception_klass = {'preconditions': model.PreconditionFailed,
                            'postconditions': model.PostconditionFailed,
                            'invariants': model.InvariantFailed}[cond_type]
+        obj_type = 'transition' if isinstance(obj, model.Transition) else 'state'
+        code_type = cond_type[:-1]  # Remove the ending 's'
 
         for condition in conditions:
-            if not self._evaluator.evaluate_condition(condition, getattr(step, 'event', None)):
+            # Call the corresponding method
+            if isinstance(obj, model.Transition):
+                call = getattr(self._evaluator, 'ev_transition_{}'.format(code_type))(obj, condition, step.event)
+            else:
+                call = getattr(self._evaluator, 'ev_state_{}'.format(code_type))(obj, condition)
+            if not call:
                 exception = exception_klass(configuration=self.configuration, step=step, obj=obj,
                                             assertion=condition, context=self._evaluator.context)
                 if self._silent_contract:

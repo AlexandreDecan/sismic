@@ -1,4 +1,4 @@
-from .model import Event
+from .model import Event, Transition, StateMixin
 
 
 class Evaluator:
@@ -20,29 +20,135 @@ class Evaluator:
     def context(self) -> dict:
         """
         The context of this evaluator. A context is a dict-like mapping between
-        variables and values that is expected to be exposed through
-        ``evaluate_condition`` and ``execute_action``.
+        variables and values that is expected to be exposed when the code is evaluated.
         """
         return self._context
 
-    def evaluate_condition(self, condition: str, event: Event) -> bool:
+    def _evaluate_code(self, obj, code: str, event: Event=None) -> bool:
         """
-        Evaluate the condition of a guarded transition.
+        Generic method to evaluate a piece of code. This method is a fallback if one of
+        the ev_* methods is not overridden.
 
-        :param condition: A one-line Boolean expression
-        :param event: The event (if any) that could fire the transition.
-        :return: True or False
+        :param obj: involved object (``Transition`` or ``StateMixin`` instance)
+        :param code: code to evaluate
+        :param event: instance of ``Event`` if any
+        :return: truth value of *code*
         """
         raise NotImplementedError()
 
-    def execute_action(self, action: str, event: Event=None):
+    def _execute_code(self, obj, code: str, event: Event=None):
         """
-        Execute given action (multi-lines code).
+        Generic method to execute a piece of code. This method is a fallback if one
+        of the ex_* methods is not overridden.
 
-        :param action: A (possibly multi-lined) code to execute.
-        :param event: an ``Event`` instance in case of a transition action.
+        :param obj: involved object (``Transition`` or ``StateMixin`` instance)
+        :param code: code to execute
+        :param event: instance of ``Event``, if any
         """
         raise NotImplementedError()
+
+    def ev_transition_guard(self, obj: Transition, code: str, event: Event) -> bool:
+        """
+        Evaluate the guard (*code*) for given transition *obj*.
+
+        :param obj: instance of ``Transition``
+        :param code: code to evaluate
+        :param event: instance of ``Event`` if any
+        :return: truth value of *code*
+        """
+        return self._evaluate_code(obj, code, event)
+
+    def ev_transition_precondition(self, obj: Transition, code: str, event: Event) -> bool:
+        """
+        Evaluate the precondition (*code*) for given transition *obj*.
+
+        :param obj: instance of ``Transition``
+        :param code: code to evaluate
+        :param event: instance of ``Event`` if any
+        :return: truth value of *code*
+        """
+        return self._evaluate_code(obj, code, event)
+
+    def ev_tansition_invariant(self, obj: Transition, code: str, event: Event) -> bool:
+        """
+        Evaluate the invariant (*code*) for given transition *obj*.
+
+        :param obj: instance of ``Transition``
+        :param code: code to evaluate
+        :param event: instance of ``Event`` if any
+        :return: truth value of *code*
+        """
+        return self._evaluate_code(obj, code, event)
+
+    def ev_transition_postcondition(self, obj: Transition, code: str, event: Event) -> bool:
+        """
+        Evaluate the postcondition (*code*) for given transition *obj*.
+
+        :param obj: instance of ``Transition``
+        :param code: code to evaluate
+        :param event: instance of ``Event`` if any
+        :return: truth value of *code*
+        """
+        return self._evaluate_code(obj, code, event)
+
+    def ex_transition_action(self, obj: Transition, code: str, event: Event) -> bool:
+        """
+        Execute the action (*code*) for given transition *obj*.
+
+        :param obj: instance of ``Transition``
+        :param code: code to evaluate
+        :param event: instance of ``Event`` if any
+        :return: truth value of *code*
+        """
+        return self._execute_code(obj, code, event)
+
+    def ex_state_onentry(self, obj: StateMixin, code: str) -> bool:
+        """
+        Execute the on entry action (*code*) for given state *obj*.
+
+        :param obj: instance of ``StateMixin``
+        :param code: code to evaluate
+        """
+        return self._execute_code(obj, code)
+
+    def ex_state_onexit(self, obj: StateMixin, code: str) -> bool:
+        """
+        Execute the on exit action (*code*) for given state *obj*.
+
+        :param obj: instance of ``StateMixin``
+        :param code: code to evaluate
+        """
+        return self._execute_code(obj, code)
+
+    def ev_state_precondition(self, obj: StateMixin, code: str) -> bool:
+        """
+        Evaluate the precondition (*code*) for given state *obj*.
+
+        :param obj: instance of ``StateMixin``
+        :param code: code to evaluate
+        :return: truth value of *code*
+        """
+        return self._evaluate_code(obj, code)
+
+    def ev_state_invariant(self, obj: StateMixin, code: str) -> bool:
+        """
+        Evaluate the invariant (*code*) for given state *obj*.
+
+        :param obj: instance of ``Transition``
+        :param code: code to evaluate
+        :return: truth value of *code*
+        """
+        return self._evaluate_code(obj, code)
+
+    def ev_state_postcondition(self, obj: StateMixin, code: str) -> bool:
+        """
+        Evaluate the postcondition (*code*) for given state *obj*.
+
+        :param obj: instance of ``Transition``
+        :param code: code to evaluate
+        :return: truth value of *code*
+        """
+        return self._evaluate_code(obj, code)
 
 
 class DummyEvaluator(Evaluator):
@@ -54,10 +160,16 @@ class DummyEvaluator(Evaluator):
     def context(self):
         return dict()
 
-    def evaluate_condition(self, condition: str, event: Event):
+    def _evaluate_code(self, obj, code: str, event: Event=None):
+        """
+        Return True.
+        """
         return True
 
-    def execute_action(self, action: str, event: Event=None):
+    def _execute_code(self, obj, code: str, event: Event=None):
+        """
+        Do nothing
+        """
         pass
 
 
@@ -65,14 +177,22 @@ class PythonEvaluator(Evaluator):
     """
     Evaluator that interprets Python code.
 
-    When one of ``evaluate_condition`` or ``execute_action`` method is called with an event parameter,
-    it is also exposed by the context through the key ``event``.
+    Depending on the method that is called, the context can expose additional values:
 
-    The context always contains the following entries:
+     - On code execution
+        - A ``send`` function that takes an ``Event`` (also exposed) and fires an internal event with.
+        - If the code is related to a transition, the ``event`` that fires the transition is exposed.
+     - On code evaluation
+        - An ``active(name) --> bool`` Boolean function that takes a state name and return ``True`` if and only
+          if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
+          that makes use of this evaluator.
+        - If the code is related to a transition, the ``event`` that fires the transition is exposed.
 
-     - send: a function that takes an Event, used to generate internal events
-     - Event: class Event
-     - active: a Boolean function that takes a state name and return True iff state is active
+    Unless you override its entry in the context, the ``__builtins__`` of Python are automatically exposed.
+    This implies you can use nearly everything from Python in your code.
+
+    If an exception occurred while executing or evaluating a piece of code, it is propagated by the
+    evaluator.
 
     :param interpreter: the interpreter that will use this evaluator,
         is expected to be an ``Interpreter`` instance
@@ -82,51 +202,31 @@ class PythonEvaluator(Evaluator):
     def __init__(self, interpreter=None, initial_context: dict=None):
         super().__init__(interpreter, initial_context)
 
-        # Add Event to the context
-        self._context['Event'] = Event
-
-        # Add send to the context
-        self._context['send'] = lambda e: interpreter.send(e, internal=True)
-
-        # Add active to the context
-        self._context['active'] = lambda s: s in interpreter.configuration
+        # Extra context
+        self._ev_context = {'active': lambda s: s in interpreter.configuration}
+        self._ex_context = {'Event': Event,
+                            'send': lambda e: interpreter.send(e, internal=True)}
 
     @property
     def context(self) -> dict:
-        """
-        The context of this evaluator. A context is a dict-like mapping between
-        variables and values that is expected to be exposed through
-        ``evaluate_condition`` and ``execute_action``.
-        """
         return self._context
 
-    def evaluate_condition(self, condition: str, event: Event=None) -> bool:
-        """
-        Evaluate the condition of a guarded transition.
-
-        :param condition: A one-line Boolean expression
-        :param event: The event (if any) that could fire the transition. This event is exposed to the code.
-        :return: True or False
-        """
-        self._context['event'] = event
+    def _evaluate_code(self, obj, code: str, event: Event=None) -> bool:
+        global_context = {'event': event} if event else {}
+        global_context.update(self._ev_context)
 
         try:
-            return eval(condition, {}, self._context)
+            return eval(code, global_context, self._context)
         except Exception as e:
-            raise type(e)('The above exception occurred while evaluating:\n{}'.format(condition)) from e
+            raise type(e)('The above exception occurred while evaluating:\n{}'.format(code)) from e
 
-    def execute_action(self, action: str, event: Event=None):
-        """
-        Execute given action (multi-lines code).
-
-        :param action: A (possibly multi-lined) code to execute.
-        :param event: an ``Event`` instance in case of a transition action. This event is exposed to the code.
-        """
-        self._context['event'] = event
+    def _execute_code(self, obj, code: str, event: Event=None):
+        global_context = {'event': event} if event else {}
+        global_context.update(self._ex_context)
 
         try:
-            exec(action, {}, self._context)
+            exec(code, global_context, self._context)
         except Exception as e:
-            raise type(e)('The above exception occurred while executing:\n{}'.format(action)) from e
+            raise type(e)('The above exception occurred while executing:\n{}'.format(code)) from e
 
 
