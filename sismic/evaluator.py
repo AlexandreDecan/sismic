@@ -1,7 +1,7 @@
 from .model import Event, Transition, StateMixin
 
 
-class Evaluator:  # pragma: no cover
+class Evaluator:
     """
     Base class for any evaluator.
 
@@ -207,26 +207,43 @@ class PythonEvaluator(Evaluator):
         self._ex_context = {'Event': Event,
                             'send': lambda e: interpreter.send(e, internal=True)}
 
-    @property
-    def context(self) -> dict:
-        return self._context
+    def _evaluate_code(self, obj, code: str, event: Event=None, additional_context: dict=None) -> bool:
+        """
+        Evaluate given code using Python.
 
-    def _evaluate_code(self, obj, code: str, event: Event=None) -> bool:
+        :param obj: involved object (``Transition`` or ``StateMixin`` instance)
+        :param code: code to evaluate
+        :param event: instance of ``Event`` if any
+        :param additional_context: an optional additional context
+        :return: truth value of *code*
+        """
         global_context = {'event': event} if event else {}
         global_context.update(self._ev_context)
+        if additional_context:
+            global_context.update(additional_context)
 
         try:
             return eval(code, global_context, self._context)
         except Exception as e:
-            raise type(e)('The above exception occurred while evaluating:\n{}'.format(code)) from e
+            raise type(e)('The above exception occurred in {} while evaluating:\n{}'.format(obj, code)) from e
 
-    def _execute_code(self, obj, code: str, event: Event=None):
+    def _execute_code(self, obj, code: str, event: Event=None, additional_context: dict=None):
+        """
+        Execute given code using Python.
+
+        :param obj: involved object (``Transition`` or ``StateMixin`` instance)
+        :param code: code to execute
+        :param event: instance of ``Event``, if any
+        :param additional_context: an optional additional context
+        """
         global_context = {'event': event} if event else {}
         global_context.update(self._ex_context)
+        if additional_context:
+            global_context.update(additional_context)
 
         try:
             exec(code, global_context, self._context)
         except Exception as e:
-            raise type(e)('The above exception occurred while executing:\n{}'.format(code)) from e
+            raise type(e)('The above exception occurred in {} while executing:\n{}'.format(obj, code)) from e
 
 
