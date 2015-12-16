@@ -1,3 +1,4 @@
+import copy
 from collections import deque
 from itertools import combinations
 from . import model
@@ -15,8 +16,9 @@ class MicroStep:
     :param entered_states: possibly empty list of entered states
     :param exited_states: possibly empty list of exited states
     """
-    def __init__(self, event: model.Event=None, transition: model.Transition=None,
-                 entered_states: list=None, exited_states: list=None):
+
+    def __init__(self, event: model.Event = None, transition: model.Transition = None,
+                 entered_states: list = None, exited_states: list = None):
         self.event = event
         self.transition = transition if transition else []
         self.entered_states = entered_states if entered_states else []
@@ -33,6 +35,7 @@ class MacroStep:
 
     :param steps: a list of ``MicroStep`` instances
     """
+
     def __init__(self, steps: list):
         self.steps = steps
 
@@ -45,7 +48,6 @@ class MacroStep:
             if step.event:
                 return step.event
         return None
-
 
     @property
     def transitions(self) -> list:
@@ -86,15 +88,20 @@ class Interpreter:
     :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
         ``Evaluator`` instance that will be used to initialize the interpreter.
         By default, an ``PythonEvaluator`` will be used.
+    :param silent_contract: Set to True to store ``ConditionFailed`` exceptions instead of raising them.
     """
-    def __init__(self, statechart: model.StateChart, evaluator_klass=None):
+
+    def __init__(self, statechart: model.StateChart, evaluator_klass=None, silent_contract: bool = False):
         self._evaluator_klass = evaluator_klass
         self._evaluator = evaluator_klass(self) if evaluator_klass else PythonEvaluator(self)
         self._statechart = statechart
         self._memory = {}  # History states memory
         self._configuration = set()  # Set of active states
         self._events = deque()  # Events queue
-        self._start()
+        self._silent_contract = silent_contract
+        self._failed_conditions = []  # List of failed conditions, empty if not(self._raise_failed_condition)
+
+        self.__start()
 
     @property
     def configuration(self) -> list:
@@ -111,7 +118,26 @@ class Interpreter:
         """
         return self._evaluator
 
-    def send(self, event: model.Event, internal: bool=False):
+    @property
+    def running(self) -> bool:
+        """
+        Boolean indicating whether this interpreter is not in a final configuration.
+        """
+        # for state in self._statechart.leaf_for(list(self._configuration)):
+        #    if not isinstance(self._statechart._states[state], model.FinalState):
+        #        return True
+        return len(self._configuration) != 0
+
+    @property
+    def failed_conditions(self):
+        """
+        If ``raise_failed_condition`` was set to ``False`` when this interpreter was initialized,
+        this list contains every ``model.ConditionFailed`` that occurred when a condition
+        was not satisfied.
+        """
+        return self._failed_conditions
+
+    def send(self, event: model.Event, internal: bool = False):
         """
         Send an event to the interpreter, and add it into the event queue.
 
@@ -126,40 +152,6 @@ class Interpreter:
             self._events.append(event)
         return self
 
-    def _start(self) -> list:
-        """
-        Make this statechart runnable:
-
-         - Execute statechart initial code
-         - Execute until a stable situation is reached.
-
-        :return: A (possibly empty) list of executed MicroStep.
-        """
-        if self._statechart.on_entry:
-            self._evaluator.execute_action(self._statechart.on_entry)
-
-        # Check statechart preconditions
-        for condition in self._statechart.preconditions:
-            if not self._evaluator.evaluate_condition(condition):
-                raise model.PreconditionFailed(obj=self._statechart, assertion=condition,
-                                               context=self._evaluator.context)
-
-        # Initial step and stabilization
-        step = MicroStep(entered_states=[self._statechart.initial])
-        self._execute_step(step)
-
-        return [step] + self._stabilize()
-
-    @property
-    def running(self) -> bool:
-        """
-        Boolean indicating whether this interpreter is not in a final configuration.
-        """
-        # for state in self._statechart.leaf_for(list(self._configuration)):
-        #    if not isinstance(self._statechart._states[state], model.FinalState):
-        #        return True
-        return len(self._configuration) != 0
-
     def reset(self):
         """
         Reset current interpreter to its initial state.
@@ -167,7 +159,7 @@ class Interpreter:
         """
         self.__init__(self._statechart, self._evaluator_klass)
 
-    def execute(self, max_steps: int=-1) -> list:
+    def execute(self, max_steps: int = -1) -> list:
         """
         Repeatedly calls ``execute_once()`` and return a list containing
         the returned values of ``execute_once()``.
@@ -186,7 +178,7 @@ class Interpreter:
         while macro_step:
             returned_steps.append(macro_step)
             i += 1
-            if max_steps > 0 and i == max_steps:
+            if 0 < max_steps == i:
                 break
             macro_step = self.execute_once()
         return returned_steps
@@ -224,7 +216,7 @@ class Interpreter:
         for step in steps:
             self._execute_step(step)
             returned_steps.append(step)
-            for stab_step in self._stabilize():
+            for stab_step in self.__stabilize():
                 returned_steps.append(stab_step)
 
         macro_step = MacroStep(returned_steps)
@@ -232,24 +224,23 @@ class Interpreter:
         # Check statechart invariants
         for condition in self._statechart.invariants:
             if not self._evaluator.evaluate_condition(condition):
-                    raise model.InvariantFailed(configuration=self.configuration, step=macro_step, obj=self._statechart,
-                                                assertion=condition, context=self._evaluator.context)
+                self.__condition_failed(step=macro_step, obj=self._statechart, assertion=condition,
+                                        exception_klass=model.InvariantFailed)
 
         # Check state invariants
         for name in self._configuration:
             state = self._statechart.states[name]
             for condition in state.invariants:
                 if not self._evaluator.evaluate_condition(condition):
-                    raise model.InvariantFailed(configuration=self.configuration, step=macro_step, obj=state,
-                                                assertion=condition, context=self._evaluator.context)
+                    self.__condition_failed(step=macro_step, obj=state, assertion=condition,
+                                            exception_klass=model.InvariantFailed)
 
         # Check statechart postconditions if statechart is not running
         if not self.running:
             for condition in self._statechart.postconditions:
                 if not self._evaluator.evaluate_condition(condition):
-                    raise model.PostconditionFailed(configuration=self.configuration, step=macro_step,
-                                                    obj=self._statechart, assertion=condition,
-                                                    context=self._evaluator.context)
+                    self.__condition_failed(step=macro_step, obj=self._statechart, assertion=condition,
+                                            exception_klass=model.PostconditionFailed)
 
         return macro_step
 
@@ -273,7 +264,7 @@ class Interpreter:
         # Retrieve the firable transitions for all active state
         for transition in self._statechart.transitions:
             if transition.event == event and \
-                transition.from_state in self._configuration and \
+                            transition.from_state in self._configuration and \
                     (transition.guard is None or self._evaluator.evaluate_condition(transition.guard, event)):
                 transitions.add(transition)
 
@@ -314,14 +305,14 @@ class Interpreter:
                 # Check (2)
                 # This check must be done wrt. to LCA, as the combination of from_states could
                 # come from nested parallel regions!
-                for t in [t1, t2]:
-                    last_before_lca = t.from_state
-                    for state in self._statechart.ancestors_for(t.from_state):
+                for transition in [t1, t2]:
+                    last_before_lca = transition.from_state
+                    for state in self._statechart.ancestors_for(transition.from_state):
                         if state == lca:
                             break
                         last_before_lca = state
                     # Target must be a descendant (or self) of this state
-                    if t.to_state not in [last_before_lca] + self._statechart.descendants_for(last_before_lca):
+                    if transition.to_state not in [last_before_lca] + self._statechart.descendants_for(last_before_lca):
                         raise Warning('Conflicting transitions: {t1} and {t2}'
                                       '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
                                       .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
@@ -415,21 +406,6 @@ class Interpreter:
             elif isinstance(leaf, model.CompoundState) and leaf.initial:
                 return MicroStep(entered_states=[leaf.initial])
 
-    def _stabilize(self) -> list:
-        """
-        Compute, apply and return stabilization steps.
-
-        :return: A list of ``MicroStep`` instances
-        """
-        # Stabilization
-        steps = []
-        step = self._compute_stabilization_step()
-        while step:
-            steps.append(step)
-            self._execute_step(step)
-            step = self._compute_stabilization_step()
-        return steps
-
     def _execute_step(self, step: MicroStep):
         """
         Apply given ``MicroStep`` on this statechart
@@ -447,8 +423,8 @@ class Interpreter:
             # Postconditions
             for condition in state.postconditions:
                 if not self._evaluator.evaluate_condition(condition):
-                    raise model.PostconditionFailed(configuration=self.configuration, step=step, obj=state,
-                                                    assertion=condition, context=self._evaluator.context)
+                    self.__condition_failed(step=step, obj=state, assertion=condition,
+                                            exception_klass=model.PostconditionFailed)
 
         # Deal with history: this only concerns compound states
         exited_compound_states = list(filter(lambda s: isinstance(s, model.CompoundState), exited_states))
@@ -477,8 +453,9 @@ class Interpreter:
                                             (step.transition.invariants, model.InvariantFailed)]:
                 for condition in conditions:
                     if not self._evaluator.evaluate_condition(condition, step.event):
-                        raise exception(configuration=self.configuration, step=step, obj=step.transition,
-                                                   assertion=condition, context=self._evaluator.context)
+                        self.__condition_failed(step=step, obj=step.transition, assertion=condition,
+                                                exception_klass=exception)
+
             # Execution
             self._evaluator.execute_action(step.transition.action, step.event)
 
@@ -487,16 +464,17 @@ class Interpreter:
                                             (step.transition.invariants, model.InvariantFailed)]:
                 for condition in conditions:
                     if not self._evaluator.evaluate_condition(condition, step.event):
-                        raise exception(configuration=self.configuration, step=step, obj=step.transition,
-                                                   assertion=condition, context=self._evaluator.context)
+                        self.__condition_failed(step=step, obj=step.transition, assertion=condition,
+                                                exception_klass=exception)
 
         # Enter states
         for state in entered_states:
             # Preconditions
             for condition in state.preconditions:
                 if not self._evaluator.evaluate_condition(condition):
-                    raise model.PreconditionFailed(configuration=self.configuration, step=step, obj=state,
-                                                   assertion=condition, context=self._evaluator.context)
+                    self.__condition_failed(step=step, obj=state, assertion=condition,
+                                            exception_klass=model.PreconditionFailed)
+
             # Execute entry action
             if isinstance(state, model.ActionStateMixin) and state.on_entry:
                 self._evaluator.execute_action(state.on_entry)
@@ -504,6 +482,61 @@ class Interpreter:
         # Update configuration
         self._configuration = self._configuration.union(step.entered_states)
 
+    def __start(self) -> list:
+        """
+        Make this statechart runnable:
+
+         - Execute statechart initial code
+         - Execute until a stable situation is reached.
+
+        :return: A (possibly empty) list of executed MicroStep.
+        """
+        if self._statechart.on_entry:
+            self._evaluator.execute_action(self._statechart.on_entry)
+
+        # Check statechart preconditions
+        for condition in self._statechart.preconditions:
+            if not self._evaluator.evaluate_condition(condition):
+                self.__condition_failed(step=None, obj=self._statechart, assertion=condition,
+                                        exception_klass=model.PreconditionFailed)
+
+        # Initial step and stabilization
+        step = MicroStep(entered_states=[self._statechart.initial])
+        self._execute_step(step)
+
+        return [step] + self.__stabilize()
+
+    def __stabilize(self) -> list:
+        """
+        Compute, apply and return stabilization steps.
+
+        :return: A list of ``MicroStep`` instances
+        """
+        # Stabilization
+        steps = []
+        step = self._compute_stabilization_step()
+        while step:
+            steps.append(step)
+            self._execute_step(step)
+            step = self._compute_stabilization_step()
+        return steps
+
+    def __condition_failed(self, obj, assertion, step, exception_klass):
+        """
+        Raise or store given exception according to the value of ``silent_contract`` when
+        this interpreter was initialized.
+
+        :param obj: object for which the assertion was not satisfied
+        :param assertion: assertion not satisfied
+        :param step: step in which the assertion was not satisfied
+        :param exception_klass: the exception class to raise or to store
+        """
+        exception = exception_klass(configuration=self.configuration, step=step, obj=obj, assertion=assertion,
+                                    context=self._evaluator.context)
+        if self._silent_contract:
+            self._failed_conditions.append(exception)
+        else:
+            raise exception
+
     def __repr__(self):
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))
-

@@ -1,4 +1,5 @@
 from functools import lru_cache
+import copy
 
 
 class ConditionFailed(AssertionError):
@@ -15,11 +16,11 @@ class ConditionFailed(AssertionError):
 
     def __init__(self, configuration=None, step=None, obj=None, assertion=None, context=None):
         super().__init__(self)
-        self._configuration = configuration
-        self._step = step
-        self._obj = obj
-        self._assertion = assertion
-        self._context = context
+        self._configuration = copy.copy(configuration)
+        self._step = copy.copy(step)
+        self._obj = copy.copy(obj)
+        self._assertion = copy.copy(assertion)
+        self._context = {k: copy.copy(v) for k, v in context.items()} if context else {}
 
     @property
     def configuration(self):
@@ -42,7 +43,7 @@ class ConditionFailed(AssertionError):
         return self._context
 
     def __str__(self):  # pragma: no cover
-        message = ['Assertion not satisfied!']
+        message = ['{} not satisfied!'.format(self.__class__.__name__.replace('Failed', ''))]
         if self._obj:
             message.append('Object: {}'.format(self._obj))
         if self._assertion:

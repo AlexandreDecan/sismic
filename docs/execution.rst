@@ -207,16 +207,13 @@ which transition should be processed next, which are the next steps, etc.
 
 These methods can be easily overridden or combined to define other semantics.
 
-
-.. automethod:: sismic.interpreter.Interpreter._start
-
 .. automethod:: sismic.interpreter.Interpreter._select_eventless_transitions
 .. automethod:: sismic.interpreter.Interpreter._select_transitions
 .. automethod:: sismic.interpreter.Interpreter._sort_transitions
 .. automethod:: sismic.interpreter.Interpreter._compute_transitions_steps
 .. automethod:: sismic.interpreter.Interpreter._execute_step
 .. automethod:: sismic.interpreter.Interpreter._compute_stabilization_step
-.. automethod:: sismic.interpreter.Interpreter._stabilize
+
 
 These methods are called directly (or not) by :py:class:`~sismic.interpreter.Interpreter.execute_once`.
 Consider looking at the source of :py:class:`~sismic.interpreter.Interpreter.execute_once` to understand

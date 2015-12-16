@@ -68,7 +68,8 @@ class StateChartTester:
             try:
                 tester.execute()
             except AssertionError as e:
-                raise model.ConditionFailed(configuration=self._interpreter.configuration, step=step, obj=tester, context=context) from e
+                raise model.ConditionFailed(configuration=self._interpreter.configuration, step=step, obj=tester,
+                                            context=tester.evaluator._context) from e
 
     def __enter__(self):
         return self

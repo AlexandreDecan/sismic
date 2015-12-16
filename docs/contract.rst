@@ -156,3 +156,20 @@ The exception displays several information to help debug::
      - Doors = <class 'Doors'>
      - Event = <class 'sismic.model.Event'>
      - destination = 4
+
+If you do not want the execution to be interrupted by such exceptions, you can set the ``silent_contract``
+parameter to ``True`` when constructing an ``Interpreter``.
+The exceptions will be stored and will be made available in
+
+.. autoattribute:: sismic.interpreter.Interpreter.failed_conditions
+
+Notice that nested objects in :py:exc:`~sismic.model.ConditionFailed` are copied using a shallow copy, not a deep copy.
+As a consequence, there is no guarantee that the value of their attributes did not change between the time at
+which the exception was initialized, and the time at which it is accessed.
+
+Here is how the copy is done:
+
+.. literalinclude:: ../sismic/model.py
+    :pyobject: ConditionFailed.__init__
+
+
