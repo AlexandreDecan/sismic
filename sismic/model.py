@@ -84,6 +84,8 @@ class InvariantFailed(ConditionFailed):
 class Event:
     """
     Simple event with a name and (optionally) some data.
+    Unless the attribute already exists, each key from ``data`` is exposed as an attribute
+    of this class.
 
     :param name: Name of the event
     :param data: additional data (mapping, dict-like)
@@ -94,6 +96,9 @@ class Event:
 
     def __eq__(self, other):
         return isinstance(other, Event) and self.name == other.name
+
+    def __getattr__(self, attr):
+        return self.data[attr]
 
     def __hash__(self):
         return hash(self.name)
@@ -342,7 +347,7 @@ class Transition(ContractMixin):
         return self.from_state + event + ' -> ' + to_state
 
     def __hash__(self):
-        return id(self)
+        return hash(self.from_state)
 
 
 class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixin):

@@ -10,7 +10,7 @@ statechart:
           transitions:
             - target: listening
               event: keyPress
-              action: output.append(event.data['key'])
+              action: output.append(event.key)
             - target: finished
               event: leave
         - name: options

@@ -75,6 +75,6 @@ statechart:
               transitions:
                 - target: floorSelecting
                   event: floorSelected
-                  action: destination = event.data['floor']
+                  action: destination = event.floor
                   contract:
                     - after: destination >= 0  # Destination should be valid

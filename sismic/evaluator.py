@@ -1,7 +1,7 @@
 from .model import Event, Transition, StateMixin
 
 
-class Evaluator:
+class Evaluator:  # pragma: no cover
     """
     Base class for any evaluator.
 

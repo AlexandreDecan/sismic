@@ -62,4 +62,4 @@ statechart:
               transitions:
                 - target: floorSelecting
                   event: floorSelected
-                  action: destination = event.data['floor']
+                  action: destination = event.floor
