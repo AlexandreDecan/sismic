@@ -1,3 +1,6 @@
+from collections import namedtuple
+
+import copy
 from .model import Event, Transition, StateMixin
 
 
@@ -183,6 +186,10 @@ class PythonEvaluator(Evaluator):
           if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
           that makes use of this evaluator.
         - If the code is related to a transition, the ``event`` that fires the transition is exposed.
+     - On postcondition or invariant:
+        - A variable ``__old__`` that have attribute ``x`` for every ``x`` in the context when either the state
+          was entered (if the condition involves a state) or the transition was processed (if the condition
+          involves a transition). The value of ``__old__.x`` is a shallow copy of ``x`` at this time.
 
     Unless you override its entry in the context, the ``__builtins__`` of Python are automatically exposed.
     This implies you can use nearly everything from Python in your code.
@@ -197,6 +204,7 @@ class PythonEvaluator(Evaluator):
 
     def __init__(self, interpreter=None, initial_context: dict=None):
         super().__init__(interpreter, initial_context)
+        self._memory = {}  # Stores context on state entry and transition action
 
     def _evaluate_code(self, code: str, additional_context: dict=None) -> bool:
         """
@@ -235,5 +243,52 @@ class PythonEvaluator(Evaluator):
             exec(code, exposed_context, self._context)
         except Exception as e:
             raise type(e)('The above exception occurred while executing:\n{}'.format(code)) from e
+
+    class FrozenContext:
+        """
+        A shallow copy of a context. The keys of the underlying context are
+        exposed as attributes.
+        """
+        def __init__(self, context: dict):
+            self.__frozencontext = {k: copy.copy(v) for k, v in context.items()}
+
+        def __getattr__(self, item):
+            return self.__frozencontext[item]
+
+    def execute_onentry(self, state: StateMixin):
+        # Set memory
+        self._memory[id(state)] = PythonEvaluator.FrozenContext(self._context)
+
+        super().execute_onentry(state)
+
+    def execute_action(self, transition: Transition, event: Event):
+        # Set memory
+        self._memory[id(transition)] = PythonEvaluator.FrozenContext(self._context)
+
+        super().execute_action(transition, event)
+
+    def evaluate_postconditions(self, obj, event: Event=None):
+        unsatisfied_conditions = []
+        context = {'event': event} if isinstance(obj, Transition) else {}
+
+        # Use memory if any
+        context['__old__'] = (self._memory.get(id(obj), None))
+
+        for condition in getattr(obj, 'postconditions', []):
+            if not self._evaluate_code(condition, context):
+                unsatisfied_conditions.append(condition)
+        return unsatisfied_conditions
+
+    def evaluate_invariants(self, obj, event: Event=None):
+        unsatisfied_conditions = []
+        context = {'event': event} if isinstance(obj, Transition) else {}
+
+        # Use memory if any
+        context['__old__'] = (self._memory.get(id(obj), None))
+
+        for condition in getattr(obj, 'invariants', []):
+            if not self._evaluate_code(condition, context):
+                unsatisfied_conditions.append(condition)
+        return unsatisfied_conditions
 
 

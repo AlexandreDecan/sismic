@@ -57,6 +57,7 @@ statechart:
                   contract:
                     - before: current < destination  # Move up only if below
                     - always: current <= destination  # Never go above destination
+                    - after: current > __old__.current  # Move up!
                   transitions:
                     - target: movingUp
                       guard: destination > current
@@ -64,6 +65,7 @@ statechart:
                   contract:
                     - before: current > destination  # Move down only if above
                     - always: current >= destination  # Never go below destination
+                    - after: current < __old__.current  # Move down!
                   on entry: current = current - 1
                   transitions:
                     - target: movingDown
