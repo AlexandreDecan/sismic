@@ -10,8 +10,8 @@ For example, the ``on entry`` property on a statechart, the ``guard`` or ``actio
 In Sismic, these pieces of code can be evaluated and executed by :py:class:`~sismic.evaluator.Evaluator` instances.
 
 The documentation below explains how an evaluator is organized and what does the default built-in Python evaluator.
-You could skip this part of the documentation if you are not interesting in tuning existing evaluators or in
-creating new evaluators.
+You could skip this part of the documentation if you are not interested to tune existing evaluators or to create
+new ones.
 
 
 Code evaluator
@@ -31,6 +31,17 @@ following methods is not defined in a concrete evaluator instance:
     :members:
     :exclude-members: _evaluate_code, _execute_code, context
 
+The documentation of the :py:class:`~sismic.evaluator.Evaluator` already mentions this, but it is something
+that is very important:
+
+ - Methods :py:meth:`~sismic.evaluator.Evaluator.execute_onentry` and :py:meth:`~sismic.evaluator.Evaluator.execute_onexit`
+   are called respectively when a state is entered or exited, even if this state does not define a ``on_entry`` or
+   ``on_exit`` attribute.
+ - Method :py:meth:`~sismic.evaluator.Evaluator.execute_action` is called when a transition is processed, even if
+   the transition does not define any ``action``.
+
+This allows the evaluator to keep track of the states that are entered or exited, and of the transitions that are
+processed.
 
 Built-in Python code evaluator
 ------------------------------

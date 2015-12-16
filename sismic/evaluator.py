@@ -8,6 +8,10 @@ class Evaluator:
     An instance of this class defines what can be done with piece of codes
     contained in a statechart (condition, action, etc.).
 
+    Notice that the execute_* methods are called at each step, even if there is no
+    code to execute. This allows the evaluator to keep track of the states that are
+    entered or exited, and of the transitions that are processed.
+
     :param interpreter: the interpreter that will use this evaluator,
         is expected to be an ``Interpreter`` instance
     :param initial_context: an optional dictionary to populate the context
@@ -24,131 +28,114 @@ class Evaluator:
         """
         return self._context
 
-    def _evaluate_code(self, obj, code: str, event: Event=None) -> bool:
+    def _evaluate_code(self, code: str, additional_context: dict=None) -> bool:
         """
         Generic method to evaluate a piece of code. This method is a fallback if one of
         the ev_* methods is not overridden.
 
-        :param obj: involved object (``Transition`` or ``StateMixin`` instance)
         :param code: code to evaluate
-        :param event: instance of ``Event`` if any
+        :param additional_context: an optional additional context
         :return: truth value of *code*
         """
         raise NotImplementedError()
 
-    def _execute_code(self, obj, code: str, event: Event=None):
+    def _execute_code(self, code: str, additional_context: dict=None):
         """
         Generic method to execute a piece of code. This method is a fallback if one
         of the ex_* methods is not overridden.
 
-        :param obj: involved object (``Transition`` or ``StateMixin`` instance)
         :param code: code to execute
-        :param event: instance of ``Event``, if any
+        :param additional_context: an optional additional context
         """
         raise NotImplementedError()
 
-    def ev_transition_guard(self, obj: Transition, code: str, event: Event) -> bool:
+    def evaluate_guard(self, transition: Transition, event: Event) -> bool:
         """
-        Evaluate the guard (*code*) for given transition *obj*.
+        Evaluate the guard for given transition.
 
-        :param obj: instance of ``Transition``
-        :param code: code to evaluate
+        :param transition: the considered transition
         :param event: instance of ``Event`` if any
         :return: truth value of *code*
         """
-        return self._evaluate_code(obj, code, event)
+        if transition.guard:
+            return self._evaluate_code(transition.guard, {'event': event})
 
-    def ev_transition_precondition(self, obj: Transition, code: str, event: Event) -> bool:
+    def execute_action(self, transition: Transition, event: Event) -> bool:
         """
-        Evaluate the precondition (*code*) for given transition *obj*.
+        Execute the action for given transition.
+        This method is called for every transition that is processed, even those with no ``action``.
 
-        :param obj: instance of ``Transition``
-        :param code: code to evaluate
+        :param transition: the considered transition
         :param event: instance of ``Event`` if any
         :return: truth value of *code*
         """
-        return self._evaluate_code(obj, code, event)
+        if transition.action:
+            return self._execute_code(transition.action, {'event': event})
 
-    def ev_tansition_invariant(self, obj: Transition, code: str, event: Event) -> bool:
+    def execute_onentry(self, state: StateMixin):
         """
-        Evaluate the invariant (*code*) for given transition *obj*.
+        Execute the on entry action for given state.
+        This method is called for every state that is entered, even those with no ``on_entry``.
 
-        :param obj: instance of ``Transition``
-        :param code: code to evaluate
-        :param event: instance of ``Event`` if any
-        :return: truth value of *code*
+        :param state: the considered state
         """
-        return self._evaluate_code(obj, code, event)
+        if getattr(state, 'on_entry', None):
+            return self._execute_code(state.on_entry)
 
-    def ev_transition_postcondition(self, obj: Transition, code: str, event: Event) -> bool:
+    def execute_onexit(self, state: StateMixin):
         """
-        Evaluate the postcondition (*code*) for given transition *obj*.
+        Execute the on exit action for given state.
+        This method is called for every state that is exited, even those with no ``on_exit``.
 
-        :param obj: instance of ``Transition``
-        :param code: code to evaluate
-        :param event: instance of ``Event`` if any
-        :return: truth value of *code*
+        :param state: the considered state
         """
-        return self._evaluate_code(obj, code, event)
+        if getattr(state, 'on_exit', None):
+            return self._execute_code(state.on_exit)
 
-    def ex_transition_action(self, obj: Transition, code: str, event: Event) -> bool:
+    def evaluate_preconditions(self, obj, event: Event=None) -> list:
         """
-        Execute the action (*code*) for given transition *obj*.
+        Evaluate the preconditions for given object (either a ``ActionStateMixin`` or a
+        ``Transition``) and return a list of conditions that are not satisfied.
+        :param obj: the considered state or transition
+        :param event: an optional ``Event`` instance, in the case of a transition
+        :return: list of unsatisfied conditions
+        """
+        unsatisfied_conditions = []
+        event_d = {'event': event} if isinstance(obj, Transition) else None
+        for condition in getattr(obj, 'preconditions', []):
+            if not self._evaluate_code(condition, event_d):
+                unsatisfied_conditions.append(condition)
+        return unsatisfied_conditions
 
-        :param obj: instance of ``Transition``
-        :param code: code to evaluate
-        :param event: instance of ``Event`` if any
-        :return: truth value of *code*
+    def evaluate_invariants(self, obj, event: Event=None) -> list:
         """
-        return self._execute_code(obj, code, event)
+        Evaluate the invariants for given object (either a ``ActionStateMixin`` or a
+        ``Transition``) and return a list of conditions that are not satisfied.
+        :param obj: the considered state or transition
+        :param event: an optional ``Event`` instance, in the case of a transition
+        :return: list of unsatisfied conditions
+        """
+        unsatisfied_conditions = []
+        event_d = {'event': event} if isinstance(obj, Transition) else None
+        for condition in getattr(obj, 'invariants', []):
+            if not self._evaluate_code(condition, event_d):
+                unsatisfied_conditions.append(condition)
+        return unsatisfied_conditions
 
-    def ex_state_onentry(self, obj: StateMixin, code: str) -> bool:
+    def evaluate_postconditions(self, obj, event: Event=None) -> list:
         """
-        Execute the on entry action (*code*) for given state *obj*.
-
-        :param obj: instance of ``StateMixin``
-        :param code: code to evaluate
+        Evaluate the postconditions for given object (either a ``ActionStateMixin`` or a
+        ``Transition``) and return a list of conditions that are not satisfied.
+        :param obj: the considered state or transition
+        :param event: an optional ``Event`` instance, in the case of a transition
+        :return: list of unsatisfied conditions
         """
-        return self._execute_code(obj, code)
-
-    def ex_state_onexit(self, obj: StateMixin, code: str) -> bool:
-        """
-        Execute the on exit action (*code*) for given state *obj*.
-
-        :param obj: instance of ``StateMixin``
-        :param code: code to evaluate
-        """
-        return self._execute_code(obj, code)
-
-    def ev_state_precondition(self, obj: StateMixin, code: str) -> bool:
-        """
-        Evaluate the precondition (*code*) for given state *obj*.
-
-        :param obj: instance of ``StateMixin``
-        :param code: code to evaluate
-        :return: truth value of *code*
-        """
-        return self._evaluate_code(obj, code)
-
-    def ev_state_invariant(self, obj: StateMixin, code: str) -> bool:
-        """
-        Evaluate the invariant (*code*) for given state *obj*.
-
-        :param obj: instance of ``Transition``
-        :param code: code to evaluate
-        :return: truth value of *code*
-        """
-        return self._evaluate_code(obj, code)
-
-    def ev_state_postcondition(self, obj: StateMixin, code: str) -> bool:
-        """
-        Evaluate the postcondition (*code*) for given state *obj*.
-
-        :param obj: instance of ``Transition``
-        :param code: code to evaluate
-        :return: truth value of *code*
-        """
-        return self._evaluate_code(obj, code)
+        unsatisfied_conditions = []
+        event_d = {'event': event} if isinstance(obj, Transition) else None
+        for condition in getattr(obj, 'postconditions', []):
+            if not self._evaluate_code(condition, event_d):
+                unsatisfied_conditions.append(condition)
+        return unsatisfied_conditions
 
 
 class DummyEvaluator(Evaluator):
@@ -160,17 +147,26 @@ class DummyEvaluator(Evaluator):
     def context(self):
         return dict()
 
-    def _evaluate_code(self, obj, code: str, event: Event=None):
+    def _evaluate_code(self, code: str, additional_context: dict=None) -> bool:
         """
-        Return True.
+        Generic method to evaluate a piece of code. This method is a fallback if one of
+        the ev_* methods is not overridden.
+
+        :param code: code to evaluate
+        :param additional_context: an optional additional context
+        :return: truth value of *code*
         """
         return True
 
-    def _execute_code(self, obj, code: str, event: Event=None):
+    def _execute_code(self, code: str, additional_context: dict=None):
         """
-        Do nothing
+        Generic method to execute a piece of code. This method is a fallback if one
+        of the ex_* methods is not overridden.
+
+        :param code: code to execute
+        :param additional_context: an optional additional context
         """
-        pass
+        return
 
 
 class PythonEvaluator(Evaluator):
@@ -202,48 +198,42 @@ class PythonEvaluator(Evaluator):
     def __init__(self, interpreter=None, initial_context: dict=None):
         super().__init__(interpreter, initial_context)
 
-        # Extra context
-        self._ev_context = {'active': lambda s: s in interpreter.configuration}
-        self._ex_context = {'Event': Event,
-                            'send': lambda e: interpreter.send(e, internal=True)}
-
-    def _evaluate_code(self, obj, code: str, event: Event=None, additional_context: dict=None) -> bool:
+    def _evaluate_code(self, code: str, additional_context: dict=None) -> bool:
         """
         Evaluate given code using Python.
 
-        :param obj: involved object (``Transition`` or ``StateMixin`` instance)
         :param code: code to evaluate
-        :param event: instance of ``Event`` if any
         :param additional_context: an optional additional context
         :return: truth value of *code*
         """
-        global_context = {'event': event} if event else {}
-        global_context.update(self._ev_context)
-        if additional_context:
-            global_context.update(additional_context)
+        if not code:
+            return True
+
+        exposed_context = {'active': lambda s: s in self._interpreter.configuration}
+        exposed_context.update(additional_context if additional_context else {})
 
         try:
-            return eval(code, global_context, self._context)
+            return eval(code, exposed_context, self._context)
         except Exception as e:
-            raise type(e)('The above exception occurred in {} while evaluating:\n{}'.format(obj, code)) from e
+            raise type(e)('The above exception occurred while evaluating:\n{}'.format(code)) from e
 
-    def _execute_code(self, obj, code: str, event: Event=None, additional_context: dict=None):
+    def _execute_code(self, code: str, additional_context: dict=None):
         """
         Execute given code using Python.
 
-        :param obj: involved object (``Transition`` or ``StateMixin`` instance)
         :param code: code to execute
-        :param event: instance of ``Event``, if any
         :param additional_context: an optional additional context
         """
-        global_context = {'event': event} if event else {}
-        global_context.update(self._ex_context)
-        if additional_context:
-            global_context.update(additional_context)
+        if not code:
+            return
+
+        exposed_context = {'Event': Event,
+                           'send': lambda e: self._interpreter.send(e, internal=True)}
+        exposed_context.update(additional_context if additional_context else {})
 
         try:
-            exec(code, global_context, self._context)
+            exec(code, exposed_context, self._context)
         except Exception as e:
-            raise type(e)('The above exception occurred in {} while executing:\n{}'.format(obj, code)) from e
+            raise type(e)('The above exception occurred while executing:\n{}'.format(code)) from e
 
 

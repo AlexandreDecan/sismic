@@ -99,7 +99,7 @@ class Interpreter:
         self._configuration = set()  # Set of active states
         self._events = deque()  # Events queue
         self._silent_contract = silent_contract
-        self._failed_conditions = []  # List of failed conditions, empty if not(self._raise_failed_condition)
+        self._failed_conditions = []  # List of failed conditions, empty if not _silent_contract
 
         self.__start()
 
@@ -123,9 +123,6 @@ class Interpreter:
         """
         Boolean indicating whether this interpreter is not in a final configuration.
         """
-        # for state in self._statechart.leaf_for(list(self._configuration)):
-        #    if not isinstance(self._statechart._states[state], model.FinalState):
-        #        return True
         return len(self._configuration) != 0
 
     @property
@@ -254,9 +251,8 @@ class Interpreter:
 
         # Retrieve the firable transitions for all active state
         for transition in self._statechart.transitions:
-            if transition.event == event and \
-                            transition.from_state in self._configuration and \
-                    (transition.guard is None or self._evaluator.ev_transition_guard(transition, transition.guard, event)):
+            if (transition.event == event and transition.from_state in self._configuration and
+                    (transition.guard is None or self._evaluator.evaluate_guard(transition, event))):
                 transitions.add(transition)
 
         # inner-first/source-state
@@ -409,8 +405,8 @@ class Interpreter:
         # Exit states
         for state in exited_states:
             # Execute exit action
-            if isinstance(state, model.ActionStateMixin) and state.on_exit:
-                self._evaluator.ex_state_onexit(state, state.on_exit)
+            self._evaluator.execute_onexit(state)
+
             # Postconditions
             self.__evaluate_contract_conditions(state, 'postconditions', step)
 
@@ -441,12 +437,11 @@ class Interpreter:
             self.__evaluate_contract_conditions(step.transition, 'invariants', step)
 
             # Execution
-            self._evaluator.ex_transition_action(step.transition, step.transition.action, step.event)
+            self._evaluator.execute_action(step.transition, step.event)
 
             # Postconditions and invariants
             self.__evaluate_contract_conditions(step.transition, 'postconditions', step)
             self.__evaluate_contract_conditions(step.transition, 'invariants', step)
-
 
         # Enter states
         for state in entered_states:
@@ -454,8 +449,7 @@ class Interpreter:
             self.__evaluate_contract_conditions(state, 'preconditions', step)
 
             # Execute entry action
-            if isinstance(state, model.ActionStateMixin) and state.on_entry:
-                self._evaluator.ex_state_onentry(state, state.on_entry)
+            self._evaluator.execute_onentry(state)
 
         # Update configuration
         self._configuration = self._configuration.union(step.entered_states)
@@ -469,8 +463,8 @@ class Interpreter:
 
         :return: A (possibly empty) list of executed MicroStep.
         """
-        if self._statechart.on_entry:
-            self._evaluator.ex_state_onentry(self._statechart, self._statechart.on_entry)
+
+        self._evaluator.execute_onentry(self._statechart)
 
         # Check statechart preconditions
         self.__evaluate_contract_conditions(self._statechart, 'preconditions')
@@ -505,26 +499,19 @@ class Interpreter:
         :param step: step in which the check occurs.
         :raises ConditionFailed: if a condition fails and ``silent_contract`` was set to False.
         """
-        conditions = getattr(obj, cond_type, [])
         exception_klass = {'preconditions': model.PreconditionFailed,
                            'postconditions': model.PostconditionFailed,
                            'invariants': model.InvariantFailed}[cond_type]
-        obj_type = 'transition' if isinstance(obj, model.Transition) else 'state'
-        code_type = cond_type[:-1]  # Remove the ending 's'
 
-        for condition in conditions:
-            # Call the corresponding method
-            if isinstance(obj, model.Transition):
-                call = getattr(self._evaluator, 'ev_transition_{}'.format(code_type))(obj, condition, step.event)
+        unsatisfied_conditions = getattr(self._evaluator, 'evaluate_' + cond_type)(obj, getattr(step, 'event', None))
+
+        for condition in unsatisfied_conditions:
+            exception = exception_klass(configuration=self.configuration, step=step, obj=obj,
+                                        assertion=condition, context=self._evaluator.context)
+            if self._silent_contract:
+                self._failed_conditions.append(exception)
             else:
-                call = getattr(self._evaluator, 'ev_state_{}'.format(code_type))(obj, condition)
-            if not call:
-                exception = exception_klass(configuration=self.configuration, step=step, obj=obj,
-                                            assertion=condition, context=self._evaluator.context)
-                if self._silent_contract:
-                    self._failed_conditions.append(exception)
-                else:
-                  raise exception
+                raise exception
 
     def __repr__(self):
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))
