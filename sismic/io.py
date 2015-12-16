@@ -25,12 +25,12 @@ def import_from_dict(data: dict) -> StateChart:
 
     # Preconditions, postconditions and invariants
     for condition in data.get('contract', []):
-        if condition.get('pre', None):
-            sc.preconditions.append(condition['pre'])
-        elif condition.get('post', None):
-            sc.postconditions.append(condition['post'])
-        elif condition.get('inv', None):
-            sc.invariants.append(condition['inv'])
+        if condition.get('before', None):
+            sc.preconditions.append(condition['before'])
+        elif condition.get('after', None):
+            sc.postconditions.append(condition['after'])
+        elif condition.get('always', None):
+            sc.invariants.append(condition['always'])
 
     states_to_add = []  # list of (state, parent) to be added
     for state in data['states']:
