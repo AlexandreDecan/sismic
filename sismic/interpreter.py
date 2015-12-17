@@ -153,7 +153,7 @@ class Interpreter:
         Reset current interpreter to its initial state.
         This also resets history states memory.
         """
-        self.__init__(self._statechart, self._evaluator_klass)
+        self.__init__(self._statechart, self._evaluator_klass, silent_contract=self._silent_contract)
 
     def execute(self, max_steps: int = -1) -> list:
         """
