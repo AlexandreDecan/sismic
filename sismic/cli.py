@@ -1,4 +1,5 @@
 from io import StringIO
+from functools import partial
 import traceback
 
 from .interpreter import Interpreter
@@ -52,7 +53,7 @@ def cli_execute(args):
     s = StringIO()
 
     sc = import_from_yaml(args.infile)
-    simulator = Interpreter(sc, DummyEvaluator if args.nocode else PythonEvaluator)
+    simulator = Interpreter(sc, DummyEvaluator if args.nocode else PythonEvaluator, silent_contract=args.silentcontract)
 
     if args.verbosity >= 1:
         print('Initial configuration: ' + ', '.join(simulator.configuration), file=s)
@@ -86,7 +87,10 @@ def cli_test(args):
     tests = [import_from_yaml(test) for test in args.tests]
     events = [parse_event(name) for name in args.events]
 
-    config = TesterConfiguration(sc, evaluator_klass=DummyEvaluator if args.nocode else PythonEvaluator)
+    interpreter_klass = partial(Interpreter, silent_contract=args.silentcontract)
+    config = TesterConfiguration(sc,
+                                 evaluator_klass=DummyEvaluator if args.nocode else PythonEvaluator,
+                                 interpreter_klass=interpreter_klass)
     for test in tests:
         config.add_test(test)
 

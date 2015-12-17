@@ -96,6 +96,17 @@ Contracts can be defined for statecharts too:
        - always: x >= 0
        - always: not active('initial') or x > 0
 
+If you make use of the default :py:class:`~sismic.evaluator.PythonEvaluator`, the old value of a variable
+is also available in ``__old__`` for postconditions and invariants:
+
+.. code:: yaml
+
+    contract:
+      always: d > __old__.d
+      after: (x - __old__.x) < d
+
+See the documentation of :py:class:`~sismic.evaluator.PythonEvaluator` for more information.
+
 Example
 *******
 
@@ -104,20 +115,6 @@ to the `Elevator example <https://github.com/AlexandreDecan/sismic/blob/master/e
 
 .. literalinclude:: ../examples/contract/elevator.yaml
    :language: yaml
-
-
-Defining contracts in Python
-----------------------------
-
-
-The class :py:class:`~sismic.model.Transition`, :py:class:`~sismic.model.StateChart` and
-each class that represent a state or a pseudo-state inherit from :py:class:`~sismic.model.ContractMixin`
-which makes available three lists of strings, namely ``invariants``, ``preconditions`` and ``postconditions``.
-
-.. autoclass:: sismic.model.ContractMixin
-    :members:
-    :inherited-members:
-    :undoc-members:
 
 
 Executing statecharts with contract

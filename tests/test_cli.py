@@ -15,7 +15,8 @@ class CommandLineInterfaceTests(unittest.TestCase):
             events=['next', 'pause'],
             verbosity=3,
             nocode=False,
-            maxsteps=-1
+            maxsteps=-1,
+            silentcontract=False,
         )
 
         output = cli.cli_execute(args)
@@ -27,7 +28,8 @@ class CommandLineInterfaceTests(unittest.TestCase):
             events=['goto s2:a=1:b=True:c=\'blabla\'', 'goto final'],
             verbosity=0,
             nocode=False,
-            maxsteps=-1
+            maxsteps=-1,
+            silentcontract=False,
         )
 
         output = cli.cli_execute(args)
@@ -39,7 +41,8 @@ class CommandLineInterfaceTests(unittest.TestCase):
             events=[],
             verbosity=0,
             nocode=False,
-            maxsteps=-1
+            maxsteps=-1,
+            silentcontract=False,
         )
         output = cli.cli_execute(args)
         self.assertEqual(output.strip(), 'Final: True')
@@ -50,7 +53,8 @@ class CommandLineInterfaceTests(unittest.TestCase):
             events=[],
             verbosity=0,
             nocode=False,
-            maxsteps=10
+            maxsteps=10,
+            silentcontract=False,
         )
 
         output = cli.cli_execute(args)
@@ -71,7 +75,8 @@ class CommandLineInterfaceTests(unittest.TestCase):
                    open('examples/tester/elevator/destination_reached.yaml')],
             events=['floorSelected:floor=4'],
             nocode=False,
-            maxsteps=-1
+            maxsteps=-1,
+            silentcontract=False,
         )
         output = cli.cli_test(args)
         self.assertEqual(output.strip(), 'All tests passed')
@@ -83,7 +88,8 @@ class CommandLineInterfaceTests(unittest.TestCase):
                    open('examples/tester/elevator/never_go_7th_floor.yaml')],
             events=['floorSelected:floor=7'],
             nocode=False,
-            maxsteps=-1
+            maxsteps=-1,
+            silentcontract=False,
         )
         output = cli.cli_test(args)
         self.assertNotEqual(output.strip(), 'All tests passed')

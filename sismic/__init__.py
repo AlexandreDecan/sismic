@@ -3,7 +3,7 @@ from . import evaluator, io, model, interpreter, checker
 
 
 __description__ = 'Sismic Interactive State Machine Interpreter and Checker'
-__version__ = '0.8.2'
+__version__ = '0.9.0'
 __url__ = 'https://github.com/AlexandreDecan/sismic/'
 __author__ = 'Alexandre Decan'
 __email__ = 'alexandre.decan@lexpage.net'
@@ -30,6 +30,10 @@ def _parse_args():  # pragma: no cover
                                 action='store_true',
                                 dest='nocode',
                                 help='Ignore code to be evaluated and executed in the statechart')
+    execute_parser.add_argument('--silent-contract',
+                                action='store_true',
+                                dest='silentcontract',
+                                help='Do not raise exception if a contract is not satisfied')
     execute_parser.add_argument('-l', '--limit',
                                 dest='maxsteps',
                                 type=int,
@@ -59,6 +63,10 @@ def _parse_args():  # pragma: no cover
                              action='store_true',
                              dest='nocode',
                              help='Ignore code to be evaluated and executed in the statechart')
+    test_parser.add_argument('--silent-contract',
+                             action='store_true',
+                             dest='silentcontract',
+                             help='Do not raise exception if a contract is not satisfied')
     test_parser.add_argument('-l', '--limit',
                              dest='maxsteps',
                              type=int,

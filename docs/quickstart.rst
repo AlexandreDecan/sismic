@@ -25,10 +25,12 @@ You can isolate Sismic installation by using virtual environments:
 Statechart in YAML
 ------------------
 
-Example of a YAML definition of a statechart for an elevator:
+Example of a YAML definition of a statechart for an elevator.
+This statechart includes contract definition.
 
-.. literalinclude:: ../examples/concrete/elevator.yaml
-   :language: yaml
+
+.. literalinclude:: ../examples/contract/elevator.yaml
+    :language: yaml
 
 
 More examples are available in the *examples* directory.
