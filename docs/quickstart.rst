@@ -38,8 +38,7 @@ More examples are available in the *examples* directory.
 Statechart execution
 --------------------
 
-You can execute this example using the command-line interface or programmatically
-or using the command-line interface, see :ref:`cli_execute`.
+Quick example:
 
 .. code:: python
 
@@ -53,7 +52,7 @@ or using the command-line interface, see :ref:`cli_execute`.
          print('{}: {}'.format(step.transitions, interpreter.configuration))
 
 
-The output should be::
+The output should look like::
 
    [floorSelecting+floorSelected -> floorSelecting]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
    [doorsOpen -> doorsClosed]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']

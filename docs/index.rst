@@ -55,7 +55,6 @@ Contents
     contract
     testing
     evaluation
-    cli
 
 
 Source code
