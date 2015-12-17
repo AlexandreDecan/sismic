@@ -1,5 +1,4 @@
 import copy
-import time
 from .model import Event, Transition, StateMixin
 
 
@@ -161,9 +160,9 @@ class PythonEvaluator(Evaluator):
         - If the code is related to a transition, the ``event`` that fires the transition is exposed.
      - On guard evaluation
         - An ``after(sec) -> bool`` Boolean function that returns ``True`` if and only if the source state
-          was entered more than *sec* seconds ago.
+          was entered more than *sec* seconds ago. The time is evaluated according to Interpreter's clock.
         - A ``idle(sec) -> bool`` Boolean function that returns ``True`` if and only if the source state
-          did not fire a transition for more than *sec* ago.
+          did not fire a transition for more than *sec* ago. The time is evaluated according to Interpreter's clock.
      - On postcondition or invariant:
         - A variable ``__old__`` that has an attribute ``x`` for every ``x`` in the context when either the state
           was entered (if the condition involves a state) or the transition was processed (if the condition
@@ -240,8 +239,8 @@ class PythonEvaluator(Evaluator):
         if transition.guard:
             context = {
                 'event': event,
-                'after': lambda i: time.time() - i >= self._entry_time[transition.from_state],
-                'idle': lambda i: time.time() - i >= self._idle_time[transition.from_state]
+                'after': lambda i: self._interpreter.time - i >= self._entry_time[transition.from_state],
+                'idle': lambda i: self._interpreter.time - i >= self._idle_time[transition.from_state]
             }
             return self._evaluate_code(transition.guard, context)
 
@@ -250,8 +249,8 @@ class PythonEvaluator(Evaluator):
         self._memory[id(state)] = PythonEvaluator.FrozenContext(self._context)
 
         # Set timer
-        self._entry_time[state.name] = time.time()
-        self._idle_time[state.name] = time.time()
+        self._entry_time[state.name] = self._interpreter.time
+        self._idle_time[state.name] = self._interpreter.time
 
         super().execute_onentry(state)
 
@@ -259,7 +258,7 @@ class PythonEvaluator(Evaluator):
         # Set memory
         self._memory[id(transition)] = PythonEvaluator.FrozenContext(self._context)
         # Set timer
-        self._idle_time[transition.from_state] = time.time()
+        self._idle_time[transition.from_state] = self._interpreter.time
 
         super().execute_action(transition, event)
 
