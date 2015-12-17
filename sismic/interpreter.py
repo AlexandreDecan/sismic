@@ -126,7 +126,7 @@ class Interpreter:
     @property
     def failed_conditions(self):
         """
-        If ``raise_failed_condition`` was set to ``False`` when this interpreter was initialized,
+        If ``silent_contract`` was set to ``True`` when this interpreter was initialized,
         this list contains every ``model.ConditionFailed`` that occurred when a condition
         was not satisfied.
         """
