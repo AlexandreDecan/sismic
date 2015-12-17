@@ -9,40 +9,6 @@ For example, the ``on entry`` property on a statechart, the ``guard`` or ``actio
 
 In Sismic, these pieces of code can be evaluated and executed by :py:class:`~sismic.evaluator.Evaluator` instances.
 
-The documentation below explains how an evaluator is organized and what does the default built-in Python evaluator.
-You could skip this part of the documentation if you are not interested to tune existing evaluators or to create
-new ones.
-
-
-Anatomy of a code evaluator
----------------------------
-
-An :py:class:`~sismic.evaluator.Evaluator` must provide two main methods and an attribute:
-
-.. automethod:: sismic.evaluator.Evaluator._evaluate_code
-.. automethod:: sismic.evaluator.Evaluator._execute_code
-.. autoattribute:: sismic.evaluator.Evaluator.context
-
-Notice that none of the two methods are actually called by the interpreter during the execution of a
-statechart. These methods are fallback methods, meaning they are implicitly called when one of the
-following methods is not defined in a concrete evaluator instance:
-
-.. autoclass:: sismic.evaluator.Evaluator
-    :members:
-    :exclude-members: _evaluate_code, _execute_code, context
-
-The documentation of the :py:class:`~sismic.evaluator.Evaluator` already mentions this, but it is something
-that is very important:
-
- - Methods :py:meth:`~sismic.evaluator.Evaluator.execute_onentry` and :py:meth:`~sismic.evaluator.Evaluator.execute_onexit`
-   are called respectively when a state is entered or exited, even if this state does not define a ``on_entry`` or
-   ``on_exit`` attribute.
- - Method :py:meth:`~sismic.evaluator.Evaluator.execute_action` is called when a transition is processed, even if
-   the transition does not define any ``action``.
-
-This allows the evaluator to keep track of the states that are entered or exited, and of the transitions that are
-processed.
-
 .. _python_evaluator:
 
 Built-in Python code evaluator
@@ -53,6 +19,10 @@ By default, Sismic provides two built-in :py:class:`~sismic.evaluator.Evaluator`
  - A :py:class:`~sismic.evaluator.DummyEvaluator` that always evaluates to ``True`` and silently ignores
    ``action``, ``on entry`` and ``on exit``. Its context is an empty dictionary.
  - A :py:class:`~sismic.evaluator.PythonEvaluator` that brings Python into our statecharts and which is used by default.
+
+
+The *context* of an evaluator
+*****************************
 
 An instance of :py:class:`~sismic.evaluator.PythonEvaluator` can evaluate and execute Python code expressed in the statechart.
 The key point to understand how it works is the concept of ``context``, which is a dictionary-like structure that contains the data
@@ -82,7 +52,48 @@ When a :py:class:`~sismic.evaluator.PythonEvaluator` instance is initialized, a 
 
     evaluator = PythonEvaluator(initial_context={'x': 1, 'math': my_favorite_module})
 
+Depending on the situation (entered state, guard evaluation, etc.), the context is populated with additional
+entries. These entries are covered in the next section.
+
+
+Features of the built-in Python evaluator
+*****************************************
+
 .. autoclass:: sismic.evaluator.PythonEvaluator
+
+
+Anatomy of a code evaluator
+---------------------------
+
+The documentation below explains how an evaluator is organized and what does the default built-in Python evaluator.
+You could skip this part of the documentation if you are not interested to tune existing evaluators or to create
+new ones.
+
+An :py:class:`~sismic.evaluator.Evaluator` must provide two main methods and an attribute:
+
+.. automethod:: sismic.evaluator.Evaluator._evaluate_code
+.. automethod:: sismic.evaluator.Evaluator._execute_code
+.. autoattribute:: sismic.evaluator.Evaluator.context
+
+Notice that none of the two methods are actually called by the interpreter during the execution of a
+statechart. These methods are fallback methods, meaning they are implicitly called when one of the
+following methods is not defined in a concrete evaluator instance:
+
+.. autoclass:: sismic.evaluator.Evaluator
+    :members:
+    :exclude-members: _evaluate_code, _execute_code, context
+
+The documentation of the :py:class:`~sismic.evaluator.Evaluator` already mentions this, but it is something
+that is very important:
+
+ - Methods :py:meth:`~sismic.evaluator.Evaluator.execute_onentry` and :py:meth:`~sismic.evaluator.Evaluator.execute_onexit`
+   are called respectively when a state is entered or exited, even if this state does not define a ``on_entry`` or
+   ``on_exit`` attribute.
+ - Method :py:meth:`~sismic.evaluator.Evaluator.execute_action` is called when a transition is processed, even if
+   the transition does not define any ``action``.
+
+This allows the evaluator to keep track of the states that are entered or exited, and of the transitions that are
+processed.
 
 
 Examples

@@ -1,0 +1,22 @@
+statechart:
+  name: Statechart with timer
+  initial: s1
+  states:
+    - name: s1
+      on entry: print('s1')
+      transitions:
+        - target: s2
+          guard: after(3)
+    - name: s2
+      on entry: print('s2')
+      transitions:
+        - target: s3
+          guard: after(2)
+    - name: s3
+      on entry: print('s3')
+      transitions:
+        - target: s4
+          guard: idle(2)
+    - name: s4
+      on entry: print('s4')
+      type: final
