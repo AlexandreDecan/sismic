@@ -10,23 +10,21 @@ class MicroStep:
     of ``entered_states`` and a list of ``exited_states``.
     Order in the two lists is REALLY important!
 
-    :param time: integer representing the time at which this step was processed
     :param event: Event or None in case of eventless transition
     :param transition: a ''Transition`` or None if no processed transition
     :param entered_states: possibly empty list of entered states
     :param exited_states: possibly empty list of exited states
     """
 
-    def __init__(self, time, event: model.Event = None, transition: model.Transition = None,
+    def __init__(self, event: model.Event = None, transition: model.Transition = None,
                  entered_states: list = None, exited_states: list = None):
         self.event = event
         self.transition = transition if transition else []
         self.entered_states = entered_states if entered_states else []
         self.exited_states = exited_states if exited_states else []
-        self.time = time
 
     def __repr__(self):
-        return 'MicroStep@{}({}, {}, {}, {})'.format(self.time, self.event, self.transition, self.entered_states, self.exited_states)
+        return 'MicroStep({}, {}, >{}, <{})'.format(self.event, self.transition, self.entered_states, self.exited_states)
 
 
 class MacroStep:
@@ -77,51 +75,7 @@ class MacroStep:
         return states
 
     def __repr__(self):
-        return 'MacroStep({}, {}, {}, {})'.format(self.event, self.transitions, self.entered_states, self.exited_states)
-
-
-class Clock:
-    """
-    A clock object that is used by an interpreter.
-    """
-    def __init__(self):
-        self._time = 0
-
-    @property
-    def time(self) -> float:
-        """
-        Time returned by this clock.
-        """
-        return self._time
-
-    def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, self.time)
-
-
-class RealTimeClock(Clock):
-    """
-    A clock that is synchronized with python's ``time.time()`` function.
-    """
-    def __init__(self):
-        super().__init__()
-        import time
-        self._timer = time.time
-
-    @property
-    def time(self):
-        return self._timer()
-
-
-class SimulatedClock(Clock):
-    """
-    A discrete clock that must be manually updated using ``delta``.
-    """
-    def delta(self, delta_t: int):
-        """
-        Update the clock and add ``delta_t``.
-        :param delta_t: time to add
-        """
-        self._time += delta_t
+        return 'MacroStep({}, {}, >{}, <{})'.format(self.event, self.transitions, self.entered_states, self.exited_states)
 
 
 class Interpreter:
@@ -132,20 +86,17 @@ class Interpreter:
     :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
         ``Evaluator`` instance that will be used to initialize the interpreter.
         By default, an ``PythonEvaluator`` will be used.
-    :param clock_klass: an optional callable (eg. a class) that return a clock instance that will be used
-        by this interpreter to synchronize. Default is ``RealTimeClock``.
     :param silent_contract: Set to True to store ``ConditionFailed`` exceptions instead of raising them.
     """
 
-    def __init__(self, statechart: model.StateChart, evaluator_klass=PythonEvaluator, clock_klass=RealTimeClock, silent_contract: bool = False):
-        self._evaluator = evaluator_klass(self) if evaluator_klass else PythonEvaluator(self)
-        self._evaluator_klass = evaluator_klass
+    def __init__(self, statechart: model.StateChart, evaluator_klass=None, silent_contract: bool = False):
 
-        self._clock = clock_klass()
-        self._clock_klass = clock_klass
+        self._evaluator_klass = evaluator_klass
+        self._evaluator = evaluator_klass(self) if evaluator_klass else PythonEvaluator(self)
 
         self._statechart = statechart
 
+        self._time = 0  # Internal clock
         self._memory = {}  # History states memory
         self._configuration = set()  # Set of active states
         self._events = deque()  # Events queue
@@ -153,6 +104,21 @@ class Interpreter:
         self._failed_conditions = []  # List of failed conditions, empty if not _silent_contract
 
         self.__start()
+
+    @property
+    def time(self) -> int:
+        """
+        Time value (in seconds) for the internal clock
+        """
+        return self._time
+
+    @time.setter
+    def time(self, value):
+        """
+        Set the time of the internal clock
+        :param value: time value (in seconds)
+        """
+        self._time = value
 
     @property
     def configuration(self) -> list:
@@ -185,13 +151,6 @@ class Interpreter:
         """
         return self._failed_conditions
 
-    @property
-    def time(self):
-        """
-        Current time of the clock associated with this interpreter.
-        """
-        return self._clock.time
-
     def send(self, event: model.Event, internal: bool = False):
         """
         Send an event to the interpreter, and add it into the event queue.
@@ -212,10 +171,7 @@ class Interpreter:
         Reset current interpreter to its initial state.
         This also resets history states memory.
         """
-        self.__init__(self._statechart,
-                      evaluator_klass=self._evaluator_klass,
-                      clock_klass=self._clock_klass,
-                      silent_contract=self._silent_contract)
+        self.__init__(self._statechart, self._evaluator_klass, silent_contract=self._silent_contract)
 
     def execute(self, max_steps: int = -1) -> list:
         """
@@ -262,7 +218,7 @@ class Interpreter:
                 transitions = self._select_transitions(event)
                 # If the event can not be processed, discard it
                 if len(transitions) == 0:
-                    return MacroStep([MicroStep(time=self.time, event=event)])
+                    return MacroStep([MicroStep(event=event)])
             else:
                 return None  # No step to do!
 
@@ -384,7 +340,7 @@ class Interpreter:
         for transition in transitions:
             # Internal transition
             if transition.to_state is None:
-                returned_steps.append(MicroStep(time=self.time, event=event, transition=transition))
+                returned_steps.append(MicroStep(event, transition, [], []))
                 continue
 
             lca = self._statechart.least_common_ancestor(transition.from_state, transition.to_state)
@@ -418,8 +374,7 @@ class Interpreter:
                     break
                 entered_states.insert(0, state)
 
-            returned_steps.append(MicroStep(time=self.time, event=event, transition=transition,
-                                            entered_states=entered_states, exited_states=exited_states))
+            returned_steps.append(MicroStep(event, transition, entered_states, exited_states))
 
         return returned_steps
 
@@ -444,18 +399,18 @@ class Interpreter:
         if len(leaves) > 0 and all([isinstance(s, model.FinalState) for s in leaves]):
             # Leave all states
             exited_states = sorted(self._configuration, key=lambda s: (-self._statechart.depth_of(s), s))
-            return MicroStep(time=self.time, exited_states=exited_states)
+            return MicroStep(exited_states=exited_states)
 
         # Otherwise, develop history, compound and orthogonal states.
         for leaf in leaves:
             if isinstance(leaf, model.HistoryState):
                 states_to_enter = self._memory.get(leaf.name, [leaf.initial])
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_of(x), x))
-                return MicroStep(time=self.time, entered_states=states_to_enter, exited_states=[leaf.name])
+                return MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, model.OrthogonalState):
-                return MicroStep(time=self.time, entered_states=sorted(leaf.children))
+                return MicroStep(entered_states=sorted(leaf.children))
             elif isinstance(leaf, model.CompoundState) and leaf.initial:
-                return MicroStep(time=self.time, entered_states=[leaf.initial])
+                return MicroStep(entered_states=[leaf.initial])
 
     def _execute_step(self, step: MicroStep):
         """
@@ -534,7 +489,7 @@ class Interpreter:
         self.__evaluate_contract_conditions(self._statechart, 'preconditions')
 
         # Initial step and stabilization
-        step = MicroStep(time=self.time, entered_states=[self._statechart.initial])
+        step = MicroStep(entered_states=[self._statechart.initial])
         self._execute_step(step)
 
         return [step] + self.__stabilize()

@@ -85,7 +85,9 @@ Consider the following example.
     from sismic.model import Event
 
     interpreter = Interpreter(my_statechart)
+
     # We are now in a stable initial state
+
     interpreter.send(Event('click'))  # Send event to the interpreter
     interpreter.execute_once()  # Will process the event if no eventless transitions are found at first
 
@@ -153,7 +155,7 @@ and is thus commonly used to get a list of the "interesting" events:
 Putting all together, the main methods and attributes of a simulator instance are:
 
 .. autoclass:: sismic.interpreter.Interpreter
-    :members: send, execute_once, execute, configuration, running, reset
+    :members: send, execute_once, execute, time, configuration, running, reset
 
 
 .. _steps:
@@ -195,6 +197,184 @@ This way, a complete run of a state machine can be summarized as an ordered list
 and details of such a run can be obtained using the :py:class:`~sismic.interpreter.MicroStep` list of a
 :py:class:`~sismic.interpreter.MacroStep`.
 
+
+Dealing with time
+-----------------
+
+It is quite usual in a statechart to rely on some notion of time.
+For example, the built-in evaluator (see :py:class:`~sismic.evaluator.PythonEvaluator`) has support for
+``after(x)`` and ``idle(x)``, meaning that a transition can be triggered after a certain amount of time.
+
+When it comes to interpret statecharts, Sismic deals with time using an internal clock whose value is exposed
+by the :py:attr:`~sismic.interpreter.Interpreter.time` property of an :py:class:`~sismic.interpreter.Interpreter`.
+Basically, this clock does nothing by itself except being available for an
+:py:class:`~sismic.evaluator.Evaluator` instance.
+If your statechart needs to rely on a time value, you have to set it by yourself.
+
+Short examples are better than a long explanation.
+
+
+Example with simulated time
+***************************
+
+Sismic provides a discrete step-by-step interpreter for statecharts.
+It seems natural in a discrete simulation to rely on simulated time.
+
+In the following example, we'll consider the *elevator* statechart.
+We will send the elevator to the 4th floor and, according to the yaml definition of this statechart,
+the elevator should automatically go back to the ground floor after 10 seconds.
+
+.. code:: yaml
+
+    - target: doorsClosed
+      guard: after(10) and current > 0
+      action: destination = 0
+
+Of course, we are not going to wait those 10 seconds, but we are going to simulate them.
+First, we load the statechart and initialize the interpreter:
+
+.. code:: python
+
+    from sismic.io import import_from_yaml
+    from sismic.interpreter import Interpreter
+    from sismic.model import Event
+
+    with open('examples/concrete/elevator.yaml') as f:
+        statechart = import_from_yaml(f)
+
+    interpreter = Interpreter(statechart)
+
+The internal clock of our interpreter is ``0``.
+This is, ``interpreter.time == 0`` holds. We make our elevator reaching the 4th floor.
+
+.. code:: python
+
+    interpreter.send(Event('floorSelected', data={'floor': 4}))
+    interpreter.execute()
+
+The elevator should be on the 4th floor. We now inform the interpreter that 2 seconds elapsed:
+
+.. code:: python
+
+    interpreter.time += 2
+    print(interpreter.execute())
+
+The output should be an empty list ``[]``. Nothing happened since the condition ``after(10)`` is not
+satisfied. We now inform the interpreter that 8 additional seconds elapsed.
+
+.. code:: python
+
+    interpreter.time += 8
+    print(interpreter.execute())
+
+The output now contains a list of steps, where we can see that the elevator has moved down to the ground floor.
+We can check the current floor:
+
+.. code:: python
+
+    print(interpreter._evaluator.context['current'])
+
+This displays ``0``.
+
+Example with real time
+**********************
+
+If your statechart needs to be aware of a real clock, the simplest way to do it is to use
+the :py:func:`time.time` function of Python.
+In a nutshell, the idea is to synchronize ``interpreter.time`` with a real clock.
+Let us first initialize an interpreter using one of our statechart example, the *elevator*:
+
+.. code:: python
+
+    from sismic.io import import_from_yaml
+    from sismic.interpreter import Interpreter
+    from sismic.model import Event
+
+    with open('examples/concrete/elevator.yaml') as f:
+        statechart = import_from_yaml(f)
+
+    interpreter = Interpreter(statechart)
+
+The interpreter initially sets its clock to 0.
+As we are interested in a real time simulation of the statechart, we need to set the internal clock of
+our interpreter. We import from :py:mod:`time` a real clock, and store its value into an ``starttime`` variable.
+
+.. code:: python
+
+    import time
+    starttime = time.time()
+
+We can now execute the statechart by sending event, and wait for the output.
+For our example, we first send to elevator to the 4th floor.
+
+.. code:: python
+
+    interpreter.send(Event('floorSelected', data={'floor': 4}))
+    interpreter.execute()
+
+At this point, the elevator is on the 4th floor and is waiting for another input.
+The internal clock value is still 0.
+We should inform our interpreter of the new current time.
+Of course, as our interpreter follows a discrete simulation, nothing really happens until we call
+:py:meth:`~sismic.interpreter.Interpreter.execute` or :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
+
+.. code:: python
+
+    interpreter.time = time.time() - starttime
+    # Does nothing if (time.time() - starttime) is less than 10!
+    interpreter.execute()
+
+Assuming you quickly wrote these lines of code, nothing happened.
+But if you wait a little bit, and update the clock again, it should move the elevator to the ground floor.
+
+.. code:: python
+
+    interpreter.time = time.time() - starttime
+    interpreter.execute()
+
+And *voilà*!
+
+As it is not very convenient to manually set the clock each time your want to execute something, it is best to
+put it in a loop.
+
+.. code:: python
+
+    from sismic.io import import_from_yaml
+    from sismic.interpreter import Interpreter
+    from sismic.model import Event
+
+    with open('examples/concrete/elevator.yaml') as f:
+        statechart = import_from_yaml(f)
+
+    interpreter = Interpreter(statechart)
+
+    # Initial scenario
+    interpreter.send(Event('floorSelected', data={'floor': 4}))
+
+    import time
+    starttime = time.time()
+
+    while interpreter.running:
+        interpreter.time = time.time() - starttime
+        if interpreter.execute():
+            print('something happened at time {}\n'.format(time.time()))
+
+        time.sleep(0.5)  # 500ms
+
+Here, we called :py:func:`~time.sleep` function to slow down the loop (optional).
+The output should look like::
+
+    Closing doors
+    Opening doors
+    something happened at time 1450383083.9943285
+
+    Closing doors
+    Opening doors
+    something happened at time 1450383093.9920669
+
+As our statechart does not define any way to reach a final configuration, the ``interpreter.running`` condition
+always hold, and you have to manually interrupt the execution. This can be avoided using threads for example,
+but will be not covered by this documentation.
 
 
 .. _other_semantics:

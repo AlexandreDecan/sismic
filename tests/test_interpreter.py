@@ -93,7 +93,7 @@ class SimulatorElevatorTests(unittest.TestCase):
         interpreter.send(Event('floorSelected', {'floor': 4}))
         interpreter.execute()
         self.assertEqual(interpreter._evaluator.context['current'], 4)
-        interpreter.send(Event('after10s'))
+        interpreter.time += 10
         interpreter.execute()
 
         self.assertTrue('doorsOpen' in interpreter.configuration)

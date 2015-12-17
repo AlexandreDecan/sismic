@@ -30,9 +30,10 @@ statechart:
                   guard: destination != current
                   action: doors.close()
                 - target: doorsClosed
-                  event: after10s
-                  guard: current > 0
-                  action: destination = 0
+                  guard: after(10) and current > 0
+                  action: |
+                    destination = 0
+                    doors.close()
             - name: doorsClosed
               transitions:
                 - target: movingUp
