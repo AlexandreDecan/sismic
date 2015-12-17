@@ -37,16 +37,16 @@ The semantic of pre/postconditions and invariants is not surprising:
 
 
  - For states:
-    - the preconditions are checked before the state is entered (and before executing ``on entry``).
-    - the postconditions are checked after the state is exited (and after executing ``on exit``).
+    - the preconditions are checked before the state is entered (and **before** executing ``on entry``).
+    - the postconditions are checked after the state is exited (and **after** executing ``on exit``).
     - the invariants are checked at the end of each macro step. The state must be in the active configuration.
  - For transitions:
-    - the preconditions are checked before the process of the transition (and before executing transition action).
-    - the postconditions are checked after the process of the transition (and after executing transition action).
+    - the preconditions are checked before the process of the transition (and **before** executing transition action).
+    - the postconditions are checked after the process of the transition (and **after** executing transition action).
     - the invariants are checked before and after the process of the transition.
  - For statecharts:
-    - the preconditions are checked before any stabilization step (**but** after executing ``on entry``).
-    - the postconditions are checked when the statechart enters a final configuration.
+    - the preconditions are checked before any stabilization step (but **after** executing ``on entry``).
+    - the postconditions are checked after the statechart enters a final configuration.
     - the invariants are checked at the end of each macro step.
 
 

@@ -32,7 +32,7 @@ class Evaluator:
     def _evaluate_code(self, code: str, additional_context: dict=None) -> bool:
         """
         Generic method to evaluate a piece of code. This method is a fallback if one of
-        the ev_* methods is not overridden.
+        the other evaluate_* methods is not overridden.
 
         :param code: code to evaluate
         :param additional_context: an optional additional context
@@ -43,7 +43,7 @@ class Evaluator:
     def _execute_code(self, code: str, additional_context: dict=None):
         """
         Generic method to execute a piece of code. This method is a fallback if one
-        of the ex_* methods is not overridden.
+        of the other execute_* methods is not overridden.
 
         :param code: code to execute
         :param additional_context: an optional additional context
@@ -137,24 +137,9 @@ class DummyEvaluator(Evaluator):
         return dict()
 
     def _evaluate_code(self, code: str, additional_context: dict=None) -> bool:
-        """
-        Generic method to evaluate a piece of code. This method is a fallback if one of
-        the ev_* methods is not overridden.
-
-        :param code: code to evaluate
-        :param additional_context: an optional additional context
-        :return: truth value of *code*
-        """
         return True
 
     def _execute_code(self, code: str, additional_context: dict=None):
-        """
-        Generic method to execute a piece of code. This method is a fallback if one
-        of the ex_* methods is not overridden.
-
-        :param code: code to execute
-        :param additional_context: an optional additional context
-        """
         return
 
 
@@ -168,7 +153,7 @@ class PythonEvaluator(Evaluator):
         - A ``send`` function that takes an ``Event`` (also exposed) and fires an internal event with.
         - If the code is related to a transition, the ``event`` that fires the transition is exposed.
      - On code evaluation
-        - An ``active(name) --> bool`` Boolean function that takes a state name and return ``True`` if and only
+        - An ``active(name) -> bool`` Boolean function that takes a state name and return ``True`` if and only
           if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
           that makes use of this evaluator.
         - If the code is related to a transition, the ``event`` that fires the transition is exposed.
