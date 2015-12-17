@@ -1,4 +1,5 @@
 import copy
+import time
 from .model import Event, Transition, StateMixin
 
 
@@ -17,7 +18,8 @@ class Evaluator:
         is expected to be an ``Interpreter`` instance
     :param initial_context: an optional dictionary to populate the context
     """
-    def __init__(self, interpreter=None, initial_context: dict=None):
+
+    def __init__(self, interpreter=None, initial_context: dict = None):
         self._context = initial_context if initial_context else {}
         self._interpreter = interpreter
 
@@ -29,7 +31,7 @@ class Evaluator:
         """
         return self._context
 
-    def _evaluate_code(self, code: str, additional_context: dict=None) -> bool:
+    def _evaluate_code(self, code: str, additional_context: dict = None) -> bool:
         """
         Generic method to evaluate a piece of code. This method is a fallback if one of
         the other evaluate_* methods is not overridden.
@@ -40,7 +42,7 @@ class Evaluator:
         """
         raise NotImplementedError()
 
-    def _execute_code(self, code: str, additional_context: dict=None):
+    def _execute_code(self, code: str, additional_context: dict = None):
         """
         Generic method to execute a piece of code. This method is a fallback if one
         of the other execute_* methods is not overridden.
@@ -93,7 +95,7 @@ class Evaluator:
         if getattr(state, 'on_exit', None):
             return self._execute_code(state.on_exit)
 
-    def evaluate_preconditions(self, obj, event: Event=None) -> list:
+    def evaluate_preconditions(self, obj, event: Event = None) -> list:
         """
         Evaluate the preconditions for given object (either a ``ActionStateMixin`` or a
         ``Transition``) and return a list of conditions that are not satisfied.
@@ -104,7 +106,7 @@ class Evaluator:
         event_d = {'event': event} if isinstance(obj, Transition) else None
         return filter(lambda c: not self._evaluate_code(c, event_d), getattr(obj, 'preconditions', []))
 
-    def evaluate_invariants(self, obj, event: Event=None) -> list:
+    def evaluate_invariants(self, obj, event: Event = None) -> list:
         """
         Evaluate the invariants for given object (either a ``ActionStateMixin`` or a
         ``Transition``) and return a list of conditions that are not satisfied.
@@ -115,7 +117,7 @@ class Evaluator:
         event_d = {'event': event} if isinstance(obj, Transition) else None
         return filter(lambda c: not self._evaluate_code(c, event_d), getattr(obj, 'invariants', []))
 
-    def evaluate_postconditions(self, obj, event: Event=None) -> list:
+    def evaluate_postconditions(self, obj, event: Event = None) -> list:
         """
         Evaluate the postconditions for given object (either a ``ActionStateMixin`` or a
         ``Transition``) and return a list of conditions that are not satisfied.
@@ -136,10 +138,10 @@ class DummyEvaluator(Evaluator):
     def context(self):
         return dict()
 
-    def _evaluate_code(self, code: str, additional_context: dict=None) -> bool:
+    def _evaluate_code(self, code: str, additional_context: dict = None) -> bool:
         return True
 
-    def _execute_code(self, code: str, additional_context: dict=None):
+    def _execute_code(self, code: str, additional_context: dict = None):
         return
 
 
@@ -157,10 +159,15 @@ class PythonEvaluator(Evaluator):
           if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
           that makes use of this evaluator.
         - If the code is related to a transition, the ``event`` that fires the transition is exposed.
+     - On guard evaluation
+        - An ``after(sec) -> bool`` Boolean function that returns ``True`` if and only if the source state
+          was entered more than *sec* seconds ago.
+        - A ``idle(sec) -> bool`` Boolean function that returns ``True`` if and only if the source state
+          did not fire a transition for more than *sec* ago.
      - On postcondition or invariant:
-        - A variable ``__old__`` that have attribute ``x`` for every ``x`` in the context when either the state
+        - A variable ``__old__`` that has an attribute ``x`` for every ``x`` in the context when either the state
           was entered (if the condition involves a state) or the transition was processed (if the condition
-          involves a transition). The value of ``__old__.x`` is a shallow copy of ``x`` at this time.
+          involves a transition). The value of ``__old__.x`` is a shallow copy of ``x`` at that time.
 
     Unless you override its entry in the context, the ``__builtins__`` of Python are automatically exposed.
     This implies you can use nearly everything from Python in your code.
@@ -173,11 +180,13 @@ class PythonEvaluator(Evaluator):
     :param initial_context: a dictionary that will be used as ``__locals__``
     """
 
-    def __init__(self, interpreter=None, initial_context: dict=None):
+    def __init__(self, interpreter=None, initial_context: dict = None):
         super().__init__(interpreter, initial_context)
-        self._memory = {}  # Stores context on state entry and transition action
+        self._memory = {}  # Associate to each state or transition the context on state entry and transition action
+        self._idle_time = {}  # Associate a timer to each state name (idle timer)
+        self._entry_time = {}  # Associate a timer to each state name (entry timer)
 
-    def _evaluate_code(self, code: str, additional_context: dict=None) -> bool:
+    def _evaluate_code(self, code: str, additional_context: dict = None) -> bool:
         """
         Evaluate given code using Python.
 
@@ -196,7 +205,7 @@ class PythonEvaluator(Evaluator):
         except Exception as e:
             raise type(e)('The above exception occurred while evaluating:\n{}'.format(code)) from e
 
-    def _execute_code(self, code: str, additional_context: dict=None):
+    def _execute_code(self, code: str, additional_context: dict = None):
         """
         Execute given code using Python.
 
@@ -220,33 +229,48 @@ class PythonEvaluator(Evaluator):
         A shallow copy of a context. The keys of the underlying context are
         exposed as attributes.
         """
+
         def __init__(self, context: dict):
             self.__frozencontext = {k: copy.copy(v) for k, v in context.items()}
 
         def __getattr__(self, item):
             return self.__frozencontext[item]
 
+    def evaluate_guard(self, transition: Transition, event: Event) -> bool:
+        if transition.guard:
+            context = {
+                'event': event,
+                'after': lambda i: time.time() - i >= self._entry_time[transition.from_state],
+                'idle': lambda i: time.time() - i >= self._idle_time[transition.from_state]
+            }
+            return self._evaluate_code(transition.guard, context)
+
     def execute_onentry(self, state: StateMixin):
         # Set memory
         self._memory[id(state)] = PythonEvaluator.FrozenContext(self._context)
+
+        # Set timer
+        self._entry_time[state.name] = time.time()
+        self._idle_time[state.name] = time.time()
 
         super().execute_onentry(state)
 
     def execute_action(self, transition: Transition, event: Event):
         # Set memory
         self._memory[id(transition)] = PythonEvaluator.FrozenContext(self._context)
+        # Set timer
+        self._idle_time[transition.from_state] = time.time()
 
         super().execute_action(transition, event)
 
-    def evaluate_postconditions(self, obj, event: Event=None):
+    def evaluate_postconditions(self, obj, event: Event = None):
         context = {'event': event} if isinstance(obj, Transition) else {}
         context['__old__'] = (self._memory.get(id(obj), None))
 
         return filter(lambda c: not self._evaluate_code(c, context), getattr(obj, 'postconditions', []))
 
-    def evaluate_invariants(self, obj, event: Event=None):
+    def evaluate_invariants(self, obj, event: Event = None):
         context = {'event': event} if isinstance(obj, Transition) else {}
         context['__old__'] = (self._memory.get(id(obj), None))
 
         return filter(lambda c: not self._evaluate_code(c, context), getattr(obj, 'invariants', []))
-
