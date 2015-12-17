@@ -21,6 +21,7 @@ statechart:
   contract:
     - before: current == 0
     - always: current >= 0  # Floor must be valid
+    - always: destination >= 0  # Selected floor must be valid
   states:
     - name: active
       parallel states:
@@ -36,6 +37,9 @@ statechart:
                   event: after10s
                   guard: current > 0
                   action: destination = 0
+                  contract:
+                    - before: current > 0
+                    - after: destination = 0
             - name: doorsClosed
               transitions:
                 - target: movingUp
@@ -47,10 +51,14 @@ statechart:
                 - always: not doors.opened  # Keep doors closed while moving
                 - before: destination != current  # Move only if destination is not reached
                 - after: destination == current  # Destination should be reached
+                - after: current != __old__.current  # Current changed (redundant)
               transitions:
                 - target: doorsOpen
                   guard: destination == current
                   action: doors.open()
+                  contract:
+                    - before: not doors.opened  # Doors are closed
+                    - after: doors.opened  # Doors are opened
               states:
                 - name: movingUp
                   on entry: current = current + 1
@@ -78,5 +86,3 @@ statechart:
                 - target: floorSelecting
                   event: floorSelected
                   action: destination = event.floor
-                  contract:
-                    - after: destination >= 0  # Destination should be valid

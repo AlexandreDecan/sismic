@@ -50,7 +50,7 @@ Each tester is executed using by default a :py:class:`~sismic.evaluator.PythonEv
 (the *context*) are available during execution. The context is exposed through a ``step`` variable to the tester,
 and contains the following items:
 
-.. py:function:: entered(state_name: str) -> bool
+.. py:function:: step.entered(state_name: str) -> bool
 
    Return *True* if given state name was entered in the last executed step.
 
@@ -67,7 +67,7 @@ and contains the following items:
 
 .. py:function:: step.processed(event_name: str) -> bool
 
-   Return *True* if given event was part of the last executed transition.
+   Return *True* if given event was part of the one of the executed transitions.
 
 
 .. py:function:: step.consumed(event_name: str) -> bool
@@ -79,12 +79,14 @@ and contains the following items:
 Moreover, the context of a tester also expose the context of the tested statechart through ``step.context``.
 This way, you can define guards (or actions) that rely on the data available in the tested statechart.
 
+.. py:function:: step.context
+
 For example, the guard in the following transition (in a statechart tester) checks that ``moving`` is an active state
 in tested statechart's current step, and checks the value of tested statechart's ``destination``:
 
 .. code:: yaml
 
-    statemachine:
+    statechart:
         # ...
         transitions:
          - guard: step.active('moving') and step.context['destination'] > 0
@@ -135,7 +137,7 @@ The ``on entry`` of ``error`` then raises an ``AssertionError``.
    :language: yaml
 
 
-The *testing* module
+The *checker* module
 --------------------
 
 The :py:mod:`sismic.checker` module essentially defines the following classes:

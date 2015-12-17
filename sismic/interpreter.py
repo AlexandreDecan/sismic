@@ -29,8 +29,7 @@ class MicroStep:
 
 class MacroStep:
     """
-    A macro step is a list of micro steps instances, corresponding to the process of at most one transition and
-    the conseuctive stabilization micro steps.
+    A macro step is a list of micro steps.
 
     :param steps: a list of ``MicroStep`` instances
     """
@@ -127,7 +126,7 @@ class Interpreter:
     @property
     def failed_conditions(self):
         """
-        If ``raise_failed_condition`` was set to ``False`` when this interpreter was initialized,
+        If ``silent_contract`` was set to ``True`` when this interpreter was initialized,
         this list contains every ``model.ConditionFailed`` that occurred when a condition
         was not satisfied.
         """
@@ -140,7 +139,7 @@ class Interpreter:
         :param event: an ``Event`` instance
         :param internal: set to True if the provided ``Event`` should be considered as
             an internal event (and thus, as to be prepended to the events queue).
-        :return: ``self``
+        :return: ``self`` so it can be chained.
         """
         if internal:
             self._events.appendleft(event)
@@ -375,6 +374,7 @@ class Interpreter:
         # Check if we are in a set of "stable" states
         leaves_names = self._statechart.leaf_for(list(self._configuration))
         leaves = list(map(lambda s: self._statechart.states[s], leaves_names))
+        leaves = sorted(leaves, key=lambda s: (-self._statechart.depth_of(s.name), s.name))
 
         # Final states?
         if len(leaves) > 0 and all([isinstance(s, model.FinalState) for s in leaves]):

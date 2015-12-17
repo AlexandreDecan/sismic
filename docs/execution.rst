@@ -7,7 +7,7 @@ Statechart semantic
 -------------------
 
 The module :py:mod:`~sismic.interpreter` contains an :py:class:`~sismic.interpreter.Interpreter` class that
-interprets a statechart mainly following `SCXML <http://www.w3.org/TR/scxml/>`__ semantic.
+interprets a statechart mainly following `SCXML 1.0 <http://www.w3.org/TR/scxml/>`__ semantic.
 In particular, eventless transitions are processed before evented transitions, internal events are consumed
 before external events, and the simulation follows a inner-first/source-state and run-to-completion semantic.
 
