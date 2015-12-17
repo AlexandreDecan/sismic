@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 import copy
 from .model import Event, Transition, StateMixin
 
@@ -103,12 +101,8 @@ class Evaluator:
         :param event: an optional ``Event`` instance, in the case of a transition
         :return: list of unsatisfied conditions
         """
-        unsatisfied_conditions = []
         event_d = {'event': event} if isinstance(obj, Transition) else None
-        for condition in getattr(obj, 'preconditions', []):
-            if not self._evaluate_code(condition, event_d):
-                unsatisfied_conditions.append(condition)
-        return unsatisfied_conditions
+        return filter(lambda c: not self._evaluate_code(c, event_d), getattr(obj, 'preconditions', []))
 
     def evaluate_invariants(self, obj, event: Event=None) -> list:
         """
@@ -118,12 +112,8 @@ class Evaluator:
         :param event: an optional ``Event`` instance, in the case of a transition
         :return: list of unsatisfied conditions
         """
-        unsatisfied_conditions = []
         event_d = {'event': event} if isinstance(obj, Transition) else None
-        for condition in getattr(obj, 'invariants', []):
-            if not self._evaluate_code(condition, event_d):
-                unsatisfied_conditions.append(condition)
-        return unsatisfied_conditions
+        return filter(lambda c: not self._evaluate_code(c, event_d), getattr(obj, 'invariants', []))
 
     def evaluate_postconditions(self, obj, event: Event=None) -> list:
         """
@@ -133,12 +123,8 @@ class Evaluator:
         :param event: an optional ``Event`` instance, in the case of a transition
         :return: list of unsatisfied conditions
         """
-        unsatisfied_conditions = []
         event_d = {'event': event} if isinstance(obj, Transition) else None
-        for condition in getattr(obj, 'postconditions', []):
-            if not self._evaluate_code(condition, event_d):
-                unsatisfied_conditions.append(condition)
-        return unsatisfied_conditions
+        return filter(lambda c: not self._evaluate_code(c, event_d), getattr(obj, 'postconditions', []))
 
 
 class DummyEvaluator(Evaluator):
@@ -236,7 +222,7 @@ class PythonEvaluator(Evaluator):
             return
 
         exposed_context = {'Event': Event,
-                           'send': lambda e: self._interpreter.send(e, internal=True)}
+                           'send': lambda ev: self._interpreter.send(ev, internal=True)}
         exposed_context.update(additional_context if additional_context else {})
 
         try:
@@ -268,27 +254,14 @@ class PythonEvaluator(Evaluator):
         super().execute_action(transition, event)
 
     def evaluate_postconditions(self, obj, event: Event=None):
-        unsatisfied_conditions = []
         context = {'event': event} if isinstance(obj, Transition) else {}
-
-        # Use memory if any
         context['__old__'] = (self._memory.get(id(obj), None))
 
-        for condition in getattr(obj, 'postconditions', []):
-            if not self._evaluate_code(condition, context):
-                unsatisfied_conditions.append(condition)
-        return unsatisfied_conditions
+        return filter(lambda c: not self._evaluate_code(c, context), getattr(obj, 'postconditions', []))
 
     def evaluate_invariants(self, obj, event: Event=None):
-        unsatisfied_conditions = []
         context = {'event': event} if isinstance(obj, Transition) else {}
-
-        # Use memory if any
         context['__old__'] = (self._memory.get(id(obj), None))
 
-        for condition in getattr(obj, 'invariants', []):
-            if not self._evaluate_code(condition, context):
-                unsatisfied_conditions.append(condition)
-        return unsatisfied_conditions
-
+        return filter(lambda c: not self._evaluate_code(c, context), getattr(obj, 'invariants', []))
 

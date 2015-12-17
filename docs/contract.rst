@@ -75,8 +75,8 @@ Obviously, more than one condition of each type can be specified:
      - before: ...
      - after: ...
 
-A condition is an expression that will be evaluated by the :py:meth:`~sismic.evaluator.Evaluator.evaluate_condition`
-method of an :py:class:`~sismic.evaluator.Evaluator` instance (see :doc:`evaluation`).
+A condition is an expression that will be evaluated by an :py:class:`~sismic.evaluator.Evaluator`
+instance (see :doc:`evaluation`).
 
 .. code:: yaml
 

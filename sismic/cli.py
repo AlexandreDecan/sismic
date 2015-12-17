@@ -65,7 +65,7 @@ def cli_execute(args):
 
     for i, step in enumerate(simulator.execute(args.maxsteps)):
         if args.verbosity >= 1:
-            print('Step {} - '.format(i+1), file=s, end='')
+            print('Step {} - '.format(i + 1), file=s, end='')
         if args.verbosity >= 2:
             print('Considered event: {}'.format(step.event), file=s)
         if args.verbosity >= 1:

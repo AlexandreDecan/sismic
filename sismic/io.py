@@ -52,7 +52,8 @@ def import_from_dict(data: dict) -> StateChart:
             try:
                 transition = _transition_from_dict(state.name, transition_d)
             except Exception as e:
-                raise ValueError('An exception occurred while trying to parse transitions in {2}:\n {1}\n\nException:\n{0}'.format(e, transition_d, state.name))
+                raise ValueError('An exception occurred while trying to parse transitions in '
+                                 '{2}:\n {1}\n\nException:\n{0}'.format(e, transition_d, state.name))
             sc.register_transition(transition)
 
         # Register substates
@@ -66,13 +67,11 @@ def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
     """
     Return a Transition instance from given dict.
 
-    :param state: name of the state in which the transition is defined
+    :param state_name: name of the state in which the transition is defined
     :param transition_d: a dictionary containing transition data
     :return: an instance of Transition
     """
-    event = transition_d.get('event', None)
-    if event:
-        event = Event(event)
+    event = Event(transition_d['event']) if 'event' in transition_d else None
     transition = Transition(state_name, transition_d.get('target', None), event,
                             transition_d.get('guard', None), transition_d.get('action', None))
 

@@ -21,8 +21,8 @@ Defining statecharts in YAML
 Statecharts can be defined using a YAML format.
 
 A YAML definition of a statechart can be easily imported to a :py:class:`~sismic.model.StateChart` instance.
-The module :py:mod:`sismic.io` provides a convenient loader :py:func:`~sismic.io.import_from_yaml` which takes a textual YAML definition
-of a statechart. It also provides ways to export statechart to YAML.
+The module :py:mod:`sismic.io` provides a convenient loader :py:func:`~sismic.io.import_from_yaml`
+which takes a textual YAML definition of a statechart. It also provides ways to export statechart to YAML.
 
 .. automodule:: sismic.io
     :members: import_from_yaml, export_to_yaml

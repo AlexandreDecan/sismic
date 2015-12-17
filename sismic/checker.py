@@ -13,7 +13,7 @@ class StateChartTester:
     A tester with given interpreter (that interprets the statechart to test),
     a list of testers (interpreters that runs tests) and a list of events (scenario).
 
-    :param simulator: The interpreter containing the statechart to test
+    :param interpreter: The interpreter containing the statechart to test
     :param testers: A list of ``Interpreter`` containing the tests
     :param events: A list of ``Event`` that represents a scenario
     """
@@ -25,7 +25,7 @@ class StateChartTester:
         # Initialize testers with a start event
         event = Event('start')
         context = self._create_context()
-        self._execute_tester(None, event, context)
+        self._execute_tester(MacroStep([]), event, context)
 
         # Send the events to the simulator to be tested
         for event in self._events:
@@ -83,7 +83,7 @@ class StateChartTester:
         """
         event = Event('stop')
         context = self._create_context()
-        self._execute_tester(None, event, context)
+        self._execute_tester(MacroStep([]), event, context)
 
     def execute_once(self) -> MacroStep:
         """
@@ -118,7 +118,7 @@ class StateChartTester:
         while step:
             steps.append(step)
             i += 1
-            if max_steps > 0 and i == max_steps:
+            if 0 < max_steps == i:
                 break
             step = self.execute_once()
         return steps

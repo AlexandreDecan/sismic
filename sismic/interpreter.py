@@ -1,4 +1,3 @@
-import copy
 from collections import deque
 from itertools import combinations
 from . import model
@@ -238,11 +237,12 @@ class Interpreter:
 
         :return: a list of ``Transition`` instances
         """
-        return self._select_transitions(None)
+        return self._select_transitions(event=None)
 
-    def _select_transitions(self, event: model.Event) -> list:
+    def _select_transitions(self, event: model.Event=None) -> list:
         """
-        Return a list of transitions that can be triggered according to the given event.
+        Return a list of transitions that can be triggered according to the given event, or eventless
+        transition if *event* is None.
         Transitions are kept according to a inner-first/source-state semantic.
         :param event: event to consider
         :return: a list of ``Transition`` instances

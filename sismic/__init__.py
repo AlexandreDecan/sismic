@@ -1,7 +1,6 @@
 # "Export" most used elements
 from . import evaluator, io, model, interpreter, checker
 
-
 __description__ = 'Sismic Interactive State Machine Interpreter and Checker'
 __version__ = '0.9.0'
 __url__ = 'https://github.com/AlexandreDecan/sismic/'
@@ -23,7 +22,8 @@ def _parse_args():  # pragma: no cover
                                 type=argparse.FileType('r'),
                                 help='A YAML file describing a statechart')
     execute_parser.add_argument('-v', '--verbosity',
-                                help='set output verbosity: -v displays transitions, -vv displays events and configurations, and -vvv displays states',
+                                help='set output verbosity: -v displays transitions, -vv displays events and '
+                                     'configurations, and -vvv displays states',
                                 default=0,
                                 action='count')
     execute_parser.add_argument('--no-code',

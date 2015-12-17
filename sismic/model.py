@@ -90,7 +90,8 @@ class Event:
     :param name: Name of the event
     :param data: additional data (mapping, dict-like)
     """
-    def __init__(self, name: str, data: dict=None):
+
+    def __init__(self, name: str, data: dict = None):
         self.name = name
         self.data = data
 
@@ -120,6 +121,7 @@ class ContractMixin:
     """
     Mixin with a contract: preconditions, postconditions and invariants.
     """
+
     def __init__(self):
         self._preconditions = []
         self._postconditions = []
@@ -174,7 +176,8 @@ class ActionStateMixin:
     :param on_entry: code to execute when state is entered
     :param on_exit: code to execute when state is exited
     """
-    def __init__(self, on_entry: str=None, on_exit: str=None):
+
+    def __init__(self, on_entry: str = None, on_exit: str = None):
         self._on_entry = on_entry
         self._on_exit = on_exit
 
@@ -204,6 +207,7 @@ class CompositeStateMixin:
     """
     Composite state can have children states.
     """
+
     def __init__(self):
         self._children = []
 
@@ -220,7 +224,8 @@ class BasicState(ContractMixin, StateMixin, TransitionStateMixin, ActionStateMix
     :param on_entry: code to execute when state is entered
     :param on_exit: code to execute when state is exited
     """
-    def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
+
+    def __init__(self, name: str, on_entry: str = None, on_exit: str = None):
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
@@ -236,7 +241,8 @@ class CompoundState(ContractMixin, StateMixin, TransitionStateMixin, ActionState
     :param on_entry: code to execute when state is entered
     :param on_exit: code to execute when state is exited
     """
-    def __init__(self, name: str, initial: str=None, on_entry: str=None, on_exit: str=None):
+
+    def __init__(self, name: str, initial: str = None, on_entry: str = None, on_exit: str = None):
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
@@ -253,7 +259,8 @@ class OrthogonalState(ContractMixin, StateMixin, TransitionStateMixin, ActionSta
     :param on_entry: code to execute when state is entered
     :param on_exit: code to execute when state is exited
     """
-    def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
+
+    def __init__(self, name: str, on_entry: str = None, on_exit: str = None):
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         TransitionStateMixin.__init__(self)
@@ -273,7 +280,7 @@ class HistoryState(ContractMixin, StateMixin):
     :param deep: Boolean indicating whether a deep semantic (True) or a shallow semantic (False) should be used
     """
 
-    def __init__(self, name: str, initial: str=None, deep: bool=False):
+    def __init__(self, name: str, initial: str = None, deep: bool = False):
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         self.name = name
@@ -290,7 +297,7 @@ class FinalState(ContractMixin, StateMixin, ActionStateMixin):
     :param on_exit: code to execute when state is exited
     """
 
-    def __init__(self, name: str, on_entry: str=None, on_exit: str=None):
+    def __init__(self, name: str, on_entry: str = None, on_exit: str = None):
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
@@ -309,8 +316,8 @@ class Transition(ContractMixin):
     :param action: action as code (if any)
     """
 
-    def __init__(self, from_state: str, to_state: str=None, event: Event=None, guard: str=None,
-                 action: str=None):
+    def __init__(self, from_state: str, to_state: str = None, event: Event = None, guard: str = None,
+                 action: str = None):
         ContractMixin.__init__(self)
         self.from_state = from_state
         self.to_state = to_state
@@ -342,7 +349,7 @@ class Transition(ContractMixin):
         return 'Transition({0}, {2}, {1})'.format(self.from_state, self.to_state, self.event)
 
     def __str__(self):
-        to_state = self.to_state if self.to_state else '['+self.from_state+']'
+        to_state = self.to_state if self.to_state else '[' + self.from_state + ']'
         event = '+' + self.event.name if self.event else ''
         return self.from_state + event + ' -> ' + to_state
 
@@ -358,7 +365,8 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
     :param initial: Initial state
     :param on_entry: Code to execute when this statechart is initialized for execution
     """
-    def __init__(self, name: str, initial: str, on_entry: str=None):
+
+    def __init__(self, name: str, initial: str, on_entry: str = None):
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, None)
@@ -529,18 +537,22 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
         """
         # C1 & C5
         for transition in self.transitions:
-            if not(transition.from_state in self._states and (not transition.to_state or transition.to_state in self._states)):
+            if (not (transition.from_state in self._states and
+                     (not transition.to_state or transition.to_state in self._states))):
                 raise AssertionError('Transition {} refers to an unknown state'.format(transition))
             if not transition.event and not transition.guard and not transition.to_state:
-                raise AssertionError('Transition {} is an internal, eventless and guardless transition.'.format(transition))
+                raise AssertionError('Transition {} is an internal, eventless and guardless '
+                                     'transition.'.format(transition))
 
         for name, state in self._states.items():
             if isinstance(state, HistoryState):  # C2 & C3
                 if not isinstance(self._states[self._parent[name]], CompoundState):
-                    raise AssertionError('History state {} can only be defined in a compound (non-orthogonal) states'.format(state))
-                # Remove because this can be helpful for orthogonal states
-                #if state.initial and not (self._parent[state.initial] == self._parent[name]):
-                #    raise AssertionError('Initial memory of {} should refer to a child of {}'.format(state, self._parent[name]))
+                    raise AssertionError('History state {} can only be defined in a compound '
+                                         '(non-orthogonal) states'.format(state))
+                    # Remove because this can be helpful for orthogonal states
+                    # if state.initial and not (self._parent[state.initial] == self._parent[name]):
+                    #    raise AssertionError('Initial memory of {} should refer to a child of {}'
+                    #           .format(state, self._parent[name]))
 
             if isinstance(state, CompositeStateMixin):  # C4
                 if len(state.children) <= 0:

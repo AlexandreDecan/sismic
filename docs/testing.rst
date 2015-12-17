@@ -16,8 +16,8 @@ Thanks to Sismic, module :py:mod:`sismic.checker` makes it easy to test statecha
 In particular, this module brings a way to test statecharts using... statecharts!
 
 
-How to write tests?
--------------------
+Writing tests
+-------------
 
 **Remark**: in the following, the term *tested statechart* refers to the statechart that will be tested,
 while the term *statechart testers* (or simply *testers*) refers to the ones that express conditions or

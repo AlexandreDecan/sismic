@@ -14,8 +14,8 @@ You could skip this part of the documentation if you are not interested to tune 
 new ones.
 
 
-Code evaluator
---------------
+Anatomy of a code evaluator
+---------------------------
 
 An :py:class:`~sismic.evaluator.Evaluator` must provide two main methods and an attribute:
 
@@ -43,6 +43,8 @@ that is very important:
 This allows the evaluator to keep track of the states that are entered or exited, and of the transitions that are
 processed.
 
+.. _python_evaluator:
+
 Built-in Python code evaluator
 ------------------------------
 
@@ -51,8 +53,6 @@ By default, Sismic provides two built-in :py:class:`~sismic.evaluator.Evaluator`
  - A :py:class:`~sismic.evaluator.DummyEvaluator` that always evaluates to ``True`` and silently ignores
    ``action``, ``on entry`` and ``on exit``. Its context is an empty dictionary.
  - A :py:class:`~sismic.evaluator.PythonEvaluator` that brings Python into our statecharts and which is used by default.
-
-.. _python_evaluator:
 
 An instance of :py:class:`~sismic.evaluator.PythonEvaluator` can evaluate and execute Python code expressed in the statechart.
 The key point to understand how it works is the concept of ``context``, which is a dictionary-like structure that contains the data
