@@ -174,7 +174,6 @@ A :py:class:`~sismic.interpreter.MacroStep` exposes the consumed ``event`` (an :
 if any, a (possibly empty) list ``transitions`` of :py:class:`~sismic.model.Transition` instances, and two
 aggregated ordered sequences of state names, ``entered_states`` and ``exited_states``.
 States order in those list indicates the order in which their *on entry* and *on exit* actions were processed.
-..
 As transitions are atomically processed, this means that they could exist a state in ``entered_states`` that is
 entered before some state in ``exited_states`` is exited.
 The exact order in which states are exited and entered is indirectly available through the ``steps`` attribute that
