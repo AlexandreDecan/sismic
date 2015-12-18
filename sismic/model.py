@@ -93,7 +93,7 @@ class Event:
 
     def __init__(self, name: str, data: dict = None):
         self.name = name
-        self.data = data
+        self.data = data if data else {}
 
     def __eq__(self, other):
         return isinstance(other, Event) and self.name == other.name

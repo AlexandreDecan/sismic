@@ -90,20 +90,27 @@ class Interpreter:
     """
 
     def __init__(self, statechart: model.StateChart, evaluator_klass=None, silent_contract: bool = False):
-
         self._evaluator_klass = evaluator_klass
         self._evaluator = evaluator_klass(self) if evaluator_klass else PythonEvaluator(self)
-
+        self._silent_contract = silent_contract
         self._statechart = statechart
 
+        # Internal variables
         self._time = 0  # Internal clock
         self._memory = {}  # History states memory
         self._configuration = set()  # Set of active states
         self._events = deque()  # Events queue
-        self._silent_contract = silent_contract
         self._failed_conditions = []  # List of failed conditions, empty if not _silent_contract
+        self._trace = []  # A list of micro steps
 
-        self.__start()
+        # Interpreter initialization
+        self._evaluator.execute_onentry(self._statechart)
+        self.__evaluate_contract_conditions(self._statechart, 'preconditions')
+
+        # Initial step and stabilization
+        step = MicroStep(entered_states=[self._statechart.initial])
+        self._execute_step(step)
+        self._trace.append(MacroStep([step] + self.__stabilize()))
 
     @property
     def time(self) -> int:
@@ -150,6 +157,13 @@ class Interpreter:
         was not satisfied.
         """
         return self._failed_conditions
+
+    @property
+    def trace(self):
+        """
+        The list of executed macro steps.
+        """
+        return self._trace
 
     def send(self, event: model.Event, internal: bool = False):
         """
@@ -218,7 +232,10 @@ class Interpreter:
                 transitions = self._select_transitions(event)
                 # If the event can not be processed, discard it
                 if len(transitions) == 0:
-                    return MacroStep([MicroStep(event=event)])
+                    macrostep = MacroStep([MicroStep(event=event)])
+                    # Update trace
+                    self._trace.append(macrostep)
+                    return macrostep
             else:
                 return None  # No step to do!
 
@@ -230,8 +247,8 @@ class Interpreter:
         for step in steps:
             self._execute_step(step)
             returned_steps.append(step)
-            for stab_step in self.__stabilize():
-                returned_steps.append(stab_step)
+            for stabilization_step in self.__stabilize():
+                returned_steps.append(stabilization_step)
 
         macro_step = MacroStep(returned_steps)
 
@@ -247,6 +264,8 @@ class Interpreter:
         if not self.running:
             self.__evaluate_contract_conditions(self._statechart, 'postconditions', macro_step)
 
+        # Update trace
+        self._trace.append(macro_step)
         return macro_step
 
     def _select_eventless_transitions(self) -> list:
@@ -472,27 +491,6 @@ class Interpreter:
 
         # Update configuration
         self._configuration = self._configuration.union(step.entered_states)
-
-    def __start(self) -> list:
-        """
-        Make this statechart runnable:
-
-         - Execute statechart initial code
-         - Execute until a stable situation is reached.
-
-        :return: A (possibly empty) list of executed MicroStep.
-        """
-
-        self._evaluator.execute_onentry(self._statechart)
-
-        # Check statechart preconditions
-        self.__evaluate_contract_conditions(self._statechart, 'preconditions')
-
-        # Initial step and stabilization
-        step = MicroStep(entered_states=[self._statechart.initial])
-        self._execute_step(step)
-
-        return [step] + self.__stabilize()
 
     def __stabilize(self) -> list:
         """

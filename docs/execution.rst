@@ -155,7 +155,7 @@ and is thus commonly used to get a list of the "interesting" events:
 Putting all together, the main methods and attributes of a simulator instance are:
 
 .. autoclass:: sismic.interpreter.Interpreter
-    :members: send, execute_once, execute, time, configuration, running, reset
+    :members: send, execute_once, execute, time, configuration, running, trace, reset
 
 
 .. _steps:
@@ -196,6 +196,8 @@ This way, a complete run of a state machine can be summarized as an ordered list
 :py:class:`~sismic.interpreter.MacroStep` instances,
 and details of such a run can be obtained using the :py:class:`~sismic.interpreter.MicroStep` list of a
 :py:class:`~sismic.interpreter.MacroStep`.
+For convenience, an interpreter has a :py:attr:`~sismic.interpreter.trace` attribute that returns the list
+of executed macro steps (including the initial stabilization step).
 
 
 Dealing with time
