@@ -25,7 +25,7 @@ class StateChartTester:
         # Initialize testers with a start event
         event = Event('start')
         context = self._create_context()
-        self._execute_tester(MacroStep([]), event, context)
+        self._execute_tester(MacroStep(time=0, steps=[]), event, context)
 
         # Send the events to the simulator to be tested
         for event in self._events:
@@ -83,7 +83,7 @@ class StateChartTester:
         """
         event = Event('stop')
         context = self._create_context()
-        self._execute_tester(MacroStep([]), event, context)
+        self._execute_tester(MacroStep(time=0, steps=[]), event, context)
 
     def execute_once(self) -> MacroStep:
         """

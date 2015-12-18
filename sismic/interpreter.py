@@ -31,18 +31,34 @@ class MacroStep:
     """
     A macro step is a list of micro steps.
 
+    :param time: the time at which this step was executed
     :param steps: a list of ``MicroStep`` instances
     """
 
-    def __init__(self, steps: list):
-        self.steps = steps
+    def __init__(self, time: int, steps: list):
+        self._time = time
+        self._steps = steps
+
+    @property
+    def steps(self):
+        """
+        List of micro steps
+        """
+        return self._steps
+
+    @property
+    def time(self):
+        """
+        Time at which this step was executed.
+        """
+        return self._time
 
     @property
     def event(self) -> model.Event:
         """
         Event (or ``None``) that were consumed.
         """
-        for step in self.steps:
+        for step in self._steps:
             if step.event:
                 return step.event
         return None
@@ -52,7 +68,7 @@ class MacroStep:
         """
         A (possibly empty) list of transitions that were triggered.
         """
-        return [step.transition for step in self.steps if step.transition]
+        return [step.transition for step in self._steps if step.transition]
 
     @property
     def entered_states(self) -> list:
@@ -60,7 +76,7 @@ class MacroStep:
         List of the states names that were entered.
         """
         states = []
-        for step in self.steps:
+        for step in self._steps:
             states += step.entered_states
         return states
 
@@ -70,12 +86,13 @@ class MacroStep:
         List of the states names that were exited.
         """
         states = []
-        for step in self.steps:
+        for step in self._steps:
             states += step.exited_states
         return states
 
     def __repr__(self):
-        return 'MacroStep({}, {}, >{}, <{})'.format(self.event, self.transitions, self.entered_states, self.exited_states)
+        return 'MacroStep@{}({}, {}, {}, {})'.format(self.time, self.event, self.transitions,
+                                                     self.entered_states, self.exited_states)
 
 
 class Interpreter:
@@ -110,7 +127,7 @@ class Interpreter:
         # Initial step and stabilization
         step = MicroStep(entered_states=[self._statechart.initial])
         self._execute_step(step)
-        self._trace.append(MacroStep([step] + self.__stabilize()))
+        self._trace.append(MacroStep(time=self.time, steps=[step] + self.__stabilize()))
 
     @property
     def time(self) -> int:
@@ -232,7 +249,7 @@ class Interpreter:
                 transitions = self._select_transitions(event)
                 # If the event can not be processed, discard it
                 if len(transitions) == 0:
-                    macrostep = MacroStep([MicroStep(event=event)])
+                    macrostep = MacroStep(time=self.time, steps=[MicroStep(event=event)])
                     # Update trace
                     self._trace.append(macrostep)
                     return macrostep
@@ -250,7 +267,7 @@ class Interpreter:
             for stabilization_step in self.__stabilize():
                 returned_steps.append(stabilization_step)
 
-        macro_step = MacroStep(returned_steps)
+        macro_step = MacroStep(time=self.time, steps=returned_steps)
 
         # Check state invariants
         for name in self._configuration:
