@@ -35,13 +35,13 @@ Sismic provides full support for the majority of the concepts of UML statecharts
  - state transitions, guarded transitions, automatic (eventless) transitions, internal transitions
  - statechart variables and their initialisation
  - state entry and exit actions, transition actions
- - internal and external events, parametrized events
+ - internal and external events, parametrized events, timed events
 
 The Sismic library is written in a modular way:
 
  - The semantics of the statechart interpreter is based on the specification of the SCXML semantics (with a few exceptions),
    and can be easily tuned to other semantics.
- - While currently, guards and actions are expressed in Python, this support can be easily extended to other languages.
+ - While currently, contracts, guards and actions are expressed in Python, this support can be easily extended to other languages.
 
 Contents
 --------
