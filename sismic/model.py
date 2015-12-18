@@ -106,15 +106,9 @@ class Event:
 
     def __repr__(self):
         if self.data:
-            return 'Event({}, {})'.format(self.name, self.data)
+            return 'Event(\'{}\', {})'.format(self.name, self.data)
         else:
-            return 'Event({})'.format(self.name)
-
-    def __str__(self):
-        if self.data:
-            return '{} (data={})'.format(self.name, self.data)
-        else:
-            return self.name
+            return 'Event(\'{}\')'.format(self.name)
 
 
 class ContractMixin:
@@ -160,7 +154,7 @@ class StateMixin:
         self.name = name
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, self.name)
+        return '{}(\'{}\')'.format(self.__class__.__name__, self.name)
 
     def __eq__(self, other):
         return isinstance(other, StateMixin) and self.name == other.name
@@ -346,7 +340,7 @@ class Transition(ContractMixin):
                 self.event == other.event)
 
     def __repr__(self):
-        return 'Transition({0}, {2}, {1})'.format(self.from_state, self.to_state, self.event)
+        return 'Transition(\'{0}\', \'{1}\', {2})'.format(self.from_state, self.to_state, self.event)
 
     def __str__(self):
         to_state = self.to_state if self.to_state else '[' + self.from_state + ']'
