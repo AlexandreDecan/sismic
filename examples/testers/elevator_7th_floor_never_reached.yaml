@@ -1,0 +1,30 @@
+statechart:
+  name: Test that the elevator never reachs 7th floor
+  initial: standing
+  on entry: floor = 0
+  states:
+    - name: standing
+      transitions:
+        - event: entered
+          guard: event.state == 'moving'
+          target: moving
+        - guard: floor == 7
+          target: fail
+        - event: stopped
+          target: success
+    - name: moving
+      transitions:
+        - event: entered
+          guard: event.state == 'movingUp'
+          action: floor += 1
+        - event: entered
+          guard: event.state == 'movingDown'
+          action: floor -= 1
+        - event: exited
+          guard: event.state == 'moving'
+          target: standing
+        - event: stopped
+          target: success
+    - name: fail
+    - name: success
+      type: final

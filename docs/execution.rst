@@ -95,7 +95,8 @@ The method :py:meth:`~sismic.interpreter.Interpreter.execute_once` returns infor
 during the execution, including the transitions that were processed, the event that was consumed and the
 sequences of entered and exited states (see :ref:`steps`).
 
-For convenience, :py:meth:`~sismic.interpreter.Interpreter.send` returns ``self`` and thus can be chained:
+For convenience, :py:meth:`~sismic.interpreter.Interpreter.send` returns ``self`` and thus can be chained.
+We will see later that Sismic also provides a way to express scenarios, avoiding repeated calls to ``send``.
 
 .. code:: python
 
