@@ -100,5 +100,3 @@ class ElevatorStoryTests(unittest.TestCase):
 
             tester = Interpreter(io.import_from_yaml(open('examples/testers/elevator_go_ground_after_10s.yaml')))
             self.assertFalse(test_story.tell(tester).running)
-            for p in tester.trace:
-                print(p)

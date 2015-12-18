@@ -97,7 +97,7 @@ def story_from_trace(trace: list) -> Story:
     *processed* events are sent before *exited* events.
 
     1. an event is possibly consumed
-    2. For each transition:
+    2. For each transition
         a. transition is processed
         b. states are exited
         c. states are entered
