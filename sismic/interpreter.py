@@ -91,7 +91,7 @@ class MacroStep:
         return states
 
     def __repr__(self):
-        return 'MacroStep@{}({}, {}, {}, {})'.format(self.time, self.event, self.transitions,
+        return 'MacroStep@{}({}, {}, >{}, <{})'.format(self.time, self.event, self.transitions,
                                                      self.entered_states, self.exited_states)
 
 
