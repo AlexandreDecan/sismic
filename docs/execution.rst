@@ -375,8 +375,39 @@ The output should look like::
     something happened at time 1450383093.9920669
 
 As our statechart does not define any way to reach a final configuration, the ``not interpreter.final`` condition
-always hold, and you have to manually interrupt the execution. This can be avoided using threads for example,
-but will be not covered by this documentation.
+always hold, and you have to manually interrupt the execution. Notice that using such a loop, you are not able
+to send event to the interpreter. Consider the following example involving the :py:mod:`threading` module
+as a tiny workaround:
+
+.. code::python
+
+    import threading
+    import time
+
+    from sismic.io import import_from_yaml
+    from sismic.interpreter import Interpreter
+    from sismic.model import Event
+
+    with open('examples/concrete/elevator.yaml') as f:
+        interpreter = Interpreter(import_from_yaml(f))
+
+    # Define an runnable task
+    def run_background(interpreter, delay=0.2):
+        while not interpreter.final:
+            interpreter.time = time.time()
+            interpreter.execute()
+            time.sleep(delay)
+
+    # Define task
+    task = threading.Thread(target=run_background, args=(interpreter,))
+
+    # Start task
+    task.start()
+
+    interpreter.send(Event('floorSelected', {'floor': 4}))
+
+    # ... the elevator goes to the 4th, and after 10 seconds,
+    #     goes back to the ground floor
 
 
 .. _other_semantics:
