@@ -34,11 +34,11 @@ class StoryFromTraceTests(unittest.TestCase):
                           Event('entered', {'state': 's1'}),
                           Pause(2),
                           Event('consumed', {'event': Event('goto s2')}),
-                          Event('processed', {'source': 's1', 'target': 's2', 'event': Event('goto s2')}),
                           Event('exited', {'state': 's1'}),
+                          Event('processed', {'source': 's1', 'target': 's2', 'event': Event('goto s2')}),
                           Event('entered', {'state': 's2'}),
-                          Event('processed', {'source': 's2', 'target': 's3', 'event': None}),
                           Event('exited', {'state': 's2'}),
+                          Event('processed', {'source': 's2', 'target': 's3', 'event': None}),
                           Event('entered', {'state': 's3'}),
                           Event('stopped')])
         for a, b in zip(story, expected):
