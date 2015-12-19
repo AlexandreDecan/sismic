@@ -25,9 +25,10 @@ More specifically, Sismic provides:
 
  - An easy way to define and to import statecharts, based on the human-friendly YAML markup language
  - A statechart interpreter offering discrete, step-by-step, and fully observable simulation engine
+ - Synchronous and asynchronous simulation, in real time or simulated time
  - Built-in support for expressing actions and guards using regular Python code
  - A design-by-contract programming approach for statecharts
- - A unit testing framework for statecharts
+ - A unit testing framework for statecharts that includes scenarios generators
 
 Sismic provides full support for the majority of the concepts of UML statecharts:
 
