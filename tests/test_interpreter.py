@@ -12,7 +12,7 @@ class SimulatorSimpleTest(unittest.TestCase):
         sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
         interpreter = Interpreter(sc, DummyEvaluator)
         self.assertEqual(interpreter.configuration, ['s1'])
-        self.assertTrue(interpreter.running)
+        self.assertFalse(interpreter.final)
 
     def test_simple_configuration(self):
         sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
@@ -34,14 +34,14 @@ class SimulatorSimpleTest(unittest.TestCase):
         self.assertEqual(interpreter.execute_once().entered_states, ['s3'])
         self.assertEqual(interpreter.execute_once().entered_states, ['final'])
         self.assertEqual(interpreter.configuration, [])
-        self.assertFalse(interpreter.running)
+        self.assertTrue(interpreter.final)
 
     def test_simple_final(self):
         sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
         interpreter = Interpreter(sc, DummyEvaluator)
         interpreter.send(Event('goto s2')).send(Event('goto final'))
         interpreter.execute()
-        self.assertFalse(interpreter.running)
+        self.assertTrue(interpreter.final)
 
 
 class InternalTests(unittest.TestCase):
@@ -67,7 +67,7 @@ class InternalTests(unittest.TestCase):
 
     def testActiveGuard(self):
         self.interpreter.execute()
-        self.assertFalse(self.interpreter.running)
+        self.assertTrue(self.interpreter.final)
 
 
 class SimulatorElevatorTests(unittest.TestCase):
@@ -148,7 +148,7 @@ class SimulatorHistoryTests(unittest.TestCase):
 
         interpreter.send(Event('pause')).send(Event('stop'))
         interpreter.execute()
-        self.assertFalse(interpreter.running)
+        self.assertTrue(interpreter.final)
 
 
 class SimulatorDeepHistoryTests(unittest.TestCase):
@@ -189,7 +189,7 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
         self.assertTrue(step.entered_states.index('process_2') < step.entered_states.index('s22'))
 
         interpreter.send(Event('next1')).send(Event('next2')).execute()
-        self.assertFalse(interpreter.running)
+        self.assertTrue(interpreter.final)
 
     def test_exited_order(self):
         sc = io.import_from_yaml(open('examples/concrete/deep_history.yaml'))
@@ -205,7 +205,7 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
         self.assertEqual(step.exited_states, ['pause', 'active.H*'])
 
         interpreter.send(Event('next1')).send(Event('next2')).execute()
-        self.assertFalse(interpreter.running)
+        self.assertTrue(interpreter.final)
 
 
 class InfiniteExecutionTests(unittest.TestCase):
@@ -232,7 +232,7 @@ class InfiniteExecutionTests(unittest.TestCase):
     def test_auto_stop(self):
         self.interpreter.execute()
 
-        self.assertFalse(self.interpreter.running)
+        self.assertTrue(self.interpreter.final)
         self.assertEqual(self.interpreter._evaluator.context['x'], 100)
 
 
@@ -383,7 +383,7 @@ class WriterExecutionTests(unittest.TestCase):
 
         self.interpreter.execute()
 
-        self.assertFalse(self.interpreter.running)
+        self.assertTrue(self.interpreter.final)
         self.assertEqual(self.interpreter.evaluator.context['output'], ['bonjour ', '[b]', '[i]', 'a ', '[/b]', '[/i]', '[b]', 'tous !', '[/b]'])
 
 
@@ -395,7 +395,7 @@ class ElevatorContractTests(unittest.TestCase):
     def test_no_error(self):
         self.interpreter.send(Event('floorSelected', {'floor': 4}))
         self.interpreter.execute()
-        self.assertTrue(self.interpreter.running)
+        self.assertFalse(self.interpreter.final)
 
     def test_state_precondition(self):
         self.sc.states['movingUp'].preconditions.append('False')

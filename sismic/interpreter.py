@@ -160,11 +160,11 @@ class Interpreter:
         return self._evaluator
 
     @property
-    def running(self) -> bool:
+    def final(self) -> bool:
         """
-        Boolean indicating whether this interpreter is not in a final configuration.
+        Boolean indicating whether this interpreter is in a final configuration.
         """
-        return len(self._configuration) != 0
+        return len(self._configuration) == 0
 
     @property
     def failed_conditions(self):
@@ -277,8 +277,8 @@ class Interpreter:
         # Check statechart invariants
         self.__evaluate_contract_conditions(self._statechart, 'invariants', macro_step)
 
-        # Check statechart postconditions if statechart is not running
-        if not self.running:
+        # Check statechart postconditions if statechart is in a final configuration
+        if self.final:
             self.__evaluate_contract_conditions(self._statechart, 'postconditions', macro_step)
 
         # Update trace

@@ -20,7 +20,7 @@ class StoryTests(unittest.TestCase):
         interpreter = Interpreter(sc)
         story.tell(interpreter)
 
-        self.assertFalse(interpreter.running)
+        self.assertTrue(interpreter.final)
         self.assertEqual(interpreter.time, 5)
         self.assertEqual(len(interpreter.trace), 4)
 
@@ -72,7 +72,7 @@ class ElevatorStoryTests(unittest.TestCase):
         test_story = story_from_trace(trace)
 
         tester = Interpreter(io.import_from_yaml(open('examples/testers/elevator_7th_floor_never_reached.yaml')))
-        self.assertFalse(test_story.tell(tester).running)
+        self.assertTrue(test_story.tell(tester).final)
 
     def test_7th_floor_never_reached_fails(self):
         tested = Interpreter(io.import_from_yaml(open('examples/concrete/elevator.yaml')))
@@ -82,7 +82,7 @@ class ElevatorStoryTests(unittest.TestCase):
         test_story = story_from_trace(trace)
 
         tester = Interpreter(io.import_from_yaml(open('examples/testers/elevator_7th_floor_never_reached.yaml')))
-        self.assertTrue(test_story.tell(tester).running)
+        self.assertFalse(test_story.tell(tester).final)
 
     def test_go_ground_after_10s(self):
         tested = Interpreter(io.import_from_yaml(open('examples/concrete/elevator.yaml')))
@@ -99,4 +99,4 @@ class ElevatorStoryTests(unittest.TestCase):
             test_story = story_from_trace(story.tell(tested).trace)
 
             tester = Interpreter(io.import_from_yaml(open('examples/testers/elevator_go_ground_after_10s.yaml')))
-            self.assertFalse(test_story.tell(tester).running)
+            self.assertTrue(test_story.tell(tester).final)

@@ -156,7 +156,7 @@ and is thus commonly used to get a list of the "interesting" events:
 Putting all together, the main methods and attributes of a simulator instance are:
 
 .. autoclass:: sismic.interpreter.Interpreter
-    :members: send, execute_once, execute, time, configuration, running, trace, reset
+    :members: send, execute_once, execute, time, configuration, final, trace, reset
 
 
 .. _steps:
@@ -356,7 +356,7 @@ put it in a loop.
     import time
     starttime = time.time()
 
-    while interpreter.running:
+    while not interpreter.final:
         interpreter.time = time.time() - starttime
         if interpreter.execute():
             print('something happened at time {}\n'.format(time.time()))
@@ -374,7 +374,7 @@ The output should look like::
     Opening doors
     something happened at time 1450383093.9920669
 
-As our statechart does not define any way to reach a final configuration, the ``interpreter.running`` condition
+As our statechart does not define any way to reach a final configuration, the ``not interpreter.final`` condition
 always hold, and you have to manually interrupt the execution. This can be avoided using threads for example,
 but will be not covered by this documentation.
 
