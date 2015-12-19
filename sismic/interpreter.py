@@ -353,7 +353,9 @@ class Interpreter:
                             break
                         last_before_lca = state
                     # Target must be a descendant (or self) of this state
-                    if transition.to_state not in [last_before_lca] + self._statechart.descendants_for(last_before_lca):
+                    if (transition.to_state and
+                            (transition.to_state not in
+                                     [last_before_lca] + self._statechart.descendants_for(last_before_lca))):
                         raise Warning('Conflicting transitions: {t1} and {t2}'
                                       '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
                                       .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
