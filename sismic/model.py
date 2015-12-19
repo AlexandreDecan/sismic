@@ -371,7 +371,7 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
         self._parent = {}  # name -> parent.name
         self.transitions = []  # list of Transition objects
 
-    def register_state(self, state: StateMixin, parent: str):
+    def register_state(self, state: StateMixin, parent):
         """
         Register given state. This method also register the given state
         to its parent.
@@ -379,6 +379,9 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
         :param state: state to add
         :param parent: name of its parent
         """
+        # Name should be unused so far
+        if state.name in self._states.keys():
+            raise ValueError('State name {} is already used!'.format(state.name))
         self._states[state.name] = state
         self._parent[state.name] = parent.name if isinstance(parent, StateMixin) else parent
 

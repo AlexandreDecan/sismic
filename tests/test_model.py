@@ -1,6 +1,6 @@
 import unittest
 from sismic import io
-
+from sismic import model
 
 class TraversalTests(unittest.TestCase):
     def setUp(self):
@@ -45,3 +45,11 @@ class TraversalTests(unittest.TestCase):
         self.assertEqual(self.sc.events(), ['click', 'close', 'validate'])
         self.assertEqual(self.sc.events('s1b1'), ['validate'])
         self.assertEqual(self.sc.events(['s1b1', 's1b']), ['click', 'validate'])
+
+    def test_name_collision(self):
+        sc = model.StateChart('test', 'initial')
+        s1 = model.BasicState('a')
+        s2 = model.BasicState('a')
+        sc.register_state(s1, parent=None)
+        with self.assertRaises(ValueError):
+            sc.register_state(s2, parent=None)
