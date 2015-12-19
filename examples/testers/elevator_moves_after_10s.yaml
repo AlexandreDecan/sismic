@@ -34,7 +34,7 @@ statechart:
                   target: standing
             - name: timeout
               transitions:
-                - event: stopped
-                  target: timeout  # Ensure final is not reached
+                - event: stopped  # With inner-first, override parent's transition to success
+                  target: timeout
     - name: success
       type: final

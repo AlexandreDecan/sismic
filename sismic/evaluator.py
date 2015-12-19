@@ -1,10 +1,11 @@
+import abc
 import copy
 from .model import Event, Transition, StateMixin
 
 
-class Evaluator:
+class Evaluator(metaclass=abc.ABCMeta):
     """
-    Base class for any evaluator.
+    Abstract base class for any evaluator.
 
     An instance of this class defines what can be done with piece of codes
     contained in a statechart (condition, action, etc.).
@@ -17,7 +18,6 @@ class Evaluator:
         is expected to be an ``Interpreter`` instance
     :param initial_context: an optional dictionary to populate the context
     """
-
     def __init__(self, interpreter=None, initial_context: dict = None):
         self._context = initial_context if initial_context else {}
         self._interpreter = interpreter
@@ -30,6 +30,7 @@ class Evaluator:
         """
         return self._context
 
+    @abc.abstractmethod
     def _evaluate_code(self, code: str, additional_context: dict = None) -> bool:
         """
         Generic method to evaluate a piece of code. This method is a fallback if one of
@@ -41,6 +42,7 @@ class Evaluator:
         """
         raise NotImplementedError()
 
+    @abc.abstractmethod
     def _execute_code(self, code: str, additional_context: dict = None):
         """
         Generic method to execute a piece of code. This method is a fallback if one
