@@ -84,7 +84,7 @@ class ElevatorStoryTests(unittest.TestCase):
         tester = Interpreter(io.import_from_yaml(open('examples/testers/elevator_7th_floor_never_reached.yaml')))
         self.assertFalse(test_story.tell(tester).final)
 
-    def test_go_ground_after_10s(self):
+    def test_elevator_moves_after_10s(self):
         tested = Interpreter(io.import_from_yaml(open('examples/concrete/elevator.yaml')))
         stories = [
             Story([Event('floorSelected', {'floor': 4})]),
@@ -98,5 +98,5 @@ class ElevatorStoryTests(unittest.TestCase):
         for story in stories:
             test_story = story_from_trace(story.tell(tested).trace)
 
-            tester = Interpreter(io.import_from_yaml(open('examples/testers/elevator_go_ground_after_10s.yaml')))
+            tester = Interpreter(io.import_from_yaml(open('examples/testers/elevator_moves_after_10s.yaml')))
             self.assertTrue(test_story.tell(tester).final)

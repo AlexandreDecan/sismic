@@ -90,9 +90,6 @@ The :py:func:`~sismic.stories.story_from_trace` function makes it very easy to t
 3. Use the trace with :py:func:`~sismic.stories.story_from_trace` to generate a new story.
 4. Tell this story on *statechart testers*.
 
-Statechart testers
-******************
-
 Statechart testers are classical statechart, in the sense that their syntax nor their semantic differ
 from tested statecharts. The main difference comes from the events they receive.
 Look carefully at the documentation of :py:func:`~sismic.stories.story_from_trace` to know
@@ -127,18 +124,17 @@ You can even simulate a failure:
 .. literalinclude:: ../tests/test_story.py
     :pyobject: ElevatorStoryTests.test_7th_floor_never_reached_fails
 
-Go to ground floor after 10 seconds
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Elevator moves after 10 seconds
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This statechart tester ensures that the elevator automatically goes to the ground floor
-if nothing happened after 10 seconds. This example uses a parallel state to guess the current floor.
+This statechart tester checks that the elevator automatically moves after some idle time if it is not on
+the ground floor. The test sets a timeout of 12 seconds, but it should work for any number strictly greater than
+10 seconds.
 
-Notice that the timeout is set to 12 seconds (this should work for any number strictly greater than 10 seconds).
-
-.. literalinclude:: ../examples/testers/elevator_go_ground_after_10s.yaml
+.. literalinclude:: ../examples/testers/elevator_moves_after_10s.yaml
    :language: yaml
 
 We check this tester using several stories, as follows:
 
 .. literalinclude:: ../tests/test_story.py
-    :pyobject: ElevatorStoryTests.test_go_ground_after_10s
+    :pyobject: ElevatorStoryTests.test_elevator_moves_after_10s
