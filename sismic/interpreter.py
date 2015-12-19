@@ -553,13 +553,14 @@ class Interpreter:
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))
 
 
-def run_in_background(interpreter: Interpreter, delay: float=0.2):
+def run_in_background(interpreter: Interpreter, delay: float=0.2, callback=None):
     """
     Run given interpreter in background. The time is updated according to
     ``time.time()``. The interpreter is ran until it reachs a final configuration.
 
     :param interpreter: an interpreter
     :param delay: delay between each call to ``execute()``
+    :param callback: a function that takes the interpreter and the results of ``execute``.
     :return: started thread
     """
     import time
@@ -569,7 +570,9 @@ def run_in_background(interpreter: Interpreter, delay: float=0.2):
         starttime = time.time()
         while not interpreter.final:
             interpreter.time = time.time() - starttime
-            interpreter.execute()
+            steps = interpreter.execute()
+            if callback:
+                callback(interpreter, steps)
             time.sleep(delay)
     thread = threading.Thread(target=_task, args=(interpreter, delay))
     thread.start()
