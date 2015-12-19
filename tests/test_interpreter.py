@@ -1,13 +1,23 @@
 import unittest
 from sismic import io
-from sismic.interpreter import Interpreter
+from sismic.interpreter import Interpreter, run_in_background
 from sismic.evaluator import DummyEvaluator
 from sismic.model import Event, Transition, StateChart, StateMixin
-
 from sismic.model import PreconditionFailed, PostconditionFailed, InvariantFailed
 
 
-class SimulatorSimpleTest(unittest.TestCase):
+class RunInBackgroundTests(unittest.TestCase):
+    def test_run_in_background(self):
+        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
+        intp = Interpreter(sc)
+        task = run_in_background(intp, 0.001)
+        intp.send(Event('goto s2'))
+        intp.send(Event('goto final'))
+        task.join()
+        self.assertTrue(intp.final)
+
+
+class SimulatorSimpleTests(unittest.TestCase):
     def test_init(self):
         sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
         interpreter = Interpreter(sc, DummyEvaluator)

@@ -553,7 +553,7 @@ class Interpreter:
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))
 
 
-def run_in_background(interpreter: Interpreter, delay: int=0.2):
+def run_in_background(interpreter: Interpreter, delay: float=0.2):
     """
     Run given interpreter in background. The time is updated according to
     ``time.time()``. The interpreter is ran until it reachs a final configuration.
