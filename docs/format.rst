@@ -219,11 +219,22 @@ or define a guard.
 Example
 *******
 
-Full example of a statechart definition using YAML.
+Elevator
+^^^^^^^^
+
+The Elevator statechart will be one of the running example in this documentation.
 
 .. literalinclude:: ../examples/concrete/elevator.yaml
    :language: yaml
 
+Microwave
+^^^^^^^^^
+
+Notice the use of ``description``. This field will be ignored when imported into
+Sismic, but can be used to provide additional information about the statechart.
+
+.. literalinclude:: ../examples/concrete/microwave.yaml
+    :language: yaml
 
 Defining statecharts in Python
 ------------------------------

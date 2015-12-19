@@ -378,8 +378,8 @@ As our statechart does not define any way to reach a final configuration, the ``
 always hold, and you have to manually interrupt the execution.
 
 
-Interactive but continuous execution
-************************************
+Using *threading*
+*****************
 
 Notice from previous example that using such a loop, you are not able to send event to the interpreter.
 Consider the following example involving the :py:mod:`threading` module as a tiny workaround:
@@ -417,7 +417,7 @@ Consider the following example involving the :py:mod:`threading` module as a tin
 
 
 For convenience, module :py:mod:`~sismic.interpreter` provides a :py:func:`~sismic.interpreter.run_in_background`
-function:
+function that does the job for you.
 
 .. autofunction:: sismic.interpreter.run_in_background
 
