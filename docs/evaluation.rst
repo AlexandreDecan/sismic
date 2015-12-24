@@ -75,7 +75,7 @@ An :py:class:`~sismic.evaluator.Evaluator` must provide two main methods and an 
 .. automethod:: sismic.evaluator.Evaluator._execute_code
 .. autoattribute:: sismic.evaluator.Evaluator.context
 
-Notice that none of the two methods are actually called by the interpreter during the execution of a
+Notice that none of the two methods is actually called by the interpreter during the execution of a
 statechart. These methods are fallback methods, meaning they are implicitly called when one of the
 following methods is not defined in a concrete evaluator instance:
 
@@ -101,7 +101,7 @@ Examples
 
 Consider the following statechart that performs simple arithmetic operations.
 
-.. literalinclude:: ../examples/simple/actions.yaml
+.. literalinclude:: ../tests/yaml/actions.yaml
    :language: yaml
 
 

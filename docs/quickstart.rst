@@ -29,7 +29,7 @@ Example of a YAML definition of a statechart for an elevator.
 This statechart includes contract definition.
 
 
-.. literalinclude:: ../examples/contract/elevator.yaml
+.. literalinclude:: ../examples/elevator_contract.yaml
     :language: yaml
 
 
@@ -44,7 +44,7 @@ Quick example:
 
    import sismic
 
-   with open('examples/concrete/elevator.yaml') as f:
+   with open('examples/elevator.yaml') as f:
       statechart = sismic.io.import_from_yaml(f)
       interpreter = sismic.interpreter.Interpreter(statechart)
       interpreter.send(sismic.model.Event('floorSelected', data={'floor': 4}))

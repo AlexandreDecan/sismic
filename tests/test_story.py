@@ -16,7 +16,7 @@ class StoryTests(unittest.TestCase):
 
     def test_tell(self):
         story = Story([Event('goto s2'), Pause(5), Event('goto final')])
-        sc = io.import_from_yaml(open('examples/simple/simple.yaml'))
+        sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
         interpreter = Interpreter(sc)
         story.tell(interpreter)
 
@@ -27,7 +27,7 @@ class StoryTests(unittest.TestCase):
 
 class StoryFromTraceTests(unittest.TestCase):
     def test_simple(self):
-        interpreter = Interpreter(io.import_from_yaml(open('examples/simple/simple.yaml')))
+        interpreter = Interpreter(io.import_from_yaml(open('tests/yaml/simple.yaml')))
         Story([Pause(2), Event('goto s2'), Pause(3)]).tell(interpreter)
         story = story_from_trace(interpreter.trace)
         expected = Story([Event('started'),
@@ -65,27 +65,27 @@ class RandomStoryTests(unittest.TestCase):
 
 class ElevatorStoryTests(unittest.TestCase):
     def test_7th_floor_never_reached(self):
-        tested = Interpreter(io.import_from_yaml(open('examples/concrete/elevator.yaml')))
+        tested = Interpreter(io.import_from_yaml(open('examples/elevator.yaml')))
         story = Story([Event('floorSelected', {'floor': 8})])
         trace = story.tell(tested).trace
 
         test_story = story_from_trace(trace)
 
-        tester = Interpreter(io.import_from_yaml(open('examples/testers/elevator_7th_floor_never_reached.yaml')))
+        tester = Interpreter(io.import_from_yaml(open('examples/tester_elevator_7th_floor_never_reached.yaml')))
         self.assertTrue(test_story.tell(tester).final)
 
     def test_7th_floor_never_reached_fails(self):
-        tested = Interpreter(io.import_from_yaml(open('examples/concrete/elevator.yaml')))
+        tested = Interpreter(io.import_from_yaml(open('examples/elevator.yaml')))
         story = Story([Event('floorSelected', {'floor': 4}), Pause(2), Event('floorSelected', {'floor': 7})])
         trace = story.tell(tested).trace
 
         test_story = story_from_trace(trace)
 
-        tester = Interpreter(io.import_from_yaml(open('examples/testers/elevator_7th_floor_never_reached.yaml')))
+        tester = Interpreter(io.import_from_yaml(open('examples/tester_elevator_7th_floor_never_reached.yaml')))
         self.assertFalse(test_story.tell(tester).final)
 
     def test_elevator_moves_after_10s(self):
-        tested = Interpreter(io.import_from_yaml(open('examples/concrete/elevator.yaml')))
+        tested = Interpreter(io.import_from_yaml(open('examples/elevator.yaml')))
         stories = [
             Story([Event('floorSelected', {'floor': 4})]),
             Story([Event('floorSelected', {'floor': 0})]),
@@ -98,5 +98,5 @@ class ElevatorStoryTests(unittest.TestCase):
         for story in stories:
             test_story = story_from_trace(story.tell(tested).trace)
 
-            tester = Interpreter(io.import_from_yaml(open('examples/testers/elevator_moves_after_10s.yaml')))
+            tester = Interpreter(io.import_from_yaml(open('examples/tester_elevator_moves_after_10s.yaml')))
             self.assertTrue(test_story.tell(tester).final)

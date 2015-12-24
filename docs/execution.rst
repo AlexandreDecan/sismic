@@ -130,7 +130,7 @@ Notice that a call to :py:meth:`~sismic.interpreter.Interpreter.execute` first c
 it, meaning that all the steps are already processed when the call returns.
 ..
 As a call to :py:meth:`~sismic.interpreter.Interpreter.execute` could lead to an infinite execution
-(see for example `simple/infinite.yaml <https://github.com/AlexandreDecan/sismic/blob/master/examples/simple/infinite.yaml>`__),
+(see for example `simple/infinite.yaml <https://github.com/AlexandreDecan/sismic/blob/master/tests/yaml/infinite.yaml>`__),
 an additional parameter ``max_steps`` can be specified to limit the number of steps that are computed
 and executed by the method.
 
@@ -241,7 +241,7 @@ First, we load the statechart and initialize the interpreter:
     from sismic.interpreter import Interpreter
     from sismic.model import Event
 
-    with open('examples/concrete/elevator.yaml') as f:
+    with open('examples/elevator.yaml') as f:
         statechart = import_from_yaml(f)
 
     interpreter = Interpreter(statechart)
@@ -292,7 +292,7 @@ Let us first initialize an interpreter using one of our statechart example, the 
     from sismic.interpreter import Interpreter
     from sismic.model import Event
 
-    with open('examples/concrete/elevator.yaml') as f:
+    with open('examples/elevator.yaml') as f:
         statechart = import_from_yaml(f)
 
     interpreter = Interpreter(statechart)
@@ -345,7 +345,7 @@ put it in a loop.
     from sismic.interpreter import Interpreter
     from sismic.model import Event
 
-    with open('examples/concrete/elevator.yaml') as f:
+    with open('examples/elevator.yaml') as f:
         statechart = import_from_yaml(f)
 
     interpreter = Interpreter(statechart)
@@ -384,7 +384,7 @@ Using *threading*
 Notice from previous example that using such a loop, you are not able to send event to the interpreter.
 Consider the following example involving the :py:mod:`threading` module as a tiny workaround:
 
-.. code::python
+.. code:: python
 
     import threading
     import time
@@ -393,7 +393,7 @@ Consider the following example involving the :py:mod:`threading` module as a tin
     from sismic.interpreter import Interpreter
     from sismic.model import Event
 
-    with open('examples/concrete/elevator.yaml') as f:
+    with open('examples/elevator.yaml') as f:
         interpreter = Interpreter(import_from_yaml(f))
 
     # Define an runnable task
@@ -416,7 +416,7 @@ Consider the following example involving the :py:mod:`threading` module as a tin
     #     goes back to the ground floor
 
 
-For convenience, module :py:mod:`~sismic.interpreter` provides a :py:func:`~sismic.interpreter.run_in_background`
+For convenience, sismic provides a :py:func:`~sismic.interpreter.run_in_background`
 function that does the job for you.
 
 .. autofunction:: sismic.interpreter.run_in_background

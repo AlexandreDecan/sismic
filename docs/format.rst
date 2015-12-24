@@ -38,7 +38,7 @@ For example:
         assert isinstance(statechart, model.StateChart)
 
 
-Although the parser is quite robut and should warn about most syntaxic problems, a :py:class:`~sismic.model.StateChart` instance has a
+Although the parser identifies most syntax problems, a :py:class:`~sismic.model.StateChart` instance has a
 :py:meth:`~sismic.model.StateChart.validate` method that can perform numerous other checks.
 This method either returns ``True`` if the statechart *seems* to
 be valid, or raises an ``AssertionError`` exception with a meaningful message.
@@ -224,7 +224,7 @@ Elevator
 
 The Elevator statechart will be one of the running example in this documentation.
 
-.. literalinclude:: ../examples/concrete/elevator.yaml
+.. literalinclude:: ../examples/elevator.yaml
    :language: yaml
 
 Microwave
@@ -233,7 +233,7 @@ Microwave
 Notice the use of ``description``. This field will be ignored when imported into
 Sismic, but can be used to provide additional information about the statechart.
 
-.. literalinclude:: ../examples/concrete/microwave.yaml
+.. literalinclude:: ../examples/microwave.yaml
     :language: yaml
 
 Defining statecharts in Python

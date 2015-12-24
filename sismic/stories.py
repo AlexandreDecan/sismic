@@ -77,6 +77,7 @@ def story_from_trace(trace: list) -> Story:
     Return a story based on the given *trace*, a list of macro steps.
 
     The story is constructed as follows:
+
      - the story begins with a *started* event.
      - the delay between pairs of consecutive steps creates a ``Pause`` instance.
      - each time an event is consumed, a *consumed* event is sent.
@@ -94,11 +95,11 @@ def story_from_trace(trace: list) -> Story:
     The story does follow the interpretation order:
 
     1. an event is possibly consumed
-    2. For each transition
-        a. states are exited
-        b. transition is processed
-        c. states are entered
-        d. statechart is stabilized (states are entered)
+    2. For each transition:
+     a. states are exited
+     b. transition is processed
+     c. states are entered
+     d. statechart is stabilized (states are entered)
 
     :param trace: a list of ``micro step`` instances
     :return: A story

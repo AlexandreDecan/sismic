@@ -4,7 +4,7 @@ from sismic import model
 
 class TraversalTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('examples/simple/composite.yaml'))
+        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
 
     def test_ancestors(self):
         self.assertEqual(self.sc.ancestors_for('s2'), [])

@@ -111,7 +111,7 @@ This dummy statechart tester ensures that the 7th floor is never reached.
 It stores the current floor based on the number of times the elevator goes up
 and goes down.
 
-.. literalinclude:: ../examples/testers/elevator_7th_floor_never_reached.yaml
+.. literalinclude:: ../examples/tester_elevator_7th_floor_never_reached.yaml
    :language: yaml
 
 It can be tested as follows:
@@ -131,7 +131,7 @@ This statechart tester checks that the elevator automatically moves after some i
 the ground floor. The test sets a timeout of 12 seconds, but it should work for any number strictly greater than
 10 seconds.
 
-.. literalinclude:: ../examples/testers/elevator_moves_after_10s.yaml
+.. literalinclude:: ../examples/tester_elevator_moves_after_10s.yaml
    :language: yaml
 
 We check this tester using several stories, as follows:

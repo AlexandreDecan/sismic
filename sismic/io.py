@@ -11,10 +11,10 @@ def import_from_yaml(data: str) -> StateChart:
     :param data: string or any equivalent object
     :return: a StateChart instance
     """
-    return import_from_dict(yaml.load(data)['statechart'])
+    return _import_from_dict(yaml.load(data)['statechart'])
 
 
-def import_from_dict(data: dict) -> StateChart:
+def _import_from_dict(data: dict) -> StateChart:
     """
     Import a statechart from a (set of nested) dictionary.
 
@@ -138,11 +138,11 @@ def export_to_yaml(statechart: StateChart) -> str:
     :param statechart:
     :return: A textual YAML representation
     """
-    return yaml.dump(export_to_dict(statechart, ordered=False),
+    return yaml.dump(_export_to_dict(statechart, ordered=False),
                      width=1000, default_flow_style=False, default_style='"')
 
 
-def export_to_dict(statechart: StateChart, ordered=True) -> dict:
+def _export_to_dict(statechart: StateChart, ordered=True) -> dict:
     """
     Export given StateChart instance to a dict.
 

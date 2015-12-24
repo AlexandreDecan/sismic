@@ -111,9 +111,9 @@ Example
 *******
 
 The following example shows some invariants, preconditions and postconditions added
-to the `Elevator example <https://github.com/AlexandreDecan/sismic/blob/master/examples/concrete/elevator.yaml>`__.
+to the `Elevator example <https://github.com/AlexandreDecan/sismic/blob/master/examples/elevator.yaml>`__.
 
-.. literalinclude:: ../examples/contract/elevator.yaml
+.. literalinclude:: ../examples/elevator_contract.yaml
    :language: yaml
 
 
@@ -130,7 +130,7 @@ at runtime and may raise a subclass of :py:exc:`~sismic.model.ConditionFailed`.
     from sismic.interpreter import Interpreter
     from sismic.io import import_from_yaml
 
-    with open('examples/contract/elevator.yaml') as f:
+    with open('examples/elevator_contract.yaml') as f:
         statechart = import_from_yaml(f)
         interpreter = Interpreter(statechart)
         interpreter.send(Event('floorSelected', {'floor': 4}))
