@@ -132,7 +132,6 @@ If you want an history state to follow the deep semantic, set ``type`` to ``deep
 
     - name: history state
       type: shallow history
-      deep: True
 
 An history state can optionally define an initial memory using ``initial``.
 
