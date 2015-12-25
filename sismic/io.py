@@ -1,17 +1,35 @@
 import yaml
+import os
+from pykwalify.core import Core
 from collections import OrderedDict
 from .model import Event, Transition, StateChart, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
 from .model import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 
 
-def import_from_yaml(data: str) -> StateChart:
+SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')
+
+
+def import_from_yaml(statechart: str, validate_yaml=True, validate_statechart=True) -> StateChart:
     """
     Import a statechart from a YAML representation.
+    YAML is first validated against ``io.SCHEMA``.
 
-    :param data: string or any equivalent object
-    :return: a StateChart instance
+    :param statechart: string or any equivalent object
+    :param validate_yaml: set to ``False`` to disable yaml validation.
+    :param validate_statechart: set to ``False`` to disable statechart validation
+      (see ``model.StateChart.validate``).
+    :return: a ``StateChart`` instance
     """
-    return _import_from_dict(yaml.load(data)['statechart'])
+    statechart_data = yaml.load(statechart)
+    if validate_yaml:
+        checker = Core(source_data=statechart_data, schema_files=[SCHEMA_PATH])
+        checker.validate(raise_exception=True)
+
+    sc = _import_from_dict(statechart_data['statechart'])
+    if validate_statechart:
+        sc.validate()
+
+    return sc
 
 
 def _import_from_dict(data: dict) -> StateChart:

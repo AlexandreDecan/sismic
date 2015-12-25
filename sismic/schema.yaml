@@ -1,0 +1,83 @@
+schema;contract:
+  type: seq
+  sequence:
+    - type: map
+      mapping:
+        "before":
+          type: str
+    - type: map
+      mapping:
+        "after":
+          type: str
+    - type: map
+      mapping:
+        "always":
+          type: str
+
+schema;transition:
+  type: map
+  mapping:
+    "target":
+      type: str
+    "event":
+      type: str
+    "guard":
+      type: str
+    "action":
+      type: str
+    "contract":
+      include: contract
+
+schema;state:
+  type: map
+  mapping:
+    "name":
+      type: str
+      required: yes
+    "initial":
+      type: str
+    "on entry":
+      type: str
+    "on exit":
+      type: str
+    "type":
+      type: str
+      enum: [final, shallow history, deep history]
+    "states":
+      type: seq
+      sequence:
+        - include: state
+    "parallel states":
+      type: seq
+      sequence:
+        - include: state
+    "transitions":
+      type: seq
+      sequence:
+        - include: transition
+    "contract":
+      include: contract
+
+type: map
+mapping:
+  "statechart":
+    type: map
+    required: yes
+    mapping:
+      "name":
+        type: str
+        required: yes
+      "description":
+        type: str
+      "on entry":
+        type: str
+      "initial":
+        type: str
+        required: yes
+      "states":
+        type: seq
+        required: yes
+        sequence:
+          - include: state
+      "contract":
+        include: contract

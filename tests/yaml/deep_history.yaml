@@ -15,7 +15,6 @@ statechart:
       states:
         - name: active.H*
           type: deep history
-          deep: True
         - name: concurrent_processes
           parallel states:
             - name: process_1

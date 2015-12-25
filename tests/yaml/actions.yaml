@@ -12,7 +12,7 @@ statechart:
       action: |
         x += 1
   - name: s2
-    on_entry: |
+    on entry: |
       y += 1
     transitions:
     - target: s3
