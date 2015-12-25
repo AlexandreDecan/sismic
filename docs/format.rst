@@ -15,14 +15,14 @@ executable semantics for statecharts have been proposed in the literature and in
 
 .. _yaml_statecharts:
 
-Define statecharts in YAML
---------------------------
+Defining statecharts in YAML
+----------------------------
 
 This section explains how the elements that compose a statechart can be defined using YAML.
 If you are not familiar with YAML, have a look at `YAML official documentation <http://yaml.org/spec/1.1/>`__.
 
 Statechart
-^^^^^^^^^^
+**********
 
 The root of the YAML file **must** declare a statechart:
 
@@ -54,7 +54,7 @@ Code can be written on multiple lines:
 
 
 States
-^^^^^^
+******
 
 A statechart has to declare a (nonempty) list of states using ``states``.
 Each state consist of at least a ``name``. Depending on the state type, several other fields can be declared.
@@ -69,7 +69,7 @@ Each state consist of at least a ``name``. Depending on the state type, several 
 
 
 Entry and exit actions
-^^^^^^^^^^^^^^^^^^^^^^
+**********************
 
 For each state, it is possible to specify the code that has to be executed when entering and leaving the
 state using ``on entry`` and ``on exit`` as follows:
@@ -83,7 +83,7 @@ state using ``on entry`` and ``on exit`` as follows:
         y = 2
 
 Final states
-^^^^^^^^^^^^
+************
 
 A state that declares a ``type: final`` property is a *final state*:
 
@@ -93,7 +93,7 @@ A state that declares a ``type: final`` property is a *final state*:
       type: final
 
 Shallow and deep history sates
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+******************************
 
 A state that declares a ``type: shallow history`` property is an *shallow history state*.
 If you want an history state to follow the deep semantic, set ``type`` to ``deep history``.
@@ -114,7 +114,7 @@ An history state can optionally define an initial memory using ``initial``.
 Importantly, the ``initial`` memory value **must** refer to a parent's substate.
 
 Compound states
-^^^^^^^^^^^^^^^
+***************
 
 A state that is neither a final state nor an history state can contain nested states.
 Such a state is a *compound state*.
@@ -132,7 +132,7 @@ Notice that PySS does not explicit the concept of *region*.
 As a region is mainly a logical set of nested states, it can be emulated using a compound state.
 
 Orthogonal states
-^^^^^^^^^^^^^^^^^
+*****************
 
 *Orthogonal states* (sometimes referred as *parallel states*) must declare their nested states using ``parallel states``
 instead of ``states``.
@@ -153,7 +153,7 @@ illustrated in the previous example. In other words, it is not allowed to define
 instead of ``states`` in this previous example.
 
 Transitions
-^^^^^^^^^^^
+***********
 
 States, compound states and parallel states can declare *transitions* with ``transitions``:
 
@@ -185,11 +185,11 @@ or define a guard.
 .. _yaml_example:
 
 
-Example
-*******
+Examples of YAML statecharts
+----------------------------
 
 Elevator
-^^^^^^^^
+********
 
 The Elevator statechart will be one of the running examples in this documentation.
 
@@ -197,7 +197,7 @@ The Elevator statechart will be one of the running examples in this documentatio
    :language: yaml
 
 Microwave
-^^^^^^^^^
+*********
 
 Notice the use of ``description``. This field will be ignored when imported into
 Sismic, but can be used to provide additional information about the statechart.
@@ -206,7 +206,7 @@ Sismic, but can be used to provide additional information about the statechart.
     :language: yaml
 
 
-Import and validate YAML statecharts
+Importing and validating statecharts
 ------------------------------------
 
 A YAML definition of a statechart can be easily imported to a :py:class:`~sismic.model.StateChart` instance.
@@ -238,8 +238,8 @@ This function also validates the resulting statechart using :py:meth:`~sismic.mo
 .. automethod:: sismic.model.StateChart.validate
 
 
-Define statecharts in Python
-----------------------------
+Defining statecharts in Python
+------------------------------
 
 While it is not very convenient, it is still possible to define the statechart using Python objects.
 The following sections detail the Python structure of a statechart.
