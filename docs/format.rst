@@ -15,40 +15,11 @@ executable semantics for statecharts have been proposed in the literature and in
 
 .. _yaml_statecharts:
 
-Defining statecharts in YAML
-----------------------------
-
-Statecharts can be defined using a YAML format.
-
-A YAML definition of a statechart can be easily imported to a :py:class:`~sismic.model.StateChart` instance.
-The module :py:mod:`sismic.io` provides a convenient loader :py:func:`~sismic.io.import_from_yaml`
-which takes a textual YAML definition of a statechart. It also provides a way to export statechart to YAML.
-
-.. automodule:: sismic.io
-    :members: import_from_yaml, export_to_yaml
-
-For example:
-
-.. code:: python
-
-    from sismic import io, model
-
-    with open('examples/concrete/elevator.yaml') as f:
-        statechart = io.import_from_yaml(f)
-        assert isinstance(statechart, model.StateChart)
-
-
-The parser performs an automatic validation against a YAML schema, and also performs additional
-validation using :py:meth:`~sismic.model.StateChart.validate` method
-of the resulting :py:class:`~sismic.model.StateChart` instance
-(see :ref:`yaml_schema`).
-
-Statechart elements
-*******************
+Define statecharts in YAML
+--------------------------
 
 This section explains how the elements that compose a statechart can be defined using YAML.
 If you are not familiar with YAML, have a look at `YAML official documentation <http://yaml.org/spec/1.1/>`__.
-
 
 Statechart
 ^^^^^^^^^^
@@ -220,7 +191,7 @@ Example
 Elevator
 ^^^^^^^^
 
-The Elevator statechart will be one of the running example in this documentation.
+The Elevator statechart will be one of the running examples in this documentation.
 
 .. literalinclude:: ../examples/elevator.yaml
    :language: yaml
@@ -235,14 +206,28 @@ Sismic, but can be used to provide additional information about the statechart.
     :language: yaml
 
 
+Import and validate YAML statecharts
+------------------------------------
 
-.. _yaml_schema:
+A YAML definition of a statechart can be easily imported to a :py:class:`~sismic.model.StateChart` instance.
+The module :py:mod:`sismic.io` provides a convenient loader :py:func:`~sismic.io.import_from_yaml`
+which takes a textual YAML definition of a statechart. It also provides a way to export statechart to YAML.
+
+.. automodule:: sismic.io
+    :members: import_from_yaml, export_to_yaml
+
+For example:
+
+.. code:: python
+
+    from sismic import io, model
+
+    with open('examples/concrete/elevator.yaml') as f:
+        statechart = io.import_from_yaml(f)
+        assert isinstance(statechart, model.StateChart)
 
 
-YAML statechart validation
-**************************
-
-Function :py:func:`~sismic.io.import_from_yaml` performs an automatic validation against the following YAML
+The parser performs an automatic validation against the following YAML
 schema file (see `pykwalify <https://github.com/Grokzen/pykwalify/>`__ for more information about the format).
 
 .. literalinclude:: ../sismic/schema.yaml
@@ -253,8 +238,8 @@ This function also validates the resulting statechart using :py:meth:`~sismic.mo
 .. automethod:: sismic.model.StateChart.validate
 
 
-Defining statecharts in Python
-------------------------------
+Define statecharts in Python
+----------------------------
 
 While it is not very convenient, it is still possible to define the statechart using Python objects.
 The following sections detail the Python structure of a statechart.
