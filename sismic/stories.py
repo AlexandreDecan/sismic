@@ -101,7 +101,7 @@ def story_from_trace(trace: list) -> Story:
      c. states are entered
      d. statechart is stabilized (states are entered)
 
-    :param trace: a list of ``micro step`` instances
+    :param trace: a list of ``MacroStep`` instances
     :return: A story
     """
     story = Story()
