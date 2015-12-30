@@ -3,9 +3,9 @@
 Code contained in statecharts
 =============================
 
-A statechart can write code to be executed under some circumstances.
+A statechart can specify code that needs to be executed under some circumstances.
 For example, the ``on entry`` property on a statechart, the ``guard`` or ``action`` on a transition or the
-``on entry`` and ``on exit`` properties for a state.
+``on entry`` and ``on exit`` properties for a state may all contain code.
 
 In Sismic, these pieces of code can be evaluated and executed by :py:class:`~sismic.evaluator.Evaluator` instances.
 
@@ -16,17 +16,17 @@ Built-in Python code evaluator
 
 By default, Sismic provides two built-in :py:class:`~sismic.evaluator.Evaluator` subclasses:
 
+ - A default :py:class:`~sismic.evaluator.PythonEvaluator` that allows the statecharts to execute Python code directly.
  - A :py:class:`~sismic.evaluator.DummyEvaluator` that always evaluates to ``True`` and silently ignores
    ``action``, ``on entry`` and ``on exit``. Its context is an empty dictionary.
- - A :py:class:`~sismic.evaluator.PythonEvaluator` that brings Python into our statecharts and which is used by default.
 
 
 The *context* of an evaluator
 *****************************
 
-An instance of :py:class:`~sismic.evaluator.PythonEvaluator` can evaluate and execute Python code expressed in the statechart.
+An instance of :py:class:`~sismic.evaluator.PythonEvaluator` can evaluate and execute Python code specified in the statechart.
 The key point to understand how it works is the concept of ``context``, which is a dictionary-like structure that contains the data
-that are exposed to the pieces of code of the statechart (ie. override ``__locals__``).
+that is exposed to the code fragments contained in the statechart (ie. override ``__locals__``).
 
 As an example, consider the following partial statechart definition.
 
@@ -52,7 +52,7 @@ When a :py:class:`~sismic.evaluator.PythonEvaluator` instance is initialized, a 
 
     evaluator = PythonEvaluator(initial_context={'x': 1, 'math': my_favorite_module})
 
-Depending on the situation (entered state, guard evaluation, etc.), the context is populated with additional
+Depending on the situation (state entered, guard evaluation, etc.), the context is populated with additional
 entries. These entries are covered in the next section.
 
 
@@ -66,8 +66,7 @@ Anatomy of a code evaluator
 ---------------------------
 
 The documentation below explains how an evaluator is organized and what does the default built-in Python evaluator.
-You could skip this part of the documentation if you are not interested to tune existing evaluators or to create
-new ones.
+Readers that are not interested in tuning existing evaluators or creating new ones can skip this part of the documentation.
 
 An :py:class:`~sismic.evaluator.Evaluator` must provide two main methods and an attribute:
 
@@ -83,8 +82,7 @@ following methods is not defined in a concrete evaluator instance:
     :members:
     :exclude-members: _evaluate_code, _execute_code, context
 
-The documentation of the :py:class:`~sismic.evaluator.Evaluator` already mentions this, but it is something
-that is very important:
+In order to understand how the evaluator works, the documentation of the :py:class:`~sismic.evaluator.Evaluator` mentions the following important statements:
 
  - Methods :py:meth:`~sismic.evaluator.Evaluator.execute_onentry` and :py:meth:`~sismic.evaluator.Evaluator.execute_onexit`
    are called respectively when a state is entered or exited, even if this state does not define a ``on_entry`` or
