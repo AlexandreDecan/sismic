@@ -138,35 +138,41 @@ from the execution of a statechart that does not.
 The only difference is that conditions of each contract are checked
 at runtime (as explained above) and may raise a subclass of :py:exc:`~sismic.model.ConditionFailed`.
 
-.. code:: python
+.. testcode::
 
     from sismic.model import Event
     from sismic.interpreter import Interpreter
     from sismic.io import import_from_yaml
 
-    with open('examples/elevator_contract.yaml') as f:
+    with open('../examples/elevator_contract.yaml') as f:
         statechart = import_from_yaml(f)
+
+        # Make the run fails
+        statechart.states['movingUp'].preconditions[0] = 'current > destination'
+
         interpreter = Interpreter(statechart)
         interpreter.send(Event('floorSelected', {'floor': 4}))
         interpreter.execute()
 
 Here we manually changed one of the preconditions such that it failed at runtime.
-The exception displays some relevant information to help debug::
+The exception displays some relevant information to help debug:
 
-    PreconditionFailed: Assertion not satisfied!
+.. testoutput::
+    :options: +ELLIPSIS
+
+    Traceback (most recent call last):
+     ...
+    sismic.model.PreconditionFailed: Precondition not satisfied!
     Object: BasicState(movingUp)
     Assertion: current > destination
     Configuration: ['active', 'floorListener', 'movingElevator', 'floorSelecting']
-    Step: MicroStep(None, doorsClosed -> movingUp, ['moving', 'movingUp'], ['doorsClosed'])
+    Step: MicroStep(None, doorsClosed -> movingUp, >['moving', 'movingUp'], <['doorsClosed'])
     Evaluation context:
-     - send = <function PythonEvaluator.__init__.<locals>.<lambda> at 0x7ff07fd1d620>
-     - active = <function PythonEvaluator.__init__.<locals>.<lambda> at 0x7ff0709ce950>
-     - doors = <Doors object at 0x7ff070942da0>
-     - event = None
+     - destination = 4
+     - doors = <Doors object at ...>
      - current = 0
      - Doors = <class 'Doors'>
-     - Event = <class 'sismic.model.Event'>
-     - destination = 4
+
 
 If you do not want the execution to be interrupted by such exceptions, you can set the ``silent_contract``
 parameter to ``True`` when constructing an ``Interpreter``.

@@ -8,6 +8,8 @@ install:
 - pip install coveralls
 script:
 - coverage run --source sismic -m unittest discover
+- cd docs
+- make doctest
 after_success:
 - coveralls
 deploy:

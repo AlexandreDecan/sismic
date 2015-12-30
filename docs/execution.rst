@@ -82,7 +82,12 @@ If no evaluator is specified, the :py:class:`~sismic.evaluator.PythonEvaluator` 
 
 Consider the following example.
 
-.. code:: python
+.. testsetup:: interpreter
+
+    from sismic.io import import_from_yaml
+    my_statechart = import_from_yaml(open('../examples/elevator.yaml'))
+
+.. testcode:: interpreter
 
     from sismic.interpreter import Interpreter
     from sismic.model import Event
@@ -101,7 +106,7 @@ sequences of entered and exited states (see :ref:`steps`).
 For convenience, :py:meth:`~sismic.interpreter.Interpreter.send` returns ``self`` and thus can be chained.
 We will see later that Sismic also provides a way to express scenarios, in order to avoid repeated calls to ``send``.
 
-.. code:: python
+.. testcode:: interpreter
 
     interpreter.send(Event('click')).send(Event('click')).execute_once()
 
@@ -111,7 +116,7 @@ In this example, the second *click* event is not processed.
 To process all events *at once*, repeatedly call :py:meth:`~sismic.interpreter.Interpreter.execute_once` until
 it returns a ``None`` value. For instance:
 
-.. code:: python
+.. testcode:: interpreter
 
     while interpreter.execute_once():
       pass
@@ -121,7 +126,8 @@ As a shortcut, the :py:meth:`~sismic.interpreter.Interpreter.execute` method wil
 :py:class:`~sismic.interpreter.MacroStep` instances obtained by repeatedly calling
 :py:meth:`~sismic.interpreter.Interpreter.execute_once`:
 
-.. code:: python
+
+.. testcode:: interpreter
 
     from sismic.interpreter import MacroStep
 
@@ -137,7 +143,7 @@ As a call to :py:meth:`~sismic.interpreter.Interpreter.execute` could lead to an
 an additional parameter ``max_steps`` can be specified to limit the number of steps that are computed
 and executed by the method.
 
-.. code:: python
+.. testcode:: interpreter
 
     assert len(interpreter.execute(max_steps=10)) <= 10
 
@@ -150,10 +156,14 @@ be consumed and ignored).
 This method also accepts a state name or a list of state names to restrict the list of returned events,
 and is thus commonly used to get a list of the "interesting" events:
 
-.. code:: python
+.. testcode:: interpreter
 
     print(my_statechart.events(interpreter.configuration))
 
+.. testoutput:: interpreter
+    :hide:
+
+    ['floorSelected']
 
 
 Putting all together, the main methods and attributes of a simulator instance are:
@@ -239,13 +249,13 @@ the elevator should automatically go back to the ground floor after 10 seconds.
 Rather than waiting for 10 seconds, one can simulate this.
 First, one should load the statechart and initialize the interpreter:
 
-.. code:: python
+.. testcode:: clock
 
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter
     from sismic.model import Event
 
-    with open('examples/elevator.yaml') as f:
+    with open('../examples/elevator.yaml') as f:
         statechart = import_from_yaml(f)
 
     interpreter = Interpreter(statechart)
@@ -254,7 +264,7 @@ The internal clock of our interpreter is ``0``.
 This is, ``interpreter.time == 0`` holds.
 We now ask our elevator to go to the 4th floor.
 
-.. code:: python
+.. testcode:: clock
 
     interpreter.send(Event('floorSelected', data={'floor': 4}))
     interpreter.execute()
@@ -262,27 +272,42 @@ We now ask our elevator to go to the 4th floor.
 The elevator should now be on the 4th floor.
 We inform the interpreter that 2 seconds have elapsed:
 
-.. code:: python
+.. testcode:: clock
 
     interpreter.time += 2
     print(interpreter.execute())
+
+.. testoutput:: clock
+    :hide:
+
+    []
 
 The output should be an empty list ``[]``.
 Of course, nothing happened since the condition ``after(10)`` is not
 satisfied yet.
 We now inform the interpreter that 8 additional seconds have elapsed.
 
-.. code:: python
+.. testcode:: clock
 
     interpreter.time += 8
     print(interpreter.execute())
 
+.. testoutput:: clock
+    :hide:
+
+    [MacroStep@10(None, [Transition(doorsOpen, doorsClosed, None)], >['doorsClosed'], <['doorsOpen']), MacroStep@10(None, [Transition(doorsClosed, movingDown, None)], >['moving', 'movingDown'], <['doorsClosed']), MacroStep@10(None, [Transition(movingDown, movingDown, None)], >['movingDown'], <['movingDown']), MacroStep@10(None, [Transition(movingDown, movingDown, None)], >['movingDown'], <['movingDown']), MacroStep@10(None, [Transition(movingDown, movingDown, None)], >['movingDown'], <['movingDown']), MacroStep@10(None, [Transition(moving, doorsOpen, None)], >['doorsOpen'], <['movingDown', 'moving'])]
+
 The output now contains a list of steps, from which we can see that the elevator has moved down to the ground floor.
 We can check the current floor:
 
-.. code:: python
+.. testcode:: clock
 
     print(interpreter._evaluator.context['current'])
+
+.. testoutput:: clock
+    :hide:
+
+    0
 
 This displays ``0``.
 
@@ -294,13 +319,13 @@ the :py:func:`time.time` function of Python.
 In a nutshell, the idea is to synchronize ``interpreter.time`` with a real clock.
 Let us first initialize an interpreter using one of our statechart example, the *elevator*:
 
-.. code:: python
+.. testcode:: realclock
 
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter
     from sismic.model import Event
 
-    with open('examples/elevator.yaml') as f:
+    with open('../examples/elevator.yaml') as f:
         statechart = import_from_yaml(f)
 
     interpreter = Interpreter(statechart)
@@ -311,7 +336,7 @@ we need to set the internal clock of our interpreter.
 We import from :py:mod:`time` a real clock,
 and store its value into a ``starttime`` variable.
 
-.. code:: python
+.. testcode:: realclock
 
     import time
     starttime = time.time()
@@ -319,19 +344,27 @@ and store its value into a ``starttime`` variable.
 We can now execute the statechart by sending a ``floorSelected`` event, and wait for the output.
 For our example, we first ask the statechart to send to elevator to the 4th floor.
 
-.. code:: python
+.. testcode:: realclock
 
     interpreter.send(Event('floorSelected', data={'floor': 4}))
     interpreter.execute()
+    print('Current floor:', interpreter._evaluator.context['current'])
+    print('Current time:', interpreter.time)
 
 At this point, the elevator is on the 4th floor and is waiting for another input event.
 The internal clock value is still 0.
+
+.. testoutput:: realclock
+
+    Current floor: 4
+    Current time: 0
+
 We should inform our interpreter of the new current time.
 Of course, as our interpreter follows a discrete simulation,
 nothing really happens until we call
 :py:meth:`~sismic.interpreter.Interpreter.execute` or :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
 
-.. code:: python
+.. testcode:: realclock
 
     interpreter.time = time.time() - starttime
     # Does nothing if (time.time() - starttime) is less than 10!
@@ -340,7 +373,7 @@ nothing really happens until we call
 Assuming you quickly wrote these lines of code, nothing happened.
 But if you wait a little bit, and update the clock again, it should move the elevator to the ground floor.
 
-.. code:: python
+.. testcode:: realclock
 
     interpreter.time = time.time() - starttime
     interpreter.execute()
@@ -356,7 +389,7 @@ put it in a loop.
     from sismic.interpreter import Interpreter
     from sismic.model import Event
 
-    with open('examples/elevator.yaml') as f:
+    with open('../examples/elevator.yaml') as f:
         statechart = import_from_yaml(f)
 
     interpreter = Interpreter(statechart)
@@ -370,19 +403,14 @@ put it in a loop.
     while not interpreter.final:
         interpreter.time = time.time() - starttime
         if interpreter.execute():
-            print('something happened at time {}\n'.format(time.time()))
+            print('something happened at time {}'.format(time.time()))
 
         time.sleep(0.5)  # 500ms
 
 Here, we called the :py:func:`~time.sleep` function to slow down the loop (optional).
 The output should look like::
 
-    Closing doors
-    Opening doors
     something happened at time 1450383083.9943285
-
-    Closing doors
-    Opening doors
     something happened at time 1450383093.9920669
 
 As our statechart does not define any way to reach a final configuration,
@@ -394,44 +422,54 @@ Using *threading*
 *****************
 
 Notice from previous example that using a loop, it is not possible to send events to the interpreter.
-Consider the following example involving the :py:mod:`threading` module as a tiny workaround:
-
-.. code:: python
-
-    import threading
-    import time
-
-    from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter
-    from sismic.model import Event
-
-    with open('examples/elevator.yaml') as f:
-        interpreter = Interpreter(import_from_yaml(f))
-
-    # Define an runnable task
-    def run_background(interpreter, delay=0.2):
-        starttime = time.time()
-        while not interpreter.final:
-            interpreter.time = time.time() - starttime
-            interpreter.execute()
-            time.sleep(delay)
-
-    # Define task
-    task = threading.Thread(target=run_background, args=(interpreter,))
-
-    # Start task
-    task.start()
-
-    interpreter.send(Event('floorSelected', {'floor': 4}))
-
-    # ... the elevator goes to the 4th, and after 10 seconds,
-    #     goes back to the ground floor
-
-
 For convenience, sismic provides a :py:func:`~sismic.interpreter.run_in_background`
-function that does the job for you.
+function that run an interpreter in a thread, and does the job of synchronizing the clock for you.
 
 .. autofunction:: sismic.interpreter.run_in_background
+
+
+.. testcode:: thread
+
+    import time
+    from sismic.io import import_from_yaml
+    from sismic.interpreter import Interpreter, run_in_background
+    from sismic.model import Event
+
+    with open('../examples/microwave.yaml') as f:
+        interpreter = Interpreter(import_from_yaml(f))
+
+    run_in_background(interpreter, delay=0.01)
+
+    print('Initial:', interpreter.configuration)
+
+    # Open door
+    interpreter.send(Event('toggledoor'))
+
+    time.sleep(0.05)
+    print('Toggledoor:', interpreter.configuration)
+
+
+    # Wait 200ms and close the door
+    time.sleep(0.200)
+    interpreter.send(Event('toggledoor'))
+
+    time.sleep(0.05)
+    print('Toggledoor:', interpreter.configuration)
+
+
+    # Wait 200ms and unplug
+    time.sleep(0.200)
+    interpreter.send(Event('unplug'))
+
+    time.sleep(0.05)
+    print('Final:', interpreter.configuration)
+
+.. testoutput:: thread
+
+    Initial: ['plugged', 'door', 'heating', 'lamp', 'turntable', 'door.close', 'heating.off', 'lamp.off', 'turntable.off']
+    Toggledoor: ['plugged', 'door', 'heating', 'lamp', 'turntable', 'door.open', 'heating.off', 'lamp.on', 'turntable.off']
+    Toggledoor: ['plugged', 'door', 'heating', 'lamp', 'turntable', 'door.close', 'heating.off', 'lamp.off', 'turntable.off']
+    Final: []
 
 
 .. _other_semantics:

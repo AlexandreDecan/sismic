@@ -40,25 +40,26 @@ Statechart execution
 
 Quick example:
 
-.. code:: python
+.. testcode::
 
    import sismic
 
-   with open('examples/elevator.yaml') as f:
+   with open('../examples/elevator.yaml') as f:
       statechart = sismic.io.import_from_yaml(f)
       interpreter = sismic.interpreter.Interpreter(statechart)
       interpreter.send(sismic.model.Event('floorSelected', data={'floor': 4}))
       for step in interpreter.execute():
          print('{}: {}'.format(step.transitions, interpreter.configuration))
 
+.. testoutput::
+   :options: -ELLIPSIS
 
-The output should look like::
+   [Transition(floorSelecting, floorSelecting, Event(floorSelected))]: ['active', 'floorListener', 'movingElevator', 'doorsOpen', 'floorSelecting']
+   [Transition(doorsOpen, doorsClosed, None)]: ['active', 'floorListener', 'movingElevator', 'doorsOpen', 'floorSelecting']
+   [Transition(doorsClosed, movingUp, None)]: ['active', 'floorListener', 'movingElevator', 'doorsOpen', 'floorSelecting']
+   [Transition(movingUp, movingUp, None)]: ['active', 'floorListener', 'movingElevator', 'doorsOpen', 'floorSelecting']
+   [Transition(movingUp, movingUp, None)]: ['active', 'floorListener', 'movingElevator', 'doorsOpen', 'floorSelecting']
+   [Transition(movingUp, movingUp, None)]: ['active', 'floorListener', 'movingElevator', 'doorsOpen', 'floorSelecting']
+   [Transition(moving, doorsOpen, None)]: ['active', 'floorListener', 'movingElevator', 'doorsOpen', 'floorSelecting']
 
-   [floorSelecting+floorSelected -> floorSelecting]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
-   [doorsOpen -> doorsClosed]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
-   [doorsClosed -> movingUp]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
-   [movingUp -> movingUp]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
-   [movingUp -> movingUp]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
-   [movingUp -> movingUp]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
-   [moving -> doorsOpen]: ['active', 'movingElevator', 'floorListener', 'doorsOpen', 'floorSelecting']
 

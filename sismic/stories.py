@@ -95,11 +95,12 @@ def story_from_trace(trace: list) -> Story:
     The story does follow the interpretation order:
 
     1. an event is possibly consumed
-    2. For each transition:
-     a. states are exited
-     b. transition is processed
-     c. states are entered
-     d. statechart is stabilized (states are entered)
+    2. For each transition
+       a. states are exited
+       b. transition is processed
+       c. states are entered
+       d. statechart is stabilized (states are entered)
+
 
     :param trace: a list of ``MacroStep`` instances
     :return: A story

@@ -10,11 +10,9 @@ statechart:
         self.opened = True
 
       def open(self):
-        print('Opening doors')
         self.opened = True
 
       def close(self):
-        print('Closing doors')
         self.opened = False
 
     doors = Doors()

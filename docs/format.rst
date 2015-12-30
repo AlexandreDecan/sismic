@@ -230,11 +230,11 @@ which takes a textual YAML definition of a statechart. It also provides a way to
 
 For example:
 
-.. code:: python
+.. testcode:: python
 
     from sismic import io, model
 
-    with open('examples/concrete/elevator.yaml') as f:
+    with open('../examples/elevator.yaml') as f:
         statechart = io.import_from_yaml(f)
         assert isinstance(statechart, model.StateChart)
 

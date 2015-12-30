@@ -45,7 +45,7 @@ After the execution of ``x += 1``, the context associates ``2`` to ``x``.
 
 When a :py:class:`~sismic.evaluator.PythonEvaluator` instance is initialized, a prepopulated context can be specified:
 
-.. code:: python
+.. testcode::
 
     from sismic.evaluator import PythonEvaluator
     import math as my_favorite_module
