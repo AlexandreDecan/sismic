@@ -1,7 +1,12 @@
-Contract programming for statecharts
-====================================
+Design by Contract for statecharts
+==================================
 
-Sismic has a built-in support for contract programming for statecharts.
+About Design by Contract
+------------------------
+
+Design by Contract (DbC) was introduced by Bertrand Meyer and popularised through his object-oriented Eiffel programming language.
+Several other programming languages also provide support for DbC. The main idea is that the specification of a software component (e.g., a method, function or class) is extended with a so-called ``contract'' that needs to be respected when using this component.
+Typically, the contract is expressed in terms of preconditions, postconditions and invariants.
 
     Design by contract (DbC), also known as contract programming, programming by contract and
     design-by-contract programming, is an approach for designing software. It prescribes that
@@ -13,12 +18,18 @@ Sismic has a built-in support for contract programming for statecharts.
     --- `Wikipedia <https://en.wikipedia.org/wiki/Design_by_contract>`__
 
 
-Preconditions, postconditions and invariants
---------------------------------------------
+DbC for statechart models
+-------------------------
 
-Preconditions, postconditions and invariants can be defined for statecharts, and Sismic
-will check these conditions at runtime. If a condition is not satisfied, an ``AssertionError``
-will be raised. More specifically, one of the three following subclasses will be raised:
+While DbC has gained some amount of acceptance at the programming level,
+there is hardly any support for it at the modeling level.
+
+Sismic aims to change this, by integrating support for Design by Contract for statechart models!
+The basic idea is that contracts can be defined for statecharts and their componnents,
+by specifying preconditions, postconditions and invariants on them.
+At runtime, Sismic will verify the conditions specified by the constracts.
+If a condition is not satisfied, an ``AssertionError`` will be raised.
+More specifically, one of the three following subclasses will be raised:
 
 .. autoexception:: sismic.model.PreconditionFailed
 
@@ -32,31 +43,30 @@ The three exceptions inherit from the following subclass of ``AssertionError``:
 .. autoexception:: sismic.model.ConditionFailed
     :members:
 
-
-The semantic of pre/postconditions and invariants is not surprising:
-
+Contracts can be specified at three levels: for the statechart itself, for any state contained in the statechart, and for any transition contained in the statechart.
+At each level, a contract can contain preconditions, postconditions and/or invariants.
+Their semantics is straightforward:
 
  - For states:
-    - the preconditions are checked before the state is entered (and **before** executing ``on entry``).
-    - the postconditions are checked after the state is exited (and **after** executing ``on exit``).
-    - the invariants are checked at the end of each macro step. The state must be in the active configuration.
+    - the preconditions are checked before the state is entered (i.e., **before** executing ``on entry``).
+    - the postconditions are checked after the state is exited (i.e., **after** executing ``on exit``).
+    - the invariants are checked at the end of each *macro step*. The state must be in the active configuration.
  - For transitions:
-    - the preconditions are checked before the process of the transition (and **before** executing transition action).
-    - the postconditions are checked after the process of the transition (and **after** executing transition action).
-    - the invariants are checked before and after the process of the transition.
+    - the preconditions are checked before starting the process of the transition (and **before** executing the optional transition action).
+    - the postconditions are checked after finishing the process of the transition (and **after** executing the optional transition action).
+    - the invariants are checked twice: one before starting and a second time after finishing the process of the transition.
  - For statecharts:
-    - the preconditions are checked before any stabilization step (but **after** executing ``on entry``).
+    - the preconditions are checked before any *stabilization step* (but **after** executing ``on entry``).
     - the postconditions are checked after the statechart enters a final configuration.
-    - the invariants are checked at the end of each macro step.
+    - the invariants are checked at the end of each *macro step*.
 
 
 Defining contracts in YAML
 --------------------------
 
-A YAML definition of a statechart (see :ref:`yaml_statecharts`) can embed the contract definitions.
-Preconditions, postconditions and invariants are defined as nested items of a ``contract`` property.
-The name of these items is either ``before`` (precondition), ``after`` (postcondition) or ``always`` (invariant),
-as follows:
+Contracts can easily be added to the YAML definition of a statechart (see :ref:`yaml_statecharts`) through the use of the  ``contract`` property.
+Preconditions, postconditions and invariants are defined as nested items of the ``contract`` property.
+The name of these optional contractual conditions is respectively ``before`` (for preconditions), ``after`` (for postconditions) and ``always`` (for invariants):
 
 .. code:: yaml
 
@@ -86,7 +96,7 @@ instance (see :doc:`evaluation`).
      - after: x + y == 0
      - always: x + y >= 0
 
-Contracts can be defined for statecharts too:
+Here is an example of a contracts defined at the level of the statechart itself:
 
 .. code:: yaml
 
@@ -96,8 +106,9 @@ Contracts can be defined for statecharts too:
        - always: x >= 0
        - always: not active('initial') or x > 0
 
-If you make use of the default :py:class:`~sismic.evaluator.PythonEvaluator`, the old value of a variable
-is also available in ``__old__`` for postconditions and invariants:
+If the default :py:class:`~sismic.evaluator.PythonEvaluator` is used,
+it is possible to refer to the old value of some variable used in the statechart, by prepending ``__old__``.
+This is particularly useful when specifying postconditions and invariants:
 
 .. code:: yaml
 
@@ -110,19 +121,20 @@ See the documentation of :py:class:`~sismic.evaluator.PythonEvaluator` for more 
 Example
 *******
 
-The following example shows some invariants, preconditions and postconditions added
+The following example shows some contract specifications added
 to the `Elevator example <https://github.com/AlexandreDecan/sismic/blob/master/examples/elevator.yaml>`__.
 
 .. literalinclude:: ../examples/elevator_contract.yaml
    :language: yaml
 
 
-Executing statecharts with contract
------------------------------------
+Executing statecharts containing contracts
+------------------------------------------
 
-The execution of a statechart that contains preconditions, postconditions and invariants does not differ
-from the execution of a statechart that does not. The only difference is that conditions are checked
-at runtime and may raise a subclass of :py:exc:`~sismic.model.ConditionFailed`.
+The execution of a statechart that contains contracts does not essentially differ
+from the execution of a statechart that does not.
+The only difference is that conditions of each contract are checked
+at runtime (as explained above) and may raise a subclass of :py:exc:`~sismic.model.ConditionFailed`.
 
 .. code:: python
 
@@ -136,8 +148,8 @@ at runtime and may raise a subclass of :py:exc:`~sismic.model.ConditionFailed`.
         interpreter.send(Event('floorSelected', {'floor': 4}))
         interpreter.execute()
 
-Here we manually changed one of the precondition such that it failed at runtime.
-The exception displays several information to help debug::
+Here we manually changed one of the preconditions such that it failed at runtime.
+The exception displays some relevant information to help debug::
 
     PreconditionFailed: Assertion not satisfied!
     Object: BasicState(movingUp)
@@ -150,7 +162,7 @@ The exception displays several information to help debug::
      - doors = <Doors object at 0x7ff070942da0>
      - event = None
      - current = 0
-     - Doors = <class 'Doors'>
+     - Doors = <clases 'Doors'>
      - Event = <class 'sismic.model.Event'>
      - destination = 4
 
