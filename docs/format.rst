@@ -18,7 +18,10 @@ executable semantics for statecharts have been proposed in the literature and in
 Defining statecharts in YAML
 ----------------------------
 
-Because Sismic is supposed to be independent of a particular visual modeling tool, and easy to integrate in other programs without requiring the implementation of a visual notation, statecharts are expressed using YAML, a human-friendly textual notation. (The alternative of using something like SCXML was discarded because its notation is too verbose and not really "human-readable".)
+Because Sismic is supposed to be independent of a particular visual modeling tool, and easy to integrate in other programs
+without requiring the implementation of a visual notation, statecharts are expressed using YAML, a human-friendly textual
+notation (the alternative of using something like SCXML was discarded because its notation is too verbose and not
+really "human-readable".)
 
 This section explains how the elements that compose a valid statechart in Sismic can be defined using YAML.
 If you are not familiar with YAML, have a look at `YAML official documentation <http://yaml.org/spec/1.1/>`__.
@@ -36,7 +39,8 @@ The root of the YAML file **must** declare a statechart:
       description: Description of the statechart
 
 The ``name`` and the ``initial`` state are mandatory, the ``description`` is optional.
-If specific (Python) code needs to be executed during initialization of the statechart, this can be specified using ``on entry``, as follows:
+If specific code needs to be executed during initialization of the statechart, this can be specified
+using ``on entry``. In this example, the code is written in Python.
 
 .. code:: yaml
 
@@ -99,7 +103,7 @@ Shallow and deep history sates
 *History states* can be declared as follows:
 The ``type: shallow history`` property declares a *shallow history* state;
 the ``type: deep history`` property declares a *deep history* state.
-(We refer to the semantics of UML and SCXML for the difference between both types of histories.)
+We refer to the semantics of UML and SCXML for the difference between both types of histories.
 
 .. code:: yaml
 
@@ -117,7 +121,7 @@ Importantly, the ``initial`` memory value **must** refer to a parent's substate.
 
 
 Composite states
-***************
+****************
 
 A state that is neither a final state nor a history state can contain nested states.
 Such a state is commonly called a *composite state*.
@@ -134,7 +138,9 @@ Such a state is commonly called a *composite state*.
 Regions
 *******
 
-A region is essentially a logical set of nested states. Unlike UML, but similarly to SCXML, Sismic does not explicitly represent the concept of *region*, as it is implicitly defined by its composite state.
+A region is essentially a logical set of nested states. Unlike UML, but similarly to SCXML, Sismic does
+not explicitly represent the concept of *region*, as it is implicitly defined by its composite state.
+
 
 Orthogonal states
 *****************
@@ -185,8 +191,8 @@ Here is a full example of a transition specification:
         action: print('Hello World!')
 
 One type of transition, called an *internal transition*, does not require to declare a ``target``.
-Instead, it **must** either define an event or define a guard to determine when it should become active.
-(Otherwise, infinite loops would occur during simulation or execution.)
+Instead, it **must** either define an event or define a guard to determine when it should become active
+(Otherwise, infinite loops would occur during simulation or execution).
 
 .. _yaml_example:
 
