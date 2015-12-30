@@ -14,15 +14,32 @@ Sismic Interactive State Machine Interpreter and Checker
 --------------------------------------------------------
 
 Statecharts are a well-known visual language for modeling the executable behavior of complex reactive event-based systems.
-The Sismic library for Python >= 3.4 provides a set of tools to define, simulate, execute and debug statecharts.
+The Sismic library for Python >= 3.4 provides a set of tools to define, validate, simulate, execute and debug statecharts.
 More specifically, Sismic provides:
 
  - An easy way to define and to import statecharts, based on the human-friendly YAML markup language
- - A statechart interpreter offering discrete, step-by-step, and fully observable simulation engine
+ - A statechart interpreter offering a discrete, step-by-step, and fully observable simulation engine
  - Synchronous and asynchronous simulation, in real time or simulated time
  - Built-in support for expressing actions and guards using regular Python code
- - A design-by-contract programming approach for statecharts
- - A unit testing framework for statecharts that includes scenarios generators
+ - A design-by-contract approach for statecharts
+ - A unit testing framework for statecharts, including generation of test scenarios
+
+Sismic provides full support for the majority of the UML 2 statechart concepts:
+
+ - simple states, composite states, orthogonal (parallel) states, initial and final states, shallow and deep history states
+ - state transitions, guarded transitions, automatic (eventless) transitions, internal transitions
+ - statechart variables and their initialisation
+ - state entry and exit actions, transition actions
+ - internal and external events, parametrized events, timed events
+
+In addition to this, contracts can be specified to express invariants, pre- and postconditions on states, transitions and the statechart itself.
+
+The Sismic library is written in a modular way:
+
+ - The semantics of the statechart interpreter is based on the specification of the SCXML semantics (with a few exceptions),
+   and can be easily tuned to other semantics.
+ - While currently, contracts, guards and actions are expressed in Python, this support can be easily extended to other languages.
+
 
 Installation
 ------------
