@@ -3,36 +3,37 @@ Executing statecharts
 
 .. _semantic:
 
-Statechart semantic
--------------------
+Statechart semantics
+--------------------
 
 The module :py:mod:`~sismic.interpreter` contains an :py:class:`~sismic.interpreter.Interpreter` class that
-interprets a statechart mainly following `SCXML 1.0 <http://www.w3.org/TR/scxml/>`__ semantic.
-In particular, eventless transitions are processed before evented transitions, internal events are consumed
-before external events, and the simulation follows a inner-first/source-state and run-to-completion semantic.
+interprets a statechart mainly following the `SCXML 1.0 <http://www.w3.org/TR/scxml/>`__ semantics.
+In particular, eventless transitions are processed *before* transitions containing events, internal events are consumed
+*before* external events, and the simulation follows a inner-first/source-state and run-to-completion semantics.
 
-The main difference between SCXML and Sismic's default interpreter comes when considering that multiple transitions
-can be triggered at once. This may occurs when transitions sharing a same event have guards that are not mutually
-exclusive or for transitions in parallel states.
+The main difference between SCXML and Sismic's default interpreter resides in how multiple transitions
+can be triggered simultaneously. This may occur for transitions in orthogonal/parallel states, or when transitions declaring the same event have guards that are not mutually exclusive.
 
-Triggering multiple transitions at once implies a non-deterministic choice in the order in which transitions must be
-processed, and in the order in which states must be exited and/or entered.
-This is problematic as even the UML specification does not enforce an order:
+Simulating the simultaneious triggering of multiple transitions is problematic,
+since it implies to make a non-deterministic choice on the order in which the transitions must be processed,
+and on the order in which the source states must the exited and the target states must be entered.
+The UML 2.5 specification explicitly leaves this issue unresolved, thereby delegating the decision to tool developers:
 
     "Due to the presence of orthogonal Regions, it is possible that multiple Transitions (in different Regions) can be
     triggered by the same Event occurrence. The **order in which these Transitions are executed is left undefined**."
     --- `UML 2.5 Specification <http://www.omg.org/cgi-bin/doc?formal/15-03-01.pdf>`__
 
-The problem is currently addressed by the SCXML specification which defines document order as the order
-in which (non-parallel) transitions should be processed.
+The SCXML specification addresses the issue by using the *document order* (i.e., the order in which the transitions
+appear in the SCXML file) as the order in which (non-parallel) transitions should be processed.
 
     "If multiple matching transitions are present, take the **first in document order**."
     --- `SCXML Specification <http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation>`__
 
-However, from our point of view, this solution is not satisfactory.
-The execution should not depend on the order in which items are defined in some document, in particular when
-there are many different ways to construct or to import a statechart.
-Some other tools do not even define any order on the transitions in such situations:
+From our point of view, this solution is not satisfactory.
+The execution should not depend on the (often arbitrary) order in which items happen to be declared in some document,
+in particular when there many be many different ways to construct or import a statechart.
+
+Other statechart tools do not even define any order on the transitions in such situations:
 
     "Rhapsody detects such cases of nondeterminism during code generation
     and **does not allow them**. The motivation for this is that the generated code
@@ -42,8 +43,10 @@ Some other tools do not even define any order on the transitions in such situati
 
 We decide to follow Rhapsody and to raise an error (in fact, a ``Warning``) if such cases of
 nondeterminism occur during the execution. Notice that this only concerns multiple transitions in the same
-component, not in parallel component.
-When multiple transitions are triggered from distinct parallel components, the situation is even more intricate.
+composite state, not in parallel states.
+
+When multiple transitions are triggered from within distinct parallel states, the situation is even more intricate.
+According to the Rhapsody implementation:
 
     "The order of firing transitions of orthogonal components is not defined, and
     depends on an arbitrary traversal in the implementation. Also, the actions on
@@ -51,7 +54,7 @@ When multiple transitions are triggered from distinct parallel components, the s
     way**."
     --- `The Rhapsody Semantics of Statecharts <http://research.microsoft.com/pubs/148785/charts04.pdf>`__
 
-SCXML circumvents this problem using again document definition order.
+SCXML again circumvents this problem by using the *document order*.
 
     "enabledTransitions will contain multiple transitions only if a parallel state is active.
     In that case, we may have one transition selected for each of its children. [...]
@@ -60,14 +63,14 @@ SCXML circumvents this problem using again document definition order.
     transitions are taken **in the document order of the atomic states** that selected them."
     --- `SCXML Specification <http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation>`__
 
-Sismic does not agree with SCXML on the chosen order, and defines that multiple orthogonal transitions
+Again, Sismic does not agree with SCXML on this, and instead defines that multiple orthogonal/parallel transitions
 should be processed in a decreasing source state depth order.
-This is perfectly coherent with the inner-first/source-state semantic, as "deeper" transitions are processed
-before "less nested" ones. Ties are broken by lexicographic order of the source states names.
+This is perfectly coherent with our aforementioned inner-first/source-state semantics, as "deeper" transitions are processed
+before "less nested" ones. In case of ties, the lexicographic order of the source state names will prevail.
 
-Notice that orthogonal regions should ideally be independent, implying that such situations should not
+Note that in an ideal world, orthogonal/parallel regions should be independent, implying that *in principle* such situations should not
 arise ("*the designer does not rely on any particular order for event instances to be dispatched
-to the relevant orthogonal regions*", UML specification).
+to the relevant orthogonal regions*", UML specification). In practice, however, it is often desirable to allow such situations.
 
 
 Using *Interpreter*
@@ -75,7 +78,7 @@ Using *Interpreter*
 
 A :py:class:`~sismic.interpreter.Interpreter` instance is constructed upon a :py:class:`~sismic.model.StateChart`
 instance and an optional callable that returns an :py:class:`~sismic.evaluator.Evaluator` (see :ref:`code_evaluation`).
-If no evaluator is specified, :py:class:`~sismic.evaluator.PythonEvaluator` class will be used.
+If no evaluator is specified, the :py:class:`~sismic.evaluator.PythonEvaluator` class will be used.
 
 Consider the following example.
 
@@ -96,7 +99,7 @@ during the execution, including the transitions that were processed, the event t
 sequences of entered and exited states (see :ref:`steps`).
 
 For convenience, :py:meth:`~sismic.interpreter.Interpreter.send` returns ``self`` and thus can be chained.
-We will see later that Sismic also provides a way to express scenarios, avoiding repeated calls to ``send``.
+We will see later that Sismic also provides a way to express scenarios, in order to avoid repeated calls to ``send``.
 
 .. code:: python
 
@@ -164,18 +167,19 @@ Putting all together, the main methods and attributes of a simulator instance ar
 Macro and micro steps
 ---------------------
 
-The interpreter is fully observable: its :py:meth:`~sismic.interpreter.Interpreter.execute_once`
+The Sismic interpreter is fully observable.
+Its :py:meth:`~sismic.interpreter.Interpreter.execute_once`
 (resp. :py:meth:`~sismic.interpreter.Interpreter.execute`) method returns
 an instance of (resp. a list of) :py:class:`~sismic.interpreter.MacroStep`.
-A macro step corresponds to the process of consuming an event, regardless of the number and the type (eventless or not)
-of triggered transitions. A macro step also includes every consecutive stabilization step
-(ie. the steps that are needed to enter nested states, or to switch into the configuration of an history state).
+A *macro step* corresponds to the process of consuming an event, regardless of the number and the type (eventless or not)
+of triggered transitions. A macro step also includes every consecutive *stabilization step*
+(i.e., the steps that are needed to enter nested states, or to switch into the configuration of a history state).
 
 A :py:class:`~sismic.interpreter.MacroStep` exposes the consumed ``event`` (an :py:class:`~sismic.model.Event` instance)
-if any, a (possibly empty) list ``transitions`` of :py:class:`~sismic.model.Transition` instances, and two
-aggregated ordered sequences of state names, ``entered_states`` and ``exited_states``.
-States order in those list indicates the order in which their *on entry* and *on exit* actions were processed.
-As transitions are atomically processed, this means that they could exist a state in ``entered_states`` that is
+if any, a (possibly empty) list ``transitions`` of :py:class:`~sismic.model.Transition` instances,
+and two aggregated ordered sequences of state names, ``entered_states`` and ``exited_states``.
+The order of states in those lists determines the order in which their *on entry* and *on exit* actions were processed.
+As transitions are atomically processed, this means that they could exit a state in ``entered_states`` that is
 entered before some state in ``exited_states`` is exited.
 The exact order in which states are exited and entered is indirectly available through the ``steps`` attribute that
 is a list of all the :py:class:`~sismic.interpreter.MicroStep`` that were executed. Each of them contains the states
@@ -185,14 +189,14 @@ that were exited and entered during its execution.
 .. autoclass:: sismic.interpreter.MacroStep
     :members:
 
-A micro step is the smallest, atomic step that a statechart can execute.
+A *micro step* is the smallest, atomic step that a statechart can execute.
 A :py:class:`~sismic.interpreter.MacroStep` instance thus can be viewed (and is!) an aggregate of
 :py:class:`~sismic.interpreter.MicroStep` instances.
 
 .. autoclass:: sismic.interpreter.MicroStep
     :members:
 
-This way, a complete run of a state machine can be summarized as an ordered list of
+This way, a complete *run* of a statechart can be summarized as an ordered list of
 :py:class:`~sismic.interpreter.MacroStep` instances,
 and details of such a run can be obtained using the :py:class:`~sismic.interpreter.MicroStep` list of a
 :py:class:`~sismic.interpreter.MacroStep`.
@@ -204,16 +208,16 @@ Dealing with time
 -----------------
 
 It is quite usual in a statechart to rely on some notion of time.
-For example, the built-in evaluator (see :py:class:`~sismic.evaluator.PythonEvaluator`) has support for
-``after(x)`` and ``idle(x)``, meaning that a transition can be triggered after a certain amount of time.
+To cope with this, the built-in evaluator (see :py:class:`~sismic.evaluator.PythonEvaluator`) has support for
+time events ``after(x)`` and ``idle(x)``, meaning that a transition can be triggered after a certain amount of time.
 
-When it comes to interpret statecharts, Sismic deals with time using an internal clock whose value is exposed
+When it comes to interpreting statecharts, Sismic deals with time using an internal clock whose value is exposed
 by the :py:attr:`~sismic.interpreter.Interpreter.time` property of an :py:class:`~sismic.interpreter.Interpreter`.
-Basically, this clock does nothing by itself except being available for an
+Basically, this clock does nothing by itself except for being available for an
 :py:class:`~sismic.evaluator.Evaluator` instance.
 If your statechart needs to rely on a time value, you have to set it by yourself.
 
-Short examples are better than a long explanation.
+Below are some examples to illustrate the use of time events.
 
 
 Example with simulated time
@@ -222,8 +226,8 @@ Example with simulated time
 Sismic provides a discrete step-by-step interpreter for statecharts.
 It seems natural in a discrete simulation to rely on simulated time.
 
-In the following example, we'll consider the *elevator* statechart.
-We will send the elevator to the 4th floor and, according to the yaml definition of this statechart,
+The following example illustrates a statechart modeling the behavior of a simple *elevator*.
+If the elevator is sent to the 4th floor, according to the YAML definition of this statechart,
 the elevator should automatically go back to the ground floor after 10 seconds.
 
 .. code:: yaml
@@ -232,8 +236,8 @@ the elevator should automatically go back to the ground floor after 10 seconds.
       guard: after(10) and current > 0
       action: destination = 0
 
-Of course, we are not going to wait those 10 seconds, but we are going to simulate them.
-First, we load the statechart and initialize the interpreter:
+Rather than waiting for 10 seconds, one can simulate this.
+First, one should load the statechart and initialize the interpreter:
 
 .. code:: python
 
@@ -247,29 +251,33 @@ First, we load the statechart and initialize the interpreter:
     interpreter = Interpreter(statechart)
 
 The internal clock of our interpreter is ``0``.
-This is, ``interpreter.time == 0`` holds. We make our elevator reaching the 4th floor.
+This is, ``interpreter.time == 0`` holds.
+We now ask our elevator to go to the 4th floor.
 
 .. code:: python
 
     interpreter.send(Event('floorSelected', data={'floor': 4}))
     interpreter.execute()
 
-The elevator should be on the 4th floor. We now inform the interpreter that 2 seconds elapsed:
+The elevator should now be on the 4th floor.
+We inform the interpreter that 2 seconds have elapsed:
 
 .. code:: python
 
     interpreter.time += 2
     print(interpreter.execute())
 
-The output should be an empty list ``[]``. Nothing happened since the condition ``after(10)`` is not
-satisfied. We now inform the interpreter that 8 additional seconds elapsed.
+The output should be an empty list ``[]``.
+Of course, nothing happened since the condition ``after(10)`` is not
+satisfied yet.
+We now inform the interpreter that 8 additional seconds have elapsed.
 
 .. code:: python
 
     interpreter.time += 8
     print(interpreter.execute())
 
-The output now contains a list of steps, where we can see that the elevator has moved down to the ground floor.
+The output now contains a list of steps, from which we can see that the elevator has moved down to the ground floor.
 We can check the current floor:
 
 .. code:: python
@@ -281,7 +289,7 @@ This displays ``0``.
 Example with real time
 **********************
 
-If your statechart needs to be aware of a real clock, the simplest way to do it is to use
+If a statechart needs to be aware of a real clock, the simplest way to achieve this is by using
 the :py:func:`time.time` function of Python.
 In a nutshell, the idea is to synchronize ``interpreter.time`` with a real clock.
 Let us first initialize an interpreter using one of our statechart example, the *elevator*:
@@ -298,26 +306,29 @@ Let us first initialize an interpreter using one of our statechart example, the 
     interpreter = Interpreter(statechart)
 
 The interpreter initially sets its clock to 0.
-As we are interested in a real time simulation of the statechart, we need to set the internal clock of
-our interpreter. We import from :py:mod:`time` a real clock, and store its value into an ``starttime`` variable.
+As we are interested in a real-time simulation of the statechart,
+we need to set the internal clock of our interpreter.
+We import from :py:mod:`time` a real clock,
+and store its value into a ``starttime`` variable.
 
 .. code:: python
 
     import time
     starttime = time.time()
 
-We can now execute the statechart by sending event, and wait for the output.
-For our example, we first send to elevator to the 4th floor.
+We can now execute the statechart by sending a ``floorSelected`` event, and wait for the output.
+For our example, we first ask the statechart to send to elevator to the 4th floor.
 
 .. code:: python
 
     interpreter.send(Event('floorSelected', data={'floor': 4}))
     interpreter.execute()
 
-At this point, the elevator is on the 4th floor and is waiting for another input.
+At this point, the elevator is on the 4th floor and is waiting for another input event.
 The internal clock value is still 0.
 We should inform our interpreter of the new current time.
-Of course, as our interpreter follows a discrete simulation, nothing really happens until we call
+Of course, as our interpreter follows a discrete simulation,
+nothing really happens until we call
 :py:meth:`~sismic.interpreter.Interpreter.execute` or :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
 
 .. code:: python
@@ -336,7 +347,7 @@ But if you wait a little bit, and update the clock again, it should move the ele
 
 And *voilà*!
 
-As it is not very convenient to manually set the clock each time your want to execute something, it is best to
+As it is not very convenient to manually set the clock each time you want to execute something, it is best to
 put it in a loop.
 
 .. code:: python
@@ -363,7 +374,7 @@ put it in a loop.
 
         time.sleep(0.5)  # 500ms
 
-Here, we called :py:func:`~time.sleep` function to slow down the loop (optional).
+Here, we called the :py:func:`~time.sleep` function to slow down the loop (optional).
 The output should look like::
 
     Closing doors
@@ -374,14 +385,15 @@ The output should look like::
     Opening doors
     something happened at time 1450383093.9920669
 
-As our statechart does not define any way to reach a final configuration, the ``not interpreter.final`` condition
-always hold, and you have to manually interrupt the execution.
+As our statechart does not define any way to reach a final configuration,
+the ``not interpreter.final`` condition always holds,
+and the executiong needs to be interrupted manually.
 
 
 Using *threading*
 *****************
 
-Notice from previous example that using such a loop, you are not able to send event to the interpreter.
+Notice from previous example that using a loop, it is not possible to send events to the interpreter.
 Consider the following example involving the :py:mod:`threading` module as a tiny workaround:
 
 .. code:: python
@@ -424,13 +436,13 @@ function that does the job for you.
 
 .. _other_semantics:
 
-Implementing other semantics
-----------------------------
+Implementing other statechart semantics
+---------------------------------------
 
 A :py:class:`~sismic.interpreter.Interpreter` makes use of several protected methods for its initialization or to compute
 which transition should be processed next, which are the next steps, etc.
 
-These methods can be easily overridden or combined to define other semantics.
+These methods can be overridden or combined easily to define other variants of the statechart semantics.
 
 .. automethod:: sismic.interpreter.Interpreter._select_eventless_transitions
 .. automethod:: sismic.interpreter.Interpreter._select_transitions
@@ -446,22 +458,23 @@ how these methods are related and organized.
 
 
 
-Example: Outer-first/source-state semantic
-******************************************
+Example: Outer-first/source-state semantics
+*******************************************
 
-For example, if you are interested in a outer-first/source-state semantic (instead of the
-inner-first/source-state one that is currently provided), you can subclass :py:class:`~sismic.interpreter.Interpreter`
+For example, in order to obtain an outer-first/source-state semantics (instead of the
+inner-first/source-state one that Sismic provides by default),
+one should subclass :py:class:`~sismic.interpreter.Interpreter`
 and override :py:class:`~sismic.interpreter.Interpreted._select_eventless_transitions` and
 :py:class:`~sismic.interpreter.Interpreted._select_transitions`.
-Actually, as the former relies on the second, your changes will only concern the traversal order in
+Actually, as the former relies on the second, the changes will only concern the traversal order in the
 :py:class:`~sismic.interpreter.Interpreted._select_transitions` method.
 
 
-Example: Internal events have no priority
-*****************************************
+Example: Semantics where internal events have no priority
+*********************************************************
 
-As another example, if you are interested in considering that internal event should not have
-priority over external event, it is sufficient to override the :py:meth:`~sismic.interpreter.Interpreter.send` method:
+If you want to change the semantics of Sismic so that internal events no longer have
+priority over external events, it suffices to override the :py:meth:`~sismic.interpreter.Interpreter.send` method:
 
 .. code:: python
 
@@ -473,8 +486,9 @@ priority over external event, it is sufficient to override the :py:meth:`~sismic
 Example: Custom way to deal with non-determinism
 ************************************************
 
-If you find that the way we deal with non-determinism is too far from other semantics like SCXML or Rhapsody,
-(remember :ref:`semantic`), you can implement your own approach to deal with non-determinism.
+If you want to change the way the Sismic semantics deals with non-determinism,
+for example because it deviates from the semantics given by SCXML or Rhapsody
+(remember :ref:`semantic`), you can implement your own variant for dealing with non-determinism.
 The method :py:meth:`~sismic.interpreter.Interpreter._sort_transitions` is where the whole job is done:
 
 1. It looks for non-determinism in (non-parallel) transitions,
