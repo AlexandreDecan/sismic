@@ -4,7 +4,7 @@ Executing statecharts
 .. _semantic:
 
 Statechart semantics
--------------------
+--------------------
 
 The module :py:mod:`~sismic.interpreter` contains an :py:class:`~sismic.interpreter.Interpreter` class that
 interprets a statechart mainly following the `SCXML 1.0 <http://www.w3.org/TR/scxml/>`__ semantics.
@@ -23,8 +23,8 @@ The UML 2.5 specification explicitly leaves this issue unresolved, thereby deleg
     triggered by the same Event occurrence. The **order in which these Transitions are executed is left undefined**."
     --- `UML 2.5 Specification <http://www.omg.org/cgi-bin/doc?formal/15-03-01.pdf>`__
 
-The problem is currently addressed by 
-The SCXML specification addresses the issue by using the *document order* (i.e., the order in which the transitions appear in the SCXML file) as the order in which (non-parallel) transitions should be processed.
+The SCXML specification addresses the issue by using the *document order* (i.e., the order in which the transitions
+appear in the SCXML file) as the order in which (non-parallel) transitions should be processed.
 
     "If multiple matching transitions are present, take the **first in document order**."
     --- `SCXML Specification <http://www.w3.org/TR/scxml/#AlgorithmforSCXMLInterpretation>`__
@@ -189,7 +189,7 @@ that were exited and entered during its execution.
 .. autoclass:: sismic.interpreter.MacroStep
     :members:
 
-A *micro step( is the smallest, atomic step that a statechart can execute.
+A *micro step* is the smallest, atomic step that a statechart can execute.
 A :py:class:`~sismic.interpreter.MacroStep` instance thus can be viewed (and is!) an aggregate of
 :py:class:`~sismic.interpreter.MicroStep` instances.
 
