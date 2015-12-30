@@ -5,7 +5,9 @@ About Design by Contract
 ------------------------
 
 Design by Contract (DbC) was introduced by Bertrand Meyer and popularised through his object-oriented Eiffel programming language.
-Several other programming languages also provide support for DbC. The main idea is that the specification of a software component (e.g., a method, function or class) is extended with a so-called ``contract'' that needs to be respected when using this component.
+Several other programming languages also provide support for DbC.
+The main idea is that the specification of a software component (e.g., a method, function or class) is
+extended with a so-called *contract* that needs to be respected when using this component.
 Typically, the contract is expressed in terms of preconditions, postconditions and invariants.
 
     Design by contract (DbC), also known as contract programming, programming by contract and
@@ -162,7 +164,7 @@ The exception displays some relevant information to help debug::
      - doors = <Doors object at 0x7ff070942da0>
      - event = None
      - current = 0
-     - Doors = <clases 'Doors'>
+     - Doors = <class 'Doors'>
      - Event = <class 'sismic.model.Event'>
      - destination = 4
 
