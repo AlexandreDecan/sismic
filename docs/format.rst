@@ -245,7 +245,7 @@ schema file (see `pykwalify <https://github.com/Grokzen/pykwalify/>`__ for more 
 .. literalinclude:: ../sismic/schema.yaml
     :language: yaml
 
-This function also validates the resulting statechart using :py:meth:`~sismic.model.StateChart.validate`:
+The import function also validates the resulting statechart using :py:meth:`sismic.model.StateChart.validate`:
 
 .. automethod:: sismic.model.StateChart.validate
 
