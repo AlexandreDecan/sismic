@@ -47,6 +47,7 @@ method that can *tell* the story to an interpreter. Using this method, you can e
 a scenario.
 
 .. testsetup::
+
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter
     
