@@ -23,7 +23,7 @@ events and pauses that drives a statechart interpreter.
 For our running elevator example, a story may encode things like "*select the 4th floor, then
 wait 5 seconds, then select the 2th floor, then wait 10 seconds*".
 
-.. code:: python
+.. testcode:: 
 
     from sismic.stories import Story, Pause, Event
 
@@ -35,7 +35,7 @@ wait 5 seconds, then select the 2th floor, then wait 10 seconds*".
 
 For syntactical convenience, a story can also be created using a Python iterable:
 
-.. code:: python
+.. testcode:: 
 
     story = Story([Event('floorSelected', data={'floor': 4}),
                    Pause(5),
@@ -46,15 +46,28 @@ A instance of :py:class:`~sismic.stories.Story` exhibits a :py:meth:`~sismic.sto
 method that can *tell* the story to an interpreter. Using this method, you can easily reproduce
 a scenario.
 
-.. code:: python
+.. testsetup::
+    from sismic.io import import_from_yaml
+    from sismic.interpreter import Interpreter
+    
+    with open('../examples/elevator.yaml') as f: 
+        statechart = import_from_yaml(f)
+    
+    interpreter = Interpreter(statechart)
+    
+
+.. testcode::
 
     # ...  (an interpreter is created for our elevator statechart)
     assert isinstance(interpreter, Interpreter)
 
     story.tell(interpreter)
-    print(interpreter._evaluator.context['current'])  # Displays "0"
-    print(interpreter.time)  # Displays "15"
+    print(interpreter._evaluator.context['current'])
+    print(interpreter.time)
 
+.. testoutput::
+    0
+    15
 
 .. autoclass:: sismic.stories.Story
     :members:
