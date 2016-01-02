@@ -67,6 +67,7 @@ a scenario.
     print(interpreter.time)
 
 .. testoutput::
+
     0
     15
 
