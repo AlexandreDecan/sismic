@@ -98,8 +98,9 @@ class Evaluator(metaclass=abc.ABCMeta):
 
     def evaluate_preconditions(self, obj, event: Event = None) -> list:
         """
-        Evaluate the preconditions for given object (either a ``ActionStateMixin`` or a
+        Evaluate the preconditions for given object (either a ``StateMixin`` or a
         ``Transition``) and return a list of conditions that are not satisfied.
+        
         :param obj: the considered state or transition
         :param event: an optional ``Event`` instance, in the case of a transition
         :return: list of unsatisfied conditions
@@ -109,8 +110,9 @@ class Evaluator(metaclass=abc.ABCMeta):
 
     def evaluate_invariants(self, obj, event: Event = None) -> list:
         """
-        Evaluate the invariants for given object (either a ``ActionStateMixin`` or a
+        Evaluate the invariants for given object (either a ``StateMixin`` or a
         ``Transition``) and return a list of conditions that are not satisfied.
+        
         :param obj: the considered state or transition
         :param event: an optional ``Event`` instance, in the case of a transition
         :return: list of unsatisfied conditions
@@ -120,8 +122,9 @@ class Evaluator(metaclass=abc.ABCMeta):
 
     def evaluate_postconditions(self, obj, event: Event = None) -> list:
         """
-        Evaluate the postconditions for given object (either a ``ActionStateMixin`` or a
+        Evaluate the postconditions for given object (either a ``StateMixin`` or a
         ``Transition``) and return a list of conditions that are not satisfied.
+        
         :param obj: the considered state or transition
         :param event: an optional ``Event`` instance, in the case of a transition
         :return: list of unsatisfied conditions
