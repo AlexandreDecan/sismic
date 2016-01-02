@@ -561,7 +561,7 @@ def run_in_background(interpreter: Interpreter, delay: float=0.2, callback=None)
     :param interpreter: an interpreter
     :param delay: delay between each call to ``execute()``
     :param callback: a function that takes the interpreter and the results of ``execute``.
-    :return: started thread
+    :return: started thread (instance of ``threading.Thread``)
     """
     import time
     import threading
