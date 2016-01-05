@@ -55,9 +55,11 @@ Contents
     quickstart
     format
     execution
+    stories
     contract
-    evaluation
     testing
+    evaluation
+
 
 
 

@@ -12,7 +12,6 @@ statechart:
           transitions:
             - event: entered
               guard: event.state == 'movingUp'
-              target: guess floor
               action: floor += 1
             - event: entered
               guard: event.state == 'movingDown'

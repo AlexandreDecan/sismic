@@ -9,83 +9,11 @@ the active configuration, the list of entered or exited states, etc.
 The functional tests in *tests/test_interpreter.py* on the GitHub repository are several examples
 of this kind of tests.
 
-This way of testing statecharts is, however, quite cumbersome, especially if one would also like to test a statechart's contracts (i.e., its invariants and behavioral pre- and postconditions).
+This way of testing statecharts is, however, quite cumbersome, especially if one would also like to test a
+statechart's contracts (i.e., its invariants and behavioral pre- and postconditions).
 
-To overcome this, Sismic provides a module :py:mod:`sismic.stories` that makes it easy to test statecharts using statecharts themselves!
-
-
-Writing stories
----------------
-
-The module :py:mod:`sismic.stories` provides the building bricks to facilitate statechart testing.
-The key concept of this module is the notion of *story*, which is a reproducible sequence of
-events and pauses that drives a statechart interpreter.
-For our running elevator example, a story may encode things like "*select the 4th floor, then
-wait 5 seconds, then select the 2th floor, then wait 10 seconds*".
-
-.. testcode:: 
-
-    from sismic.stories import Story, Pause, Event
-
-    story = Story()
-    story.append(Event('floorSelected', data={'floor': 4}))
-    story.append(Pause(5))
-    story.append(Event('floorSelected', data={'floor': 2}))
-    story.append(Pause(10))
-
-For syntactical convenience, a story can also be created using a Python iterable:
-
-.. testcode:: 
-
-    story = Story([Event('floorSelected', data={'floor': 4}),
-                   Pause(5),
-                   Event('floorSelected', data={'floor': 2}),
-                   Pause(10)])
-
-A instance of :py:class:`~sismic.stories.Story` exhibits a :py:meth:`~sismic.stories.Story.tell`
-method that can *tell* the story to an interpreter. Using this method, you can easily reproduce
-a scenario.
-
-.. testsetup::
-
-    from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter
-    
-    with open('../examples/elevator.yaml') as f: 
-        statechart = import_from_yaml(f)
-    
-    interpreter = Interpreter(statechart)
-    
-
-.. testcode::
-
-    # ...  (an interpreter is created for our elevator statechart)
-    assert isinstance(interpreter, Interpreter)
-
-    story.tell(interpreter)
-    print(interpreter._evaluator.context['current'])
-    print(interpreter.time)
-
-.. testoutput::
-
-    0
-    15
-
-.. autoclass:: sismic.stories.Story
-    :members:
-
-
-Storywriters
-------------
-
-The module :py:mod:`sismic.stories` contains several helpers to write stories.
-We expect this module to quickly growth and to provide many ways to automatically generate stories.
-
-Currently, the module contains the following helpers:
-
-.. automodule:: sismic.stories
-    :members: random_stories_generator, story_from_trace
-    :exclude-members: Story, Pause
+To overcome this, Sismic provides a module :py:mod:`sismic.testing` that makes it easy to test
+statecharts using statecharts themselves!
 
 
 Using stories to write tests
@@ -97,31 +25,42 @@ invariants that should be satisfied by the statechart under test.
 
 While *contracts* can be used to verify assertions on the context of a statechart during its execution,
 *tester statecharts* can be used to test specific behavior of a *statechart under test*.
-This tester is typically executed separately from the statechart's execution.
 
-The :py:func:`~sismic.stories.story_from_trace` function provides an easy way to create *tester statecharts*:
+A *tester statechart* defines a property that should (or not) be satisfied by other statecharts.
+A *tester statechart* is like any other statechart, in the sense that neither their syntax nor their semantics
+differs from any other statechart. The difference comes from the events it receives and the role it plays.
+A run of a *tester statechart* must end in a final state, meaning the test did not fail.
+The run of such a *tester statechart* is driven by a specific sequence of events and pauses, which represents
+what happens during the execution of a *statechart under test*.
 
-1. Construct a story for the *statechart under test*.
-2. Tell the story to the interpreter, and retrieve its :py:attr:`~sismic.interpreter.Interpreter.trace` trace.
-3. Use the trace to generate a new story with :py:func:`~sismic.stories.story_from_trace`.
-4. Tell this story on *tester statecharts*.
-
-*Tester statecharts* are like any other statechart, in the sense that neither their syntax nor their semantics differ
-from *statecharts under test*. The main difference comes from the events they receive.
-Take a careful look at the documentation of :py:func:`~sismic.stories.story_from_trace` to find out
+For example, such a sequence contains *consumed* evnets, *entered* events, *exited* events, ...
+Take a careful look at the documentation of :py:func:`~sismic.testing.story_from_trace` to find out
 which events are generated for a story.
 
-Another difference, which is more a useful convention than a rule, is that testers are
-expected to end in a final state if the test did not fail.
-This is, when ``stopped`` event is received, the tester should go in a final state if and
-only if the test is successful.
+This function provides an easy way to construct a story for *statechart testers* from the trace obtained
+by executing a *statechart under test*:
+
+.. autofunction:: sismic.testing.story_from_trace
+
+To summarize, if you want to test a *statechart under test* ``tested``, you need to:
+
+    1. construct a *tester statechart* ``tester`` that expresses the property you want to test.
+    2. execute ``tested`` (using a story or directly by sending events).
+    3. get its trace with ``trace = tested.trace``.
+    4. generate a new story from this trace with :py:func:`~sismic.testing.story_from_trace`.
+    5. tell this story to the *tester statechart* ``tester``.
+
+If ``tester`` ends in a final configuration, ie. ``tester.final`` holds, then the test is considered successful.
+
+Examples
+--------
 
 The following *tester statechart* examples are relative to :ref:`this statechart <yaml_example>`.
 They show the specification of some testers in YAML, and how to execute them.
 Note that these testers are currently used as unit tests for Sismic.
 
-Example tester statechart: 7th floor is never reached
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+7th floor is never reached
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This *tester statechart* ensures that the 7th floor is never reached.
 It stores the current floor based on the number of times the elevator goes up
@@ -132,16 +71,16 @@ and goes down.
 
 It can be tested as follows:
 
-.. literalinclude:: ../tests/test_story.py
+.. literalinclude:: ../tests/test_testing.py
     :pyobject: ElevatorStoryTests.test_7th_floor_never_reached
 
 You can even simulate a failure:
 
-.. literalinclude:: ../tests/test_story.py
+.. literalinclude:: ../tests/test_testing.py
     :pyobject: ElevatorStoryTests.test_7th_floor_never_reached_fails
 
-Example tester statechart: Elevator moves after 10 seconds
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Elevator moves after 10 seconds
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This *tester statechart* checks that the elevator automatically moves after some idle time if it is not on
 the ground floor. The test sets a timeout of 12 seconds, but it should work for any number strictly greater than
@@ -152,5 +91,5 @@ the ground floor. The test sets a timeout of 12 seconds, but it should work for 
 
 We check this tester using several stories, as follows:
 
-.. literalinclude:: ../tests/test_story.py
+.. literalinclude:: ../tests/test_testing.py
     :pyobject: ElevatorStoryTests.test_elevator_moves_after_10s

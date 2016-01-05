@@ -112,7 +112,7 @@ We will see later that Sismic also provides a way to express scenarios, in order
 
 Notice that :py:meth:`~sismic.interpreter.Interpreter.execute_once` consumes at most one event at a time.
 In this example, the second *click* event is not processed.
-..
+
 To process all events *at once*, repeatedly call :py:meth:`~sismic.interpreter.Interpreter.execute_once` until
 it returns a ``None`` value. For instance:
 
@@ -137,7 +137,7 @@ As a shortcut, the :py:meth:`~sismic.interpreter.Interpreter.execute` method wil
 
 Notice that a call to :py:meth:`~sismic.interpreter.Interpreter.execute` first computes the list and **then** returns
 it, meaning that all the steps are already processed when the call returns.
-..
+
 As a call to :py:meth:`~sismic.interpreter.Interpreter.execute` could lead to an infinite execution
 (see for example `simple/infinite.yaml <https://github.com/AlexandreDecan/sismic/blob/master/tests/yaml/infinite.yaml>`__),
 an additional parameter ``max_steps`` can be specified to limit the number of steps that are computed
@@ -148,11 +148,9 @@ and executed by the method.
     assert len(interpreter.execute(max_steps=10)) <= 10
 
 At any time, you can reset the simulator by calling :py:meth:`~sismic.interpreter.Interpreter.reset`.
-..
 For convenience, a :py:class:`~sismic.model.StateChart` has an :py:meth:`~sismic.model.StateChart.events` method
 that returns the list of all possible events that can be interpreted by this statechart (other events will
 be consumed and ignored).
-..
 This method also accepts a state name or a list of state names to restrict the list of returned events,
 and is thus commonly used to get a list of the "interesting" events:
 
@@ -192,7 +190,7 @@ The order of states in those lists determines the order in which their *on entry
 As transitions are atomically processed, this means that they could exit a state in ``entered_states`` that is
 entered before some state in ``exited_states`` is exited.
 The exact order in which states are exited and entered is indirectly available through the ``steps`` attribute that
-is a list of all the :py:class:`~sismic.interpreter.MicroStep`` that were executed. Each of them contains the states
+is a list of all the :py:class:`~sismic.interpreter.MicroStep` that were executed. Each of them contains the states
 that were exited and entered during its execution.
 
 
