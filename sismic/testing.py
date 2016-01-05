@@ -10,16 +10,16 @@ def story_from_trace(trace: list) -> Story:
 
      - the story begins with a *started* event.
      - the delay between pairs of consecutive steps creates a ``Pause`` instance.
-     - each time an event is consumed, a *consumed* event is sent.
-       the consumed event is available in *event.event*.
-     - each time a state is exited, an *exited* event is sent.
-       the name of the state is available in ``event.state``.
-     - each time a transition is processed, a *processed* event is sent.
-       the source state name and the target state name (if any) are available respectively in
-       *event.source* and *event.target*. The event processed by the transition is available in
-       *event.event*.
-     - each time a state is entered, an *entered* event is sent.
-       the name of the state is available in ``event.state``.
+     - each time an event is consumed, a *consumed* event is created.
+       the consumed event is available through the ``event`` attribute.
+     - each time a state is exited, an *exited* event is created.
+       the name of the state is available through the ``state`` attribute.
+     - each time a transition is processed, a *processed* event is created.
+       the source state name and the target state name (if any) are available respectively through
+       the ``source`` and ``target`` attributes.
+       The event processed by the transition is available through the ``event`` attribute.
+     - each time a state is entered, an *entered* event is created.
+       the name of the state is available through the ``state`` attribute.
      - the story ends with a *stopped* event.
 
     The story does follow the interpretation order:
@@ -30,7 +30,6 @@ def story_from_trace(trace: list) -> Story:
        b. transition is processed
        c. states are entered
        d. statechart is stabilized (states are entered)
-
 
     :param trace: a list of ``MacroStep`` instances
     :return: A story
