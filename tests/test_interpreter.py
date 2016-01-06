@@ -2,8 +2,7 @@ import unittest
 from sismic import io
 from sismic.interpreter import Interpreter, run_in_background
 from sismic.evaluator import DummyEvaluator
-from sismic.model import Event, Transition, StateChart, StateMixin
-from sismic.model import PreconditionFailed, PostconditionFailed, InvariantFailed
+from sismic.model import Event
 
 
 class RunInBackgroundTests(unittest.TestCase):
@@ -78,36 +77,6 @@ class InternalTests(unittest.TestCase):
     def testActiveGuard(self):
         self.interpreter.execute()
         self.assertTrue(self.interpreter.final)
-
-
-class SimulatorElevatorTests(unittest.TestCase):
-    def test_init(self):
-        sc = io.import_from_yaml(open('examples/elevator.yaml'))
-        interpreter = Interpreter(sc)
-
-        self.assertEqual(len(interpreter.configuration), 5)
-
-    def test_floor_selection(self):
-        sc = io.import_from_yaml(open('examples/elevator.yaml'))
-        interpreter = Interpreter(sc)
-
-        interpreter.send(Event('floorSelected', {'floor': 4})).execute_once()
-        self.assertEqual(interpreter._evaluator.context['destination'], 4)
-        interpreter.execute_once()
-        self.assertEqual(sorted(interpreter.configuration), ['active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'])
-
-    def test_doorsOpen(self):
-        sc = io.import_from_yaml(open('examples/elevator.yaml'))
-        interpreter = Interpreter(sc)
-
-        interpreter.send(Event('floorSelected', {'floor': 4}))
-        interpreter.execute()
-        self.assertEqual(interpreter._evaluator.context['current'], 4)
-        interpreter.time += 10
-        interpreter.execute()
-
-        self.assertTrue('doorsOpen' in interpreter.configuration)
-        self.assertEqual(interpreter._evaluator.context['current'], 0)
 
 
 class SimulatorNonDeterminismTests(unittest.TestCase):
@@ -370,103 +339,3 @@ class NestedParallelExecutionTests(unittest.TestCase):
         self.assertLess(step.entered_states.index('y'), step.entered_states.index('z'))
 
         self.assertEqual([t.from_state for t in step.transitions], ['k1', 'x', 'y', 'z'])
-
-
-class WriterExecutionTests(unittest.TestCase):
-    def setUp(self):
-        self.sc = io.import_from_yaml(open('examples/writer_options.yaml'))
-        self.interpreter = Interpreter(self.sc)
-
-    def test_output(self):
-        scenario = [
-             Event('keyPress', {'key': 'bonjour '}),
-             Event('toggle'),
-             Event('keyPress', {'key': 'a '}),
-             Event('toggle'),
-             Event('toggle_bold'),
-             Event('keyPress', {'key': 'tous !'}),
-             Event('leave')
-        ]
-
-        for event in scenario:
-            self.interpreter.send(event)
-
-        self.interpreter.execute()
-
-        self.assertTrue(self.interpreter.final)
-        self.assertEqual(self.interpreter.evaluator.context['output'], ['bonjour ', '[b]', '[i]', 'a ', '[/b]', '[/i]', '[b]', 'tous !', '[/b]'])
-
-
-class ElevatorContractTests(unittest.TestCase):
-    def setUp(self):
-        self.sc = io.import_from_yaml(open('examples/elevator.yaml'))
-        self.interpreter = Interpreter(self.sc)
-
-    def test_no_error(self):
-        self.interpreter.send(Event('floorSelected', {'floor': 4}))
-        self.interpreter.execute()
-        self.assertFalse(self.interpreter.final)
-
-    def test_state_precondition(self):
-        self.sc.states['movingUp'].preconditions.append('False')
-        self.interpreter.send(Event('floorSelected', {'floor': 4}))
-        with self.assertRaises(PreconditionFailed) as cm:
-            self.interpreter.execute()
-        self.assertTrue(isinstance(cm.exception.obj, StateMixin))
-
-    def test_state_postcondition(self):
-        self.sc.states['movingUp'].postconditions.append('False')
-        self.interpreter.send(Event('floorSelected', {'floor': 4}))
-        with self.assertRaises(PostconditionFailed) as cm:
-            self.interpreter.execute()
-        self.assertTrue(isinstance(cm.exception.obj, StateMixin))
-
-    def test_state_invariant(self):
-        self.sc.states['movingUp'].invariants.append('False')
-        self.interpreter.send(Event('floorSelected', {'floor': 4}))
-        with self.assertRaises(InvariantFailed) as cm:
-            self.interpreter.execute()
-        self.assertTrue(isinstance(cm.exception.obj, StateMixin))
-
-    def test_transition_precondition(self):
-        self.sc.states['floorSelecting'].transitions[0].preconditions.append('False')
-        self.interpreter.send(Event('floorSelected', {'floor': 4}))
-        with self.assertRaises(PreconditionFailed) as cm:
-            self.interpreter.execute()
-        self.assertTrue(isinstance(cm.exception.obj, Transition))
-
-    def test_transition_postcondition(self):
-        self.sc.states['floorSelecting'].transitions[0].postconditions.append('False')
-        self.interpreter.send(Event('floorSelected', {'floor': 4}))
-        with self.assertRaises(PostconditionFailed) as cm:
-            self.interpreter.execute()
-        self.assertTrue(isinstance(cm.exception.obj, Transition))
-
-    def test_statechart_precondition(self):
-        self.sc.preconditions.append('False')
-        with self.assertRaises(PreconditionFailed) as cm:
-            self.interpreter = Interpreter(self.sc)
-        self.assertTrue(isinstance(cm.exception.obj, StateChart))
-
-    def test_statechart_postcondition(self):
-        sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
-        sc.postconditions.append('False')
-        interpreter = Interpreter(sc)
-        interpreter.send(Event('goto s2')).send(Event('goto final'))
-        with self.assertRaises(PostconditionFailed) as cm:
-            interpreter.execute()
-        self.assertTrue(isinstance(cm.exception.obj, StateChart))
-
-    def test_statechart_invariant(self):
-        self.sc.invariants.append('False')
-        self.interpreter.send(Event('floorSelected', {'floor': 4}))
-        with self.assertRaises(InvariantFailed) as cm:
-            self.interpreter.execute()
-        self.assertTrue(isinstance(cm.exception.obj, StateChart))
-
-    def test_do_not_raise(self):
-        self.sc.invariants.append('False')
-        interpreter = Interpreter(self.sc, silent_contract=True)
-        interpreter.send(Event('floorSelected', {'floor': 4}))
-        interpreter.execute()
-        self.assertTrue(len(interpreter.failed_conditions) > 0)
