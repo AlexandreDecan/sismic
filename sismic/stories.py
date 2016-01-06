@@ -1,5 +1,4 @@
 from .model import Event
-from .interpreter import Interpreter
 import random
 
 
@@ -31,7 +30,7 @@ class Story(list):
     A story is a sequence of ``Event`` and ``Pause``.
 
     """
-    def tell(self, interpreter: Interpreter, *args, **kwargs) -> Interpreter:
+    def tell(self, interpreter, *args, **kwargs):
         """
         Tells the whole story to the interpreter.
 

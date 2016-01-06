@@ -1,98 +1,8 @@
 from collections import deque
 from itertools import combinations
 from . import model
+from . import testing
 from .evaluator import Evaluator, PythonEvaluator
-
-
-class MicroStep:
-    """
-    Create a micro step. A step consider ``event``, takes ``transition`` and results in a list
-    of ``entered_states`` and a list of ``exited_states``.
-    Order in the two lists is REALLY important!
-
-    :param event: Event or None in case of eventless transition
-    :param transition: a ''Transition`` or None if no processed transition
-    :param entered_states: possibly empty list of entered states
-    :param exited_states: possibly empty list of exited states
-    """
-
-    def __init__(self, event: model.Event = None, transition: model.Transition = None,
-                 entered_states: list = None, exited_states: list = None):
-        self.event = event
-        self.transition = transition if transition else []
-        self.entered_states = entered_states if entered_states else []
-        self.exited_states = exited_states if exited_states else []
-
-    def __repr__(self):
-        return 'MicroStep({}, {}, >{}, <{})'.format(self.event, self.transition, self.entered_states, self.exited_states)
-
-
-class MacroStep:
-    """
-    A macro step is a list of micro steps.
-
-    :param time: the time at which this step was executed
-    :param steps: a list of ``MicroStep`` instances
-    """
-
-    def __init__(self, time: int, steps: list):
-        self._time = time
-        self._steps = steps
-
-    @property
-    def steps(self):
-        """
-        List of micro steps
-        """
-        return self._steps
-
-    @property
-    def time(self):
-        """
-        Time at which this step was executed.
-        """
-        return self._time
-
-    @property
-    def event(self) -> model.Event:
-        """
-        Event (or ``None``) that were consumed.
-        """
-        for step in self._steps:
-            if step.event:
-                return step.event
-        return None
-
-    @property
-    def transitions(self) -> list:
-        """
-        A (possibly empty) list of transitions that were triggered.
-        """
-        return [step.transition for step in self._steps if step.transition]
-
-    @property
-    def entered_states(self) -> list:
-        """
-        List of the states names that were entered.
-        """
-        states = []
-        for step in self._steps:
-            states += step.entered_states
-        return states
-
-    @property
-    def exited_states(self) -> list:
-        """
-        List of the states names that were exited.
-        """
-        states = []
-        for step in self._steps:
-            states += step.exited_states
-        return states
-
-    def __repr__(self):
-        return 'MacroStep@{}({}, {}, >{}, <{})'.format(self.time, self.event, self.transitions,
-                                                     self.entered_states, self.exited_states)
 
 
 class Interpreter:
@@ -126,9 +36,9 @@ class Interpreter:
         self.__evaluate_contract_conditions(self._statechart, 'preconditions')
 
         # Initial step and stabilization
-        step = MicroStep(entered_states=[self._statechart.initial])
+        step = model.MicroStep(entered_states=[self._statechart.initial])
         self._execute_step(step)
-        self._trace.append(MacroStep(time=self.time, steps=[step] + self.__stabilize()))
+        self._trace.append(model.MacroStep(time=self.time, steps=[step] + self.__stabilize()))
 
     @property
     def time(self) -> int:
@@ -256,7 +166,7 @@ class Interpreter:
             macro_step = self.execute_once()
         return returned_steps
 
-    def execute_once(self) -> MacroStep:
+    def execute_once(self) -> model.MacroStep:
         """
         Processes a transition based on the oldest queued event (or no event if an eventless transition
         can be processed), and stabilizes the interpreter in a stable situation (ie. processes initial states,
@@ -277,7 +187,7 @@ class Interpreter:
                 transitions = self._select_transitions(event)
                 # If the event can not be processed, discard it
                 if len(transitions) == 0:
-                    macrostep = MacroStep(time=self.time, steps=[MicroStep(event=event)])
+                    macrostep = model.MacroStep(time=self.time, steps=[model.MicroStep(event=event)])
                     # Update trace
                     self._trace.append(macrostep)
                     return macrostep
@@ -295,7 +205,7 @@ class Interpreter:
             for stabilization_step in self.__stabilize():
                 returned_steps.append(stabilization_step)
 
-        macro_step = MacroStep(time=self.time, steps=returned_steps)
+        macro_step = model.MacroStep(time=self.time, steps=returned_steps)
 
         # Check state invariants
         for name in self._configuration:
@@ -406,7 +316,7 @@ class Interpreter:
         for transition in transitions:
             # Internal transition
             if transition.to_state is None:
-                returned_steps.append(MicroStep(event, transition, [], []))
+                returned_steps.append(model.MicroStep(event, transition, [], []))
                 continue
 
             lca = self._statechart.least_common_ancestor(transition.from_state, transition.to_state)
@@ -440,11 +350,11 @@ class Interpreter:
                     break
                 entered_states.insert(0, state)
 
-            returned_steps.append(MicroStep(event, transition, entered_states, exited_states))
+            returned_steps.append(model.MicroStep(event, transition, entered_states, exited_states))
 
         return returned_steps
 
-    def _compute_stabilization_step(self) -> MicroStep:
+    def _compute_stabilization_step(self) -> model.MicroStep:
         """
         Return a stabilization step, ie. a step that lead to a more stable situation
         for the current statechart. Stabilization means:
@@ -465,20 +375,20 @@ class Interpreter:
         if len(leaves) > 0 and all([isinstance(s, model.FinalState) for s in leaves]):
             # Leave all states
             exited_states = sorted(self._configuration, key=lambda s: (-self._statechart.depth_of(s), s))
-            return MicroStep(exited_states=exited_states)
+            return model.MicroStep(exited_states=exited_states)
 
         # Otherwise, develop history, compound and orthogonal states.
         for leaf in leaves:
             if isinstance(leaf, model.HistoryState):
                 states_to_enter = self._memory.get(leaf.name, [leaf.initial])
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_of(x), x))
-                return MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
+                return model.MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, model.OrthogonalState):
-                return MicroStep(entered_states=sorted(leaf.children))
+                return model.MicroStep(entered_states=sorted(leaf.children))
             elif isinstance(leaf, model.CompoundState) and leaf.initial:
-                return MicroStep(entered_states=[leaf.initial])
+                return model.MicroStep(entered_states=[leaf.initial])
 
-    def _execute_step(self, step: MicroStep):
+    def _execute_step(self, step: model.MicroStep):
         """
         Apply given ``MicroStep`` on this statechart
 
@@ -563,9 +473,9 @@ class Interpreter:
         :param step: step in which the check occurs.
         :raises ConditionFailed: if a condition fails and ``silent_contract`` was set to False.
         """
-        exception_klass = {'preconditions': model.PreconditionFailed,
-                           'postconditions': model.PostconditionFailed,
-                           'invariants': model.InvariantFailed}[cond_type]
+        exception_klass = {'preconditions': testing.PreconditionFailed,
+                           'postconditions': testing.PostconditionFailed,
+                           'invariants': testing.InvariantFailed}[cond_type]
 
         unsatisfied_conditions = getattr(self._evaluator, 'evaluate_' + cond_type)(obj, getattr(step, 'event', None))
 

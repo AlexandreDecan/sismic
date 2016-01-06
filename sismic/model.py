@@ -1,84 +1,4 @@
 from functools import lru_cache
-import copy
-
-
-class ConditionFailed(AssertionError):
-    """
-    Base exception for situations in which an assertion is not satisfied.
-    All the parameters are optional, and will be exposed to ease debug.
-
-    :param configuration: list of active states
-    :param step: a ``MicroStep`` or ``MacroStep`` instance.
-    :param obj: the object that is concerned by the assertion
-    :param assertion: the assertion that failed
-    :param context: the context in which the condition failed
-    """
-
-    def __init__(self, configuration=None, step=None, obj=None, assertion=None, context=None):
-        super().__init__(self)
-        self._configuration = copy.copy(configuration)
-        self._step = copy.copy(step)
-        self._obj = copy.copy(obj)
-        self._assertion = copy.copy(assertion)
-        self._context = {k: copy.copy(v) for k, v in context.items()} if context else {}
-
-    @property
-    def configuration(self):
-        return self._configuration
-
-    @property
-    def step(self):
-        return self._step
-
-    @property
-    def obj(self):
-        return self._obj
-
-    @property
-    def condition(self):
-        return self._assertion
-
-    @property
-    def context(self):
-        return self._context
-
-    def __str__(self):  # pragma: no cover
-        message = ['{} not satisfied!'.format(self.__class__.__name__.replace('Failed', ''))]
-        if self._obj:
-            message.append('Object: {}'.format(self._obj))
-        if self._assertion:
-            message.append('Assertion: {}'.format(self._assertion))
-        if self._configuration:
-            message.append('Configuration: {}'.format(self._configuration))
-        if self._step:
-            message.append('Step: {}'.format(self._step))
-        if self._context:
-            message.append('Evaluation context:')
-            for key, value in self._context.items():
-                message.append(' - {key} = {value}'.format(key=key, value=value))
-
-        return '\n'.join(message)
-
-
-class PreconditionFailed(ConditionFailed):
-    """
-    A precondition is not satisfied.
-    """
-    pass
-
-
-class PostconditionFailed(ConditionFailed):
-    """
-    A postcondition is not satisfied.
-    """
-    pass
-
-
-class InvariantFailed(ConditionFailed):
-    """
-    An invariant is not satisfied.
-    """
-    pass
 
 
 class Event:
@@ -563,3 +483,94 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
 
     def __repr__(self):
         return 'statechart "{}"'.format(self.name)
+
+
+class MicroStep:
+    """
+    Create a micro step. A step consider ``event``, takes ``transition`` and results in a list
+    of ``entered_states`` and a list of ``exited_states``.
+    Order in the two lists is REALLY important!
+
+    :param event: Event or None in case of eventless transition
+    :param transition: a ''Transition`` or None if no processed transition
+    :param entered_states: possibly empty list of entered states
+    :param exited_states: possibly empty list of exited states
+    """
+
+    def __init__(self, event: Event = None, transition: Transition = None,
+                 entered_states: list = None, exited_states: list = None):
+        self.event = event
+        self.transition = transition if transition else []
+        self.entered_states = entered_states if entered_states else []
+        self.exited_states = exited_states if exited_states else []
+
+    def __repr__(self):
+        return 'MicroStep({}, {}, >{}, <{})'.format(self.event, self.transition, self.entered_states, self.exited_states)
+
+
+class MacroStep:
+    """
+    A macro step is a list of micro steps.
+
+    :param time: the time at which this step was executed
+    :param steps: a list of ``MicroStep`` instances
+    """
+
+    def __init__(self, time: int, steps: list):
+        self._time = time
+        self._steps = steps
+
+    @property
+    def steps(self):
+        """
+        List of micro steps
+        """
+        return self._steps
+
+    @property
+    def time(self):
+        """
+        Time at which this step was executed.
+        """
+        return self._time
+
+    @property
+    def event(self) -> Event:
+        """
+        Event (or ``None``) that were consumed.
+        """
+        for step in self._steps:
+            if step.event:
+                return step.event
+        return None
+
+    @property
+    def transitions(self) -> list:
+        """
+        A (possibly empty) list of transitions that were triggered.
+        """
+        return [step.transition for step in self._steps if step.transition]
+
+    @property
+    def entered_states(self) -> list:
+        """
+        List of the states names that were entered.
+        """
+        states = []
+        for step in self._steps:
+            states += step.entered_states
+        return states
+
+    @property
+    def exited_states(self) -> list:
+        """
+        List of the states names that were exited.
+        """
+        states = []
+        for step in self._steps:
+            states += step.exited_states
+        return states
+
+    def __repr__(self):
+        return 'MacroStep@{}({}, {}, >{}, <{})'.format(self.time, self.event, self.transitions,
+                                                       self.entered_states, self.exited_states)

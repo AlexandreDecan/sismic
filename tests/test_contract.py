@@ -2,7 +2,7 @@ import unittest
 from sismic import io
 from sismic.interpreter import Interpreter
 from sismic.model import Event, Transition, StateChart, StateMixin
-from sismic.model import PreconditionFailed, PostconditionFailed, InvariantFailed
+from sismic.testing import PreconditionFailed, PostconditionFailed, InvariantFailed
 
 
 
