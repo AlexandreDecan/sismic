@@ -10,6 +10,7 @@ script:
 - coverage run --source sismic -m unittest discover
 - cd docs
 - make doctest
+- cd ..
 after_success:
 - coveralls
 deploy:
