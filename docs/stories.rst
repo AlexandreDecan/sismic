@@ -2,18 +2,20 @@ Defining reproducible scenarios
 ===============================
 
 While events can be sent to an interpreter using its ``send`` method, it can be very convenient
-to define and store scenarios, ie. sequences of events, that can drive the execution of a statechart.
+to define and store scenarios, ie. sequences or traces of events, that can control the execution of a statechart.
 
 Such scenarios are called *stories* in sismic, and can be used to accurately reproduce the execution of a statechart.
+They are also very instrumental for testing statecharts.
 
 Writing stories
 ---------------
 
-The module :py:mod:`sismic.stories` provides the building bricks to facilitate statechart execution.
+The module :py:mod:`sismic.stories` provides the building bricks to automate statechart execution.
 The key concept of this module is the notion of *story*, which is a reproducible sequence of
-events and pauses that drives a statechart interpreter.
-For our running elevator example, a story may encode things like "*select the 4th floor, then
-wait 5 seconds, then select the 2th floor, then wait 10 seconds*".
+events and pauses that control a statechart interpreter.
+For our running elevator example, a story may encode things like "*first select the 4th floor, then
+wait 5 seconds, then select the 2th floor, then wait for another 10 seconds*".
+This would look as follows:
 
 .. testcode::
 
@@ -25,7 +27,7 @@ wait 5 seconds, then select the 2th floor, then wait 10 seconds*".
     story.append(Event('floorSelected', data={'floor': 2}))
     story.append(Pause(10))
 
-For syntactical convenience, a story can also be created using a Python iterable:
+For syntactical convenience, the same story can also be written more compactly using a Python iterable:
 
 .. testcode::
 
@@ -36,7 +38,7 @@ For syntactical convenience, a story can also be created using a Python iterable
 
 A instance of :py:class:`~sismic.stories.Story` exhibits a :py:meth:`~sismic.stories.Story.tell`
 method that can *tell* the story to an interpreter. Using this method, you can easily reproduce
-a scenario.
+a scenario. 
 
 .. testsetup::
 
@@ -51,23 +53,25 @@ a scenario.
 
 .. testcode::
 
-    # ...  (an interpreter is created for our elevator statechart)
+    # ...  (assume that some interpreter has been created for our elevator statechart)
     assert isinstance(interpreter, Interpreter)
 
     story.tell(interpreter)
-    print(interpreter._evaluator.context['current'])
     print(interpreter.time)
+    print(interpreter._evaluator.context['current'])
+
+After having *told* the story to the interpreter, we observe that 15 seconds have passed, and the elevator has moved to the ground floor.
 
 .. testoutput::
 
-    0
     15
+    0
 
 
 Storywriters
 ------------
 
-The module :py:mod:`sismic.stories` contains several helpers to write stories.
+The module :py:mod:`sismic.stories` contains several helper methods to write stories.
 We expect this module to quickly growth and to provide many ways to automatically generate stories.
 
 Currently, the module contains the following helpers:
