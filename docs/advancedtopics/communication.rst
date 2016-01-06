@@ -1,0 +1,154 @@
+Communication between statecharts
+=================================
+
+It is not unusual to have to deal with multiple distinct components in which the behavior of a component is driven
+by things that happen in the other components.
+One can model such a situation using a single statechart with parallel states.
+The communication and synchronization between the components can be done either by using ``active(state_name)`` in
+guards, or by sending internal events that address other components.
+
+However, we believe that this approach is not very convenient:
+
+    - all the components must be defined in a single statechart;
+    - state name collision could occur;
+    - components must share a single execution context;
+    - component composition is not easy to achieve
+    - ...
+
+Sismic allows to define multiple components in multiple statecharts, and brings a way for those statecharts to
+communicate and synchronize via events.
+
+
+Binding statecharts
+-------------------
+
+Every instance of :py:class:`~sismic.interpreter.Interpreter` exposes a :py:meth:`~sismic.interpreter.Interpreter.bind`
+method which allows to bind statecharts.
+
+.. automethod:: sismic.interpreter.Interpreter.bind
+    :noindex:
+
+When an interpreter ``interpreter_1`` is bound to an interpreter ``interpreter_2`` using
+``interpreter_1.bind(interpreter_2)``, the **internal** events that are sent by ``interpreter_1`` are automatically
+propagated as **external** events to ``interpreter_2``.
+The binding is not restricted to only two statecharts.
+For example, assume we have three instances of :py:class:`~sismic.interpreter.Interpreter`:
+
+.. testsetup:: bind
+
+    from sismic.io import import_from_yaml
+    from sismic.interpreter import Interpreter
+
+    interpreter_1 = Interpreter(import_from_yaml(open('../examples/elevator.yaml')))
+    interpreter_2 = Interpreter(import_from_yaml(open('../examples/elevator_buttons.yaml')))
+    interpreter_3 = Interpreter(import_from_yaml(open('../examples/elevator_buttons.yaml')))
+
+.. testcode:: bind
+
+    assert isinstance(interpreter_1, Interpreter)
+    assert isinstance(interpreter_2, Interpreter)
+    assert isinstance(interpreter_3, Interpreter)
+
+We define a bidirectional communication between the two first interpreters:
+
+.. testcode:: bind
+
+    interpreter_1.bind(interpreter_2)
+    interpreter_2.bind(interpreter_1)
+
+We also bind the third interpreters with the two first ones.
+Notice that :py:meth:`~sismic.interpreter.Interpreter.bind` returns the current interpreter, so multiple calls
+can be chained:
+
+.. testcode:: bind
+
+    interpreter_3.bind(interpreter_1).bind(interpreter_2)
+
+When an internal event is sent by an interpreter, the bound interpreters also receive this event as an external
+event.
+In the last example, when an internal event is sent by ``interpreter_3``, then a corresponding external event
+is sent both to ``interpreter_1`` and ``interpreter_2``.
+Practically, unless you subclassed :py:class:`~sismic.interpreter.Interpreter`, the only difference between
+internal and external events are the priority order in which they are processed by the interpreter.
+
+
+.. testcode:: bind
+
+    from sismic.model import Event
+
+    # Manually create and send an internal event
+    interpreter_3.send(Event('test'), internal=True)
+
+    print('Events for interpreter_1:', interpreter_1._events.pop())  # External event
+    print('Events for interpreter_2:', interpreter_2._events.pop())  # External event
+    print('Events for interpreter_3:', interpreter_3._events.pop())  # Internal event
+
+.. testoutput:: bind
+
+    Events for interpreter_1: Event(test)
+    Events for interpreter_2: Event(test)
+    Events for interpreter_3: Event(test)
+
+Example
+-------
+
+Consider our running example, the elevator statechart.
+This statechart expects to receive *floorSelected* events (with a *floor* parameter representing the selected floor).
+The statechart operates autonomously, provided that we send such events.
+
+Let us define a new statechart that models a panel of buttons for our elevator.
+For example, we consider that our panel has 4 buttons numbered 0 to 3.
+
+.. literalinclude:: ../../examples/elevator_buttons.yaml
+   :language: yaml
+
+As you can see in the YAML version of this statechart, the panel expects an event for each button:
+*button_0_pushed*, *button_1_pushed*, *button_2_pushed* and *button_3_pushed*.
+Each of those event causes the execution of a transition which, in turn, creates and sends a *floorSelected* event.
+The *floor* parameter of this event corresponds to the button number.
+
+We bind our panel with our elevator, such that the panel can control the elevator:
+
+.. testcode:: buttons
+
+    from sismic.io import import_from_yaml
+    from sismic.interpreter import Interpreter
+    from sismic.model import Event
+
+    elevator = Interpreter(import_from_yaml(open('../examples/elevator.yaml')))
+    buttons = Interpreter(import_from_yaml(open('../examples/elevator_buttons.yaml')))
+
+    # Elevator will receive events from buttons
+    buttons.bind(elevator)
+
+Events that are sent **to** ``buttons`` are not propagated, but events that are sent **by** ``buttons``
+are autoatically propagated to ``elevator``:
+
+.. testcode:: buttons
+
+    print('Awaiting events in buttons:', list(buttons._events))  # Empty
+    buttons.send(Event('button_2_pushed'))
+
+    print('Awaiting events in buttons:', list(buttons._events))  # External event
+
+    buttons.execute_once()  # Consume button_2_pushed
+    print('Awaiting events in buttons:', list(buttons._events))  # Internal event
+    print('Awaiting events in elevator:', list(elevator._events))  # External event
+
+.. testoutput:: buttons
+
+    Awaiting events in buttons: []
+    Awaiting events in buttons: [Event(button_2_pushed)]
+    Awaiting events in buttons: [Event(floorSelected, {'floor': 2})]
+    Awaiting events in elevator: [Event(floorSelected, {'floor': 2})]
+
+The execution of bound statecharts does not differ from the execution of unbound statecharts:
+
+.. testcode:: buttons
+
+    elevator.execute()
+    print('Current floor:', elevator._evaluator.context['current'])
+
+.. testoutput:: buttons
+
+    Current floor: 2

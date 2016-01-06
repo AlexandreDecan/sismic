@@ -57,3 +57,35 @@ class WriterExecutionTests(unittest.TestCase):
 
         self.assertTrue(self.interpreter.final)
         self.assertEqual(self.interpreter.evaluator.context['output'], ['bonjour ', '[b]', '[i]', 'a ', '[/b]', '[/i]', '[b]', 'tous !', '[/b]'])
+
+
+class RemoteElevatorTests(unittest.TestCase):
+    def setUp(self):
+        self.elevator = Interpreter(io.import_from_yaml(open('examples/elevator.yaml')))
+        self.buttons = Interpreter(io.import_from_yaml(open('examples/elevator_buttons.yaml')))
+        self.buttons.bind(self.elevator)
+
+    def test_button(self):
+        self.assertEqual(self.elevator._evaluator.context['current'], 0)
+
+        self.buttons.send(Event('button_2_pushed'))
+        self.buttons.execute()
+
+        event = self.elevator._events.pop()
+        self.assertEqual(event, Event('floorSelected'))
+        self.assertEqual(event.data['floor'], 2)
+
+        self.buttons.send(Event('button_2_pushed'))
+        self.buttons.execute()
+        self.elevator.execute()
+
+        self.assertEqual(self.elevator._evaluator.context['current'], 2)
+
+    def test_button_0_on_groundfloor(self):
+        self.assertEqual(self.elevator._evaluator.context['current'], 0)
+
+        self.buttons.send(Event('button_0_pushed'))
+        self.buttons.execute()
+        self.elevator.execute()
+
+        self.assertEqual(self.elevator._evaluator.context['current'], 0)

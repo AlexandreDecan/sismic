@@ -1,0 +1,24 @@
+statechart:
+  name: Elevator buttons
+  description: |
+    Buttons that remotely control the elevator.
+  initial: active
+  states:
+    - name: active
+      parallel states:
+        - name: button_0
+          transitions:
+            - event: button_0_pushed
+              action: "send(Event('floorSelected', {'floor': 0}))"
+        - name: button_1
+          transitions:
+            - event: button_1_pushed
+              action: "send(Event('floorSelected', {'floor': 1}))"
+        - name: button_2
+          transitions:
+            - event: button_2_pushed
+              action: "send(Event('floorSelected', {'floor': 2}))"
+        - name: button_3
+          transitions:
+            - event: button_3_pushed
+              action: "send(Event('floorSelected', {'floor': 3}))"

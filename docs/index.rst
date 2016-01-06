@@ -26,6 +26,7 @@ More specifically, Sismic provides:
  - An easy way to define and to import statecharts, based on the human-friendly YAML markup language
  - A statechart interpreter offering a discrete, step-by-step, and fully observable simulation engine
  - Synchronous and asynchronous simulation, in real time or simulated time
+ - Support for communication between statecharts and co-simulation
  - Built-in support for expressing actions and guards using regular Python code
  - A design-by-contract approach for statecharts
  - A unit testing framework for statecharts, including generation of test scenarios
@@ -50,18 +51,24 @@ Contents
 --------
 
 .. toctree::
+    :caption: Overview
     :maxdepth: 1
 
     quickstart
     format
     execution
-    dealingtime
     contract
     stories
     testing
     evaluation
-    api/index
 
+.. toctree::
+    :caption: Advanced topics
+    :maxdepth: 1
+
+    advancedtopics/dealingtime
+    advancedtopics/communication
+    api
 
 
 Source code

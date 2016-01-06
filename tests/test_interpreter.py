@@ -339,3 +339,28 @@ class NestedParallelExecutionTests(unittest.TestCase):
         self.assertLess(step.entered_states.index('y'), step.entered_states.index('z'))
 
         self.assertEqual([t.from_state for t in step.transitions], ['k1', 'x', 'y', 'z'])
+
+
+class BindTests(unittest.TestCase):
+    def setUp(self):
+        sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
+        self.interpreter = Interpreter(sc)
+
+    def test_bind(self):
+        other_sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
+        other_interpreter = Interpreter(other_sc)
+
+        self.interpreter.bind(other_interpreter)
+        self.assertEqual(self.interpreter._bound, [other_interpreter])
+
+        self.interpreter.send(Event('test'), internal=True)
+        self.assertTrue(self.interpreter._events.pop(), Event('test'))
+        self.assertTrue(other_interpreter._events.pop(), Event('test'))
+
+    def test_cannot_bind_self(self):
+        with self.assertRaises(ValueError):
+            self.interpreter.bind(self.interpreter)
+
+    def test_cannot_bind_anything(self):
+        with self.assertRaises(ValueError):
+            self.interpreter.bind(0)

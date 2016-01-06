@@ -129,7 +129,7 @@ As a shortcut, the :py:meth:`~sismic.interpreter.Interpreter.execute` method wil
 
 .. testcode:: interpreter
 
-    from sismic.interpreter import MacroStep
+    from sismic.model import MacroStep
 
     steps = interpreter.execute()
     for step in steps:
