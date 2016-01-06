@@ -50,16 +50,17 @@ Contents
 --------
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     quickstart
     format
     execution
-    stories
+    dealingtime
     contract
+    stories
     testing
     evaluation
-
+    api/index
 
 
 

@@ -60,7 +60,7 @@ Features of the built-in Python evaluator
 *****************************************
 
 .. autoclass:: sismic.evaluator.PythonEvaluator
-
+    :noindex:
 
 Anatomy of a code evaluator
 ---------------------------
@@ -71,8 +71,13 @@ Readers that are not interested in tuning existing evaluators or creating new on
 An :py:class:`~sismic.evaluator.Evaluator` must provide two main methods and an attribute:
 
 .. automethod:: sismic.evaluator.Evaluator._evaluate_code
+    :noindex:
+
 .. automethod:: sismic.evaluator.Evaluator._execute_code
+    :noindex:
+
 .. autoattribute:: sismic.evaluator.Evaluator.context
+    :noindex:
 
 Notice that none of the two methods is actually called by the interpreter during the execution of a
 statechart. These methods are fallback methods, meaning they are implicitly called when one of the
@@ -81,6 +86,7 @@ following methods is not defined in a concrete evaluator instance:
 .. autoclass:: sismic.evaluator.Evaluator
     :members:
     :exclude-members: _evaluate_code, _execute_code, context
+    :noindex:
 
 In order to understand how the evaluator works, the documentation of the :py:class:`~sismic.evaluator.Evaluator` mentions the following important statements:
 

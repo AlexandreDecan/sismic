@@ -31,19 +31,9 @@ The basic idea is that contracts can be defined for statecharts and their compon
 by specifying preconditions, postconditions and invariants on them.
 At runtime, Sismic will verify the conditions specified by the constracts.
 If a condition is not satisfied, an ``AssertionError`` will be raised.
-More specifically, one of the three following subclasses will be raised:
-
-.. autoexception:: sismic.model.PreconditionFailed
-
-.. autoexception:: sismic.model.PostconditionFailed
-
-.. autoexception:: sismic.model.InvariantFailed
-
-
-The three exceptions inherit from the following subclass of ``AssertionError``:
-
-.. autoexception:: sismic.model.ConditionFailed
-    :members:
+More specifically, one of :py:exc:`~sismic.testing.PreconditionFailed`, :py:exc:`~sismic.testing.PostconditionFailed`
+or :py:exc:`~sismic.testing.InvariantFailed` will be raised:
+The three exceptions inherit from :py:exc:`~sismic.testing.ConditionFailed`, a subclass of ``AssertionError``:
 
 Contracts can be specified at three levels: for the statechart itself, for any state contained in the statechart, and for any transition contained in the statechart.
 At each level, a contract can contain preconditions, postconditions and/or invariants.
@@ -136,7 +126,7 @@ Executing statecharts containing contracts
 The execution of a statechart that contains contracts does not essentially differ
 from the execution of a statechart that does not.
 The only difference is that conditions of each contract are checked
-at runtime (as explained above) and may raise a subclass of :py:exc:`~sismic.model.ConditionFailed`.
+at runtime (as explained above) and may raise a subclass of :py:exc:`~sismic.testing.ConditionFailed`.
 
 .. testcode::
 
@@ -162,7 +152,7 @@ The exception displays some relevant information to help debug:
 
     Traceback (most recent call last):
      ...
-    sismic.model.PreconditionFailed: Precondition not satisfied!
+    sismic.testing.PreconditionFailed: Precondition not satisfied!
     Object: BasicState(movingUp)
     Assertion: current > destination
     Configuration: ['active', 'floorListener', 'movingElevator', 'floorSelecting']
@@ -176,17 +166,17 @@ The exception displays some relevant information to help debug:
 
 If you do not want the execution to be interrupted by such exceptions, you can set the ``silent_contract``
 parameter to ``True`` when constructing an ``Interpreter``.
-The exceptions will be stored and will be made available in
+The exceptions will be stored and will be made available through
+the :py:attr:`~sismic.interpreter.Interpreter.failed_conditions` attribute of an interpreter.
 
-.. autoattribute:: sismic.interpreter.Interpreter.failed_conditions
 
-Notice that nested objects in :py:exc:`~sismic.model.ConditionFailed` are copied using a shallow copy, not a deep copy.
+Notice that nested objects in :py:exc:`~sismic.testing.ConditionFailed` are copied using a shallow copy, not a deep copy.
 As a consequence, there is no guarantee that the value of their attributes did not change between the time at
 which the exception was initialized, and the time at which it is accessed.
 
 Here is how the copy is done:
 
-.. literalinclude:: ../sismic/model.py
+.. literalinclude:: ../sismic/testing.py
     :pyobject: ConditionFailed.__init__
 
 

@@ -63,9 +63,6 @@ a scenario.
     0
     15
 
-.. autoclass:: sismic.stories.Story
-    :members:
-
 
 Storywriters
 ------------
@@ -78,4 +75,4 @@ Currently, the module contains the following helpers:
 .. automodule:: sismic.stories
     :members: random_stories_generator
     :exclude-members: Story, Pause
-
+    :noindex:

@@ -227,6 +227,7 @@ which takes a textual YAML definition of a statechart. It also provides a way to
 
 .. automodule:: sismic.io
     :members: import_from_yaml, export_to_yaml
+    :noindex:
 
 For example:
 
@@ -239,15 +240,18 @@ For example:
         assert isinstance(statechart, model.StateChart)
 
 
-The parser performs an automatic validation against the following YAML
-schema file (see `pykwalify <https://github.com/Grokzen/pykwalify/>`__ for more information about the format).
+The parser performs an automatic validation against the YAML schema of the next subsection, and also
+validates the resulting statechart using :py:meth:`sismic.model.StateChart.validate`.
+
+
+YAML validation schema
+**********************
+
+See `pykwalify <https://github.com/Grokzen/pykwalify/>`__ for more information about the semantic.
 
 .. literalinclude:: ../sismic/schema.yaml
     :language: yaml
 
-The import function also validates the resulting statechart using :py:meth:`sismic.model.StateChart.validate`:
-
-.. automethod:: sismic.model.StateChart.validate
 
 
 Defining statecharts in Python
@@ -262,5 +266,6 @@ states, transitions and events. Apart from the mixin classes, it defines:
 .. automodule:: sismic.model
     :members: Event, Transition, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState, StateChart
     :member-order: bysource
+    :noindex:
 
 Consider the source of :py:mod:`sismic.io` as an example of how to construct a statechart using :py:mod:`sismic.model`.

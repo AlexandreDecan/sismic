@@ -123,7 +123,7 @@ it returns a ``None`` value. For instance:
 
 
 As a shortcut, the :py:meth:`~sismic.interpreter.Interpreter.execute` method will return a list of
-:py:class:`~sismic.interpreter.MacroStep` instances obtained by repeatedly calling
+:py:class:`sismic.model.MacroStep` instances obtained by repeatedly calling
 :py:meth:`~sismic.interpreter.Interpreter.execute_once`:
 
 
@@ -164,12 +164,6 @@ and is thus commonly used to get a list of the "interesting" events:
     ['floorSelected']
 
 
-Putting all together, the main methods and attributes of a simulator instance are:
-
-.. autoclass:: sismic.interpreter.Interpreter
-    :members: send, execute_once, execute, time, configuration, final, trace, reset
-
-
 .. _steps:
 
 Macro and micro steps
@@ -178,296 +172,34 @@ Macro and micro steps
 The Sismic interpreter is fully observable.
 Its :py:meth:`~sismic.interpreter.Interpreter.execute_once`
 (resp. :py:meth:`~sismic.interpreter.Interpreter.execute`) method returns
-an instance of (resp. a list of) :py:class:`~sismic.interpreter.MacroStep`.
+an instance of (resp. a list of) :py:class:`sismic.model.MacroStep`.
 A *macro step* corresponds to the process of consuming an event, regardless of the number and the type (eventless or not)
 of triggered transitions. A macro step also includes every consecutive *stabilization step*
 (i.e., the steps that are needed to enter nested states, or to switch into the configuration of a history state).
 
-A :py:class:`~sismic.interpreter.MacroStep` exposes the consumed ``event`` (an :py:class:`~sismic.model.Event` instance)
-if any, a (possibly empty) list ``transitions`` of :py:class:`~sismic.model.Transition` instances,
-and two aggregated ordered sequences of state names, ``entered_states`` and ``exited_states``.
+A :py:class:`~sismic.model.MacroStep` exposes the consumed :py:attr:`~sismic.model.MacroStep.event` if any, a (possibly
+empty) list :py:attr:`~sismic.model.MacroStep.transitions` of :py:class:`~sismic.model.Transition` instances,
+and two aggregated ordered sequences of state names, :py:attr:`~sismic.model.MacroStep.entered_states` and
+:py:attr:`~sismic.model.MacroStep.exited_states`.
 The order of states in those lists determines the order in which their *on entry* and *on exit* actions were processed.
-As transitions are atomically processed, this means that they could exit a state in ``entered_states`` that is
-entered before some state in ``exited_states`` is exited.
-The exact order in which states are exited and entered is indirectly available through the ``steps`` attribute that
-is a list of all the :py:class:`~sismic.interpreter.MicroStep` that were executed. Each of them contains the states
-that were exited and entered during its execution.
+As transitions are atomically processed, this means that they could exit a state in
+:py:attr:`~sismic.model.MacroStep.entered_states` that is entered before some state in
+:py:attr:`~sismic.model.MacroStep.exited_states` is exited.
+The exact order in which states are exited and entered is indirectly available through the
+:py:attr:`~sismic.model.MacroStep.steps` attribute that is a list of all the :py:class:`~sismic.model.MicroStep`
+that were executed. Each of them contains the states that were exited and entered during its execution.
 
-
-.. autoclass:: sismic.interpreter.MacroStep
-    :members:
 
 A *micro step* is the smallest, atomic step that a statechart can execute.
-A :py:class:`~sismic.interpreter.MacroStep` instance thus can be viewed (and is!) an aggregate of
-:py:class:`~sismic.interpreter.MicroStep` instances.
-
-.. autoclass:: sismic.interpreter.MicroStep
-    :members:
+A :py:class:`~sismic.model.MacroStep` instance thus can be viewed (and is!) an aggregate of
+:py:class:`~sismic.model.MicroStep` instances.
 
 This way, a complete *run* of a statechart can be summarized as an ordered list of
-:py:class:`~sismic.interpreter.MacroStep` instances,
-and details of such a run can be obtained using the :py:class:`~sismic.interpreter.MicroStep` list of a
-:py:class:`~sismic.interpreter.MacroStep`.
-For convenience, an interpreter has a :py:attr:`~sismic.interpreter.trace` attribute that returns the list
+:py:class:`~sismic.model.MacroStep` instances,
+and details of such a run can be obtained using the :py:class:`~sismic.model.MicroStep` list of a
+:py:class:`~sismic.model.MacroStep`.
+For convenience, an interpreter has a :py:attr:`~sismic.model.trace` attribute that returns the list
 of executed macro steps (including the initial stabilization step).
-
-
-Dealing with time
------------------
-
-It is quite usual in a statechart to rely on some notion of time.
-To cope with this, the built-in evaluator (see :py:class:`~sismic.evaluator.PythonEvaluator`) has support for
-time events ``after(x)`` and ``idle(x)``, meaning that a transition can be triggered after a certain amount of time.
-
-When it comes to interpreting statecharts, Sismic deals with time using an internal clock whose value is exposed
-by the :py:attr:`~sismic.interpreter.Interpreter.time` property of an :py:class:`~sismic.interpreter.Interpreter`.
-Basically, this clock does nothing by itself except for being available for an
-:py:class:`~sismic.evaluator.Evaluator` instance.
-If your statechart needs to rely on a time value, you have to set it by yourself.
-
-Below are some examples to illustrate the use of time events.
-
-
-Example with simulated time
-***************************
-
-Sismic provides a discrete step-by-step interpreter for statecharts.
-It seems natural in a discrete simulation to rely on simulated time.
-
-The following example illustrates a statechart modeling the behavior of a simple *elevator*.
-If the elevator is sent to the 4th floor, according to the YAML definition of this statechart,
-the elevator should automatically go back to the ground floor after 10 seconds.
-
-.. code:: yaml
-
-    - target: doorsClosed
-      guard: after(10) and current > 0
-      action: destination = 0
-
-Rather than waiting for 10 seconds, one can simulate this.
-First, one should load the statechart and initialize the interpreter:
-
-.. testcode:: clock
-
-    from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter
-    from sismic.model import Event
-
-    with open('../examples/elevator.yaml') as f:
-        statechart = import_from_yaml(f)
-
-    interpreter = Interpreter(statechart)
-
-The internal clock of our interpreter is ``0``.
-This is, ``interpreter.time == 0`` holds.
-We now ask our elevator to go to the 4th floor.
-
-.. testcode:: clock
-
-    interpreter.send(Event('floorSelected', data={'floor': 4}))
-    interpreter.execute()
-
-The elevator should now be on the 4th floor.
-We inform the interpreter that 2 seconds have elapsed:
-
-.. testcode:: clock
-
-    interpreter.time += 2
-    print(interpreter.execute())
-
-.. testoutput:: clock
-    :hide:
-
-    []
-
-The output should be an empty list ``[]``.
-Of course, nothing happened since the condition ``after(10)`` is not
-satisfied yet.
-We now inform the interpreter that 8 additional seconds have elapsed.
-
-.. testcode:: clock
-
-    interpreter.time += 8
-    print(interpreter.execute())
-
-.. testoutput:: clock
-    :hide:
-
-    [MacroStep@10(None, [Transition(doorsOpen, doorsClosed, None)], >['doorsClosed'], <['doorsOpen']), MacroStep@10(None, [Transition(doorsClosed, movingDown, None)], >['moving', 'movingDown'], <['doorsClosed']), MacroStep@10(None, [Transition(movingDown, movingDown, None)], >['movingDown'], <['movingDown']), MacroStep@10(None, [Transition(movingDown, movingDown, None)], >['movingDown'], <['movingDown']), MacroStep@10(None, [Transition(movingDown, movingDown, None)], >['movingDown'], <['movingDown']), MacroStep@10(None, [Transition(moving, doorsOpen, None)], >['doorsOpen'], <['movingDown', 'moving'])]
-
-The output now contains a list of steps, from which we can see that the elevator has moved down to the ground floor.
-We can check the current floor:
-
-.. testcode:: clock
-
-    print(interpreter._evaluator.context['current'])
-
-.. testoutput:: clock
-    :hide:
-
-    0
-
-This displays ``0``.
-
-Example with real time
-**********************
-
-If a statechart needs to be aware of a real clock, the simplest way to achieve this is by using
-the :py:func:`time.time` function of Python.
-In a nutshell, the idea is to synchronize ``interpreter.time`` with a real clock.
-Let us first initialize an interpreter using one of our statechart example, the *elevator*:
-
-.. testcode:: realclock
-
-    from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter
-    from sismic.model import Event
-
-    with open('../examples/elevator.yaml') as f:
-        statechart = import_from_yaml(f)
-
-    interpreter = Interpreter(statechart)
-
-The interpreter initially sets its clock to 0.
-As we are interested in a real-time simulation of the statechart,
-we need to set the internal clock of our interpreter.
-We import from :py:mod:`time` a real clock,
-and store its value into a ``starttime`` variable.
-
-.. testcode:: realclock
-
-    import time
-    starttime = time.time()
-
-We can now execute the statechart by sending a ``floorSelected`` event, and wait for the output.
-For our example, we first ask the statechart to send to elevator to the 4th floor.
-
-.. testcode:: realclock
-
-    interpreter.send(Event('floorSelected', data={'floor': 4}))
-    interpreter.execute()
-    print('Current floor:', interpreter._evaluator.context['current'])
-    print('Current time:', interpreter.time)
-
-At this point, the elevator is on the 4th floor and is waiting for another input event.
-The internal clock value is still 0.
-
-.. testoutput:: realclock
-
-    Current floor: 4
-    Current time: 0
-
-We should inform our interpreter of the new current time.
-Of course, as our interpreter follows a discrete simulation,
-nothing really happens until we call
-:py:meth:`~sismic.interpreter.Interpreter.execute` or :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
-
-.. testcode:: realclock
-
-    interpreter.time = time.time() - starttime
-    # Does nothing if (time.time() - starttime) is less than 10!
-    interpreter.execute()
-
-Assuming you quickly wrote these lines of code, nothing happened.
-But if you wait a little bit, and update the clock again, it should move the elevator to the ground floor.
-
-.. testcode:: realclock
-
-    interpreter.time = time.time() - starttime
-    interpreter.execute()
-
-And *voilà*!
-
-As it is not very convenient to manually set the clock each time you want to execute something, it is best to
-put it in a loop.
-
-.. code:: python
-
-    from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter
-    from sismic.model import Event
-
-    with open('../examples/elevator.yaml') as f:
-        statechart = import_from_yaml(f)
-
-    interpreter = Interpreter(statechart)
-
-    # Initial scenario
-    interpreter.send(Event('floorSelected', data={'floor': 4}))
-
-    import time
-    starttime = time.time()
-
-    while not interpreter.final:
-        interpreter.time = time.time() - starttime
-        if interpreter.execute():
-            print('something happened at time {}'.format(time.time()))
-
-        time.sleep(0.5)  # 500ms
-
-Here, we called the :py:func:`~time.sleep` function to slow down the loop (optional).
-The output should look like::
-
-    something happened at time 1450383083.9943285
-    something happened at time 1450383093.9920669
-
-As our statechart does not define any way to reach a final configuration,
-the ``not interpreter.final`` condition always holds,
-and the executiong needs to be interrupted manually.
-
-
-Using *threading*
-*****************
-
-Notice from previous example that using a loop, it is not possible to send events to the interpreter.
-For convenience, sismic provides a :py:func:`~sismic.interpreter.run_in_background`
-function that run an interpreter in a thread, and does the job of synchronizing the clock for you.
-
-.. autofunction:: sismic.interpreter.run_in_background
-
-
-.. testcode:: thread
-
-    import time
-    from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter, run_in_background
-    from sismic.model import Event
-
-    with open('../examples/microwave.yaml') as f:
-        interpreter = Interpreter(import_from_yaml(f))
-
-    run_in_background(interpreter, delay=0.01)
-
-    print('Initial:', interpreter.configuration)
-
-    # Open door
-    interpreter.send(Event('toggledoor'))
-
-    time.sleep(0.05)
-    print('Toggledoor:', interpreter.configuration)
-
-
-    # Wait 200ms and close the door
-    time.sleep(0.200)
-    interpreter.send(Event('toggledoor'))
-
-    time.sleep(0.05)
-    print('Toggledoor:', interpreter.configuration)
-
-
-    # Wait 200ms and unplug
-    time.sleep(0.200)
-    interpreter.send(Event('unplug'))
-
-    time.sleep(0.05)
-    print('Final:', interpreter.configuration)
-
-.. testoutput:: thread
-
-    Initial: ['plugged', 'door', 'heating', 'lamp', 'turntable', 'door.close', 'heating.off', 'lamp.off', 'turntable.off']
-    Toggledoor: ['plugged', 'door', 'heating', 'lamp', 'turntable', 'door.open', 'heating.off', 'lamp.on', 'turntable.off']
-    Toggledoor: ['plugged', 'door', 'heating', 'lamp', 'turntable', 'door.close', 'heating.off', 'lamp.off', 'turntable.off']
-    Final: []
 
 
 .. _other_semantics:
@@ -475,17 +207,27 @@ function that run an interpreter in a thread, and does the job of synchronizing 
 Implementing other statechart semantics
 ---------------------------------------
 
-A :py:class:`~sismic.interpreter.Interpreter` makes use of several protected methods for its initialization or to compute
-which transition should be processed next, which are the next steps, etc.
-
+An :py:class:`~sismic.interpreter.Interpreter` makes use of several *private* methods for its initialization and computations.
+These methods computes the transition(s) that should be processed, the resulting steps, etc.
 These methods can be overridden or combined easily to define other variants of the statechart semantics.
 
 .. automethod:: sismic.interpreter.Interpreter._select_eventless_transitions
+    :noindex:
+
 .. automethod:: sismic.interpreter.Interpreter._select_transitions
+    :noindex:
+
 .. automethod:: sismic.interpreter.Interpreter._sort_transitions
+    :noindex:
+
 .. automethod:: sismic.interpreter.Interpreter._compute_transitions_steps
+    :noindex:
+
 .. automethod:: sismic.interpreter.Interpreter._execute_step
+    :noindex:
+
 .. automethod:: sismic.interpreter.Interpreter._compute_stabilization_step
+    :noindex:
 
 
 These methods are called directly (or not) by :py:class:`~sismic.interpreter.Interpreter.execute_once`.

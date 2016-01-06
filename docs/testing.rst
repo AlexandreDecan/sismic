@@ -41,6 +41,7 @@ This function provides an easy way to construct a story for *statechart testers*
 by executing a *statechart under test*:
 
 .. autofunction:: sismic.testing.story_from_trace
+    :noindex:
 
 To summarize, if you want to test a *statechart under test* ``tested``, you need to:
 
