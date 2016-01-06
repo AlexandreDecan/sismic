@@ -33,10 +33,10 @@ Example: Outer-first/source-state semantics
 For example, in order to obtain an outer-first/source-state semantics (instead of the
 inner-first/source-state one that Sismic provides by default),
 one should subclass :py:class:`~sismic.interpreter.Interpreter`
-and override :py:class:`~sismic.interpreter.Interpreted._select_eventless_transitions` and
-:py:class:`~sismic.interpreter.Interpreted._select_transitions`.
+and override :py:class:`~sismic.interpreter.Interpreter._select_eventless_transitions` and
+:py:class:`~sismic.interpreter.Interpreter._select_transitions`.
 Actually, as the former relies on the second, the changes will only concern the traversal order in the
-:py:class:`~sismic.interpreter.Interpreted._select_transitions` method.
+:py:class:`~sismic.interpreter.Interpreter._select_transitions` method.
 
 
 Example: Semantics where internal events have no priority
