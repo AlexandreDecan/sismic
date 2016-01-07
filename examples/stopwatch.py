@@ -22,7 +22,7 @@ class StopwatchApplication(tk.Frame):
         # Create a Stopwatch interpreter
         with open('stopwatch.yaml') as f:
             statechart = import_from_yaml(f)
-        self.interpreter = Interpreter(statechart)
+        self.interpreter = Interpreter(statechart, initial_time=time.time())
 
         # Bind interpreter events to the GUI
         self.interpreter.bind(self.event_handler)
@@ -36,7 +36,7 @@ class StopwatchApplication(tk.Frame):
         # but uses Tkinter's mainloop instead of a Thread, which is more adequate.
 
         # Update internal clock and execute interpreter
-        self.interpreter.time = time.time() - self.starttime
+        self.interpreter.time = time.time()
         self.interpreter.execute()
 
         # Queue a call in 200ms on tk's mainloop

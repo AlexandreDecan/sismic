@@ -10,20 +10,23 @@ class Interpreter:
     A discrete interpreter that executes a statechart according to a semantic close to SCXML.
 
     :param statechart: statechart to interpret
-    :param evaluator_klass: An optional callable (eg. a class) that takes no input and return a
+    :param evaluator_klass: An optional callable (eg. a class) that takes an interpreter as input and return a
         ``Evaluator`` instance that will be used to initialize the interpreter.
         By default, an ``PythonEvaluator`` will be used.
-    :param silent_contract: Set to True to store ``ConditionFailed`` exceptions instead of raising them.
+    :param silent_contract: set to True to store ``ConditionFailed`` exceptions instead of raising them.
+    :param initial_time: can be used to defined the initial value of the internal clock (see ``self.time``).
     """
 
-    def __init__(self, statechart: model.StateChart, evaluator_klass=None, silent_contract: bool = False):
+    def __init__(self, statechart: model.StateChart, evaluator_klass=None,
+                 silent_contract: bool = False, initial_time: int=0):
         self._evaluator_klass = evaluator_klass
         self._evaluator = evaluator_klass(self) if evaluator_klass else PythonEvaluator(self)
         self._silent_contract = silent_contract
+        self._initial_time = initial_time
         self._statechart = statechart
 
         # Internal variables
-        self._time = 0  # Internal clock
+        self._time = initial_time  # Internal clock
         self._memory = {}  # History states memory
         self._configuration = set()  # Set of active states
         self._events = deque()  # Events queue
@@ -135,7 +138,10 @@ class Interpreter:
         Reset current interpreter to its initial state.
         This also resets history states memory.
         """
-        self.__init__(self._statechart, self._evaluator_klass, silent_contract=self._silent_contract)
+        self.__init__(self._statechart,
+                      evaluator_klass=self._evaluator_klass,
+                      silent_contract=self._silent_contract,
+                      initial_time=self._initial_time)
 
     def execute(self, max_steps: int = -1) -> list:
         """
@@ -489,7 +495,7 @@ class Interpreter:
 def run_in_background(interpreter: Interpreter, delay: float=0.2, callback=None):
     """
     Run given interpreter in background. The time is updated according to
-    ``time.time()``. The interpreter is ran until it reachs a final configuration.
+    ``time.time() - starttime``. The interpreter is ran until it reachs a final configuration.
     You can manually stop the thread using the added ``stop`` of the returned Thread object.
 
     :param interpreter: an interpreter

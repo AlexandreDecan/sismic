@@ -166,7 +166,9 @@ But if you wait a little bit, and update the clock again, it should move the ele
 And *voilà*!
 
 As it is not very convenient to manually set the clock each time you want to execute something, it is best to
-put it in a loop.
+put it in a loop. To avoid the use of a ``starttime`` variable, you can set the initial time of an interpreter
+using the ``initial_time`` parameter of its constructor.
+This is illustrated in the following example.
 
 .. code:: python
 
@@ -174,21 +176,22 @@ put it in a loop.
     from sismic.interpreter import Interpreter
     from sismic.model import Event
 
+    import time
+
+    # Load statechart and create an interpreter
     with open('../examples/elevator.yaml') as f:
         statechart = import_from_yaml(f)
 
-    interpreter = Interpreter(statechart)
+    # Set the initial time
+    interpreter = Interpreter(statechart, initial_time=time.time())
 
-    # Initial scenario
+    # Send an initial event
     interpreter.send(Event('floorSelected', data={'floor': 4}))
 
-    import time
-    starttime = time.time()
-
     while not interpreter.final:
-        interpreter.time = time.time() - starttime
+        interpreter.time = time.time()
         if interpreter.execute():
-            print('something happened at time {}'.format(time.time()))
+            print('something happened at time {}'.format(interpreter.time))
 
         time.sleep(0.5)  # 500ms
 
