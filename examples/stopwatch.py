@@ -1,4 +1,5 @@
 import tkinter as tk
+import time
 
 # The two following lines are NOT needed in a typical environment.
 # These lines make sismic available in our testing environment
@@ -27,7 +28,26 @@ class StopwatchApplication(tk.Frame):
         self.interpreter.bind(self.event_handler)
 
         # Run the interpreter
-        self.run = run_in_background(self.interpreter, delay=0.2)
+        self.starttime = time.time()
+        self.run()
+
+    def run(self):
+        # This function does essentially the same job than ``sismic.interpreter.run_in_background``
+        # but uses Tkinter's mainloop instead of a Thread, which is more adequate.
+
+        # Update internal clock and execute interpreter
+        self.interpreter.time = time.time() - self.starttime
+        self.interpreter.execute()
+
+        # Queue a call in 200ms on tk's mainloop
+        self.after(200, self.run)
+
+        # One could update widgets or objects here if needed.
+        # For example, if "updated" event sending is removed from the statechart,
+        # the text of self.w_timer has to be manually updated:
+        #   self.w_timer['text'] = self.interpreter.context['display_time']
+        # Here we update the widget that contains the list of active states.
+        self.w_states['text'] = 'active states: ' + ', '.join(self.interpreter.configuration)
 
     def create_widgets(self):
         self.pack()
@@ -40,7 +60,7 @@ class StopwatchApplication(tk.Frame):
         self.w_btn_reset = tk.Button(self, text='reset', command=self._reset)
         self.w_btn_quit = tk.Button(self, text='quit', command=self._quit)
 
-        # Initial states
+        # Initial button states
         self.w_btn_stop['state'] = tk.DISABLED
         self.w_btn_unsplit['state'] = tk.DISABLED
 
@@ -52,9 +72,13 @@ class StopwatchApplication(tk.Frame):
         self.w_btn_reset.pack(side=tk.LEFT,)
         self.w_btn_quit.pack(side=tk.LEFT,)
 
+        # Configuration label
+        self.w_states = tk.Label(root)
+        self.w_states.pack(side=tk.BOTTOM, fill=tk.X)
+
         # Timer label
-        self.w_timer = tk.Label(root, font=("Helvetica", 16))
-        self.w_timer.pack(side=tk.TOP, fill=tk.X)
+        self.w_timer = tk.Label(root, font=("Helvetica", 16), pady=5)
+        self.w_timer.pack(side=tk.BOTTOM, fill=tk.X)
 
     def event_handler(self, event):
         # Update text widget when timer value is updated
@@ -85,7 +109,6 @@ class StopwatchApplication(tk.Frame):
         self.interpreter.send(Event('split_button'))
 
     def _quit(self):
-        self.run.stop()
         self.master.destroy()
 
 

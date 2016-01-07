@@ -24,7 +24,7 @@ statechart:
           initial: stopped
           transitions:
             - event: reset_button
-              action: elapsed_time = split_time = 0
+              action: elapsed_time = 0
           states:
             - name: running
               transitions:
