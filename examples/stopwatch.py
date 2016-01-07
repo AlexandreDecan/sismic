@@ -7,7 +7,7 @@ import sys
 sys.path.append('..')
 
 from sismic.io import import_from_yaml
-from sismic.interpreter import Interpreter, run_in_background
+from sismic.interpreter import Interpreter
 from sismic.model import Event
 
 
