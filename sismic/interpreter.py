@@ -119,7 +119,7 @@ class Interpreter:
         :param event: an ``Event`` instance
         :param internal: set to True if the provided ``Event`` should be considered as
             an internal event (and thus, as to be prepended to the events queue and propagated to
-            bound callable).
+            ).
         :return: ``self`` so it can be chained.
         """
         if internal:
@@ -490,6 +490,7 @@ def run_in_background(interpreter: Interpreter, delay: float=0.2, callback=None)
     """
     Run given interpreter in background. The time is updated according to
     ``time.time()``. The interpreter is ran until it reachs a final configuration.
+    You can manually stop the thread using the added ``stop`` of the returned Thread object.
 
     :param interpreter: an interpreter
     :param delay: delay between each call to ``execute()``
@@ -508,5 +509,10 @@ def run_in_background(interpreter: Interpreter, delay: float=0.2, callback=None)
                 callback(interpreter, steps)
             time.sleep(delay)
     thread = threading.Thread(target=_task, args=(interpreter, delay))
+
+    def stop_thread(): interpreter._configuration = []
+    thread.stop = stop_thread
+
     thread.start()
     return thread
+
