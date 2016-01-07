@@ -28,7 +28,6 @@ class StopwatchApplication(tk.Frame):
         self.interpreter.bind(self.event_handler)
 
         # Run the interpreter
-        self.starttime = time.time()
         self.run()
 
     def run(self):
@@ -99,14 +98,14 @@ class StopwatchApplication(tk.Frame):
         self.interpreter.send(Event('reset_button'))
 
     def _split(self):
+        self.interpreter.send(Event('split_button'))
         self.w_btn_split['state'] = tk.DISABLED
         self.w_btn_unsplit['state'] = tk.NORMAL
-        self.interpreter.send(Event('split_button'))
 
     def _unsplit(self):
+        self.interpreter.send(Event('split_button'))
         self.w_btn_split['state'] = tk.NORMAL
         self.w_btn_unsplit['state'] = tk.DISABLED
-        self.interpreter.send(Event('split_button'))
 
     def _quit(self):
         self.master.destroy()

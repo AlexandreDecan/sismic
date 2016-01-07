@@ -63,3 +63,4 @@ Quick example:
    [Transition(moving, doorsOpen, None)]: ['active', 'floorListener', 'movingElevator', 'doorsOpen', 'floorSelecting']
 
 
+See :ref:`integrate_code` for a more involved example.

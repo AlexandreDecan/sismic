@@ -68,6 +68,7 @@ Contents
 
     advancedtopics/dealingtime
     advancedtopics/communication
+    advancedtopics/integrate_code
     advancedtopics/semantics
     api
 
