@@ -87,7 +87,7 @@ We can check the current floor:
 
 .. testcode:: clock
 
-    print(interpreter._evaluator.context['current'])
+    print(interpreter.context['current'])
 
 .. testoutput:: clock
     :hide:
@@ -133,7 +133,7 @@ For our example, we first ask the statechart to send to elevator to the 4th floo
 
     interpreter.send(Event('floorSelected', data={'floor': 4}))
     interpreter.execute()
-    print('Current floor:', interpreter._evaluator.context['current'])
+    print('Current floor:', interpreter.context['current'])
     print('Current time:', interpreter.time)
 
 At this point, the elevator is on the 4th floor and is waiting for another input event.

@@ -58,7 +58,7 @@ a scenario.
 
     story.tell(interpreter)
     print(interpreter.time)
-    print(interpreter._evaluator.context['current'])
+    print(interpreter.context['current'])
 
 After having *told* the story to the interpreter, we observe that 15 seconds have passed, and the elevator has moved to the ground floor.
 

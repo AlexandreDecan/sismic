@@ -164,13 +164,13 @@ and is thus commonly used to get a list of the "interesting" events:
     ['floorSelected']
 
 
+
 .. _steps:
 
 Macro and micro steps
 ---------------------
 
-The Sismic interpreter is fully observable.
-Its :py:meth:`~sismic.interpreter.Interpreter.execute_once`
+An interpreter :py:meth:`~sismic.interpreter.Interpreter.execute_once`
 (resp. :py:meth:`~sismic.interpreter.Interpreter.execute`) method returns
 an instance of (resp. a list of) :py:class:`sismic.model.MacroStep`.
 A *macro step* corresponds to the process of consuming an event, regardless of the number and the type (eventless or not)
@@ -201,3 +201,18 @@ and details of such a run can be obtained using the :py:class:`~sismic.model.Mic
 For convenience, an interpreter has a :py:attr:`~sismic.model.trace` attribute that returns the list
 of executed macro steps (including the initial stabilization step).
 
+
+Observing the execution
+-----------------------
+
+The interpreter is fully observable during its execution. It provides many public and private attributes
+that can be used to see what happens. In particular:
+
+ - The :py:meth:`~sismic.interpreter.Interpreter.execute_once` (resp. :py:meth:`~sismic.interpreter.Interpreter.execute`)
+   method returns an instance of (resp. a list of) :py:class:`sismic.model.MacroStep`.
+ - The list of all executed macro steps is available using :py:attr:`~sismic.interpreter.Interpreter.trace`.
+ - The list of active states can be retrieved using :py:attr:`~sismic.interpreter.Interpreter.configuration`.
+ - The context of the execution is available using :py:attr:`~sismic.interpreter.Interpreter.context`
+   (see :ref:`code_evaluation`).
+ - It is possible to bind a callable that will be called each time an event is sent by the statechart using
+   the :py:attr:`~sismic.interpreter.Interpreter.bind` method of an interpreter (see :ref:`communication`).

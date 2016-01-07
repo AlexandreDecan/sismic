@@ -29,7 +29,7 @@ class Interpreter:
         self._events = deque()  # Events queue
         self._failed_conditions = []  # List of failed conditions, empty if not _silent_contract
         self._trace = []  # A list of micro steps
-        self._bound = []  # List of bound interpreters
+        self._bound = []  # List of bound event callbacks
 
         # Interpreter initialization
         self._evaluator.execute_onentry(self._statechart)
@@ -64,11 +64,11 @@ class Interpreter:
         return sorted(self._configuration, key=lambda s: (self._statechart.depth_of(s), s))
 
     @property
-    def evaluator(self) -> Evaluator:
+    def context(self) -> dict:
         """
-        The ``Evaluator`` associated with this simulator.
+        The context of execution.
         """
-        return self._evaluator
+        return self._evaluator.context
 
     @property
     def final(self) -> bool:
@@ -93,44 +93,39 @@ class Interpreter:
         """
         return self._trace
 
-    @property
-    def bound(self):
+    def bind(self, interpreter_or_callable):
         """
-        List of bound interpreters.
-        """
-        return self._bound
+        Bind an interpreter or a callable to the current interpreter.
+        Each time an internal event is sent by this interpreter, any bound object will be called
+        with the same event. If *interpreter_or_callable* is an Interpreter instance,  its ``send`` method is called.
+        This is, if ``i1`` and ``i2`` are interpreters, ``i1.bind(i2)`` is equivalent to ``i1.bind(i2.send)``.
 
-    def bind(self, interpreter):
-        """
-        Bind another interpreter to the current one.
-        When an internal event is sent to the current interpreter, it will be propagated to
-        every bound interpreter as an external event.
-
-        :param interpreter: interpreter to bind
+        :param interpreter_or_callable: interpreter or callable to bind
         :return: ``self`` so it can be chained
         """
-        if interpreter is self:
-            raise ValueError('Cannot bind an interpreter with itself')
-        if not isinstance(interpreter, Interpreter):
-            raise ValueError('Given interpreter must be a subclass of Interpreter')
-        if interpreter not in self._bound:
-            self._bound.append(interpreter)
+        if isinstance(interpreter_or_callable, Interpreter):
+            bound_callable = interpreter_or_callable.send
+        else:
+            bound_callable = interpreter_or_callable
+
+        self._bound.append(bound_callable)
         return self
 
     def send(self, event: model.Event, internal: bool = False):
         """
         Send an event to the interpreter, and add it into the event queue.
-        Internal events are propagated to bound interpreters (see ``bind`` method).
+        Internal events are propagated to bound callable (see ``bind`` method).
 
         :param event: an ``Event`` instance
         :param internal: set to True if the provided ``Event`` should be considered as
-            an internal event (and thus, as to be prepended to the events queue).
+            an internal event (and thus, as to be prepended to the events queue and propagated to
+            bound callable).
         :return: ``self`` so it can be chained.
         """
         if internal:
             self._events.appendleft(event)
-            for interpreter in self._bound:
-                interpreter.send(event)
+            for bound_callable in self._bound:
+                bound_callable(event)
         else:
             self._events.append(event)
         return self

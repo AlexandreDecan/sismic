@@ -56,7 +56,7 @@ class WriterExecutionTests(unittest.TestCase):
         self.interpreter.execute()
 
         self.assertTrue(self.interpreter.final)
-        self.assertEqual(self.interpreter.evaluator.context['output'], ['bonjour ', '[b]', '[i]', 'a ', '[/b]', '[/i]', '[b]', 'tous !', '[/b]'])
+        self.assertEqual(self.interpreter.context['output'], ['bonjour ', '[b]', '[i]', 'a ', '[/b]', '[/i]', '[b]', 'tous !', '[/b]'])
 
 
 class RemoteElevatorTests(unittest.TestCase):
@@ -66,7 +66,7 @@ class RemoteElevatorTests(unittest.TestCase):
         self.buttons.bind(self.elevator)
 
     def test_button(self):
-        self.assertEqual(self.elevator._evaluator.context['current'], 0)
+        self.assertEqual(self.elevator.context['current'], 0)
 
         self.buttons.send(Event('button_2_pushed'))
         self.buttons.execute()
@@ -79,13 +79,13 @@ class RemoteElevatorTests(unittest.TestCase):
         self.buttons.execute()
         self.elevator.execute()
 
-        self.assertEqual(self.elevator._evaluator.context['current'], 2)
+        self.assertEqual(self.elevator.context['current'], 2)
 
     def test_button_0_on_groundfloor(self):
-        self.assertEqual(self.elevator._evaluator.context['current'], 0)
+        self.assertEqual(self.elevator.context['current'], 0)
 
         self.buttons.send(Event('button_0_pushed'))
         self.buttons.execute()
         self.elevator.execute()
 
-        self.assertEqual(self.elevator._evaluator.context['current'], 0)
+        self.assertEqual(self.elevator.context['current'], 0)

@@ -200,19 +200,19 @@ class InfiniteExecutionTests(unittest.TestCase):
         self.assertEqual(self.interpreter.configuration, ['s1'])
         self.interpreter.execute_once()
         self.assertEqual(self.interpreter.configuration, ['s2'])
-        self.assertEqual(self.interpreter._evaluator.context['x'], 2)  # x is incremented in s1.on_entry
+        self.assertEqual(self.interpreter.context['x'], 2)  # x is incremented in s1.on_entry
 
     def test_auto_three_steps(self):
         self.interpreter.execute(max_steps=3)
 
         self.assertEqual(self.interpreter.configuration, ['s2'])
-        self.assertEqual(self.interpreter._evaluator.context['x'], 2)  # x is incremented in s1.on_entry
+        self.assertEqual(self.interpreter.context['x'], 2)  # x is incremented in s1.on_entry
 
     def test_auto_stop(self):
         self.interpreter.execute()
 
         self.assertTrue(self.interpreter.final)
-        self.assertEqual(self.interpreter._evaluator.context['x'], 100)
+        self.assertEqual(self.interpreter.context['x'], 100)
 
 
 class ParallelExecutionTests(unittest.TestCase):
@@ -351,16 +351,19 @@ class BindTests(unittest.TestCase):
         other_interpreter = Interpreter(other_sc)
 
         self.interpreter.bind(other_interpreter)
-        self.assertEqual(self.interpreter._bound, [other_interpreter])
+        self.assertEqual(self.interpreter._bound, [other_interpreter.send])
 
         self.interpreter.send(Event('test'), internal=True)
         self.assertTrue(self.interpreter._events.pop(), Event('test'))
         self.assertTrue(other_interpreter._events.pop(), Event('test'))
 
-    def test_cannot_bind_self(self):
-        with self.assertRaises(ValueError):
-            self.interpreter.bind(self.interpreter)
+    def test_bind_callable(self):
+        other_sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
+        other_interpreter = Interpreter(other_sc)
 
-    def test_cannot_bind_anything(self):
-        with self.assertRaises(ValueError):
-            self.interpreter.bind(0)
+        self.interpreter.bind(other_interpreter.send)
+        self.assertEqual(self.interpreter._bound, [other_interpreter.send])
+
+        self.interpreter.send(Event('test'), internal=True)
+        self.assertTrue(self.interpreter._events.pop(), Event('test'))
+        self.assertTrue(other_interpreter._events.pop(), Event('test'))

@@ -1,3 +1,5 @@
+.. _communication:
+
 Communication between statecharts
 =================================
 
@@ -147,7 +149,7 @@ The execution of bound statecharts does not differ from the execution of unbound
 .. testcode:: buttons
 
     elevator.execute()
-    print('Current floor:', elevator._evaluator.context['current'])
+    print('Current floor:', elevator.context['current'])
 
 .. testoutput:: buttons
 
