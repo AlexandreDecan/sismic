@@ -1,0 +1,63 @@
+statechart:
+  name: Stopwatch
+  description: |
+    A simple stopwatch which support "start", "stop", "split", and "reset".
+    These features are triggered respectively using "start_button", "stop_button", "split_button",
+    and "reset_button".
+
+    The stopwatch sends an "updated" event each time the display is updated.
+    The value to display is stored in "display_time".
+
+    The statechart is composed of three parallel regions:
+     - A "timer" region which increments "elapsed_time" if timer is running
+     - A "split" region which stores the split/unsplit state
+     - A "display" region that refreshes the display
+  initial: active
+  on entry: |
+    elapsed_time = 0
+    split_time = 0
+    display_time = 0
+  states:
+    - name: active
+      parallel states:
+        - name: timer
+          initial: stopped
+          transitions:
+            - event: reset_button
+              action: elapsed_time = split_time = 0
+          states:
+            - name: running
+              transitions:
+                - event: stop_button
+                  target: stopped
+                - guard: after(1)
+                  target: running
+                  action: |
+                    elapsed_time += 1
+            - name: stopped
+              transitions:
+                - event: start_button
+                  target: running
+        - name: split
+          initial: split.off
+          states:
+            - name: split.on
+              transitions:
+                - event: split_button
+                  target: split.off
+                  action: split_time = 0
+            - name: split.off
+              transitions:
+                - event: split_button
+                  target: split.on
+                  action: split_time = elapsed_time
+        - name: display
+          transitions:
+            - guard: after(0.1)  # Refresh display every 100ms
+              target: display
+              action: |
+                if active('split.on'):
+                  display_time = split_time
+                else:
+                  display_time = elapsed_time
+                send(Event('updated'))
