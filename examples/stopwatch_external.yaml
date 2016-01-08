@@ -2,8 +2,7 @@ statechart:
   name: Stopwatch
   description: |
     A simple stopwatch which support "start", "stop", "split", and "reset".
-    These features are triggered respectively using "start_button", "stop_button", "split_button",
-    and "reset_button".
+    These features are triggered respectively using "start", "stop", "split", and "reset".
 
     The stopwatch expects a "stopwatch" object in its initial context.
     This object should support the following methods: "start", "stop", "split", "reset", and "unsplit".
@@ -14,29 +13,29 @@ statechart:
         - name: timer
           initial: stopped
           transitions:
-            - event: reset_button
+            - event: reset
               action: stopwatch.reset()
           states:
             - name: running
               transitions:
-                - event: stop_button
+                - event: stop
                   target: stopped
                   action: stopwatch.stop()
             - name: stopped
               transitions:
-                - event: start_button
+                - event: start
                   target: running
                   action: stopwatch.start()
-        - name: split
-          initial: split.off
+        - name: display
+          initial: actual time
           states:
-            - name: split.on
+            - name: actual time
               transitions:
-                - event: split_button
-                  target: split.off
-                  action: stopwatch.unsplit()
-            - name: split.off
-              transitions:
-                - event: split_button
-                  target: split.on
+                - event: split
+                  target: lap time
                   action: stopwatch.split()
+            - name: lap time
+              transitions:
+                - event: split
+                  target: actual time
+                  action: stopwatch.unsplit()

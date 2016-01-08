@@ -82,25 +82,25 @@ class StopwatchApplication(tk.Frame):
         self.w_timer.pack(side=tk.BOTTOM, fill=tk.X)
 
     def _start(self):
-        self.interpreter.send(Event('start_button'))
+        self.interpreter.send(Event('start'))
         self.w_btn_start['state'] = tk.DISABLED
         self.w_btn_stop['state'] = tk.NORMAL
 
     def _stop(self):
-        self.interpreter.send(Event('stop_button'))
+        self.interpreter.send(Event('stop'))
         self.w_btn_start['state'] = tk.NORMAL
         self.w_btn_stop['state'] = tk.DISABLED
 
     def _reset(self):
-        self.interpreter.send(Event('reset_button'))
+        self.interpreter.send(Event('reset'))
 
     def _split(self):
-        self.interpreter.send(Event('split_button'))
+        self.interpreter.send(Event('split'))
         self.w_btn_split['state'] = tk.DISABLED
         self.w_btn_unsplit['state'] = tk.NORMAL
 
     def _unsplit(self):
-        self.interpreter.send(Event('split_button'))
+        self.interpreter.send(Event('split'))
         self.w_btn_split['state'] = tk.NORMAL
         self.w_btn_unsplit['state'] = tk.DISABLED
 

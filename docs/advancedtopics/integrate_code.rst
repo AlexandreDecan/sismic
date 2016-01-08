@@ -40,8 +40,7 @@ triggered by external events. These events are described in the YAML definition 
 The whole logic of our stopwatch is contained in the statechart:
 
  - there is a region that updates the time every second,
- - there is a region that stores the state of the split feature, and
- - there is a region that refreshes the display.
+ - there is a region that refreshes the display, according to the split feature.
 
 Notice how the statechart sends an *updated* event when its display is refreshed.
 The value of this display is made available through the *display_time* variable of its context.
