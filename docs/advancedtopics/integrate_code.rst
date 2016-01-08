@@ -26,7 +26,7 @@ of Sismic's repository.
 In a nutshell, the stopwatch is a timer than can start, stop and reset. It also provides a
 split time feature and a display.
 
-.. image:: ../images/stopwatch.png
+.. image:: ../images/stopwatch_gui.png
 
 Unsurprisingly, the first example illustrates the first approach while the second examples illustrates the
 second one.
