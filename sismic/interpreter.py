@@ -18,7 +18,7 @@ class Interpreter:
     """
 
     def __init__(self, statechart: model.StateChart, evaluator_klass=None,
-                 ignore_contract: bool = False, initial_time: int = 0):
+                 ignore_contract: bool=False, initial_time: int=0):
         self._evaluator_klass = evaluator_klass
         self._evaluator = evaluator_klass(self) if evaluator_klass else PythonEvaluator(self)
         self._ignore_contract = ignore_contract
@@ -104,7 +104,7 @@ class Interpreter:
         self._bound.append(bound_callable)
         return self
 
-    def send(self, event: model.Event, internal: bool = False):
+    def send(self, event: model.Event, internal: bool=False):
         """
         Send an event to the interpreter, and add it into the event queue.
         Internal events are propagated to bound callable (see ``bind`` method).
@@ -123,7 +123,7 @@ class Interpreter:
             self._events.append(event)
         return self
 
-    def execute(self, max_steps: int = -1) -> list:
+    def execute(self, max_steps: int=-1) -> list:
         """
         Repeatedly calls ``execute_once()`` and return a list containing
         the returned values of ``execute_once()``.
