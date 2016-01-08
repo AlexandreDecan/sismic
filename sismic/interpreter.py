@@ -10,17 +10,18 @@ class Interpreter:
     A discrete interpreter that executes a statechart according to a semantic close to SCXML.
 
     :param statechart: statechart to interpret
-    :param evaluator_klass: An optional callable (eg. a class) that takes an interpreter as input and return a
-        ``Evaluator`` instance that will be used to initialize the interpreter.
-        By default, an ``PythonEvaluator`` will be used.
-    :param ignore_contract: set to True to ignore contract checking during the execution.
+    :param evaluator_klass: An optional callable (eg. a class) that takes an interpreter and an optional initial
+        context as input and return a ``Evaluator`` instance that will be used to initialize the interpreter.
+        By default, the ``PythonEvaluator`` class will be used.
+    :param initial_context: an optional initial context that will be provided to the evaluator.
+        By default, an empty context is provided
     :param initial_time: can be used to defined the initial value of the internal clock (see ``self.time``).
+    :param ignore_contract: set to True to ignore contract checking during the execution.
     """
 
     def __init__(self, statechart: model.StateChart, evaluator_klass=None,
-                 ignore_contract: bool=False, initial_time: int=0):
-        self._evaluator_klass = evaluator_klass
-        self._evaluator = evaluator_klass(self) if evaluator_klass else PythonEvaluator(self)
+                 initial_context: dict=None, initial_time: int=0, ignore_contract: bool=False):
+        self._evaluator = evaluator_klass(self, initial_context) if evaluator_klass else PythonEvaluator(self, initial_context)
         self._ignore_contract = ignore_contract
         self._initial_time = initial_time
         self._statechart = statechart

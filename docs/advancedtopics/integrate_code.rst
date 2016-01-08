@@ -4,7 +4,7 @@ Integrating Sismic into code
 ============================
 
 One can easily integrate code into a statechart (see :ref:`code_evaluation`).
-By providing an initial context to a :py:class:`~sismic.evaluator.Evaluator` instance, it is also easy
+By providing an initial context to a :py:class:`~sismic.interpreter.Interpreter` instance, it is also easy
 to inject external objects into a statechart.
 
 We now illustrate how one can integrate a statechart into code.

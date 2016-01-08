@@ -77,8 +77,11 @@ Using *Interpreter*
 -------------------
 
 A :py:class:`~sismic.interpreter.Interpreter` instance is constructed upon a :py:class:`~sismic.model.StateChart`
-instance and an optional callable that returns an :py:class:`~sismic.evaluator.Evaluator` (see :ref:`code_evaluation`).
-If no evaluator is specified, the :py:class:`~sismic.evaluator.PythonEvaluator` class will be used.
+instance and an optional callable that returns an :py:class:`~sismic.evaluator.Evaluator`.
+This callable must accept an interpreter and an initial execution context as input (see :ref:`code_evaluation`).
+If no evaluator is specified, the :py:class:`~sismic.evaluator.PythonEvaluator` class will be used with an empty
+initial context.
+This default evaluator can parse and interpret Python code in statecharts.
 
 Consider the following example.
 
