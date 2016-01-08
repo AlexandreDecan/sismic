@@ -164,19 +164,9 @@ The exception displays some relevant information to help debug:
      - Doors = <class 'Doors'>
 
 
-If you do not want the execution to be interrupted by such exceptions, you can set the ``silent_contract``
+If you do not want the execution to be interrupted by such exceptions, you can set the ``ignore_contract``
 parameter to ``True`` when constructing an ``Interpreter``.
-The exceptions will be stored and will be made available through
-the :py:attr:`~sismic.interpreter.Interpreter.failed_conditions` attribute of an interpreter.
+This way, no contract checking will be done during the execution.
 
-
-Notice that nested objects in :py:exc:`~sismic.testing.ConditionFailed` are copied using a shallow copy, not a deep copy.
-As a consequence, there is no guarantee that the value of their attributes did not change between the time at
-which the exception was initialized, and the time at which it is accessed.
-
-Here is how the copy is done:
-
-.. literalinclude:: ../sismic/testing.py
-    :pyobject: ConditionFailed.__init__
 
 

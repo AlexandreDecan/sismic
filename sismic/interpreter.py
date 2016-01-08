@@ -13,15 +13,15 @@ class Interpreter:
     :param evaluator_klass: An optional callable (eg. a class) that takes an interpreter as input and return a
         ``Evaluator`` instance that will be used to initialize the interpreter.
         By default, an ``PythonEvaluator`` will be used.
-    :param silent_contract: set to True to store ``ConditionFailed`` exceptions instead of raising them.
+    :param ignore_contract: set to True to ignore contract checking during the execution.
     :param initial_time: can be used to defined the initial value of the internal clock (see ``self.time``).
     """
 
     def __init__(self, statechart: model.StateChart, evaluator_klass=None,
-                 silent_contract: bool = False, initial_time: int=0):
+                 ignore_contract: bool = False, initial_time: int = 0):
         self._evaluator_klass = evaluator_klass
         self._evaluator = evaluator_klass(self) if evaluator_klass else PythonEvaluator(self)
-        self._silent_contract = silent_contract
+        self._ignore_contract = ignore_contract
         self._initial_time = initial_time
         self._statechart = statechart
 
@@ -30,7 +30,6 @@ class Interpreter:
         self._memory = {}  # History states memory
         self._configuration = set()  # Set of active states
         self._events = deque()  # Events queue
-        self._failed_conditions = []  # List of failed conditions, empty if not _silent_contract
         self._trace = []  # A list of micro steps
         self._bound = []  # List of bound event callbacks
 
@@ -79,15 +78,6 @@ class Interpreter:
         Boolean indicating whether this interpreter is in a final configuration.
         """
         return len(self._configuration) == 0
-
-    @property
-    def failed_conditions(self):
-        """
-        If ``silent_contract`` was set to ``True`` when this interpreter was initialized,
-        this list contains every ``model.ConditionFailed`` that occurred when a condition
-        was not satisfied.
-        """
-        return self._failed_conditions
 
     @property
     def trace(self):
@@ -140,7 +130,7 @@ class Interpreter:
         """
         self.__init__(self._statechart,
                       evaluator_klass=self._evaluator_klass,
-                      silent_contract=self._silent_contract,
+                      ignore_contract=self._ignore_contract,
                       initial_time=self._initial_time)
 
     def execute(self, max_steps: int = -1) -> list:
@@ -472,8 +462,11 @@ class Interpreter:
         :param obj: object with preconditions, postconditions or invariants
         :param cond_type: either *preconditions*, *postconditions* or *invariants*
         :param step: step in which the check occurs.
-        :raises ConditionFailed: if a condition fails and ``silent_contract`` was set to False.
+        :raises ConditionFailed: if a condition fails and ``ignore_contract`` is False.
         """
+        if self._ignore_contract:
+            return
+
         exception_klass = {'preconditions': testing.PreconditionFailed,
                            'postconditions': testing.PostconditionFailed,
                            'invariants': testing.InvariantFailed}[cond_type]
@@ -481,12 +474,8 @@ class Interpreter:
         unsatisfied_conditions = getattr(self._evaluator, 'evaluate_' + cond_type)(obj, getattr(step, 'event', None))
 
         for condition in unsatisfied_conditions:
-            exception = exception_klass(configuration=self.configuration, step=step, obj=obj,
+            raise exception_klass(configuration=self.configuration, step=step, obj=obj,
                                         assertion=condition, context=self._evaluator.context)
-            if self._silent_contract:
-                self._failed_conditions.append(exception)
-            else:
-                raise exception
 
     def __repr__(self):
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))

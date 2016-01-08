@@ -75,7 +75,6 @@ class ElevatorContractTests(unittest.TestCase):
 
     def test_do_not_raise(self):
         self.sc.invariants.append('False')
-        interpreter = Interpreter(self.sc, silent_contract=True)
+        interpreter = Interpreter(self.sc, ignore_contract=True)
         interpreter.send(Event('floorSelected', {'floor': 4}))
         interpreter.execute()
-        self.assertTrue(len(interpreter.failed_conditions) > 0)

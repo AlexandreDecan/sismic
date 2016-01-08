@@ -17,11 +17,11 @@ class ConditionFailed(AssertionError):
 
     def __init__(self, configuration=None, step=None, obj=None, assertion=None, context=None):
         super().__init__(self)
-        self._configuration = copy.copy(configuration)
-        self._step = copy.copy(step)
-        self._obj = copy.copy(obj)
-        self._assertion = copy.copy(assertion)
-        self._context = {k: copy.copy(v) for k, v in context.items()} if context else {}
+        self._configuration = configuration
+        self._step = step
+        self._obj = obj
+        self._assertion = assertion
+        self._context = context
 
     @property
     def configuration(self):
