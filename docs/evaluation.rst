@@ -52,12 +52,63 @@ When a :py:class:`~sismic.evaluator.PythonEvaluator` instance is initialized, a 
 
     evaluator = PythonEvaluator(initial_context={'x': 1, 'math': my_favorite_module})
 
-Depending on the situation (state entered, guard evaluation, etc.), the context is populated with additional
-entries. These entries are covered in the next section.
+For convenience, the initial context can be directly provided to an :py:class:`~sismic.interpreter.Interpreter`
+constructor.
+
+Notice that the initial context is evaluated *before* any code contained in the statechart.
+As a consequence, this implies that if a same variable name is used both in the initial context and
+in the YAML, the value set in the initial context will be overridden by the value set in the YAML definition.
+
+.. testsetup:: variable_override
+
+    from sismic.io import import_from_yaml
+    from sismic.interpreter import Interpreter
+
+.. testcode:: variable_override
+
+    yaml = """statechart:
+      name: example
+      on entry:
+        x = 1
+      initial: s
+      states:
+        - name: s
+    """
+
+    statechart = import_from_yaml(yaml)
+    interpreter = Interpreter(statechart, initial_context={'x': 2})
+    print(interpreter.context['x'])
+
+In this example, the value of ``x`` in the statechart is set to ``1`` while the initial context sets its
+value to ``2``. However, as the initial context is evaluated before the statechart, the value of
+``x`` is ``1``:
+
+.. testoutput:: variable_override
+
+    1
+
+This is a perfectly normal, expected behavior.
+If you want to define variables in your statechart that can be overridden by an initial context, you should
+check this variable does not exist in ``locals()``. For example, using
+
+.. testcode::
+
+    if not 'x' in locals():
+        x = 1
+
+or equivalently,
+
+.. testcode::
+
+    x = locals().get('x', 1)
 
 
 Features of the built-in Python evaluator
 *****************************************
+
+Depending on the situation (state entered, guard evaluation, etc.), the context is populated with additional
+entries. These entries are covered in the next section.
+
 
 .. autoclass:: sismic.evaluator.PythonEvaluator
     :noindex:
