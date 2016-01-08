@@ -3,8 +3,12 @@
 Integrating Sismic into code
 ============================
 
-To illustrate how one can integrate Sismic's statechart interpreter into code, consider the following
-stopwatch statechart. This example is also available in the *examples* directory.
+One can easily integrate code into a statechart (see :ref:`code_evaluation`).
+By providing an initial context to a :py:class:`~sismic.evaluator.Evaluator` instance, it is also easy
+to inject external objects into a statechart.
+
+We now illustrate how one can integrate a statechart into code.
+Consider the following stopwatch statechart, which is also available in the *examples* directory.
 In a nutshell, this example shows how to control a stopwatch timer from a graphical user interface.
 
 Stopwatch statechart
@@ -21,6 +25,8 @@ in *display_timer*.
 
 Stopwatch user interface
 ------------------------
+
+.. image:: ../images/stopwatch.png
 
 The statechart is executed and synchronized with a GUI defined using :py:mod:`Tkinter`.
 The key points for this code are:
