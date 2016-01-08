@@ -123,16 +123,6 @@ class Interpreter:
             self._events.append(event)
         return self
 
-    def reset(self):
-        """
-        Reset current interpreter to its initial state.
-        This also resets history states memory.
-        """
-        self.__init__(self._statechart,
-                      evaluator_klass=self._evaluator_klass,
-                      ignore_contract=self._ignore_contract,
-                      initial_time=self._initial_time)
-
     def execute(self, max_steps: int = -1) -> list:
         """
         Repeatedly calls ``execute_once()`` and return a list containing

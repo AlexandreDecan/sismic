@@ -147,7 +147,6 @@ and executed by the method.
 
     assert len(interpreter.execute(max_steps=10)) <= 10
 
-At any time, you can reset the simulator by calling :py:meth:`~sismic.interpreter.Interpreter.reset`.
 For convenience, a :py:class:`~sismic.model.StateChart` has an :py:meth:`~sismic.model.StateChart.events` method
 that returns the list of all possible events that can be interpreted by this statechart (other events will
 be consumed and ignored).
