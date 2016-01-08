@@ -42,8 +42,8 @@ The whole logic of our stopwatch is contained in the statechart:
  - there is a region that updates the time every second,
  - there is a region that refreshes the display, according to the split feature.
 
-Notice how the statechart sends an *updated* event when its display is refreshed.
-The value of this display is made available through the *display_time* variable of its context.
+Notice how the statechart sends an *refresh* event when its display is refreshed.
+The value of this display is exposed as an attribute of the received *refresh* event.
 
 .. literalinclude:: ../../examples/stopwatch.yaml
     :language: yaml

@@ -4,16 +4,14 @@ statechart:
     A simple stopwatch which support "start", "stop", "split", and "reset".
     These features are triggered respectively using "start", "stop", "split", and "reset".
 
-    The stopwatch sends an "updated" event each time the display is updated.
-    The value to display is stored in "display_time".
+    The stopwatch sends an "refresh" event each time the display is updated.
+    The value to display is attached to the event under the key "time".
 
     The statechart is composed of two parallel regions:
      - A "timer" region which increments "elapsed_time" if timer is running
      - A "display" region that refreshes the display according to the actual time/lap time feature
   initial: active
-  on entry: |
-    elapsed_time = 0
-    display_time = 0
+  on entry: elapsed_time = 0
   states:
     - name: active
       parallel states:
@@ -29,8 +27,7 @@ statechart:
                   target: stopped
                 - guard: after(1)
                   target: running
-                  action: |
-                    elapsed_time += 1
+                  action: elapsed_time += 1
             - name: stopped
               transitions:
                 - event: start
@@ -43,8 +40,7 @@ statechart:
                 - guard: after(0.1)
                   target: actual time
                   action: |
-                    display_time = elapsed_time
-                    send(Event('updated'))
+                    send(Event('refresh', {'time': elapsed_time}))
                 - event: split
                   target: lap time
             - name: lap time

@@ -41,11 +41,7 @@ class StopwatchApplication(tk.Frame):
         # Queue a call in 200ms on tk's mainloop
         self.after(200, self.run)
 
-        # One could update widgets or objects here if needed.
-        # For example, if "updated" event sending is removed from the statechart,
-        # the text of self.w_timer has to be manually updated:
-        #   self.w_timer['text'] = self.interpreter.context['display_time']
-        # Here we update the widget that contains the list of active states.
+        # Update the widget that contains the list of active states.
         self.w_states['text'] = 'active states: ' + ', '.join(self.interpreter.configuration)
 
     def create_widgets(self):
@@ -81,8 +77,8 @@ class StopwatchApplication(tk.Frame):
 
     def event_handler(self, event):
         # Update text widget when timer value is updated
-        if event.name == 'updated':
-            self.w_timer['text'] = self.interpreter.context['display_time']
+        if event.name == 'refresh':
+            self.w_timer['text'] = event.time
 
     def _start(self):
         self.interpreter.send(Event('start'))
