@@ -1,7 +1,8 @@
 import unittest
 from sismic import io
 from sismic.interpreter import Interpreter
-from sismic.stories import Story, Pause, Event, random_stories_generator
+from sismic.model import MacroStep, MicroStep
+from sismic.stories import *
 
 
 class StoryTests(unittest.TestCase):
@@ -38,3 +39,45 @@ class RandomStoryTests(unittest.TestCase):
     def test_number(self):
         self.assertEqual(len(list(random_stories_generator(self.story, number=10))), 10)
 
+
+class StoryFromTraceTests(unittest.TestCase):
+    def test_empty_trace(self):
+        trace = []
+        self.assertListEqual(story_from_trace(trace), [])
+
+    def test_events(self):
+        trace = [
+            MacroStep(0, [MicroStep(Event('a'))]),
+            MacroStep(0, [MicroStep(Event('b'))]),
+            MacroStep(0, [MicroStep(Event('c'))]),
+            MacroStep(0, [MicroStep(Event('d'))]),
+        ]
+        self.assertListEqual(story_from_trace(trace), [
+            Event('a'), Event('b'), Event('c'), Event('d')
+        ])
+
+    def test_pauses(self):
+        trace = [
+            MacroStep(0, []),
+            MacroStep(10, []),
+            MacroStep(10, []),
+            MacroStep(15, []),
+        ]
+        self.assertListEqual(story_from_trace(trace), [
+            Pause(10), Pause(5)
+        ])
+
+    def test_initial_pause(self):
+        trace = [MacroStep(10, [])]
+        self.assertListEqual(story_from_trace(trace), [Pause(10)])
+
+    def test_events_and_pauses(self):
+        trace = [
+            MacroStep(2, [MicroStep(Event('a'))]),
+            MacroStep(5, [MicroStep(Event('b'))]),
+            MacroStep(9, [MicroStep(Event('c'))]),
+            MacroStep(14, [MicroStep(Event('d'))]),
+        ]
+        self.assertListEqual(story_from_trace(trace), [
+            Pause(2), Event('a'), Pause(3), Event('b'), Pause(4), Event('c'), Pause(5), Event('d')
+        ])

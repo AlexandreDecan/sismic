@@ -70,3 +70,26 @@ def random_stories_generator(items, length: int=None, number: int=None):
         yield story
         number -= 1
 
+def story_from_trace(trace: list) -> Story:
+    """
+    Return a story that is built upon the given trace (a list of macro steps).
+
+    The story is composed of the same pauses and the same events than the ones
+    that generated the given trace. The use case is when you want to reproduce
+    the scenario of an observed behavior.
+
+    :param trace: A list of ``MacroStep`` instances.
+    :return: A story
+    """
+    story = Story()
+    time = 0
+
+    for macrostep in trace:
+        if macrostep.time > time:
+            story.append(Pause(macrostep.time - time))
+            time = macrostep.time
+
+        if macrostep.event:
+            story.append(macrostep.event)
+    return story
+

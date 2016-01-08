@@ -77,6 +77,7 @@ We expect this module to quickly growth and to provide many ways to automaticall
 Currently, the module contains the following helpers:
 
 .. automodule:: sismic.stories
-    :members: random_stories_generator
+    :members: random_stories_generator, story_from_trace
     :exclude-members: Story, Pause
     :noindex:
+
