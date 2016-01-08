@@ -45,6 +45,8 @@ The whole logic of our stopwatch is contained in the statechart:
 Notice how the statechart sends an *refresh* event when its display is refreshed.
 The value of this display is exposed as an attribute of the received *refresh* event.
 
+.. image:: ../images/stopwatch_statechart.png
+
 .. literalinclude:: ../../examples/stopwatch.yaml
     :language: yaml
 
