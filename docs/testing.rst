@@ -34,13 +34,13 @@ The run of such a *tester statechart* is driven by a specific sequence of events
 what happens during the execution of a *statechart under test*.
 
 For example, such a sequence contains *consumed* evnets, *entered* events, *exited* events, ...
-Take a careful look at the documentation of :py:func:`~sismic.testing.story_from_trace` to find out
+Take a careful look at the documentation of :py:func:`~sismic.testing.teststory_from_trace` to find out
 which events are generated for a story.
 
 This function provides an easy way to construct a story for *statechart testers* from the trace obtained
 by executing a *statechart under test*:
 
-.. autofunction:: sismic.testing.story_from_trace
+.. autofunction:: sismic.testing.teststory_from_trace
     :noindex:
 
 To summarize, if you want to test a *statechart under test* ``tested``, you need to:
@@ -48,7 +48,7 @@ To summarize, if you want to test a *statechart under test* ``tested``, you need
     1. construct a *tester statechart* ``tester`` that expresses the property you want to test.
     2. execute ``tested`` (using a story or directly by sending events).
     3. get its trace with ``trace = tested.trace``.
-    4. generate a new story from this trace with :py:func:`~sismic.testing.story_from_trace`.
+    4. generate a new story from this trace with :py:func:`~sismic.testing.teststory_from_trace`.
     5. tell this story to the *tester statechart* ``tester``.
 
 If ``tester`` ends in a final configuration, ie. ``tester.final`` holds, then the test is considered successful.

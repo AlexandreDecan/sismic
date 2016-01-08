@@ -82,9 +82,9 @@ class InvariantFailed(ConditionFailed):
     pass
 
 
-def story_from_trace(trace: list) -> Story:
+def teststory_from_trace(trace: list) -> Story:
     """
-    Return a story based on the given *trace*, a list of macro steps.
+    Return a test story based on the given *trace*, a list of macro steps.
 
     The story is constructed as follows:
 

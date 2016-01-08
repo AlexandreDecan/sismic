@@ -2,14 +2,14 @@ import unittest
 from sismic import io
 from sismic.interpreter import Interpreter
 from sismic.stories import Story, Pause, Event
-from sismic.testing import story_from_trace
+from sismic.testing import teststory_from_trace
 
 
 class StoryFromTraceTests(unittest.TestCase):
     def test_simple(self):
         interpreter = Interpreter(io.import_from_yaml(open('tests/yaml/simple.yaml')))
         Story([Pause(2), Event('goto s2'), Pause(3)]).tell(interpreter)
-        story = story_from_trace(interpreter.trace)
+        story = teststory_from_trace(interpreter.trace)
         expected = Story([Event('started'),
                           Event('entered', {'state': 's1'}),
                           Pause(2),
@@ -35,7 +35,7 @@ class ElevatorStoryTests(unittest.TestCase):
         story = Story([Event('floorSelected', {'floor': 8})])
         trace = story.tell(tested).trace
 
-        test_story = story_from_trace(trace)
+        test_story = teststory_from_trace(trace)
 
         tester = Interpreter(io.import_from_yaml(open('examples/tester_elevator_7th_floor_never_reached.yaml')))
         self.assertTrue(test_story.tell(tester).final)
@@ -45,7 +45,7 @@ class ElevatorStoryTests(unittest.TestCase):
         story = Story([Event('floorSelected', {'floor': 4}), Pause(2), Event('floorSelected', {'floor': 7})])
         trace = story.tell(tested).trace
 
-        test_story = story_from_trace(trace)
+        test_story = teststory_from_trace(trace)
 
         tester = Interpreter(io.import_from_yaml(open('examples/tester_elevator_7th_floor_never_reached.yaml')))
         self.assertFalse(test_story.tell(tester).final)
@@ -65,7 +65,7 @@ class ElevatorStoryTests(unittest.TestCase):
 
         for story in stories:
             tested = Interpreter(tested_sc)
-            test_story = story_from_trace(story.tell(tested).trace)
+            test_story = teststory_from_trace(story.tell(tested).trace)
 
             tester = Interpreter(tester_sc)
             self.assertTrue(test_story.tell(tester).final)
