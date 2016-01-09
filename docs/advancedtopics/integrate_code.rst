@@ -34,7 +34,7 @@ Let us first illustrate how to control a statechart through source code that exe
 
 Visually, the statechart looks as follows:
 
-.. image:: ../images/stopwatch_statechart.png
+.. image:: ../images/stopwatch_simulated.png
 
 The YAML file containing the  textual description of this statechart, is given below:
 
