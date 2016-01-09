@@ -4,7 +4,7 @@ Integrating statecharts into your code
 ======================================
 
 Sismic provides several ways to integrate executable statecharts into your Python source code.
-The simplest way is to directly *embed* the entire code in the statechart’s description. This was illustrated with the Elevator example in :ref:`code_evaluation`. Its code is part of the YAML file of the statechart, and interpreted by SISMIC during the statechart's execution.
+The simplest way is to directly *embed* the entire code in the statechart’s description. This was illustrated with the Elevator example in :ref:`code_evaluation`. Its code is part of the YAML file of the statechart, and interpreted by Sismic during the statechart's execution.
 
 In order to make a statechart communicate with the source code contained in the environment in which it is executed, there are basically two approaches:
 1. The statechart sends events to, or receives external events from the environment.
@@ -21,7 +21,7 @@ In this document, we will present the main differences between the second and th
 
 Essentially, the stopwatch simply displays a value, representing the elapsed time (expressed in seconds), which is initially 0. By clicking on the *start* button the stopwatch starts running. When clicking on *stop*, the stopwatch stops running. By using *split*, the time being displayed is temporarily frozen, although the stopwatch continues to run. Clicking on *unsplit* while continue to display the actual elapsed time. *reset* will restart from 0, and *quit* will quit the stopwatch application.
 
-All the source code and YAML files  for this example, discussed in more detail below, is available in the *examples* directory of SISMIC’s repository.
+All the source code and YAML files  for this example, discussed in more detail below, is available in the *examples* directory of Sismic’s repository.
 
 In a nutshell, the stopwatch is a timer than can start, stop and reset. It also provides a
 split time feature and a display.
