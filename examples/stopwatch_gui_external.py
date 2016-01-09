@@ -45,9 +45,9 @@ class StopwatchApplication(tk.Frame):
         self.w_timer['text'] = self.stopwatch.display()
 
     def run(self):
-        # Queue a call in 200ms on tk's mainloop
+        # Queue a call every 100ms on tk's mainloop
         self.interpreter.execute()
-        self.after(200, self.run)
+        self.after(100, self.run)
         self.w_states['text'] = 'active states: ' + ', '.join(self.interpreter.configuration)
 
     def create_widgets(self):

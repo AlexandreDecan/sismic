@@ -38,8 +38,8 @@ class StopwatchApplication(tk.Frame):
         self.interpreter.time = time.time()
         self.interpreter.execute()
 
-        # Queue a call in 200ms on tk's mainloop
-        self.after(200, self.run)
+        # Queue a call every 100ms on tk's mainloop
+        self.after(1000, self.run)
 
         # Update the widget that contains the list of active states.
         self.w_states['text'] = 'active states: ' + ', '.join(self.interpreter.configuration)

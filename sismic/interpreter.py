@@ -482,7 +482,7 @@ def run_in_background(interpreter: Interpreter, delay: float=0.05, callback=None
 
     :param interpreter: an interpreter
     :param delay: delay between each call to ``execute()``
-    :param callback: a function that accepts the result of ``execute_once``.
+    :param callback: a function that accepts the result of ``execute``.
     :return: started thread (instance of ``threading.Thread``)
     """
     import time
@@ -492,7 +492,7 @@ def run_in_background(interpreter: Interpreter, delay: float=0.05, callback=None
         starttime = time.time()
         while not interpreter.final:
             interpreter.time = time.time() - starttime
-            steps = interpreter.execute_once()
+            steps = interpreter.execute()
             if callback:
                 callback(steps)
             time.sleep(delay)
