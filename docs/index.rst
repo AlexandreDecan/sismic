@@ -44,8 +44,9 @@ In addition to this, contracts can be specified to express invariants, pre- and 
 The Sismic library is written in a modular way:
 
 - The semantics of the statechart interpreter is based on the specification of the SCXML semantics (with a few exceptions),
-and can be easily tuned to other semantics.
+  and can be easily tuned to other semantics.
 - While currently, contracts, guards and actions are expressed in Python, this support can be easily extended to other languages.
+
 
 Contents
 --------

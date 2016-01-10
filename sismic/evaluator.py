@@ -155,22 +155,22 @@ class PythonEvaluator(Evaluator):
 
     Depending on the method that is called, the context can expose additional values:
 
-     - Always:
+    - Always:
         - A ``time`` value that represents the current time exposed by the interpreter.
         - An ``active(name) -> bool`` Boolean function that takes a state name and return ``True`` if and only
           if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
           that makes use of this evaluator.
-     - On code execution:
+    - On code execution:
         - A ``send`` function that takes an event name and additional keyword parameters and fires an internal event with.
         - If the code is related to a transition, the ``event`` that fires the transition is exposed.
-     - On code evaluation:
+    - On code evaluation:
         - If the code is related to a transition, the ``event`` that fires the transition is exposed.
-     - On guard evaluation:
+    - On guard evaluation:
         - An ``after(sec) -> bool`` Boolean function that returns ``True`` if and only if the source state
           was entered more than *sec* seconds ago. The time is evaluated according to Interpreter's clock.
         - A ``idle(sec) -> bool`` Boolean function that returns ``True`` if and only if the source state
           did not fire a transition for more than *sec* ago. The time is evaluated according to Interpreter's clock.
-     - On postcondition or invariant:
+    - On postcondition or invariant:
         - A variable ``__old__`` that has an attribute ``x`` for every ``x`` in the context when either the state
           was entered (if the condition involves a state) or the transition was processed (if the condition
           involves a transition). The value of ``__old__.x`` is a shallow copy of ``x`` at that time.

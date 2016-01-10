@@ -20,10 +20,6 @@ By default, Sismic provides two built-in :py:class:`~sismic.evaluator.Evaluator`
  - A :py:class:`~sismic.evaluator.DummyEvaluator` that always evaluates to ``True`` and silently ignores
    ``action``, ``on entry`` and ``on exit``. Its context is an empty dictionary.
 
-
-The *context* of an evaluator
-*****************************
-
 An instance of :py:class:`~sismic.evaluator.PythonEvaluator` can evaluate and execute Python code specified in the statechart.
 The key point to understand how it works is the concept of ``context``, which is a dictionary-like structure that contains the data
 that is exposed to the code fragments contained in the statechart (ie. override ``__locals__``).
@@ -81,9 +77,10 @@ in the YAML, the value set in the initial context will be overridden by the valu
 
 In this example, the value of ``x`` in the statechart is set to ``1`` while the initial context sets its
 value to ``2``. However, as the initial context is evaluated before the statechart, the value of
-``x`` is ``1``:
+``x`` is ``1``.
 
 .. testoutput:: variable_override
+    :hide:
 
     1
 
@@ -104,10 +101,10 @@ or equivalently,
 
 
 Features of the built-in Python evaluator
-*****************************************
+-----------------------------------------
 
 Depending on the situation (state entered, guard evaluation, etc.), the context is populated with additional
-entries. These entries are covered in the next section.
+entries. These entries are covered in the docstring of a :py:class:`~sismic.evaluator.PythonEvaluator`:
 
 
 .. autoclass:: sismic.evaluator.PythonEvaluator
@@ -150,14 +147,3 @@ In order to understand how the evaluator works, the documentation of the :py:cla
 This allows the evaluator to keep track of the states that are entered or exited, and of the transitions that are
 processed.
 
-
-Examples
---------
-
-Consider the following statechart that performs simple arithmetic operations.
-
-.. literalinclude:: ../tests/yaml/actions.yaml
-   :language: yaml
-
-
-The statechart :ref:`here <yaml_example>` shows a more intricate example.

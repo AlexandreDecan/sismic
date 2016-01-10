@@ -13,7 +13,7 @@ there are basically two approaches:
 
 1. The statechart sends events to, or receives external events from the environment.
 2. The environment stores shared objects in the statechart’s initial context, and the statechart calls operations on
-these objects and/or accesses the variables contained in it.
+   these objects and/or accesses the variables contained in it.
 
 Of course, one could also use a hybrid approach, combining ideas from the three approches above.
 
