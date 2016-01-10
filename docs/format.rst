@@ -258,20 +258,3 @@ See `pykwalify <https://github.com/Grokzen/pykwalify/>`__ for more information a
 .. literalinclude:: ../sismic/schema.yaml
     :language: yaml
 
-
-
-Defining statecharts in Python
-------------------------------
-
-While not very convenient, it is technically possible to define a statechart using Python objects.
-The following section details the Python structure of a statechart.
-
-The module :py:mod:`sismic.model` contains several classes and mixins to define
-states, transitions and events. Apart from the mixin classes, it defines:
-
-.. automodule:: sismic.model
-    :members: Event, Transition, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState, StateChart
-    :member-order: bysource
-    :noindex:
-
-Consider the source of :py:mod:`sismic.io` as an example of how to construct a statechart using :py:mod:`sismic.model`.
