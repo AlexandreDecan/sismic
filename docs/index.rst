@@ -54,7 +54,7 @@ Contents
     :caption: Overview
     :maxdepth: 1
 
-    quickstart
+    installation
     format
     execution
     contract
