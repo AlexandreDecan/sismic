@@ -149,7 +149,7 @@ The execution of bound statecharts does not differ from the execution of unbound
 .. testcode:: buttons
 
     elevator.execute()
-    print('Current floor:', elevator.context['current'])
+    print('Current floor:', elevator.context.get('current'))
 
 .. testoutput:: buttons
 
