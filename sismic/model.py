@@ -11,9 +11,9 @@ class Event:
     :param data: additional data (mapping, dict-like)
     """
 
-    def __init__(self, name: str, data: dict = None):
+    def __init__(self, name: str, **additional_parameters):
         self.name = name
-        self.data = data if data else {}
+        self.data = additional_parameters
 
     def __eq__(self, other):
         return isinstance(other, Event) and self.name == other.name

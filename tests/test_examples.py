@@ -15,7 +15,7 @@ class SimulatorElevatorTests(unittest.TestCase):
         sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
         interpreter = Interpreter(sc)
 
-        interpreter.send(Event('floorSelected', {'floor': 4})).execute_once()
+        interpreter.send(Event('floorSelected', floor=4)).execute_once()
         self.assertEqual(interpreter._evaluator.context['destination'], 4)
         interpreter.execute_once()
         self.assertEqual(sorted(interpreter.configuration), ['active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'])
@@ -24,7 +24,7 @@ class SimulatorElevatorTests(unittest.TestCase):
         sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
         interpreter = Interpreter(sc)
 
-        interpreter.send(Event('floorSelected', {'floor': 4}))
+        interpreter.send(Event('floorSelected', floor=4))
         interpreter.execute()
         self.assertEqual(interpreter._evaluator.context['current'], 4)
         interpreter.time += 10
@@ -41,12 +41,12 @@ class WriterExecutionTests(unittest.TestCase):
 
     def test_output(self):
         scenario = [
-             Event('keyPress', {'key': 'bonjour '}),
+             Event('keyPress', key='bonjour '),
              Event('toggle'),
-             Event('keyPress', {'key': 'a '}),
+             Event('keyPress', key='a '),
              Event('toggle'),
              Event('toggle_bold'),
-             Event('keyPress', {'key': 'tous !'}),
+             Event('keyPress', key='tous !'),
              Event('leave')
         ]
 

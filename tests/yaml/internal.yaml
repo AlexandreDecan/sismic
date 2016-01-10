@@ -3,7 +3,7 @@ statechart:
   initial: active
   states:
     - name: active
-      on entry: send(Event('next'))
+      on entry: send('next')
       transitions:
         - target: s1
           event: next

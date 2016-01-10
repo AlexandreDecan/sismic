@@ -125,17 +125,17 @@ def teststory_from_trace(trace: list) -> Story:
             time = macrostep.time
 
         if macrostep.event:
-            story.append(Event('consumed', {'event': macrostep.event}))
+            story.append(Event('consumed', event=macrostep.event))
 
         for microstep in macrostep.steps:
             for state in microstep.exited_states:
-                story.append(Event('exited', {'state': state}))
+                story.append(Event('exited', state=state))
             if microstep.transition:
-                story.append(Event('processed', {'source': microstep.transition.from_state,
-                                                 'target': microstep.transition.to_state,
-                                                 'event': macrostep.event}))
+                story.append(Event('processed', source=microstep.transition.from_state,
+                                   target=microstep.transition.to_state,
+                                   event=macrostep.event))
             for state in microstep.entered_states:
-                story.append(Event('entered', {'state': state}))
+                story.append(Event('entered', state=state))
 
     story.append(Event('stopped'))
     return story

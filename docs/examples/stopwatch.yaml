@@ -40,7 +40,7 @@ statechart:
                 - guard: after(0.1)
                   target: actual time
                   action: |
-                    send(Event('refresh', {'time': elapsed_time}))
+                    send('refresh', time=elapsed_time)
                 - event: split
                   target: lap time
             - name: lap time

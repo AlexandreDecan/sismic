@@ -21,7 +21,7 @@ class PythonEvaluatorTests(unittest.TestCase):
             self.e._evaluate_code('a')
 
     def test_condition_on_event(self):
-        self.assertTrue(self.e._evaluate_code('event.data[\'a\'] == 1', {'event': Event('test', {'a': 1})}))
+        self.assertTrue(self.e._evaluate_code('event.data[\'a\'] == 1', {'event': Event('test', a=1)}))
         self.assertTrue(self.e._evaluate_code('event.name == \'test\'', {'event': Event('test')}))
 
     def test_execution(self):

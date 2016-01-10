@@ -161,7 +161,7 @@ class PythonEvaluator(Evaluator):
           if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
           that makes use of this evaluator.
      - On code execution:
-        - A ``send`` function that takes an ``Event`` (also exposed) and fires an internal event with.
+        - A ``send`` function that takes an event name and additional keyword parameters and fires an internal event with.
         - If the code is related to a transition, the ``event`` that fires the transition is exposed.
      - On code evaluation:
         - If the code is related to a transition, the ``event`` that fires the transition is exposed.
@@ -224,11 +224,12 @@ class PythonEvaluator(Evaluator):
         if not code:
             return
 
+        def send(name, **kwargs): self._interpreter.send(Event(name, **kwargs), internal=True)
+
         exposed_context = {
             'active': lambda s: s in self._interpreter.configuration,
             'time': getattr(self._interpreter, 'time', 0),
-            'Event': Event,
-            'send': lambda ev: self._interpreter.send(ev, internal=True),
+            'send': send,
         }
         exposed_context.update(additional_context if additional_context else {})
 

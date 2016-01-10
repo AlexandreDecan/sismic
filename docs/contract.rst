@@ -141,7 +141,7 @@ at runtime (as explained above) and may raise a subclass of :py:exc:`~sismic.tes
         statechart.states['movingUp'].preconditions[0] = 'current > destination'
 
         interpreter = Interpreter(statechart)
-        interpreter.send(Event('floorSelected', {'floor': 4}))
+        interpreter.send(Event('floorSelected', floor=4))
         interpreter.execute()
 
 Here we manually changed one of the preconditions such that it failed at runtime.

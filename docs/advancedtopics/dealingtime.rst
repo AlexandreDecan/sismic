@@ -51,7 +51,7 @@ We now ask our elevator to go to the 4th floor.
 
 .. testcode:: clock
 
-    interpreter.send(Event('floorSelected', data={'floor': 4}))
+    interpreter.send(Event('floorSelected', floor=4))
     interpreter.execute()
 
 The elevator should now be on the 4th floor.
@@ -131,7 +131,7 @@ For our example, we first ask the statechart to send to elevator to the 4th floo
 
 .. testcode:: realclock
 
-    interpreter.send(Event('floorSelected', data={'floor': 4}))
+    interpreter.send(Event('floorSelected', floor=4))
     interpreter.execute()
     print('Current floor:', interpreter.context['current'])
     print('Current time:', interpreter.time)
@@ -186,7 +186,7 @@ This is illustrated in the following example.
     interpreter = Interpreter(statechart, initial_time=time.time())
 
     # Send an initial event
-    interpreter.send(Event('floorSelected', data={'floor': 4}))
+    interpreter.send(Event('floorSelected', floor=4))
 
     while not interpreter.final:
         interpreter.time = time.time()

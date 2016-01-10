@@ -22,18 +22,18 @@ This would look as follows:
     from sismic.stories import Story, Pause, Event
 
     story = Story()
-    story.append(Event('floorSelected', data={'floor': 4}))
+    story.append(Event('floorSelected', floor=4))
     story.append(Pause(5))
-    story.append(Event('floorSelected', data={'floor': 2}))
+    story.append(Event('floorSelected', floor=2))
     story.append(Pause(10))
 
 For syntactical convenience, the same story can also be written more compactly using a Python iterable:
 
 .. testcode::
 
-    story = Story([Event('floorSelected', data={'floor': 4}),
+    story = Story([Event('floorSelected', floor=4),
                    Pause(5),
-                   Event('floorSelected', data={'floor': 2}),
+                   Event('floorSelected', floor=2),
                    Pause(10)])
 
 A instance of :py:class:`~sismic.stories.Story` exhibits a :py:meth:`~sismic.stories.Story.tell`
