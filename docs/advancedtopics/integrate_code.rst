@@ -7,6 +7,7 @@ Sismic provides several ways to integrate executable statecharts into your Pytho
 The simplest way is to directly *embed* the entire code in the statechart’s description. This was illustrated with the Elevator example in :ref:`code_evaluation`. Its code is part of the YAML file of the statechart, and interpreted by Sismic during the statechart's execution.
 
 In order to make a statechart communicate with the source code contained in the environment in which it is executed, there are basically two approaches:
+
 1. The statechart sends events to, or receives external events from the environment.
 2. The environment stores shared objects in the statechart’s initial context, and the statechart calls operations on these objects and/or accesses the variables contained in it.
 
