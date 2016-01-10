@@ -1,71 +1,64 @@
 .. _integrate_code:
 
-Integrating Sismic into code
-============================
+Integrating statecharts into your code
+======================================
 
-Sismic provides several ways to coexist the code and the statecharts.
+Sismic provides several ways to integrate executable statecharts into your Python source code.
+The simplest way is to directly *embed* the entire code in the statechart’s description. This was illustrated with the Elevator example in :ref:`code_evaluation`. Its code is part of the YAML file of the statechart, and interpreted by Sismic during the statechart's execution.
 
-The simplest approach is to directly integrate the code in statecharts.
-This code can be eaisly integrated in YAML files, and then executed by Sismic (see :ref:`code_evaluation`).
-However, this approach is quite limited: it does not allow the code to directly communicate
-with the environment in which the statechart is executed.
+In order to make a statechart communicate with the source code contained in the environment in which it is executed, there are basically two approaches:
+1. The statechart sends events to, or receives external events from the environment.
+2. The environment stores shared objects in the statechart’s initial context, and the statechart calls operations on these objects and/or accesses the variables contained in it.
 
-There are basically two ways to allow the communication between a statechart and its environment:
+Of course, one could also use a hybrid approach, combining ideas from the three approches above.
 
-1. The statechart contains both the behavior and the logic of your program, and you want to
-   control the statechart from outside. The environment communicates with your statechart using
-   events and exposed values.
-2. The statechart only contains the behavior of your program. The environment contains the logic,
-   and the program is controlled by the statechart.
+Running example
+---------------
 
-In this document, we introduce two examples involving the same object, a stopwatch timer, to show
-you how it is possible to make code and statecharts communicate.
-These examples (including both the YAML definition and the code) are available in the *examples* directory
-of Sismic's repository.
+In this document, we will present the main differences between the second and the third approach (see :ref:`code_evaluation` for the first approach), on the basis of a concrete example. The example illustrates how to implement a simple Graphical User Interface (GUI) whose behaviour is defined by a statechart. The example represents a simple stopwatch, that can be controlled by clicking on buttons defined in the GUI, as shown below:
+
+.. image:: ../images/stopwatch_gui.png
+
+Essentially, the stopwatch simply displays a value, representing the elapsed time (expressed in seconds), which is initially 0. By clicking on the *start* button the stopwatch starts running. When clicking on *stop*, the stopwatch stops running. By using *split*, the time being displayed is temporarily frozen, although the stopwatch continues to run. Clicking on *unsplit* while continue to display the actual elapsed time. *reset* will restart from 0, and *quit* will quit the stopwatch application.
+
+All the source code and YAML files  for this example, discussed in more detail below, is available in the *examples* directory of Sismic’s repository.
 
 In a nutshell, the stopwatch is a timer than can start, stop and reset. It also provides a
 split time feature and a display.
 
-.. image:: ../images/stopwatch_gui.png
 
-Unsurprisingly, the first example illustrates the first approach while the second examples illustrates the
-second one.
+Controlling a statechart from within the environment
+----------------------------------------------------
 
-Controlling the statechart within the environment
--------------------------------------------------
+Let us first illustrate how to control a statechart through source code that executes in the environment containing the statechart. The statechart's behaviour is triggered by external events sent to it by the source code. Conversely, the statechart itself can send events back to the source code. 
 
-In this situation, we want the statechart to be driven by the environment.
-In this example, the features of the stopwatch timer are contained in the statechart and are
-triggered by external events. These events are described in the YAML definition hereafter.
-The whole logic of our stopwatch is contained in the statechart:
+Visually, the statechart looks as follows:
 
- - there is a region that updates the time every second,
- - there is a region that refreshes the display, according to the split feature.
+.. image:: ../images/stopwatch_simulated.png
 
-Notice how the statechart sends an *refresh* event when its display is refreshed.
-The value of this display is exposed as an attribute of the received *refresh* event.
+The YAML file containing the  textual description of this statechart, is given below:
 
 .. literalinclude:: ../../examples/stopwatch.yaml
     :language: yaml
 
-The statechart is executed and synchronized with a graphical user interface defined using :py:mod:`Tkinter`.
-Each button is bind to a Python method in which the corresponding event is created and sent to the statechart.
-The timer value is displayed in the GUI each time the statechart sends an *updated* event (look at how we
-:py:meth:`~sismic.interpreter.Interpreter.bind` the interpreter with the GUI).
+We observe that the statechart contains an ``elapsed_time`` variable, that is updated every second while the stopwatch is in the *running* state. The statechart will modify its behaviour by receiving *start*, *stop*, *reset* and *split* events from its external environment. In parallel to this, every 100 milliseconds, the *display* state of the statechart sends a *refresh* event (parameterised by the ``time`` variable containing the ``elapsed_time`` value) back to its external environment. In the *lap time* state (reached through a *split* event) , this regular refreshing is stopped until a new *split* event is received.
 
-Finally, the ``run`` method, which is put in Tk's mainloop, updates the internal clock of the interpreter
-and executes the interpreter.
+The source code (shown below) that defines the GUI of the stopwatch, and that controls the statechart by sending it events, is implemented using the :py:mod:`Tkinter` library.
+Each button of the GUI is bound to a Python method in which the corresponding event is created and sent to the statechart.
+The statechart is *bound* to the source code by defining a new :py:class:`~sismic.interpreter.Interpreter` that contains the parsed YAML specification, and using the :py:meth:`~sismic.interpreter.Interpreter.bind` 
+method. The  ``event_handler`` passed to it allows the Python source code to receive events back from the statechart. In particular, the ``w_timer`` field of the GUI will be updated with a new value of the time whenever the statechart sends a *refresh* event.
+The ``run`` method, which is put in Tk's mainloop, updates the internal clock of the interpreter and executes the interpreter.
 
 .. literalinclude:: ../../examples/stopwatch_gui.py
     :language: python
 
 
-Controlling the environment within the statechart
--------------------------------------------------
+Controlling the environment from within the statechart
+------------------------------------------------------
 
-For this second example, the statechart only contains the behavior of a stopwatch, not its logic.
-The logic is defined in Python, and will be exposed to the statechart.
-Here is a (quick and dirty) stopwatch in Python:
+In this second example, we basically reverse the idea: now the Pyhton code that resides in the environment contains the logic (e.g., the ``elapsed_time`` variable), and this code is exposed to, and controlled by, a statechart that represents the main loop of the program and calls the necessary methods in the source code. These method calls are associated to actions on the statechart's transitions. 
+
+The main difference with the solution above is that the statechart is no longer a *black box*, since it needs to be aware of the source code, in particular the methods it needs to call in this code.  An example of the Python code that is controlled by the statechart is given below:
 
 .. literalinclude:: ../../examples/stopwatch.py
     :pyobject: Stopwatch
@@ -74,17 +67,14 @@ The statechart expects such a ``Stopwatch`` instance to be created and provided 
 Recall that an :py:class:`~sismic.interpreter.Interpreter` accepts an optional ``initial_context`` parameter.
 In this example, ``initial_context={'stopwatch': Stopwatch()}``.
 
-The statechart is a lot simpler than the previous one. It is composed of two regions, one that handles the
-running status of the stopwatch, and a second one that handles its split features.
+The statechart is simpler than in the previous example: one parallel region handles the
+running status of the stopwatch, and a second one handles its split features.
 
 .. literalinclude:: ../../examples/stopwatch_external.yaml
     :language: yaml
 
-Finally, the code for our GUI does not differ much from the previous one.
-Basically, there is no more a need for the GUI to listen to the events sent by the interpreter.
-We only need to be able to send events to the statechart using ``send``. The *binding* between the
-statechart and the GUI is done using the ``stopwatch`` object passed through the initial context of the interpreter,
-not anymore using the ``bind`` method of the interpreter.
+The Python code of the GUI no longer needs to *listen* to the events sent by the interpreter. It should, of course, continue to send events (corresponding to button presses) to the statechart using ``send``. The *binding* between the
+statechart and the GUI is now achieved differently, by simply passing the ``stopwatch`` object to the :py:class:`~sismic.interpreter.Interpreter` as its ``initial_context``.
 
 .. literalinclude:: ../../examples/stopwatch_gui_external.py
     :language: python
