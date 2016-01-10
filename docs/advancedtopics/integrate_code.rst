@@ -16,28 +16,30 @@ Of course, one could also use a hybrid approach, combining ideas from the three 
 Running example
 ---------------
 
-In this document, we will present the main differences between the second and the third approach (see :ref:`code_evaluation` for the first approach), on the basis of a concrete example. The example illustrates how to implement a simple Graphical User Interface (GUI) whose behaviour is defined by a statechart. The example represents a simple stopwatch, that can be controlled by clicking on buttons defined in the GUI, as shown below:
+In this document, we will present the main differences between the second and the third approach (see :ref:`code_evaluation` for the first approach), on the basis of a simple example of a Graphical User Interface (GUI) whose behaviour is defined by a statechart. All the source code and YAML files  for this example, discussed in more detail below, is available in the *examples* directory of Sismic’s repository.
+
+The example represents a simple stopwatch, i.e., a timer than can be started, stopped and reset. It also provides a
+split time feature and a display of the elapsed time. A button-controlled GUI of such a stopwatch looks as follows (inactive buttons are greyed out):
 
 .. image:: ../images/stopwatch_gui.png
 
 Essentially, the stopwatch simply displays a value, representing the elapsed time (expressed in seconds), which is initially 0. By clicking on the *start* button the stopwatch starts running. When clicking on *stop*, the stopwatch stops running. By using *split*, the time being displayed is temporarily frozen, although the stopwatch continues to run. Clicking on *unsplit* while continue to display the actual elapsed time. *reset* will restart from 0, and *quit* will quit the stopwatch application.
 
-All the source code and YAML files  for this example, discussed in more detail below, is available in the *examples* directory of Sismic’s repository.
+The idea is that the buttons will trigger state changes and actions carried out by an underlying statechart. Taking abstraction of the concrete implementation, the statechart would essentially look as follows, with one main *active* state containing two parallel substates *timer* and *display*.
 
-In a nutshell, the stopwatch is a timer than can start, stop and reset. It also provides a
-split time feature and a display.
+.. image:: ../images/stopwatch0.png
 
 
 Controlling a statechart from within the environment
 ----------------------------------------------------
 
-Let us first illustrate how to control a statechart through source code that executes in the environment containing the statechart. The statechart's behaviour is triggered by external events sent to it by the source code. Conversely, the statechart itself can send events back to the source code. 
+Let us illustrate how to control a statechart through source code that executes in the environment containing the statechart. The statechart's behaviour is triggered by external events sent to it by the source code each time one of the buttons in the GUI is pressed. Conversely, the statechart itself can send events back to the source code to update its display. 
 
-Visually, the statechart looks as follows:
+This statechart looks as follows:
 
-.. image:: ../images/stopwatch_simulated.png
+.. image:: ../images/stopwatch2.png
 
-The YAML file containing the  textual description of this statechart, is given below:
+Here is the YAML file containing the  textual description of this statechart:
 
 .. literalinclude:: ../../examples/stopwatch.yaml
     :language: yaml
@@ -57,9 +59,7 @@ The ``run`` method, which is put in Tk's mainloop, updates the internal clock of
 Controlling the environment from within the statechart
 ------------------------------------------------------
 
-In this second example, we basically reverse the idea: now the Pyhton code that resides in the environment contains the logic (e.g., the ``elapsed_time`` variable), and this code is exposed to, and controlled by, a statechart that represents the main loop of the program and calls the necessary methods in the source code. These method calls are associated to actions on the statechart's transitions. 
-
-The main difference with the solution above is that the statechart is no longer a *black box*, since it needs to be aware of the source code, in particular the methods it needs to call in this code.  An example of the Python code that is controlled by the statechart is given below:
+In this second example, we basically reverse the idea: now the Python code that resides in the environment contains the logic (e.g., the ``elapsed_time`` variable), and this code is exposed to, and controlled by, a statechart that represents the main loop of the program and calls the necessary methods in the source code. These method calls are associated to actions on the statechart's transitions. With this solution, the statechart is no longer a *black box*, since it needs to be aware of the source code, in particular the methods it needs to call in this code.  An example of the Python code that is controlled by the statechart is given below:
 
 .. literalinclude:: ../../examples/stopwatch.py
     :pyobject: Stopwatch
@@ -70,6 +70,8 @@ In this example, ``initial_context={'stopwatch': Stopwatch()}``.
 
 The statechart is simpler than in the previous example: one parallel region handles the
 running status of the stopwatch, and a second one handles its split features.
+
+.. image:: ../images/stopwatch3.png
 
 .. literalinclude:: ../../examples/stopwatch_external.yaml
     :language: yaml
