@@ -6,13 +6,13 @@ from sismic.model import Event
 
 class SimulatorElevatorTests(unittest.TestCase):
     def test_init(self):
-        sc = io.import_from_yaml(open('examples/elevator.yaml'))
+        sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
         interpreter = Interpreter(sc)
 
         self.assertEqual(len(interpreter.configuration), 5)
 
     def test_floor_selection(self):
-        sc = io.import_from_yaml(open('examples/elevator.yaml'))
+        sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
         interpreter = Interpreter(sc)
 
         interpreter.send(Event('floorSelected', {'floor': 4})).execute_once()
@@ -21,7 +21,7 @@ class SimulatorElevatorTests(unittest.TestCase):
         self.assertEqual(sorted(interpreter.configuration), ['active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'])
 
     def test_doorsOpen(self):
-        sc = io.import_from_yaml(open('examples/elevator.yaml'))
+        sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
         interpreter = Interpreter(sc)
 
         interpreter.send(Event('floorSelected', {'floor': 4}))
@@ -36,7 +36,7 @@ class SimulatorElevatorTests(unittest.TestCase):
 
 class WriterExecutionTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('examples/writer_options.yaml'))
+        self.sc = io.import_from_yaml(open('docs/examples/writer_options.yaml'))
         self.interpreter = Interpreter(self.sc)
 
     def test_output(self):
@@ -61,8 +61,8 @@ class WriterExecutionTests(unittest.TestCase):
 
 class RemoteElevatorTests(unittest.TestCase):
     def setUp(self):
-        self.elevator = Interpreter(io.import_from_yaml(open('examples/elevator.yaml')))
-        self.buttons = Interpreter(io.import_from_yaml(open('examples/elevator_buttons.yaml')))
+        self.elevator = Interpreter(io.import_from_yaml(open('docs/examples/elevator.yaml')))
+        self.buttons = Interpreter(io.import_from_yaml(open('docs/examples/elevator_buttons.yaml')))
         self.buttons.bind(self.elevator)
 
     def test_button(self):

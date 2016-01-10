@@ -41,9 +41,9 @@ For example, assume we have three instances of :py:class:`~sismic.interpreter.In
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter
 
-    interpreter_1 = Interpreter(import_from_yaml(open('../examples/elevator.yaml')))
-    interpreter_2 = Interpreter(import_from_yaml(open('../examples/elevator_buttons.yaml')))
-    interpreter_3 = Interpreter(import_from_yaml(open('../examples/elevator_buttons.yaml')))
+    interpreter_1 = Interpreter(import_from_yaml(open('examples/elevator.yaml')))
+    interpreter_2 = Interpreter(import_from_yaml(open('examples/elevator_buttons.yaml')))
+    interpreter_3 = Interpreter(import_from_yaml(open('examples/elevator_buttons.yaml')))
 
 .. testcode:: bind
 
@@ -101,7 +101,7 @@ The statechart operates autonomously, provided that we send such events.
 Let us define a new statechart that models a panel of buttons for our elevator.
 For example, we consider that our panel has 4 buttons numbered 0 to 3.
 
-.. literalinclude:: ../../examples/elevator_buttons.yaml
+.. literalinclude:: /examples/elevator_buttons.yaml
    :language: yaml
 
 As you can see in the YAML version of this statechart, the panel expects an event for each button:
@@ -117,8 +117,8 @@ We bind our panel with our elevator, such that the panel can control the elevato
     from sismic.interpreter import Interpreter
     from sismic.model import Event
 
-    elevator = Interpreter(import_from_yaml(open('../examples/elevator.yaml')))
-    buttons = Interpreter(import_from_yaml(open('../examples/elevator_buttons.yaml')))
+    elevator = Interpreter(import_from_yaml(open('examples/elevator.yaml')))
+    buttons = Interpreter(import_from_yaml(open('examples/elevator_buttons.yaml')))
 
     # Elevator will receive events from buttons
     buttons.bind(elevator)

@@ -45,7 +45,7 @@ a scenario.
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter
 
-    with open('../examples/elevator.yaml') as f:
+    with open('examples/elevator.yaml') as f:
         statechart = import_from_yaml(f)
 
     interpreter = Interpreter(statechart)

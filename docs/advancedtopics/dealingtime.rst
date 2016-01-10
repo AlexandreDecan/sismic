@@ -40,7 +40,7 @@ First, one should load the statechart and initialize the interpreter:
     from sismic.interpreter import Interpreter
     from sismic.model import Event
 
-    with open('../examples/elevator.yaml') as f:
+    with open('examples/elevator.yaml') as f:
         statechart = import_from_yaml(f)
 
     interpreter = Interpreter(statechart)
@@ -110,7 +110,7 @@ Let us first initialize an interpreter using one of our statechart example, the 
     from sismic.interpreter import Interpreter
     from sismic.model import Event
 
-    with open('../examples/elevator.yaml') as f:
+    with open('examples/elevator.yaml') as f:
         statechart = import_from_yaml(f)
 
     interpreter = Interpreter(statechart)
@@ -179,7 +179,7 @@ This is illustrated in the following example.
     import time
 
     # Load statechart and create an interpreter
-    with open('../examples/elevator.yaml') as f:
+    with open('examples/elevator.yaml') as f:
         statechart = import_from_yaml(f)
 
     # Set the initial time
@@ -220,7 +220,7 @@ function that run an interpreter in a thread, and does the job of synchronizing 
     from sismic.interpreter import Interpreter, run_in_background
     from sismic.model import Event
 
-    with open('../examples/microwave.yaml') as f:
+    with open('examples/microwave.yaml') as f:
         interpreter = Interpreter(import_from_yaml(f))
 
     run_in_background(interpreter, delay=0.01)

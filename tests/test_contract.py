@@ -5,10 +5,9 @@ from sismic.model import Event, Transition, StateChart, StateMixin
 from sismic.testing import PreconditionFailed, PostconditionFailed, InvariantFailed
 
 
-
 class ElevatorContractTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('examples/elevator.yaml'))
+        self.sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
         self.interpreter = Interpreter(self.sc)
 
     def test_no_error(self):
