@@ -31,28 +31,28 @@ class StoryFromTraceTests(unittest.TestCase):
 
 class ElevatorStoryTests(unittest.TestCase):
     def test_7th_floor_never_reached(self):
-        tested = Interpreter(io.import_from_yaml(open('examples/elevator.yaml')))
+        tested = Interpreter(io.import_from_yaml(open('docs/examples/elevator.yaml')))
         story = Story([Event('floorSelected', {'floor': 8})])
         trace = story.tell(tested).trace
 
         test_story = teststory_from_trace(trace)
 
-        tester = Interpreter(io.import_from_yaml(open('examples/tester_elevator_7th_floor_never_reached.yaml')))
+        tester = Interpreter(io.import_from_yaml(open('docs/examples/tester_elevator_7th_floor_never_reached.yaml')))
         self.assertTrue(test_story.tell(tester).final)
 
     def test_7th_floor_never_reached_fails(self):
-        tested = Interpreter(io.import_from_yaml(open('examples/elevator.yaml')))
+        tested = Interpreter(io.import_from_yaml(open('docs/examples/elevator.yaml')))
         story = Story([Event('floorSelected', {'floor': 4}), Pause(2), Event('floorSelected', {'floor': 7})])
         trace = story.tell(tested).trace
 
         test_story = teststory_from_trace(trace)
 
-        tester = Interpreter(io.import_from_yaml(open('examples/tester_elevator_7th_floor_never_reached.yaml')))
+        tester = Interpreter(io.import_from_yaml(open('docs/examples/tester_elevator_7th_floor_never_reached.yaml')))
         self.assertFalse(test_story.tell(tester).final)
 
     def test_elevator_moves_after_10s(self):
-        tested_sc = io.import_from_yaml(open('examples/elevator.yaml'))
-        tester_sc = io.import_from_yaml(open('examples/tester_elevator_moves_after_10s.yaml'))
+        tested_sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
+        tester_sc = io.import_from_yaml(open('docs/examples/tester_elevator_moves_after_10s.yaml'))
 
         stories = [
             Story([Event('floorSelected', {'floor': 4})]),

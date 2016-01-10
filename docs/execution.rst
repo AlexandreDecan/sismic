@@ -88,7 +88,7 @@ Consider the following example.
 .. testsetup:: interpreter
 
     from sismic.io import import_from_yaml
-    my_statechart = import_from_yaml(open('../examples/elevator.yaml'))
+    my_statechart = import_from_yaml(open('examples/elevator.yaml'))
 
 .. testcode:: interpreter
 

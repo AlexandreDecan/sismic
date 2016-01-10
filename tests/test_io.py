@@ -14,7 +14,7 @@ class ImportFromYamlTests(unittest.TestCase):
         files = ['elevator', 'elevator_contract', 'microwave', 'tester_elevator_7th_floor_never_reached',
                  'tester_elevator_moves_after_10s', 'writer_options']
         for f in files:
-            io.import_from_yaml(open(os.path.join('examples', f+'.yaml')))
+            io.import_from_yaml(open(os.path.join('docs', 'examples', f+'.yaml')))
 
 
 class ExportToDictYAMLTests(unittest.TestCase):
@@ -30,6 +30,6 @@ class ExportToDictYAMLTests(unittest.TestCase):
         files = ['elevator', 'elevator_contract', 'microwave', 'tester_elevator_7th_floor_never_reached',
                  'tester_elevator_moves_after_10s', 'writer_options']
         for f in files:
-            d = io.export_to_yaml(io.import_from_yaml(open(os.path.join('examples', f+'.yaml'))))
+            d = io.export_to_yaml(io.import_from_yaml(open(os.path.join('docs', 'examples', f+'.yaml'))))
             # check
             io.import_from_yaml(d)
