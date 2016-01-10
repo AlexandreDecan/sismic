@@ -197,13 +197,18 @@ Instead, it **must** either define an event or define a guard to determine when 
 .. _yaml_example:
 
 
-Examples of YAML statecharts
-----------------------------
+Statechart examples
+--------------------
 
 Elevator
 ********
 
-The Elevator statechart is one of the running examples in this documentation.
+The Elevator statechart is one of the running examples in this documentation. Its visual description (currently not supported by Sismic) could look as follows:
+
+.. image:: ../images/elevator.png
+
+The corresponding YAML description is given below. To make the statechart self-contained, a Python class ``Doors``
+is included containing two methods ``open()`` and ``close()`` and a boolean variable ``opened``. Upon entering in the *active* state, a ``doors`` object of this class will be created and initialised by setting the value of ``opened`` to ``True``.
 
 .. literalinclude:: ../examples/elevator.yaml
    :language: yaml
@@ -211,8 +216,9 @@ The Elevator statechart is one of the running examples in this documentation.
 Microwave
 *********
 
-Notice the use of ``description``. This field will be ignored when imported into
-Sismic, but can be used to provide additional information about the statechart.
+The Microwave statechart contains 4 parallel states *door*, *heating*, *turntable* and *lamp*.
+
+Notice the use of the ``description`` field in the YAML specification given below. This field will be ignored when imported into Sismic, but can be used to provide additional information about the statechart to the user.
 
 .. literalinclude:: ../examples/microwave.yaml
     :language: yaml
