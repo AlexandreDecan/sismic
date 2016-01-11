@@ -97,10 +97,11 @@ A *final state* can be declared by specifying the ``type: final`` property:
     - name: s1
       type: final
 
-Shallow and deep history sates
-******************************
+Shallow and deep history states
+*******************************
 
 *History states* can be declared as follows:
+
 The ``type: shallow history`` property declares a *shallow history* state;
 the ``type: deep history`` property declares a *deep history* state.
 We refer to the semantics of UML and SCXML for the difference between both types of histories.
@@ -166,7 +167,7 @@ instead of ``states`` in this example.
 Transitions
 ***********
 
-*Transitions* between States, compound states and parallel states can be declared with the ``transitions`` field.
+*Transitions* between states, compound states and parallel states can be declared with the ``transitions`` field.
 Transitions typically specify a target state using the ``target`` field:
 
 .. code:: yaml
