@@ -98,7 +98,7 @@ A *final state* can be declared by specifying the ``type: final`` property:
       type: final
 
 Shallow and deep history states
-******************************
+*******************************
 
 *History states* can be declared as follows:
 
