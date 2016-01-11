@@ -1,4 +1,3 @@
 recursive-include docs *
-include sismic/schema.yaml
 include README.rst
 include LICENSE
