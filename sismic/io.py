@@ -6,7 +6,7 @@ from .model import Event, Transition, StateChart, BasicState, CompoundState, Ort
 from .model import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 
 
-SCHEMA_PATH = os.path.join(os.path.dirname(__file__), '_schema.py')
+SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')
 
 
 def import_from_yaml(statechart: str, validate_yaml=True, validate_statechart=True) -> StateChart:
