@@ -25,22 +25,6 @@ More specifically, Sismic provides:
 - A design-by-contract approach for statecharts
 - A unit testing framework for statecharts, including generation of test scenarios
 
-Sismic provides full support for the majority of the UML 2 statechart concepts:
-
-- simple states, composite states, orthogonal (parallel) states, initial and final states, shallow and deep history states
-- state transitions, guarded transitions, automatic (eventless) transitions, internal transitions
-- statechart variables and their initialisation
-- state entry and exit actions, transition actions
-- internal and external events, parametrized events, timed events
-
-In addition to this, contracts can be specified to express invariants, pre- and postconditions on states, transitions and the statechart itself.
-
-The Sismic library is written in a modular way:
-
-- The semantics of the statechart interpreter is based on the specification of the SCXML semantics (with a few exceptions),
-  and can be easily tuned to other semantics.
-- While currently, contracts, guards and actions are expressed in Python, this support can be easily extended to other languages.
-
 
 Installation
 ------------
@@ -56,15 +40,23 @@ Sismic requires Python >=3.4 but should also work with Python 3.3.
 Documentation
 -------------
 
-The latest version of the documentation is available at http://sismic.readthedocs.org/
-.
+The latest version of the documentation is available at `sismic.readthedocs.org <http://sismic.readthedocs.org/>`_.
+It can also be directly built from the `docs <https://github.com/AlexandreDecan/sismic/tree/master/docs>`_ directory using Sphinx.
 
-It can also be directly built from the ``docs/`` directory using Sphinx.
+Many examples are available in `docs/examples <https://github.com/AlexandreDecan/sismic/tree/master/docs/examples>`_.
+
+Changelog
+---------
+
+See `CHANGELOG.rst <http://sismic.readthedocs.org/en/latest/changelog.html>`_.
 
 Credits
 -------
 
-Developed by Alexandre Decan at the University of Mons (Belgium).
+The Sismic library for Python (version 3.4 or higher)
+is developed at the `Software Engineering Lab <http://informatique.umons.ac.be/genlog>`_
+of the `University of Mons <http://www.umons.ac.be>`_
+as part of an ongoing software modeling research project.
 
-GNU Lesser General Public License, version 3.
-
+Sismic is released publicly under the `GNU Lesser General Public Licence version 3.0 (LGPLv3)
+<http://www.gnu.org/licenses/lgpl-3.0.html>`_.

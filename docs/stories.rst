@@ -1,5 +1,5 @@
-Defining reproducible scenarios
-===============================
+Reproducible scenarios
+======================
 
 While events can be sent to an interpreter using its ``send`` method, it can be very convenient
 to define and store scenarios, ie. sequences or traces of events, that can control the execution of a statechart.

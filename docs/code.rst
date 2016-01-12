@@ -1,7 +1,7 @@
 .. _code_evaluation:
 
-Code contained in statecharts
-=============================
+Include code in statecharts
+===========================
 
 A statechart can specify code that needs to be executed under some circumstances.
 For example, the ``on entry`` property on a statechart, the ``guard`` or ``action`` on a transition or the
@@ -30,12 +30,14 @@ As an example, consider the following partial statechart definition.
 
     statechart:
     # ...
-    on entry: x = 1
+    on entry: |
+      x = 1
+      y = 0
     states:
       - name: s1
         on entry: x += 1
 
-When the statechart is initialized, the ``context`` of a :py:class:`~sismic.evaluator.PythonEvaluator` is ``{'x': 1}``.
+When the statechart is initialized, the ``context`` of a :py:class:`~sismic.evaluator.PythonEvaluator` is ``{'x': 1, 'y': 0}``.
 When *s1* is entered, the code will be evaluated with this context.
 After the execution of ``x += 1``, the context associates ``2`` to ``x``.
 

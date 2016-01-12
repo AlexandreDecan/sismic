@@ -1,7 +1,7 @@
 .. _integrate_code:
 
-Integrating statecharts into your code
-======================================
+Integrate statecharts into your code
+====================================
 
 Sismic provides several ways to integrate executable statecharts into your Python source code.
 The simplest way is to directly *embed* the entire code in the statechart’s description. This was illustrated with the

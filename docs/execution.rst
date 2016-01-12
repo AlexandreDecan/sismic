@@ -1,4 +1,4 @@
-Executing statecharts
+Statecharts execution
 =====================
 
 .. _semantic:

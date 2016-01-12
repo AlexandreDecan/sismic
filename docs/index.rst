@@ -25,12 +25,11 @@ About
 *Sismic* is a recursive acronym that stands for *Sismic Interactive Statechart Model Interpreter and Checker*.
 
 The Sismic library for Python (version 3.4 or higher)
-is developed at the Software Engineering Lab (http://informatique.umons.ac.be/genlog/)
-of the University of Mons (http://www.umons.ac.be)
+is developed at the `Software Engineering Lab <http://informatique.umons.ac.be/genlog>`_
+of the `University of Mons <http://www.umons.ac.be>`_
 as part of an ongoing software modeling research project.
-
-Sismic is released publicly under the GNU Lesser General Public Licence version 3.0 (LGPLv3).
-http://www.gnu.org/licenses/lgpl-3.0.html
+Sismic is released publicly under the `GNU Lesser General Public Licence version 3.0 (LGPLv3)
+<http://www.gnu.org/licenses/lgpl-3.0.html>`_.
 
 Sismic provides a set of tools to define, validate, simulate, execute and test statecharts.
 Statecharts are a well-known visual modeling language for representing the executable behavior
@@ -65,8 +64,6 @@ The Sismic library is written in a modular way:
 - Statecharts can invoke Python code defined in their environment
 - Statecharts can communicate with one another by sending events
 
-Contents
---------
 
 .. toctree::
     :caption: Overview
@@ -75,10 +72,11 @@ Contents
     installation
     format
     execution
-    contract
+    code
     stories
+    contract
     testing
-    evaluation
+
 
 .. toctree::
     :caption: Advanced topics
@@ -88,6 +86,12 @@ Contents
     advancedtopics/communication
     advancedtopics/integrate_code
     advancedtopics/semantics
+
+.. toctree::
+    :caption: Misc
+    :maxdepth: 1
+
+    changelog
     api
 
 

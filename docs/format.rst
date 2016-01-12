@@ -1,5 +1,5 @@
-Defining statecharts
-====================
+Statecharts definition
+======================
 
 About statecharts
 -----------------
