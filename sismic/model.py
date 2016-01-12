@@ -325,7 +325,7 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
     @property
     def states(self):
         """
-        A dictionary that associates a ``StateMixin`` to a state name
+        A dictionary that associates a state name to a ``StateMixin``
         """
         return self._states
 
@@ -572,5 +572,5 @@ class MacroStep:
         return states
 
     def __repr__(self):
-        return 'MacroStep@{}({}, {}, >{}, <{})'.format(self.time, self.event, self.transitions,
+        return 'MacroStep@{}({}, {}, >{}, <{})'.format(round(self.time, 3), self.event, self.transitions,
                                                        self.entered_states, self.exited_states)
