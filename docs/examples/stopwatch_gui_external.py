@@ -10,7 +10,7 @@ from sismic.io import import_from_yaml
 from sismic.interpreter import Interpreter
 from sismic.model import Event
 
-from .stopwatch import Stopwatch
+from stopwatch import Stopwatch
 
 
 # Create a tiny GUI
