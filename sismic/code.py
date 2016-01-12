@@ -1,6 +1,6 @@
 import abc
 import copy
-from .model import Event, Transition, StateMixin
+from sismic.model import Event, Transition, StateMixin
 
 
 class Evaluator(metaclass=abc.ABCMeta):

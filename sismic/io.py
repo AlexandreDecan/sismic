@@ -2,8 +2,8 @@ import yaml
 import os
 from pykwalify.core import Core
 from collections import OrderedDict
-from .model import Event, Transition, StateChart, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
-from .model import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
+from sismic.model import Event, Transition, StateChart, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
+from sismic.model import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 
 
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')

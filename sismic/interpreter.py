@@ -1,8 +1,8 @@
 from collections import deque
 from itertools import combinations
-from . import model
-from . import testing
-from .code import Evaluator, PythonEvaluator
+from sismic import model
+from sismic import testing
+from sismic.code import PythonEvaluator
 
 
 class Interpreter:

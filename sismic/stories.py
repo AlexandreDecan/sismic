@@ -1,4 +1,4 @@
-from .model import Event
+from sismic.model import Event
 import random
 
 

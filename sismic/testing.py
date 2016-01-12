@@ -1,5 +1,5 @@
-from .stories import Story, Pause
-from .model import Event
+from sismic.stories import Story, Pause
+from sismic.model import Event
 
 
 class ConditionFailed(AssertionError):
