@@ -39,7 +39,7 @@ Clicking on *unsplit* while continue to display the actual elapsed time. *reset*
 The idea is that the buttons will trigger state changes and actions carried out by an underlying statechart.
 Taking abstraction of the concrete implementation, the statechart would essentially look as follows, with one main *active* state containing two parallel substates *timer* and *display*.
 
-.. image:: /images/stopwatch0.png
+.. image:: /images/stopwatch_overview.png
 
 
 Controlling a statechart from within the environment
@@ -51,7 +51,7 @@ Conversely, the statechart itself can send events back to the source code to upd
 
 This statechart looks as follows:
 
-.. image:: /images/stopwatch2.png
+.. image:: /images/stopwatch_with_logic.png
 
 Here is the YAML file containing the  textual description of this statechart:
 
@@ -90,7 +90,7 @@ In this example, ``initial_context={'stopwatch': Stopwatch()}``.
 The statechart is simpler than in the previous example: one parallel region handles the
 running status of the stopwatch, and a second one handles its split features.
 
-.. image:: /images/stopwatch3.png
+.. image:: /images/stopwatch_with_object.png
 
 .. literalinclude:: /examples/stopwatch_external.yaml
     :language: yaml
