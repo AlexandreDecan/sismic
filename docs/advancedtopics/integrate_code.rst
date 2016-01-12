@@ -77,7 +77,13 @@ The ``run`` method, which is put in Tk's mainloop, updates the internal clock of
 Controlling the environment from within the statechart
 ------------------------------------------------------
 
-In this second example, we basically reverse the idea: now the Python code that resides in the environment contains the logic (e.g., the ``elapsed_time`` variable), and this code is exposed to, and controlled by, a statechart that represents the main loop of the program and calls the necessary methods in the source code. These method calls are associated to actions on the statechart's transitions. With this solution, the statechart is no longer a *black box*, since it needs to be aware of the source code, in particular the methods it needs to call in this code.
+In this second example, we basically reverse the idea: now the Python code that resides in the environment contains the
+logic (e.g., the ``elapsed_time`` variable), and this code is exposed to, and controlled by, a statechart that represents
+the main loop of the program and calls the necessary methods in the source code.
+These method calls are associated to actions on the statechart's transitions.
+With this solution, the statechart is no longer a *black box*, since it needs to be aware of the source code, in particular
+the methods it needs to call in this code.
+
 An example of the Python code that is controlled by the statechart is given below:
 
 .. literalinclude:: /examples/stopwatch.py

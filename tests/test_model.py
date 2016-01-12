@@ -2,6 +2,7 @@ import unittest
 from sismic import io
 from sismic import model
 
+
 class TraversalTests(unittest.TestCase):
     def setUp(self):
         self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))

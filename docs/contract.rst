@@ -98,7 +98,7 @@ Here is an example of a contracts defined at the level of the statechart itself:
        - always: x >= 0
        - always: not active('initial') or x > 0
 
-If the default :py:class:`~sismic.evaluator.PythonEvaluator` is used,
+If the default :py:class:`~sismic.code.PythonEvaluator` is used,
 it is possible to refer to the old value of some variable used in the statechart, by prepending ``__old__``.
 This is particularly useful when specifying postconditions and invariants:
 
@@ -108,7 +108,7 @@ This is particularly useful when specifying postconditions and invariants:
       always: d > __old__.d
       after: (x - __old__.x) < d
 
-See the documentation of :py:class:`~sismic.evaluator.PythonEvaluator` for more information.
+See the documentation of :py:class:`~sismic.code.PythonEvaluator` for more information.
 
 Example
 *******
@@ -141,7 +141,7 @@ at runtime (as explained above) and may raise a subclass of :py:exc:`~sismic.tes
         statechart.states['movingUp'].preconditions[0] = 'current > destination'
 
         interpreter = Interpreter(statechart)
-        interpreter.send(Event('floorSelected', floor=4))
+        interpreter.queue(Event('floorSelected', floor=4))
         interpreter.execute()
 
 Here we manually changed one of the preconditions such that it failed at runtime.

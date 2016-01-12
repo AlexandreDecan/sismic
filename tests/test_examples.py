@@ -15,7 +15,7 @@ class SimulatorElevatorTests(unittest.TestCase):
         sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
         interpreter = Interpreter(sc)
 
-        interpreter.send(Event('floorSelected', floor=4)).execute_once()
+        interpreter.queue(Event('floorSelected', floor=4)).execute_once()
         self.assertEqual(interpreter._evaluator.context['destination'], 4)
         interpreter.execute_once()
         self.assertEqual(sorted(interpreter.configuration), ['active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'])
@@ -24,7 +24,7 @@ class SimulatorElevatorTests(unittest.TestCase):
         sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
         interpreter = Interpreter(sc)
 
-        interpreter.send(Event('floorSelected', floor=4))
+        interpreter.queue(Event('floorSelected', floor=4))
         interpreter.execute()
         self.assertEqual(interpreter._evaluator.context['current'], 4)
         interpreter.time += 10
@@ -51,7 +51,7 @@ class WriterExecutionTests(unittest.TestCase):
         ]
 
         for event in scenario:
-            self.interpreter.send(event)
+            self.interpreter.queue(event)
 
         self.interpreter.execute()
 
@@ -68,14 +68,14 @@ class RemoteElevatorTests(unittest.TestCase):
     def test_button(self):
         self.assertEqual(self.elevator.context['current'], 0)
 
-        self.buttons.send(Event('button_2_pushed'))
+        self.buttons.queue(Event('button_2_pushed'))
         self.buttons.execute()
 
         event = self.elevator._events.pop()
         self.assertEqual(event, Event('floorSelected'))
         self.assertEqual(event.data['floor'], 2)
 
-        self.buttons.send(Event('button_2_pushed'))
+        self.buttons.queue(Event('button_2_pushed'))
         self.buttons.execute()
         self.elevator.execute()
 
@@ -84,7 +84,7 @@ class RemoteElevatorTests(unittest.TestCase):
     def test_button_0_on_groundfloor(self):
         self.assertEqual(self.elevator.context['current'], 0)
 
-        self.buttons.send(Event('button_0_pushed'))
+        self.buttons.queue(Event('button_0_pushed'))
         self.buttons.execute()
         self.elevator.execute()
 

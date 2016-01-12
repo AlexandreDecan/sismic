@@ -41,7 +41,7 @@ class Story(list):
         """
         for item in self:
             if isinstance(item, Event):
-                interpreter.send(item)
+                interpreter.queue(item)
             elif isinstance(item, Pause):
                 interpreter.time += item.duration
             interpreter.execute(*args, **kwargs)
@@ -69,6 +69,7 @@ def random_stories_generator(items, length: int=None, number: int=None):
             story.append(random.choice(items))  # Not random.sample, replacements needed
         yield story
         number -= 1
+
 
 def story_from_trace(trace: list) -> Story:
     """

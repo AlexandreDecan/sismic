@@ -1,6 +1,5 @@
 from .stories import Story, Pause
 from .model import Event
-import copy
 
 
 class ConditionFailed(AssertionError):

@@ -1,7 +1,7 @@
 import unittest
 from sismic import io
 from sismic.interpreter import Interpreter, run_in_background
-from sismic.evaluator import DummyEvaluator
+from sismic.code import DummyEvaluator
 from sismic.model import Event
 
 
@@ -10,8 +10,8 @@ class RunInBackgroundTests(unittest.TestCase):
         sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
         intp = Interpreter(sc)
         task = run_in_background(intp, 0.001)
-        intp.send(Event('goto s2'))
-        intp.send(Event('goto final'))
+        intp.queue(Event('goto s2'))
+        intp.queue(Event('goto final'))
         task.join()
         self.assertTrue(intp.final)
 
@@ -28,7 +28,7 @@ class SimulatorSimpleTests(unittest.TestCase):
         interpreter = Interpreter(sc, DummyEvaluator)
         interpreter.execute_once()  # Should do nothing!
         self.assertEqual(interpreter.configuration, ['s1'])
-        interpreter.send(Event('goto s2'))
+        interpreter.queue(Event('goto s2'))
         interpreter.execute_once()
         self.assertEqual(interpreter.configuration, ['s2'])
         interpreter.execute_once()
@@ -37,9 +37,9 @@ class SimulatorSimpleTests(unittest.TestCase):
     def test_simple_entered(self):
         sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
         interpreter = Interpreter(sc, DummyEvaluator)
-        interpreter.send(Event('goto s2'))
+        interpreter.queue(Event('goto s2'))
         self.assertEqual(interpreter.execute_once().entered_states, ['s2'])
-        interpreter.send(Event('goto final'))
+        interpreter.queue(Event('goto final'))
         self.assertEqual(interpreter.execute_once().entered_states, ['s3'])
         self.assertEqual(interpreter.execute_once().entered_states, ['final'])
         self.assertEqual(interpreter.configuration, [])
@@ -48,7 +48,7 @@ class SimulatorSimpleTests(unittest.TestCase):
     def test_simple_final(self):
         sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
         interpreter = Interpreter(sc, DummyEvaluator)
-        interpreter.send(Event('goto s2')).send(Event('goto final'))
+        interpreter.queue(Event('goto s2')).queue(Event('goto final'))
         interpreter.execute()
         self.assertTrue(interpreter.final)
 
@@ -63,7 +63,7 @@ class InternalTests(unittest.TestCase):
         self.assertEqual(step.event.name, 'next')
 
     def testInternalBeforeExternal(self):
-        self.interpreter.send(Event('not_next'))
+        self.interpreter.queue(Event('not_next'))
         step = self.interpreter.execute_once()
         self.assertEqual(step.event.name, 'next')
 
@@ -97,10 +97,10 @@ class SimulatorHistoryTests(unittest.TestCase):
         sc = io.import_from_yaml(open('tests/yaml/history.yaml'))
         interpreter = Interpreter(sc, DummyEvaluator)
 
-        interpreter.send(Event('next')).execute_once()
+        interpreter.queue(Event('next')).execute_once()
         self.assertEqual(sorted(interpreter.configuration), ['loop', 's2'])
 
-        step = interpreter.send(Event('pause')).execute_once()
+        step = interpreter.queue(Event('pause')).execute_once()
         self.assertEqual(step.exited_states, ['s2', 'loop'])
         self.assertEqual(sorted(interpreter.configuration), ['pause'])
 
@@ -108,7 +108,7 @@ class SimulatorHistoryTests(unittest.TestCase):
         sc = io.import_from_yaml(open('tests/yaml/history.yaml'))
         interpreter = Interpreter(sc, DummyEvaluator)
 
-        interpreter.send(Event('next')).send(Event('pause')).send(Event('continue'))
+        interpreter.queue(Event('next')).queue(Event('pause')).queue(Event('continue'))
         steps = interpreter.execute()
         step = steps[-1]
 
@@ -120,12 +120,12 @@ class SimulatorHistoryTests(unittest.TestCase):
         sc = io.import_from_yaml(open('tests/yaml/history.yaml'))
         interpreter = Interpreter(sc, DummyEvaluator)
 
-        interpreter.send(Event('next')).send(Event('pause')).send(Event('continue'))
-        interpreter.send(Event('next')).send(Event('next'))
+        interpreter.queue(Event('next')).queue(Event('pause')).queue(Event('continue'))
+        interpreter.queue(Event('next')).queue(Event('next'))
         interpreter.execute()
         self.assertEqual(sorted(interpreter.configuration), ['loop', 's1'])
 
-        interpreter.send(Event('pause')).send(Event('stop'))
+        interpreter.queue(Event('pause')).queue(Event('stop'))
         interpreter.execute()
         self.assertTrue(interpreter.final)
 
@@ -135,16 +135,16 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
         sc = io.import_from_yaml(open('tests/yaml/deep_history.yaml'))
         interpreter = Interpreter(sc, DummyEvaluator)
 
-        interpreter.send(Event('next1')).send(Event('next2'))
+        interpreter.queue(Event('next1')).queue(Event('next2'))
         interpreter.execute()
         self.assertEqual(sorted(interpreter.configuration), ['active', 'concurrent_processes', 'process_1', 'process_2', 's12', 's22'])
 
-        interpreter.send(Event('error1'))
+        interpreter.queue(Event('error1'))
         interpreter.execute()
         self.assertEqual(interpreter.configuration, ['pause'])
         self.assertEqual(sorted(interpreter._memory['active.H*']), ['concurrent_processes', 'process_1', 'process_2', 's12', 's22'])
 
-        interpreter.send(Event('continue'))
+        interpreter.queue(Event('continue'))
         interpreter.execute()
         self.assertEqual(sorted(interpreter.configuration), ['active', 'concurrent_processes', 'process_1',
                                                            'process_2', 's12', 's22'])
@@ -153,13 +153,13 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
         sc = io.import_from_yaml(open('tests/yaml/deep_history.yaml'))
         interpreter = Interpreter(sc, DummyEvaluator)
 
-        interpreter.send(Event('next1')).send(Event('next2')).send(Event('pause'))
+        interpreter.queue(Event('next1')).queue(Event('next2')).queue(Event('pause'))
         step = interpreter.execute()[-1]
 
         self.assertEqual(step.entered_states, ['pause'])
         self.assertEqual(sorted(interpreter.configuration), ['pause'])
 
-        step = interpreter.send(Event('continue')).execute_once()
+        step = interpreter.queue(Event('continue')).execute_once()
         self.assertTrue(step.entered_states.index('active') < step.entered_states.index('active.H*'))
         self.assertTrue(step.entered_states.index('active.H*') < step.entered_states.index('concurrent_processes'))
         self.assertTrue(step.entered_states.index('concurrent_processes') < step.entered_states.index('process_1'))
@@ -167,23 +167,23 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
         self.assertTrue(step.entered_states.index('process_1') < step.entered_states.index('s12'))
         self.assertTrue(step.entered_states.index('process_2') < step.entered_states.index('s22'))
 
-        interpreter.send(Event('next1')).send(Event('next2')).execute()
+        interpreter.queue(Event('next1')).queue(Event('next2')).execute()
         self.assertTrue(interpreter.final)
 
     def test_exited_order(self):
         sc = io.import_from_yaml(open('tests/yaml/deep_history.yaml'))
         interpreter = Interpreter(sc, DummyEvaluator)
 
-        interpreter.send(Event('next1')).send(Event('next2')).send(Event('pause'))
+        interpreter.queue(Event('next1')).queue(Event('next2')).queue(Event('pause'))
         step = interpreter.execute()[-1]
 
         self.assertEqual(step.exited_states, ['s12', 's22', 'process_1', 'process_2', 'concurrent_processes', 'active'])
         self.assertEqual(sorted(interpreter.configuration), ['pause'])
 
-        step = interpreter.send(Event('continue')).execute_once()
+        step = interpreter.queue(Event('continue')).execute_once()
         self.assertEqual(step.exited_states, ['pause', 'active.H*'])
 
-        interpreter.send(Event('next1')).send(Event('next2')).execute()
+        interpreter.queue(Event('next1')).queue(Event('next2')).execute()
         self.assertTrue(interpreter.final)
 
 
@@ -221,32 +221,32 @@ class ParallelExecutionTests(unittest.TestCase):
         self.interpreter = Interpreter(self.sc)
 
     def test_concurrent_transitions(self):
-        step = self.interpreter.send(Event('nextA')).execute_once()
+        step = self.interpreter.queue(Event('nextA')).execute_once()
 
         self.assertEqual(self.interpreter.configuration, ['s1', 'p1', 'p2', 'a1', 'a2'])
         self.assertLess(step.exited_states.index('initial1'), step.exited_states.index('initial2'))
         self.assertLess(step.entered_states.index('a1'), step.entered_states.index('a2'))
 
     def test_concurrent_transitions_nested_target(self):
-        self.interpreter.send(Event('nextA')).send(Event('reset1'))
+        self.interpreter.queue(Event('nextA')).queue(Event('reset1'))
         self.interpreter.execute()
 
         self.assertEqual(self.interpreter.configuration, ['s1', 'p1', 'p2', 'a2', 'initial1'])
 
     def test_unnested_transitions(self):
-        self.interpreter.send(Event('nextA')).send(Event('nextA'))
+        self.interpreter.queue(Event('nextA')).queue(Event('nextA'))
         self.interpreter.execute()
 
         self.assertEqual(self.interpreter.configuration, ['s1', 'p1', 'p2', 'a2', 'initial1'])
 
     def test_unnested_transitions_2(self):
-        self.interpreter.send(Event('nextA')).send(Event('nextB'))
+        self.interpreter.queue(Event('nextA')).queue(Event('nextB'))
         self.interpreter.execute()
 
         self.assertEqual(self.interpreter.configuration, ['s1', 'p1', 'p2', 'b1', 'b2'])
 
     def test_conflicting_transitions(self):
-        self.interpreter.send(Event('nextA')).send(Event('nextB')).send(Event('conflict1'))
+        self.interpreter.queue(Event('nextA')).queue(Event('nextB')).queue(Event('conflict1'))
         self.interpreter.execute_once()
         self.interpreter.execute_once()
 
@@ -254,7 +254,7 @@ class ParallelExecutionTests(unittest.TestCase):
             self.interpreter.execute_once()
 
     def test_conflicting_transitions_2(self):
-        self.interpreter.send(Event('nextA')).send(Event('nextB')).send(Event('conflict2'))
+        self.interpreter.queue(Event('nextA')).queue(Event('nextB')).queue(Event('conflict2'))
         self.interpreter.execute_once()
         self.interpreter.execute_once()
 
@@ -272,7 +272,7 @@ class NestedParallelExecutionTests(unittest.TestCase):
         self.assertEqual(self.interpreter.configuration, self.common_states + ['i1', 'i2', 'i3', 'i4'])
 
     def test_parallel_order(self):
-        self.interpreter.send(Event('next'))
+        self.interpreter.queue(Event('next'))
         step = self.interpreter.execute_once()
 
         self.assertEqual(self.interpreter.configuration, self.common_states + ['j1', 'j2', 'j3', 'j4'])
@@ -281,7 +281,7 @@ class NestedParallelExecutionTests(unittest.TestCase):
         self.assertEqual([t.from_state for t in step.transitions], ['i1', 'i2', 'i3', 'i4'])
 
     def test_partial_parallel_order(self):
-        self.interpreter.send(Event('next')).send(Event('click'))
+        self.interpreter.queue(Event('next')).queue(Event('click'))
         self.interpreter.execute_once()
         step = self.interpreter.execute_once()
 
@@ -291,7 +291,7 @@ class NestedParallelExecutionTests(unittest.TestCase):
         self.assertEqual([t.from_state for t in step.transitions], ['j2', 'j4'])
 
     def test_partial_unnested_transition(self):
-        self.interpreter.send(Event('next')).send(Event('reset'))
+        self.interpreter.queue(Event('next')).queue(Event('reset'))
         self.interpreter.execute_once()
         step = self.interpreter.execute_once()
 
@@ -310,7 +310,7 @@ class NestedParallelExecutionTests(unittest.TestCase):
         self.assertEqual([t.from_state for t in step.transitions], ['r2', 'r4'])
 
     def test_name_order(self):
-        self.interpreter.send(Event('next')).send(Event('click')).send(Event('next')).send(Event('next'))
+        self.interpreter.queue(Event('next')).queue(Event('click')).queue(Event('next')).queue(Event('next'))
         self.interpreter.execute_once()
         self.interpreter.execute_once()
         self.interpreter.execute_once()
@@ -328,7 +328,7 @@ class NestedParallelExecutionTests(unittest.TestCase):
 
         self.assertEqual([t.from_state for t in step.transitions], ['k1', 'k3', 'x', 'y'])
 
-        step = self.interpreter.send(Event('next')).execute_once()
+        step = self.interpreter.queue(Event('next')).execute_once()
 
         self.assertLess(step.exited_states.index('k1'), step.exited_states.index('x'))
         self.assertLess(step.exited_states.index('x'), step.exited_states.index('y'))
@@ -351,9 +351,9 @@ class BindTests(unittest.TestCase):
         other_interpreter = Interpreter(other_sc)
 
         self.interpreter.bind(other_interpreter)
-        self.assertEqual(self.interpreter._bound, [other_interpreter.send])
+        self.assertEqual(self.interpreter._bound, [other_interpreter.queue])
 
-        self.interpreter.send(Event('test'), internal=True)
+        self.interpreter.queue(Event('test'), internal=True)
         self.assertTrue(self.interpreter._events.pop(), Event('test'))
         self.assertTrue(other_interpreter._events.pop(), Event('test'))
 
@@ -361,9 +361,9 @@ class BindTests(unittest.TestCase):
         other_sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
         other_interpreter = Interpreter(other_sc)
 
-        self.interpreter.bind(other_interpreter.send)
-        self.assertEqual(self.interpreter._bound, [other_interpreter.send])
+        self.interpreter.bind(other_interpreter.queue)
+        self.assertEqual(self.interpreter._bound, [other_interpreter.queue])
 
-        self.interpreter.send(Event('test'), internal=True)
+        self.interpreter.queue(Event('test'), internal=True)
         self.assertTrue(self.interpreter._events.pop(), Event('test'))
         self.assertTrue(other_interpreter._events.pop(), Event('test'))

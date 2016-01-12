@@ -2,7 +2,7 @@ from collections import deque
 from itertools import combinations
 from . import model
 from . import testing
-from .evaluator import Evaluator, PythonEvaluator
+from .code import Evaluator, PythonEvaluator
 
 
 class Interpreter:
@@ -98,17 +98,17 @@ class Interpreter:
         :return: ``self`` so it can be chained
         """
         if isinstance(interpreter_or_callable, Interpreter):
-            bound_callable = interpreter_or_callable.send
+            bound_callable = interpreter_or_callable.queue
         else:
             bound_callable = interpreter_or_callable
 
         self._bound.append(bound_callable)
         return self
 
-    def send(self, event: model.Event, internal: bool=False):
+    def queue(self, event: model.Event, internal: bool=False):
         """
-        Send an event to the interpreter, and add it into the event queue.
-        Internal events are propagated to bound callable (see ``bind`` method).
+        Queue an event to the interpreter.
+        Internal events are propagated to bound callables (see ``bind`` method).
 
         :param event: an ``Event`` instance
         :param internal: set to True if the provided ``Event`` should be considered as

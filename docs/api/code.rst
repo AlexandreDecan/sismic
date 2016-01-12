@@ -1,7 +1,7 @@
 Module *evaluator*
 ==================
 
-.. automodule:: sismic.evaluator
+.. automodule:: sismic.code
     :members:
     :member-order: bysource
 

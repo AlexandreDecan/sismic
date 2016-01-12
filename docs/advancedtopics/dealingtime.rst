@@ -3,13 +3,13 @@ Dealing with time
 =================
 
 It is quite usual in a statechart to rely on some notion of time.
-To cope with this, the built-in evaluator (see :py:class:`~sismic.evaluator.PythonEvaluator`) has support for
+To cope with this, the built-in evaluator (see :py:class:`~sismic.code.PythonEvaluator`) has support for
 time events ``after(x)`` and ``idle(x)``, meaning that a transition can be triggered after a certain amount of time.
 
 When it comes to interpreting statecharts, Sismic deals with time using an internal clock whose value is exposed
 by the :py:attr:`~sismic.interpreter.Interpreter.time` property of an :py:class:`~sismic.interpreter.Interpreter`.
 Basically, this clock does nothing by itself except for being available for an
-:py:class:`~sismic.evaluator.Evaluator` instance.
+:py:class:`~sismic.code.Evaluator` instance.
 If your statechart needs to rely on a time value, you have to set it by yourself.
 
 Below are some examples to illustrate the use of time events.
@@ -51,7 +51,7 @@ We now ask our elevator to go to the 4th floor.
 
 .. testcode:: clock
 
-    interpreter.send(Event('floorSelected', floor=4))
+    interpreter.queue(Event('floorSelected', floor=4))
     interpreter.execute()
 
 The elevator should now be on the 4th floor.
@@ -131,7 +131,7 @@ For our example, we first ask the statechart to send to elevator to the 4th floo
 
 .. testcode:: realclock
 
-    interpreter.send(Event('floorSelected', floor=4))
+    interpreter.queue(Event('floorSelected', floor=4))
     interpreter.execute()
     print('Current floor:', interpreter.context.get('current'))
     print('Current time:', interpreter.time)
@@ -186,7 +186,7 @@ This is illustrated in the following example.
     interpreter = Interpreter(statechart, initial_time=time.time())
 
     # Send an initial event
-    interpreter.send(Event('floorSelected', floor=4))
+    interpreter.queue(Event('floorSelected', floor=4))
 
     while not interpreter.final:
         interpreter.time = time.time()
@@ -228,7 +228,7 @@ function that run an interpreter in a thread, and does the job of synchronizing 
     print('Initial:', interpreter.configuration)
 
     # Open door
-    interpreter.send(Event('toggledoor'))
+    interpreter.queue(Event('toggledoor'))
 
     time.sleep(0.05)
     print('Toggledoor:', interpreter.configuration)
@@ -236,7 +236,7 @@ function that run an interpreter in a thread, and does the job of synchronizing 
 
     # Wait 200ms and close the door
     time.sleep(0.200)
-    interpreter.send(Event('toggledoor'))
+    interpreter.queue(Event('toggledoor'))
 
     time.sleep(0.05)
     print('Toggledoor:', interpreter.configuration)
@@ -244,7 +244,7 @@ function that run an interpreter in a thread, and does the job of synchronizing 
 
     # Wait 200ms and unplug
     time.sleep(0.200)
-    interpreter.send(Event('unplug'))
+    interpreter.queue(Event('unplug'))
 
     time.sleep(0.05)
     print('Final:', interpreter.configuration)

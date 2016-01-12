@@ -1,5 +1,5 @@
 import unittest
-from sismic import evaluator
+from sismic import code
 from sismic.model import Event
 
 
@@ -10,7 +10,7 @@ class PythonEvaluatorTests(unittest.TestCase):
             'y': 2,
             'z': 3
         }
-        self.e = evaluator.PythonEvaluator(initial_context=context)
+        self.e = code.PythonEvaluator(initial_context=context)
 
     def test_condition(self):
         self.assertTrue(self.e._evaluate_code('True'))

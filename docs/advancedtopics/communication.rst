@@ -79,7 +79,7 @@ internal and external events are the priority order in which they are processed 
     from sismic.model import Event
 
     # Manually create and send an internal event
-    interpreter_3.send(Event('test'), internal=True)
+    interpreter_3.queue(Event('test'), internal=True)
 
     print('Events for interpreter_1:', interpreter_1._events.pop())  # External event
     print('Events for interpreter_2:', interpreter_2._events.pop())  # External event
@@ -129,7 +129,7 @@ are autoatically propagated to ``elevator``:
 .. testcode:: buttons
 
     print('Awaiting events in buttons:', list(buttons._events))  # Empty
-    buttons.send(Event('button_2_pushed'))
+    buttons.queue(Event('button_2_pushed'))
 
     print('Awaiting events in buttons:', list(buttons._events))  # External event
 

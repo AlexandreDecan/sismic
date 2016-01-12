@@ -43,12 +43,12 @@ Example: Semantics where internal events have no priority
 ---------------------------------------------------------
 
 If you want to change the semantics of Sismic so that internal events no longer have
-priority over external events, it suffices to override the :py:meth:`~sismic.interpreter.Interpreter.send` method:
+priority over external events, it suffices to override the :py:meth:`~sismic.interpreter.Interpreter.queue` method:
 
 .. code:: python
 
-     def send(self, event:model.Event, internal=False):
-        return super().send(event)  # No distinction between internal and external events
+     def queue(self, event:Event, internal=False):
+        return super().queue(event)  # No distinction between internal and external events
 
 
 Example: Custom way to deal with non-determinism

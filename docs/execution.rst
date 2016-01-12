@@ -77,9 +77,9 @@ Using *Interpreter*
 -------------------
 
 A :py:class:`~sismic.interpreter.Interpreter` instance is constructed upon a :py:class:`~sismic.model.StateChart`
-instance and an optional callable that returns an :py:class:`~sismic.evaluator.Evaluator`.
+instance and an optional callable that returns an :py:class:`~sismic.code.Evaluator`.
 This callable must accept an interpreter and an initial execution context as input (see :ref:`code_evaluation`).
-If no evaluator is specified, the :py:class:`~sismic.evaluator.PythonEvaluator` class will be used with an empty
+If no evaluator is specified, the :py:class:`~sismic.code.PythonEvaluator` class will be used with an empty
 initial context.
 This default evaluator can parse and interpret Python code in statecharts.
 
@@ -99,19 +99,19 @@ Consider the following example.
 
     # We are now in a stable initial state
 
-    interpreter.send(Event('click'))  # Send event to the interpreter
+    interpreter.queue(Event('click'))  # Send event to the interpreter
     interpreter.execute_once()  # Will process the event if no eventless transitions are found at first
 
 The method :py:meth:`~sismic.interpreter.Interpreter.execute_once` returns information about what happened
 during the execution, including the transitions that were processed, the event that was consumed and the
 sequences of entered and exited states (see :ref:`steps`).
 
-For convenience, :py:meth:`~sismic.interpreter.Interpreter.send` returns ``self`` and thus can be chained.
-We will see later that Sismic also provides a way to express scenarios, in order to avoid repeated calls to ``send``.
+For convenience, :py:meth:`~sismic.interpreter.Interpreter.queue` returns ``self`` and thus can be chained.
+We will see later that Sismic also provides a way to express scenarios, in order to avoid repeated calls to ``queue``.
 
 .. testcode:: interpreter
 
-    interpreter.send(Event('click')).send(Event('click')).execute_once()
+    interpreter.queue(Event('click')).queue(Event('click')).execute_once()
 
 Notice that :py:meth:`~sismic.interpreter.Interpreter.execute_once` consumes at most one event at a time.
 In this example, the second *click* event is not processed.
