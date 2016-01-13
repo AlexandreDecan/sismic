@@ -17,10 +17,6 @@ Sismic user manual
 .. image:: https://readthedocs.org/projects/sismic/badge
     :target: https://sismic.readthedocs.org/
 
-
-
---------------------------------------------------------
-
 About
 -----
 
