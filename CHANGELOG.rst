@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+ - Change ``model.Event`` representation.
+
 0.15.0 (2015-01-12)
 -------------------
 

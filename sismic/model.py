@@ -26,7 +26,7 @@ class Event:
 
     def __repr__(self):
         if self.data:
-            return 'Event({}, {})'.format(self.name, self.data)
+            return 'Event({}, {})'.format(self.name, ', '.join('{}={}'.format(k, v) for k,v in self.data.items()))
         else:
             return 'Event({})'.format(self.name)
 

@@ -79,6 +79,8 @@ def story_from_trace(trace: list) -> Story:
     that generated the given trace. The use case is when you want to reproduce
     the scenario of an observed behavior.
 
+    Notice that internal events are also included.
+
     :param trace: A list of ``MacroStep`` instances.
     :return: A story
     """

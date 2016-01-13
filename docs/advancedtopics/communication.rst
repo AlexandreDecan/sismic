@@ -141,8 +141,8 @@ are autoatically propagated to ``elevator``:
 
     Awaiting events in buttons: []
     Awaiting events in buttons: [Event(button_2_pushed)]
-    Awaiting events in buttons: [Event(floorSelected, {'floor': 2})]
-    Awaiting events in elevator: [Event(floorSelected, {'floor': 2})]
+    Awaiting events in buttons: [Event(floorSelected, floor=2)]
+    Awaiting events in elevator: [Event(floorSelected, floor=2)]
 
 The execution of bound statecharts does not differ from the execution of unbound statecharts:
 
