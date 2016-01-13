@@ -41,8 +41,7 @@ Documentation
 -------------
 
 The latest version of the documentation is available at `sismic.readthedocs.org <http://sismic.readthedocs.org/>`_.
-It can also be directly built from the `docs <https://github.com/AlexandreDecan/sismic/tree/master/docs>`_ directory using Sphinx.
-
+The documentation can also be directly built from the `docs <https://github.com/AlexandreDecan/sismic/tree/master/docs>`_ directory using Sphinx.
 Many examples are available in `docs/examples <https://github.com/AlexandreDecan/sismic/tree/master/docs/examples>`_.
 
 Changelog
