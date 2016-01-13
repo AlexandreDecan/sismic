@@ -76,10 +76,10 @@ internal and external events are the priority order in which they are processed 
 
 .. testcode:: bind
 
-    from sismic.model import Event
+    from sismic.model import InternalEvent, Event
 
     # Manually create and send an internal event
-    interpreter_3.queue(Event('test'), internal=True)
+    interpreter_3.queue(InternalEvent('test'))
 
     print('Events for interpreter_1:', interpreter_1._events.pop())  # External event
     print('Events for interpreter_2:', interpreter_2._events.pop())  # External event
@@ -89,7 +89,7 @@ internal and external events are the priority order in which they are processed 
 
     Events for interpreter_1: Event(test)
     Events for interpreter_2: Event(test)
-    Events for interpreter_3: Event(test)
+    Events for interpreter_3: InternalEvent(test)
 
 Example
 -------
@@ -115,7 +115,7 @@ We bind our panel with our elevator, such that the panel can control the elevato
 
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter
-    from sismic.model import Event
+    from sismic.model import Event, InternalEvent
 
     elevator = Interpreter(import_from_yaml(open('examples/elevator.yaml')))
     buttons = Interpreter(import_from_yaml(open('examples/elevator_buttons.yaml')))
@@ -141,7 +141,7 @@ are autoatically propagated to ``elevator``:
 
     Awaiting events in buttons: []
     Awaiting events in buttons: [Event(button_2_pushed)]
-    Awaiting events in buttons: [Event(floorSelected, floor=2)]
+    Awaiting events in buttons: [InternalEvent(floorSelected, floor=2)]
     Awaiting events in elevator: [Event(floorSelected, floor=2)]
 
 The execution of bound statecharts does not differ from the execution of unbound statecharts:

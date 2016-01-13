@@ -2,7 +2,7 @@ import unittest
 from sismic import io
 from sismic.interpreter import Interpreter, run_in_background
 from sismic.code import DummyEvaluator
-from sismic.model import Event
+from sismic.model import Event, InternalEvent
 
 
 class RunInBackgroundTests(unittest.TestCase):
@@ -353,7 +353,7 @@ class BindTests(unittest.TestCase):
         self.interpreter.bind(other_interpreter)
         self.assertEqual(self.interpreter._bound, [other_interpreter.queue])
 
-        self.interpreter.queue(Event('test'), internal=True)
+        self.interpreter.queue(InternalEvent('test'))
         self.assertTrue(self.interpreter._events.pop(), Event('test'))
         self.assertTrue(other_interpreter._events.pop(), Event('test'))
 
@@ -364,6 +364,6 @@ class BindTests(unittest.TestCase):
         self.interpreter.bind(other_interpreter.queue)
         self.assertEqual(self.interpreter._bound, [other_interpreter.queue])
 
-        self.interpreter.queue(Event('test'), internal=True)
+        self.interpreter.queue(InternalEvent('test'))
         self.assertTrue(self.interpreter._events.pop(), Event('test'))
         self.assertTrue(other_interpreter._events.pop(), Event('test'))

@@ -26,9 +26,16 @@ class Event:
 
     def __repr__(self):
         if self.data:
-            return 'Event({}, {})'.format(self.name, ', '.join('{}={}'.format(k, v) for k,v in self.data.items()))
+            return '{}({}, {})'.format(self.__class__.__name__, self.name, ', '.join('{}={}'.format(k, v) for k,v in self.data.items()))
         else:
-            return 'Event({})'.format(self.name)
+            return '{}({})'.format(self.__class__.__name__, self.name)
+
+
+class InternalEvent(Event):
+    """
+    Subclass of Event that represents an internal event.
+    """
+    pass
 
 
 class ContractMixin:

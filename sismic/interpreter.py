@@ -105,21 +105,20 @@ class Interpreter:
         self._bound.append(bound_callable)
         return self
 
-    def queue(self, event: model.Event, internal: bool=False):
+    def queue(self, event: model.Event):
         """
         Queue an event to the interpreter.
         Internal events are propagated to bound callables (see ``bind`` method).
 
-        :param event: an ``Event`` instance
-        :param internal: set to True if the provided ``Event`` should be considered as
-            an internal event (and thus, as to be prepended to the events queue and propagated to
-            ).
+        :param event: an ``Event`` or ``InternalEvent`` instance. If internal, the event is
+            prepended to the events queue and propagated to bound interpreters or callables.
         :return: ``self`` so it can be chained.
         """
-        if internal:
+        if isinstance(event, model.InternalEvent):
             self._events.appendleft(event)
+            external_event = model.Event(event.name, **event.data)
             for bound_callable in self._bound:
-                bound_callable(event)
+                bound_callable(external_event)
         else:
             self._events.append(event)
         return self

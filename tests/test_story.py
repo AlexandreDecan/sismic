@@ -81,3 +81,14 @@ class StoryFromTraceTests(unittest.TestCase):
         self.assertListEqual(story_from_trace(trace), [
             Pause(2), Event('a'), Pause(3), Event('b'), Pause(4), Event('c'), Pause(5), Event('d')
         ])
+
+    def test_ignore_internal_events(self):
+        trace = [
+            MacroStep(2, [MicroStep(Event('a'))]),
+            MacroStep(5, [MicroStep(Event('b'))]),
+            MacroStep(9, [MicroStep(InternalEvent('c'))]),
+            MacroStep(14, [MicroStep(Event('d'))]),
+        ]
+        self.assertListEqual(story_from_trace(trace), [
+            Pause(2), Event('a'), Pause(3), Event('b'), Pause(4), Pause(5), Event('d')
+        ])
