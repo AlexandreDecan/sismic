@@ -87,6 +87,13 @@ class Interpreter:
         """
         return self._trace
 
+    @property
+    def statechart(self):
+        """
+        Embedded statechart
+        """
+        return self._statechart
+
     def bind(self, interpreter_or_callable):
         """
         Bind an interpreter or a callable to the current interpreter.
