@@ -1,4 +1,4 @@
-from sismic.model import Event
+from sismic.model import Event, InternalEvent
 import random
 
 
@@ -79,7 +79,7 @@ def story_from_trace(trace: list) -> Story:
     that generated the given trace. The use case is when you want to reproduce
     the scenario of an observed behavior.
 
-    Notice that internal events are also included.
+    Notice that internal events are ignored.
 
     :param trace: A list of ``MacroStep`` instances.
     :return: A story
@@ -92,7 +92,7 @@ def story_from_trace(trace: list) -> Story:
             story.append(Pause(macrostep.time - time))
             time = macrostep.time
 
-        if macrostep.event:
+        if macrostep.event and not isinstance(macrostep.event, InternalEvent):
             story.append(macrostep.event)
     return story
 
