@@ -455,6 +455,7 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
          - C3. Check that initial state refer to a parent's child
          - C4. Check that orthogonal states have at least one child
          - C5. Check that there is no internal eventless guardless transition
+         - C6. Check that a CompoundState with an incoming transition declares an initial state.
 
         :return: True if no check fails
         :raise AssertionError: if a check fails
@@ -463,15 +464,15 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
         for transition in self.transitions:
             if (not (transition.from_state in self._states and
                      (not transition.to_state or transition.to_state in self._states))):
-                raise AssertionError('Transition {} refers to an unknown state'.format(transition))
+                raise AssertionError('C1. Transition {} refers to an unknown state'.format(transition))
             if not transition.event and not transition.guard and not transition.to_state:
-                raise AssertionError('Transition {} is an internal, eventless and guardless '
+                raise AssertionError('C5. Transition {} is an internal, eventless and guardless '
                                      'transition.'.format(transition))
 
         for name, state in self._states.items():
-            if isinstance(state, HistoryState):  # C2 & C3
+            if isinstance(state, HistoryState):  # C2
                 if not isinstance(self._states[self._parent[name]], CompoundState):
-                    raise AssertionError('History state {} can only be defined in a compound '
+                    raise AssertionError('C2. History state {} can only be defined in a compound '
                                          '(non-orthogonal) states'.format(state))
                     # Remove because this can be helpful for orthogonal states
                     # if state.initial and not (self._parent[state.initial] == self._parent[name]):
@@ -480,11 +481,18 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
 
             if isinstance(state, CompositeStateMixin):  # C4
                 if len(state.children) <= 0:
-                    raise AssertionError('Composite state {} should have at least one child'.format(state))
+                    raise AssertionError('C4. Composite state {} should have at least one child'.format(state))
 
             if isinstance(state, CompoundState):  # C3
                 if self._parent[name] and state.initial and not (self._parent[state.initial] == name):
-                    raise AssertionError('Initial state of {} should refer to one of its children'.format(state))
+                    raise AssertionError('C3. Initial state of {} should refer to one of its children'.format(state))
+
+        # C6
+        for transition in self.transitions:
+            target_state = self._states.get(transition.to_state, self._states[transition.from_state])
+            if isinstance(target_state, CompoundState):
+                if not target_state.initial:
+                    raise AssertionError('C6. Compound state {} has an incoming transition but does not define an initial state.'.format(target_state))
 
         return True
 
