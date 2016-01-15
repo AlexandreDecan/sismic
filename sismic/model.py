@@ -471,7 +471,7 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
 
         for name, state in self._states.items():
             if isinstance(state, HistoryState):  # C2
-                if not isinstance(self._states[self._parent[name]], CompoundState):
+                if not isinstance(self._states.get(self._parent.get(name, None), None), CompoundState):
                     raise AssertionError('C2. History state {} can only be defined in a compound '
                                          '(non-orthogonal) states'.format(state))
                     # Remove because this can be helpful for orthogonal states
@@ -484,9 +484,10 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
                     raise AssertionError('C4. Composite state {} should have at least one child'.format(state))
 
             if isinstance(state, CompoundState):  # C3
-                if self._parent[name] and state.initial and not (self._parent[state.initial] == name):
+                if state.initial and not (state.initial in state.children):
                     raise AssertionError('C3. Initial state of {} should refer to one of its children'.format(state))
-
+        if self.initial and not (self.initial in self.children):
+            raise AssertionError('C3. Statechart\'s initial state should refer to one of its children')
         # C6
         for transition in self.transitions:
             target_state = self._states.get(transition.to_state, self._states[transition.from_state])
