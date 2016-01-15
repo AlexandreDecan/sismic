@@ -54,3 +54,126 @@ class TraversalTests(unittest.TestCase):
         sc.register_state(s1, parent=None)
         with self.assertRaises(ValueError):
             sc.register_state(s2, parent=None)
+
+
+class ValidateTests(unittest.TestCase):
+    def test_c1(self):
+        yaml = """
+        statechart:
+          name: test
+          initial: s1
+          states:
+            - name: s1
+              transitions:
+               - target: s2
+        """
+        with self.assertRaises(AssertionError) as cm:
+            io.import_from_yaml(yaml)
+        self.assertTrue(cm.exception.args[0].startswith('C1.'))
+
+    def test_c2_2(self):
+        yaml = """
+        statechart:
+          name: test
+          initial: s1
+          states:
+            - name: s1
+              parallel states:
+               - name: s2
+                 type: shallow history
+        """
+        with self.assertRaises(AssertionError) as cm:
+            io.import_from_yaml(yaml)
+        self.assertTrue(cm.exception.args[0].startswith('C2.'))
+
+        yaml = """
+        statechart:
+          name: test
+          initial: s1
+          states:
+            - name: s1
+            - name: s2
+              type: shallow history
+        """
+        with self.assertRaises(AssertionError) as cm:
+            io.import_from_yaml(yaml)
+        self.assertTrue(cm.exception.args[0].startswith('C2.'))
+
+    def test_c3(self):
+        yaml = """
+        statechart:
+          name: test
+          initial: s2
+          states:
+            - name: s1
+              states:
+                - name: s2
+        """
+        with self.assertRaises(AssertionError) as cm:
+            io.import_from_yaml(yaml)
+        self.assertTrue(cm.exception.args[0].startswith('C3.'))
+
+    def test_c3_2(self):
+        yaml = """
+        statechart:
+          name: test
+          initial: s1
+          states:
+            - name: s1
+              initial: s2
+              states:
+                - name: s3
+            - name: s2
+        """
+        with self.assertRaises(AssertionError) as cm:
+            io.import_from_yaml(yaml)
+        self.assertTrue(cm.exception.args[0].startswith('C3.'))
+
+    def test_c4(self):
+        yaml = """
+        statechart:
+          name: test
+          initial: s1
+          states:
+            - name: s1
+              states:
+                - name: s2
+        """
+        statechart = io.import_from_yaml(yaml)
+        statechart.states['s1']._children = []
+        with self.assertRaises(AssertionError) as cm:
+            statechart.validate()
+        self.assertTrue(cm.exception.args[0].startswith('C4.'))
+
+    def test_c5(self):
+        yaml = """
+        statechart:
+          name: test
+          initial: s1
+          states:
+            - name: s1
+              transitions:
+               - target: s1
+        """
+        statechart = io.import_from_yaml(yaml)
+        statechart.transitions[0].to_state = None
+        with self.assertRaises(AssertionError) as cm:
+            statechart.validate()
+        self.assertTrue(cm.exception.args[0].startswith('C5.'))
+
+    def test_c6(self):
+        yaml = """
+        statechart:
+          name: test
+          initial: s1
+          states:
+            - name: s1
+              states:
+                - name: s3
+            - name: s2
+              transitions:
+                - target: s1
+        """
+        with self.assertRaises(AssertionError) as cm:
+            io.import_from_yaml(yaml)
+        self.assertTrue(cm.exception.args[0].startswith('C6.'))
