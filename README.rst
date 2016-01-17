@@ -9,8 +9,8 @@ Sismic for Python
     :target: https://landscape.io/github/AlexandreDecan/sismic/master    
 .. image:: https://badge.fury.io/py/sismic.svg
     :target: https://pypi.python.org/pypi/sismic
-.. image:: https://readthedocs.org/projects/sismic/badge
-    :target: https://sismic.readthedocs.org/
+.. image:: https://readthedocs.org/projects/sismic/badge/?version=stable
+    :target: https://sismic.readthedocs.org/stable
 
 Sismic Interactive State Machine Interpreter and Checker
 --------------------------------------------------------
