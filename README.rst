@@ -43,6 +43,7 @@ Documentation
 -------------
 
 The documentation for the latest distributed version is available at `sismic.readthedocs.org <http://sismic.readthedocs.org/>`_.
+
 Many examples are available in `docs/examples <https://github.com/AlexandreDecan/sismic/tree/master/docs/examples>`_.
 
 The documentation can also be directly built from the `docs <https://github.com/AlexandreDecan/sismic/tree/master/docs>`_ directory using Sphinx.
@@ -51,8 +52,8 @@ The documentation can also be directly built from the `docs <https://github.com/
 Changelog
 ---------
 
-See `CHANGELOG.rst <http://sismic.readthedocs.org/en/stable/changelog.html>`_.
-Unreleased but implemented changes are documented `here <CHANGELOG.rst>`_.
+See documentatin's `changelog <http://sismic.readthedocs.org/en/stable/changelog.html>`_.
+Unreleased changes are visible `here <CHANGELOG.rst>`_.
 
 Credits
 -------
