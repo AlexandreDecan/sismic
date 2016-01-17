@@ -42,14 +42,17 @@ Sismic requires Python >=3.4 but should also work with Python 3.3.
 Documentation
 -------------
 
-The latest version of the documentation is available at `sismic.readthedocs.org <http://sismic.readthedocs.org/>`_.
-The documentation can also be directly built from the `docs <https://github.com/AlexandreDecan/sismic/tree/master/docs>`_ directory using Sphinx.
+The documentation for the latest distributed version is available at `sismic.readthedocs.org <http://sismic.readthedocs.org/>`_.
 Many examples are available in `docs/examples <https://github.com/AlexandreDecan/sismic/tree/master/docs/examples>`_.
+
+The documentation can also be directly built from the `docs <https://github.com/AlexandreDecan/sismic/tree/master/docs>`_ directory using Sphinx.
+
 
 Changelog
 ---------
 
-See `CHANGELOG.rst <http://sismic.readthedocs.org/en/latest/changelog.html>`_.
+See `CHANGELOG.rst <http://sismic.readthedocs.org/en/stable/changelog.html>`_.
+Unreleased but implemented changes are documented `here <CHANGELOG.rst>`_.
 
 Credits
 -------
