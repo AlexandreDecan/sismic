@@ -224,7 +224,7 @@ class Interpreter:
         transitions = set()
 
         # Retrieve the firable transitions for all active state
-        for transition in self._statechart._transitions:
+        for transition in self._statechart.transitions:
             if (transition.event == getattr(event, 'name', None) and transition.from_state in self._configuration and
                     (transition.guard is None or self._evaluator.evaluate_guard(transition, event))):
                 transitions.add(transition)

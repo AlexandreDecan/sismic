@@ -347,7 +347,6 @@ class Statechart:
         if parent:
             self._states[self._parent[state.name]].children.append(state.name)
 
-
     def register_transition(self, transition: Transition):
         """
         Register given transition and register it on the source state
@@ -355,6 +354,13 @@ class Statechart:
         :param transition: transition to add
         """
         self._transitions.append(transition)
+
+    @property
+    def transitions(self):
+        """
+        List of available transitions
+        """
+        return self._transitions
 
     def transitions_from(self, state: str) -> list:
         """

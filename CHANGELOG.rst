@@ -7,6 +7,7 @@ Unreleased
  - (Added) A new exceptions hierarchy (see ``exceptions`` module).
    The new exceptions are used in place of the old ones (``Warning``, ``AssertionError`` and ``ValueError``).
  - (Added) An *initial code* property (YAML) for statecharts.
+ - (Added) Statechart has ``transitions_from``, ``transitions_to`` and ``transitions_with`` methods.
  - (Changed) Rename ``model.StateChart`` to ``model.Statechart``.
  - (Changed) ``Statechart.states`` becomes ``Statechart.state_for`` method.
  - (Changed) A statechart defines a root state (*initial state* in YAML).
