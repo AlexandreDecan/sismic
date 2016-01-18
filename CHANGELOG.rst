@@ -4,7 +4,15 @@ Changelog
 Unreleased
 ----------
 
-Nothing yet...
+ - (Added) A new exceptions hierarchy (see ``exceptions`` module).
+   The new exceptions are used in place of the old ones (``Warning``, ``AssertionError`` and ``ValueError``).
+ - (Added) A *initial code* property (YAML) for statecharts.
+ - (Changed) Rename ``model.StateChart`` to ``model.Statechart``.
+ - (Changed) ``Statechart.states`` becomes ``Statechart.state_for`` method.
+ - (Changed) A statechart defines a root state (*initial state* in YAML).
+ - (Changed) ``Transition.event`` is a string instead of an ``Event`` instance.
+ - (Removed) Contracts and codes for statecharts (define them on root state instead).
+ - (Removed) ``io.export_to_yaml``.
 
 0.16.0 (2015-01-15)
 -------------------

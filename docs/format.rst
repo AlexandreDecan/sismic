@@ -229,7 +229,7 @@ The module :py:mod:`sismic.io` provides a convenient loader :py:func:`~sismic.io
 which takes a textual YAML definition of a statechart. It also provides a way to export statecharts to YAML.
 
 .. automodule:: sismic.io
-    :members: import_from_yaml, export_to_yaml
+    :members: import_from_yaml
     :noindex:
 
 For example:
@@ -240,7 +240,7 @@ For example:
 
     with open('examples/elevator.yaml') as f:
         statechart = io.import_from_yaml(f)
-        assert isinstance(statechart, model.StateChart)
+        assert isinstance(statechart, model.Statechart)
 
 
 The parser performs an automatic validation against the YAML schema of the next subsection, and also

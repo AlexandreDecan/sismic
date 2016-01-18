@@ -251,9 +251,9 @@ function that run an interpreter in a thread, and does the job of synchronizing 
 
 .. testoutput:: thread
 
-    Initial: ['plugged', 'door', 'heating', 'lamp', 'turntable', 'door.close', 'heating.off', 'lamp.off', 'turntable.off']
-    Toggledoor: ['plugged', 'door', 'heating', 'lamp', 'turntable', 'door.open', 'heating.off', 'lamp.on', 'turntable.off']
-    Toggledoor: ['plugged', 'door', 'heating', 'lamp', 'turntable', 'door.close', 'heating.off', 'lamp.off', 'turntable.off']
+    Initial: ['root', 'plugged', 'door', 'heating', 'lamp', 'turntable', 'door.close', 'heating.off', 'lamp.off', 'turntable.off']
+    Toggledoor: ['root', 'plugged', 'door', 'heating', 'lamp', 'turntable', 'door.open', 'heating.off', 'lamp.on', 'turntable.off']
+    Toggledoor: ['root', 'plugged', 'door', 'heating', 'lamp', 'turntable', 'door.close', 'heating.off', 'lamp.off', 'turntable.off']
     Final: []
 
 Notice that an optional argument ``callback`` can be passed to :py:func:`~sismic.interpreter.run_in_background`.

@@ -139,6 +139,7 @@ def _state_from_dict(state_d: dict) -> StateMixin:
     return state
 
 
+'''
 def export_to_yaml(statechart: Statechart) -> str:
     """
     Export given StateChart instance to YAML
@@ -251,3 +252,4 @@ def _export_element_to_dict(el, ordered=False) -> dict:
     if isinstance(el, FinalState):
         d['type'] = 'final'
     return d
+'''

@@ -76,7 +76,7 @@ to the relevant orthogonal regions*", UML specification). In practice, however, 
 Using *Interpreter*
 -------------------
 
-A :py:class:`~sismic.interpreter.Interpreter` instance is constructed upon a :py:class:`~sismic.model.StateChart`
+A :py:class:`~sismic.interpreter.Interpreter` instance is constructed upon a :py:class:`~sismic.model.Statechart`
 instance and an optional callable that returns an :py:class:`~sismic.code.Evaluator`.
 This callable must accept an interpreter and an initial execution context as input (see :ref:`code_evaluation`).
 If no evaluator is specified, the :py:class:`~sismic.code.PythonEvaluator` class will be used with an empty
@@ -150,7 +150,7 @@ and executed by the method.
 
     assert len(interpreter.execute(max_steps=10)) <= 10
 
-For convenience, a :py:class:`~sismic.model.StateChart` has an :py:meth:`~sismic.model.StateChart.events` method
+For convenience, a :py:class:`~sismic.model.Statechart` has an :py:meth:`~sismic.model.Statechart.events` method
 that returns the list of all possible events that can be interpreted by this statechart (other events will
 be consumed and ignored).
 This method also accepts a state name or a list of state names to restrict the list of returned events,
