@@ -15,7 +15,7 @@ Many backward incompatible changes in this update, look carefully at the changel
  - (Added) Statechart has ``remove_state`` and ``remove_transition`` methods.
  - (Added) Statechart has a ``rename_state`` method.
  - (Changed) ``Transition.event`` is a string instead of an ``Event`` instance.
- - (Changed) ``Transition.from_state``, ``Transition.to_state`` and ``StateMixin.name`` are protected.
+ - (Changed) ``StateMixin.name`` is now read-only (use ``Statechart.rename_state``).
  - (Changed) Rename ``model.StateChart`` to ``model.Statechart``.
  - (Changed) ``Statechart.states`` becomes ``Statechart.state_for`` method.
  - (Changed) A statechart defines a root state (*initial state* in YAML).

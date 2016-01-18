@@ -253,32 +253,18 @@ class Transition(ContractMixin):
 
     def __init__(self, from_state: str, to_state: str = None, event: str = None, guard: str = None, action: str = None):
         ContractMixin.__init__(self)
-        self._from_state = from_state
-        self._to_state = to_state
+        self.from_state = from_state
+        self.to_state = to_state
         self.event = event
         self.guard = guard
         self.action = action
-
-    @property
-    def from_state(self):
-        """
-        Source state
-        """
-        return self._from_state
-
-    @property
-    def to_state(self):
-        """
-        Target state if any
-        """
-        return self._to_state
 
     @property
     def internal(self):
         """
         Boolean indicating whether this transition is an internal transition.
         """
-        return self._to_state is None
+        return self.to_state is None
 
     @property
     def eventless(self):
@@ -289,22 +275,22 @@ class Transition(ContractMixin):
 
     def __eq__(self, other):
         return (isinstance(other, Transition) and
-                self._from_state == other._from_state and
-                self._to_state == other._to_state and
+                self.from_state == other.from_state and
+                self.to_state == other.to_state and
                 self.event == other.event and
                 self.guard == other.guard and
                 self.action == other.action)
 
     def __repr__(self):
-        return 'Transition({0}, {1}, {2})'.format(self._from_state, self._to_state, self.event)
+        return 'Transition({0}, {1}, {2})'.format(self.from_state, self.to_state, self.event)
 
     def __str__(self):
-        to_state = self._to_state if self._to_state else '[' + self._from_state + ']'
+        to_state = self.to_state if self.to_state else '[' + self.from_state + ']'
         event = '+' + self.event if self.event else ''
-        return self._from_state + event + ' -> ' + to_state
+        return self.from_state + event + ' -> ' + to_state
 
     def __hash__(self):
-        return hash(self._from_state)
+        return hash(self.from_state)
 
 
 class Statechart:
@@ -515,11 +501,11 @@ class Statechart:
 
         # Change transitions
         for transition in self.transitions_from(old_name):
-            transition._from_state = new_name
+            transition.from_state = new_name
 
         for transition in self.transitions_to(old_name):
             if not transition.internal:
-                transition._to_state = new_name
+                transition.to_state = new_name
 
         for other_state in self._states.values():
             # Change initial (CompoundState)
