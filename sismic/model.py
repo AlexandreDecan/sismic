@@ -177,24 +177,46 @@ class OrthogonalState(ContractMixin, StateMixin, TransitionStateMixin, ActionSta
         CompositeStateMixin.__init__(self)
 
 
-class HistoryState(ContractMixin, StateMixin):
+class HistoryStateMixin:
     """
     History state can be either 'shallow' (default) or 'deep'.
     A shallow history state resumes the execution of its parent.
     A deep history state resumes the execution of its parent, and of every nested
     active states in its parent.
 
-    :param name: name of this state
     :param initial: name of the initial state
-    :param deep: Boolean indicating whether a deep semantic (True) or a shallow semantic (False) should be used
     """
 
-    def __init__(self, name: str, initial: str = None, deep: bool = False):
-        ContractMixin.__init__(self)
-        StateMixin.__init__(self, name)
-        self.name = name
+    def __init__(self, initial: str = None):
         self.initial = initial
-        self.deep = deep
+
+
+class ShallowHistoryState(StateMixin, ContractMixin, HistoryStateMixin):
+    """
+    A shallow history state resumes the execution of its parent.
+    It activates the latest visited state of its parent.
+
+    :param name: name of this state
+    :param initial: name of the initial state
+    """
+    def __init__(self, name: str, initial: str=None):
+        StateMixin.__init__(self, name)
+        ContractMixin.__init__(self)
+        HistoryStateMixin.__init__(self, initial)
+
+
+class DeepHistoryState(StateMixin, ContractMixin, HistoryStateMixin):
+    """
+    A deep history state resumes the execution of its parent, and of every nested
+    active states in its parent.
+
+    :param name: name of this state
+    :param initial: name of the initial state
+    """
+    def __init__(self, name: str, initial: str=None):
+        StateMixin.__init__(self, name)
+        ContractMixin.__init__(self)
+        HistoryStateMixin.__init__(self, initial)
 
 
 class FinalState(ContractMixin, StateMixin, ActionStateMixin):
@@ -429,7 +451,7 @@ class Statechart:
                 raise InvalidStatechartError('{} cannot be used as a parent for {}'.format(parent_state, state))
 
             # If state is an HistoryState, its parent must be a CompoundState
-            if isinstance(state, HistoryState) and not isinstance(parent_state, CompoundState):
+            if isinstance(state, HistoryStateMixin) and not isinstance(parent_state, CompoundState):
                 raise InvalidStatechartError('{} cannot be used as a parent for {}'.format(parent_state, state))
 
         # Save state

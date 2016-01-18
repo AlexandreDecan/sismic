@@ -2,7 +2,7 @@ import yaml
 import os
 
 from pykwalify.core import Core
-from sismic.model import Transition, Statechart, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
+from sismic.model import Transition, Statechart, BasicState, CompoundState, OrthogonalState, ShallowHistoryState, DeepHistoryState, FinalState
 from sismic.model import StateMixin
 from sismic.exceptions import InvalidStatechartError
 
@@ -110,10 +110,10 @@ def _state_from_dict(state_d: dict) -> StateMixin:
         state = FinalState(name, on_entry, on_exit)
     elif state_d.get('type', None) == 'shallow history':
         # Shallow history pseudo state
-        state = HistoryState(state_d['name'], state_d.get('initial'), deep=False)
+        state = ShallowHistoryState(state_d['name'], state_d.get('initial'))
     elif state_d.get('type', None) == 'deep history':
         # Deep history pseudo state
-        state = HistoryState(state_d['name'], state_d.get('initial'), deep=True)
+        state = DeepHistoryState(state_d['name'], state_d.get('initial'))
     else:
         name = state_d.get('name')
         on_entry = state_d.get('on entry', None)

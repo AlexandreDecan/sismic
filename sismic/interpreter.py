@@ -362,7 +362,7 @@ class Interpreter:
 
         # Otherwise, develop history, compound and orthogonal states.
         for leaf in leaves:
-            if isinstance(leaf, model.HistoryState):
+            if isinstance(leaf, model.HistoryStateMixin):
                 states_to_enter = self._memory.get(leaf.name, [leaf.initial])
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_for(x), x))
                 return model.MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
@@ -391,20 +391,19 @@ class Interpreter:
         # Deal with history: this only concerns compound states
         exited_compound_states = list(filter(lambda s: isinstance(s, model.CompoundState), exited_states))
         for state in exited_compound_states:
-            # Look for an HistoryState among its children
+            # Look for an HistoryStateMixin among its children
             for child_name in self._statechart.children_for(state.name):
                 child = self._statechart.state_for(child_name)
-                if isinstance(child, model.HistoryState):
-                    if child.deep:
-                        # This MUST contain at least one element!
-                        active = self._configuration.intersection(self._statechart.descendants_for(state.name))
-                        assert len(active) >= 1
-                        self._memory[child.name] = list(active)
-                    else:
-                        # This MUST contain exactly one element!
-                        active = self._configuration.intersection(self.statechart.children_for(state.name))
-                        assert len(active) == 1
-                        self._memory[child.name] = list(active)
+                if isinstance(child, model.DeepHistoryState):
+                    # This MUST contain at least one element!
+                    active = self._configuration.intersection(self._statechart.descendants_for(state.name))
+                    assert len(active) >= 1
+                    self._memory[child.name] = list(active)
+                elif isinstance(child, model.ShallowHistoryState):
+                    # This MUST contain exactly one element!
+                    active = self._configuration.intersection(self.statechart.children_for(state.name))
+                    assert len(active) == 1
+                    self._memory[child.name] = list(active)
         # Update configuration
         self._configuration = self._configuration.difference(step.exited_states)
 
