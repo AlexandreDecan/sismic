@@ -8,6 +8,16 @@ class TraversalTests(unittest.TestCase):
     def setUp(self):
         self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
 
+    def test_parent(self):
+        self.assertEqual(self.sc.parent_for('s2'), 'root')
+        self.assertEqual(self.sc.parent_for('root'), None)
+        with self.assertRaises(KeyError):
+            self.sc.parent_for('unknown')
+
+    def test_children(self):
+        self.assertEqual(sorted(self.sc.children_for('root')), ['s1', 's2'])
+        self.assertEqual(self.sc.children_for('s1b2'), [])
+
     def test_ancestors(self):
         self.assertEqual(self.sc.ancestors_for('s2'), ['root'])
         self.assertEqual(self.sc.ancestors_for('s1a'), ['s1', 'root'])
@@ -95,3 +105,38 @@ class TraversalTests(unittest.TestCase):
         """
         with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             io.import_from_yaml(yaml)
+
+
+class TransitionsTests(unittest.TestCase):
+    def setUp(self):
+        self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))
+
+    def test_transitions_from(self):
+        self.assertEqual(self.sc.transitions_from('root'), [])
+        self.assertEqual(len(self.sc.transitions_from('active')), 2)
+        self.assertEqual(len(self.sc.transitions_from('s1')), 1)
+
+        self.assertEqual(len(self.sc.transitions_from('unknown')),0)
+
+        for transition in self.sc.transitions_from('active'):
+            self.assertEqual(transition.from_state, 'active')
+
+    def test_transitions_to(self):
+        self.assertEqual(self.sc.transitions_to('root'), [])
+        self.assertEqual(len(self.sc.transitions_to('s1')), 1)
+        self.assertEqual(len(self.sc.transitions_to('s2')), 2)
+
+        self.assertEqual(len(self.sc.transitions_to('unknown')), 0)
+
+        for transition in self.sc.transitions_from('s2'):
+            self.assertEqual(transition.to_state, 's2')
+
+        with self.assertRaises(exceptions.InvalidStatechartError):
+            self.sc.add_transition(model.Transition('s2'))
+
+        self.sc.add_transition(model.Transition('s1'))
+        self.assertEqual(len(self.sc.transitions_to('s1')), 2)
+
+    def test_transitions_with(self):
+        self.assertEqual(len(self.sc.transitions_with('next')), 1)
+        self.assertEqual(len(self.sc.transitions_with('unknown')), 0)

@@ -20,6 +20,8 @@ Many backward incompatible changes in this update, look carefully at the changel
  - (Changed) Rename ``Statechart.events`` to ``Statechart.events_for``.
  - (Changed) Rename ``Statechart.register_state`` to ``Statechart.add_state`` and ``Statechart.register_transition``
    to ``Statechart.add_transition``.
+ - (Changed) Rewrite ``io.import_from_yaml`` to load states before transitions. This function does not anymore
+   accept a ``validate_statechart`` parameter. Its ``validate_schema`` parameter is now ``not ignore_schema``.
  - (Removed) Contracts and codes for statecharts (define them on root state instead).
  - (Removed) Cache for several ``model.Statechart`` methods.
  - (Removed) ``Statechart.validate`` (C1, C2 and C4 are now included in the construction process).
