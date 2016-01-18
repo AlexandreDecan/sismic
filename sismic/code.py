@@ -1,6 +1,6 @@
 import abc
 import copy
-from sismic.model import Event, InternalEvent, Transition, StateMixin
+from sismic.model import Event, InternalEvent, Transition, StateMixin, Statechart
 from sismic.exceptions import CodeEvaluationError
 
 
@@ -53,6 +53,15 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param additional_context: an optional additional context
         """
         raise NotImplementedError()
+
+    def execute_statechart(self, statechart: Statechart):
+        """
+        Execute the initial code of a statechart.
+        This method is called at the very beginning of the execution.
+        :param statechart: statechart to consider
+        """
+        if statechart.bootstrap:
+            return self._execute_code(statechart.bootstrap)
 
     def evaluate_guard(self, transition: Transition, event: Event) -> bool:
         """

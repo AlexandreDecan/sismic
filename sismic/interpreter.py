@@ -21,7 +21,7 @@ class Interpreter:
     :param ignore_contract: set to True to ignore contract checking during the execution.
     """
 
-    def __init__(self, statechart: model.StateChart, evaluator_klass=None,
+    def __init__(self, statechart: model.Statechart, evaluator_klass=None,
                  initial_context: dict=None, initial_time: int=0, ignore_contract: bool=False):
         # Internal variables
         self._ignore_contract = ignore_contract
@@ -37,7 +37,7 @@ class Interpreter:
 
         # Evaluator
         self._evaluator = evaluator_klass(self, initial_context) if evaluator_klass else PythonEvaluator(self, initial_context)
-        self._evaluator._execute_code(statechart.bootstrap)
+        self._evaluator.execute_statechart(statechart)
 
         # Initial step and stabilization
         step = model.MicroStep(entered_states=[self._statechart.root])
@@ -200,13 +200,6 @@ class Interpreter:
         for name in self._configuration:
             state = self._statechart.state_for(name)
             self.__evaluate_contract_conditions(state, 'invariants', macro_step)
-
-        # Check statechart invariants
-        self.__evaluate_contract_conditions(self._statechart, 'invariants', macro_step)
-
-        # Check statechart postconditions if statechart is in a final configuration
-        if self.final:
-            self.__evaluate_contract_conditions(self._statechart, 'postconditions', macro_step)
 
         # Update trace
         self._trace.append(macro_step)

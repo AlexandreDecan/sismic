@@ -1,20 +1,22 @@
 statechart:
   name: statechart with executable content
-  on entry: |
+  initial code: |
     x = 1
     y = 2
-  initial: s1
+  initial state:
+    name: root
+    initial: s1
 
-  states:
-  - name: s1
-    transitions:
-    - target: s2
-      action: |
-        x += 1
-  - name: s2
-    on entry: |
-      y += 1
-    transitions:
-    - target: s3
-  - name: s3
-    type: final  # x = 2, y = 3
+    states:
+    - name: s1
+      transitions:
+      - target: s2
+        action: |
+          x += 1
+    - name: s2
+      on entry: |
+        y += 1
+      transitions:
+      - target: s3
+    - name: s3
+      type: final  # x = 2, y = 3

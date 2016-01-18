@@ -1,17 +1,19 @@
 statechart:
   name: Test internal events
-  initial: active
-  states:
-    - name: active
-      on entry: send('next')
-      transitions:
-        - target: s1
-          event: next
-        - target: s2
-          event: not_next
-    - name: s1
-      transitions:
-        - target: s2
-          guard: active('s1')  # Useless guard
-    - name: s2
-      type: final
+  initial state:
+    name: root
+    initial: active
+    states:
+      - name: active
+        on entry: send('next')
+        transitions:
+          - target: s1
+            event: next
+          - target: s2
+            event: not_next
+      - name: s1
+        transitions:
+          - target: s2
+            guard: active('s1')  # Useless guard
+      - name: s2
+        type: final

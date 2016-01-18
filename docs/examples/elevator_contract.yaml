@@ -1,7 +1,6 @@
 statechart:
   name: Elevator
-  initial: active
-  on entry: |
+  initial code: |
     current = 0
     destination = 0
 
@@ -16,72 +15,72 @@ statechart:
         self.opened = False
 
     doors = Doors()
-  contract:
-    - before: current == 0
-    - always: current >= 0  # Floor must be valid
-    - always: destination >= 0  # Selected floor must be valid
-  states:
-    - name: active
-      parallel states:
-        - name: movingElevator
-          initial: doorsOpen
-          states:
-            - name: doorsOpen
-              transitions:
-                - target: doorsClosed
-                  guard: destination != current
-                  action: doors.close()
-                - target: doorsClosed
-                  guard: after(10) and current > 0
-                  action: |
-                    destination = 0
-                    doors.close()
-                  contract:
-                    - before: current > 0
-                    - after: destination = 0
-            - name: doorsClosed
-              transitions:
-                - target: movingUp
-                  guard: destination > current
-                - target: movingDown
-                  guard: destination < current and destination >= 0
-            - name: moving
-              contract:
-                - always: not doors.opened  # Keep doors closed while moving
-                - before: destination != current  # Move only if destination is not reached
-                - after: destination == current  # Destination should be reached
-                - after: current != __old__.current  # Current changed (redundant)
-              transitions:
-                - target: doorsOpen
-                  guard: destination == current
-                  action: doors.open()
-                  contract:
-                    - before: not doors.opened  # Doors are closed
-                    - after: doors.opened  # Doors are opened
-              states:
-                - name: movingUp
-                  on entry: current = current + 1
-                  contract:
-                    - before: current < destination  # Move up only if below
-                    - always: current <= destination  # Never go above destination
-                    - after: current > __old__.current  # Move up!
-                  transitions:
-                    - target: movingUp
-                      guard: destination > current
-                - name: movingDown
-                  contract:
-                    - before: current > destination  # Move down only if above
-                    - always: current >= destination  # Never go below destination
-                    - after: current < __old__.current  # Move down!
-                  on entry: current = current - 1
-                  transitions:
-                    - target: movingDown
-                      guard: destination < current
-        - name: floorListener
-          initial: floorSelecting
-          states:
-            - name: floorSelecting
-              transitions:
-                - target: floorSelecting
-                  event: floorSelected
-                  action: destination = event.floor
+  initial state:
+    name: active
+    contract:
+      - before: current == 0
+      - always: current >= 0  # Floor must be valid
+      - always: destination >= 0  # Selected floor must be valid
+    parallel states:
+      - name: movingElevator
+        initial: doorsOpen
+        states:
+          - name: doorsOpen
+            transitions:
+              - target: doorsClosed
+                guard: destination != current
+                action: doors.close()
+              - target: doorsClosed
+                guard: after(10) and current > 0
+                action: |
+                  destination = 0
+                  doors.close()
+                contract:
+                  - before: current > 0
+                  - after: destination = 0
+          - name: doorsClosed
+            transitions:
+              - target: movingUp
+                guard: destination > current
+              - target: movingDown
+                guard: destination < current and destination >= 0
+          - name: moving
+            contract:
+              - always: not doors.opened  # Keep doors closed while moving
+              - before: destination != current  # Move only if destination is not reached
+              - after: destination == current  # Destination should be reached
+              - after: current != __old__.current  # Current changed (redundant)
+            transitions:
+              - target: doorsOpen
+                guard: destination == current
+                action: doors.open()
+                contract:
+                  - before: not doors.opened  # Doors are closed
+                  - after: doors.opened  # Doors are opened
+            states:
+              - name: movingUp
+                on entry: current = current + 1
+                contract:
+                  - before: current < destination  # Move up only if below
+                  - always: current <= destination  # Never go above destination
+                  - after: current > __old__.current  # Move up!
+                transitions:
+                  - target: movingUp
+                    guard: destination > current
+              - name: movingDown
+                contract:
+                  - before: current > destination  # Move down only if above
+                  - always: current >= destination  # Never go below destination
+                  - after: current < __old__.current  # Move down!
+                on entry: current = current - 1
+                transitions:
+                  - target: movingDown
+                    guard: destination < current
+      - name: floorListener
+        initial: floorSelecting
+        states:
+          - name: floorSelecting
+            transitions:
+              - target: floorSelecting
+                event: floorSelected
+                action: destination = event.floor

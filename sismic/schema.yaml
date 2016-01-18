@@ -69,15 +69,9 @@ mapping:
         required: yes
       "description":
         type: str
-      "on entry":
+      "initial code":
         type: str
-      "initial":
-        type: str
+      "initial state":
+        type: map
         required: yes
-      "states":
-        type: seq
-        required: yes
-        sequence:
-          - include: state
-      "contract":
-        include: contract
+        include: state

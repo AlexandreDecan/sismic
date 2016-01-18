@@ -35,26 +35,28 @@ The root of the YAML file **must** declare a statechart:
 
     statechart:
       name: Name of the statechart
-      initial: name of the initial state
       description: Description of the statechart
+      initial state:
+        [...]
 
-The ``name`` and the ``initial`` state are mandatory, the ``description`` is optional.
+
+The ``name`` and the ``initial state`` are mandatory, the ``description`` is optional.
+The ``initial state`` key contains a state definition (see below).
 If specific code needs to be executed during initialization of the statechart, this can be specified
-using ``on entry``. In this example, the code is written in Python.
+using ``initial code``. In this example, the code is written in Python.
 
 .. code:: yaml
 
     statechart:
       name: statechart containing initialization code
-      initial: s1
-      on entry: x = 1
+      initial code: x = 1
 
 
 Code can be written on multiple lines as follows:
 
 .. code:: yaml
 
-    on entry: |
+    initial code: |
       x = 1
       y = 2
 
@@ -62,16 +64,15 @@ Code can be written on multiple lines as follows:
 States
 ******
 
-A statechart must declare a (nonempty) list of states using ``states``.
+A statechart must declare an initial state.
 Each state consist of at least a mandatory ``name``. Depending on the state type, other optional fields can be declared.
 
 .. code:: yaml
 
     statemachine:
       name: with state
-      initial: s1
-      states:
-        - name: s1
+      initial state:
+        name: root
 
 
 Entry and exit actions
@@ -129,7 +130,7 @@ Such a state is commonly called a *composite state*.
 
 .. code:: yaml
 
-  - name: compound state
+  - name: composite state
     states:
       - name: nested state 1
       - name: nested state 2
@@ -153,16 +154,11 @@ They must declare their nested states using ``parallel states`` instead of ``sta
 
   statechart:
     name: statechart containing multiple orthogonal states
-    initial: processes
-    states:
-      - name: processes
-        parallel states:
-          - name: process 1
-          - name: process 2
-
-Orthogonal states cannot be declared at top level, they should always be nested in a composite state, as
-illustrated in the previous example. For example, it is not allowed to define ``parallel states``
-instead of ``states`` in this example.
+    initial state:
+      name: processes
+      parallel states:
+        - name: process 1
+        - name: process 2
 
 Transitions
 ***********

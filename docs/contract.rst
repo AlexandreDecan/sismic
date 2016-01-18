@@ -27,15 +27,14 @@ While DbC has gained some amount of acceptance at the programming level,
 there is hardly any support for it at the modeling level.
 
 Sismic aims to change this, by integrating support for Design by Contract for statechart models!
-The basic idea is that contracts can be defined for statecharts and their componnents,
+The basic idea is that contracts can be defined for statechart componnents,
 by specifying preconditions, postconditions and invariants on them.
 At runtime, Sismic will verify the conditions specified by the constracts.
-If a condition is not satisfied, an ``AssertionError`` will be raised.
-More specifically, one of :py:exc:`~sismic.testing.PreconditionFailed`, :py:exc:`~sismic.testing.PostconditionFailed`
-or :py:exc:`~sismic.testing.InvariantFailed` will be raised:
-The three exceptions inherit from :py:exc:`~sismic.testing.ConditionFailed`, a subclass of ``AssertionError``:
+If a condition is not satisfied, a :py:exc:`~sismic.exceptions.ContractError`` will be raised.
+More specifically, one of :py:exc:`~sismic.exceptions.PreconditionError`, :py:exc:`~sismic.exceptions.PostconditionError`
+or :py:exc:`~sismic.exceptions.InvariantError` will be raised.
 
-Contracts can be specified at three levels: for the statechart itself, for any state contained in the statechart, and for any transition contained in the statechart.
+Contracts can be specified at two levels: for any state contained in the statechart, and for any transition contained in the statechart.
 At each level, a contract can contain preconditions, postconditions and/or invariants.
 Their semantics is straightforward:
 
@@ -47,10 +46,6 @@ Their semantics is straightforward:
     - the preconditions are checked before starting the process of the transition (and **before** executing the optional transition action).
     - the postconditions are checked after finishing the process of the transition (and **after** executing the optional transition action).
     - the invariants are checked twice: one before starting and a second time after finishing the process of the transition.
- - For statecharts:
-    - the preconditions are checked before any *stabilization step* (but **after** executing ``on entry``).
-    - the postconditions are checked after the statechart enters a final configuration.
-    - the invariants are checked at the end of each *macro step*.
 
 
 Defining contracts in YAML
@@ -88,15 +83,17 @@ instance (see :doc:`code`).
      - after: x + y == 0
      - always: x + y >= 0
 
-Here is an example of a contracts defined at the level of the statechart itself:
+Here is an example of a contracts defined at state level:
 
 .. code:: yaml
 
     statechart:
       name: example
-      contract:
-       - always: x >= 0
-       - always: not active('initial') or x > 0
+      initial state:
+        name: root
+        contract:
+         - always: x >= 0
+         - always: not active('initial') or x > 0
 
 If the default :py:class:`~sismic.code.PythonEvaluator` is used,
 it is possible to refer to the old value of some variable used in the statechart, by prepending ``__old__``.
@@ -126,7 +123,7 @@ Executing statecharts containing contracts
 The execution of a statechart that contains contracts does not essentially differ
 from the execution of a statechart that does not.
 The only difference is that conditions of each contract are checked
-at runtime (as explained above) and may raise a subclass of :py:exc:`~sismic.testing.ConditionFailed`.
+at runtime (as explained above) and may raise a subclass of :py:exc:`~sismic.exceptions.ContractError`.
 
 .. testcode::
 
@@ -138,7 +135,7 @@ at runtime (as explained above) and may raise a subclass of :py:exc:`~sismic.tes
         statechart = import_from_yaml(f)
 
         # Make the run fails
-        statechart.states['movingUp'].preconditions[0] = 'current > destination'
+        statechart.state_for('movingUp').preconditions[0] = 'current > destination'
 
         interpreter = Interpreter(statechart)
         interpreter.queue(Event('floorSelected', floor=4))
@@ -152,7 +149,7 @@ The exception displays some relevant information to help debug:
 
     Traceback (most recent call last):
      ...
-    sismic.testing.PreconditionFailed: Precondition not satisfied!
+    sismic.exceptions.PreconditionError: Precondition not satisfied!
     Object: BasicState(movingUp)
     Assertion: current > destination
     Configuration: ['active', 'floorListener', 'movingElevator', 'floorSelecting']

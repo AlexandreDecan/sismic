@@ -10,40 +10,43 @@ statechart:
     The statechart is composed of two parallel regions:
      - A "timer" region which increments "elapsed_time" if timer is running
      - A "display" region that refreshes the display according to the actual time/lap time feature
-  initial: active
-  on entry: elapsed_time = 0
-  states:
-    - name: active
-      parallel states:
-        - name: timer
-          initial: stopped
-          transitions:
-            - event: reset
-              action: elapsed_time = 0
-          states:
-            - name: running
-              transitions:
-                - event: stop
-                  target: stopped
-                - guard: after(1)
-                  target: running
-                  action: elapsed_time += 1
-            - name: stopped
-              transitions:
-                - event: start
-                  target: running
-        - name: display
-          initial: actual time
-          states:
-            - name: actual time
-              transitions:
-                - guard: after(0.1)
-                  target: actual time
-                  action: |
-                    send('refresh', time=elapsed_time)
-                - event: split
-                  target: lap time
-            - name: lap time
-              transitions:
-                - event: split
-                  target: actual time
+
+  initial code: elapsed_time = 0
+  initial state:
+    name: root
+    initial: active
+    states:
+      - name: active
+        parallel states:
+          - name: timer
+            initial: stopped
+            transitions:
+              - event: reset
+                action: elapsed_time = 0
+            states:
+              - name: running
+                transitions:
+                  - event: stop
+                    target: stopped
+                  - guard: after(1)
+                    target: running
+                    action: elapsed_time += 1
+              - name: stopped
+                transitions:
+                  - event: start
+                    target: running
+          - name: display
+            initial: actual time
+            states:
+              - name: actual time
+                transitions:
+                  - guard: after(0.1)
+                    target: actual time
+                    action: |
+                      send('refresh', time=elapsed_time)
+                  - event: split
+                    target: lap time
+              - name: lap time
+                transitions:
+                  - event: split
+                    target: actual time

@@ -1,22 +1,24 @@
 statechart:
   name: simple statechart
-  initial: s1
+  initial state:
+    name: root
+    initial: s1
 
-  states:
-    - name: s1
-      transitions:
-        - target: s2
-          event: goto s2
-    - name: s2
-      transitions:
-        - target: s3
-    - name: s3
-      transitions:
-        - target: s1
-          event: goto s1
-        - target: s2
-          event: goto s2
-        - target: final
-          event: goto final
-    - name: final
-      type: final
+    states:
+      - name: s1
+        transitions:
+          - target: s2
+            event: goto s2
+      - name: s2
+        transitions:
+          - target: s3
+      - name: s3
+        transitions:
+          - target: s1
+            event: goto s1
+          - target: s2
+            event: goto s2
+          - target: final
+            event: goto final
+      - name: final
+        type: final

@@ -2,14 +2,14 @@ import yaml
 import os
 from pykwalify.core import Core
 from collections import OrderedDict
-from sismic.model import Event, Transition, StateChart, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
+from sismic.model import Event, Transition, Statechart, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
 from sismic.model import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 
 
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')
 
 
-def import_from_yaml(statechart: str, validate_yaml=True, validate_statechart=True) -> StateChart:
+def import_from_yaml(statechart: str, validate_yaml=True, validate_statechart=True) -> Statechart:
     """
     Import a statechart from a YAML representation.
     YAML is first validated against ``io.SCHEMA``.
@@ -32,28 +32,17 @@ def import_from_yaml(statechart: str, validate_yaml=True, validate_statechart=Tr
     return sc
 
 
-def _import_from_dict(data: dict) -> StateChart:
+def _import_from_dict(data: dict) -> Statechart:
     """
     Import a statechart from a (set of nested) dictionary.
 
     :param data: dict-like structure
     :return: a StateChart instance
     """
-    root = CompoundState('root', initial=data['initial'])
-    sc = StateChart(data['name'], root=root, description=data.get('description', None), bootstrap=data.get('on entry', None))
-
-    # Preconditions, postconditions and invariants
-    for condition in data.get('contract', []):
-        if condition.get('before', None):
-            root.preconditions.append(condition['before'])
-        elif condition.get('after', None):
-            root.postconditions.append(condition['after'])
-        elif condition.get('always', None):
-            root.invariants.append(condition['always'])
+    sc = Statechart(data['name'], description=data.get('description', None), bootstrap=data.get('initial code', None))
 
     states_to_add = []  # list of (state, parent) to be added
-    for state in data['states']:
-        states_to_add.append((state, root.name))
+    states_to_add.append((data['initial state'], None))
 
     # Add states
     while states_to_add:
@@ -150,7 +139,7 @@ def _state_from_dict(state_d: dict) -> StateMixin:
     return state
 
 
-def export_to_yaml(statechart: StateChart) -> str:
+def export_to_yaml(statechart: Statechart) -> str:
     """
     Export given StateChart instance to YAML
 
@@ -161,7 +150,7 @@ def export_to_yaml(statechart: StateChart) -> str:
                      width=1000, default_flow_style=False, default_style='"')
 
 
-def _export_to_dict(statechart: StateChart, ordered=True) -> dict:
+def _export_to_dict(statechart: Statechart, ordered=True) -> dict:
     """
     Export given StateChart instance to a dict.
 

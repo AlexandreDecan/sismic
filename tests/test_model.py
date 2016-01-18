@@ -3,6 +3,7 @@ from sismic import io
 from sismic import model
 from sismic import exceptions
 
+
 class TraversalTests(unittest.TestCase):
     def setUp(self):
         self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
@@ -49,12 +50,20 @@ class TraversalTests(unittest.TestCase):
 
     def test_name_collision(self):
         root = model.CompoundState('root', 'a')
-        sc = model.StateChart('test', root=root)
+        sc = model.Statechart('test')
+        sc.register_state(root, None)
         s1 = model.BasicState('a')
         s2 = model.BasicState('a')
         sc.register_state(s1, parent='root')
         with self.assertRaises(exceptions.InvalidStatechartError):
             sc.register_state(s2, parent='root')
+
+    def test_root_already_defined(self):
+        root = model.CompoundState('root', 'a')
+        sc = model.Statechart('test')
+        sc.register_state(root, None)
+        with self.assertRaises(exceptions.InvalidStatechartError):
+            sc.register_state(root, None)
 
 
 class ValidateTests(unittest.TestCase):
@@ -62,11 +71,13 @@ class ValidateTests(unittest.TestCase):
         yaml = """
         statechart:
           name: test
-          initial: s1
-          states:
-            - name: s1
-              transitions:
-               - target: s2
+          initial state:
+            name: root
+            initial: s1
+            states:
+              - name: s1
+                transitions:
+                  - target: s2
         """
         with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             io.import_from_yaml(yaml)
@@ -76,42 +87,32 @@ class ValidateTests(unittest.TestCase):
         yaml = """
         statechart:
           name: test
-          initial: s1
-          states:
-            - name: s1
-              parallel states:
-               - name: s2
-                 type: shallow history
+          initial state:
+            name: root
+            initial: s1
+            states:
+              - name: s1
+                parallel states:
+                 - name: s2
+                   type: shallow history
         """
         with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             io.import_from_yaml(yaml)
         self.assertTrue(cm.exception.args[0].startswith('C2.'))
 
-    def test_c3(self):
-        yaml = """
-        statechart:
-          name: test
-          initial: s2
-          states:
-            - name: s1
-              states:
-                - name: s2
-        """
-        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
-            io.import_from_yaml(yaml)
-        self.assertTrue(cm.exception.args[0].startswith('C3.'))
-
     def test_c3_2(self):
         yaml = """
         statechart:
           name: test
-          initial: s1
-          states:
-            - name: s1
-              initial: s2
-              states:
-                - name: s3
-            - name: s2
+          initial state:
+            name: root
+            initial: s2
+            states:
+              - name: s3
+              - name: s2
+                initial: s3
+                states:
+                  - name: test
         """
         with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             io.import_from_yaml(yaml)
@@ -121,11 +122,13 @@ class ValidateTests(unittest.TestCase):
         yaml = """
         statechart:
           name: test
-          initial: s1
-          states:
-            - name: s1
-              states:
-                - name: s2
+          initial state:
+            name: root
+            initial: s1
+            states:
+              - name: s1
+                states:
+                  - name: s2
         """
         statechart = io.import_from_yaml(yaml)
         statechart.state_for('s1')._children = []
@@ -137,11 +140,13 @@ class ValidateTests(unittest.TestCase):
         yaml = """
         statechart:
           name: test
-          initial: s1
-          states:
-            - name: s1
-              transitions:
-               - target: s1
+          initial state:
+            name: root
+            initial: s1
+            states:
+              - name: s1
+                transitions:
+                 - target: s1
         """
         statechart = io.import_from_yaml(yaml)
         statechart.transitions[0]._to_state = None
@@ -153,14 +158,16 @@ class ValidateTests(unittest.TestCase):
         yaml = """
         statechart:
           name: test
-          initial: s1
-          states:
-            - name: s1
-              states:
-                - name: s3
-            - name: s2
-              transitions:
-                - target: s1
+          initial state:
+            name: root
+            initial: s1
+            states:
+              - name: s1
+                states:
+                  - name: s3
+              - name: s2
+                transitions:
+                  - target: s1
         """
         with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             io.import_from_yaml(yaml)

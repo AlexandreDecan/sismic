@@ -296,17 +296,16 @@ class Transition(ContractMixin):
         return hash(self._from_state)
 
 
-class StateChart:
+class Statechart:
     """
     Python structure for a statechart
 
     :param name: Name of this statechart
-    :param root: root state, expects a compound or orthogonal state
     :param description: optional description
     :param bootstrap: code to execute to bootstrap the statechart
     """
 
-    def __init__(self, name: str, root: StateMixin, description: str=None, bootstrap: str=None):
+    def __init__(self, name: str, description: str=None, bootstrap: str=None):
         self.name = name
         self.description = description
         self._bootstrap = bootstrap
@@ -315,16 +314,14 @@ class StateChart:
         self._parent = {}  # name -> parent.name
         self.transitions = []  # list of Transition objects
 
-        self._root = root
-        self._states[root.name] = root
-        self._parent[root.name] = None
+        self._root = None  # Name of the root element
 
     @property
     def root(self):
         """
         Root state name
         """
-        return self._root.name
+        return self._root
 
     @property
     def bootstrap(self):
@@ -344,11 +341,19 @@ class StateChart:
         # Name should be unused so far
         if state.name in self._states.keys():
             raise InvalidStatechartError('State name {} is already used!'.format(state.name))
-        self._states[state.name] = state
-        self._parent[state.name] = parent.name if isinstance(parent, StateMixin) else parent
 
-        # Register on parent state
-        self._states[self._parent[state.name]].children.append(state.name)
+        # Set root?
+        if parent is None:
+            if self._root:
+                raise InvalidStatechartError('Root is already defined!')
+            else:
+                self._root = state.name
+        self._states[state.name] = state
+        self._parent[state.name] = parent
+
+        # Register on parent state if any
+        if parent:
+            self._states[self._parent[state.name]].children.append(state.name)
 
 
     def register_transition(self, transition: Transition):

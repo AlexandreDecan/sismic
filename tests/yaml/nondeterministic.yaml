@@ -1,13 +1,14 @@
 statechart:
   name: "Counter-example: non deterministic statechart"  # Use quotes to protect ':'
-  initial: s1
-
-  states:
-    - name: s1
-      transitions:
-        - target: s2
-        - target: s3
-    - name: s2
-      type: final
-    - name: s3
-      type: final
+  initial state:
+    name: root
+    initial: s1
+    states:
+      - name: s1
+        transitions:
+          - target: s2
+          - target: s3
+      - name: s2
+        type: final
+      - name: s3
+        type: final

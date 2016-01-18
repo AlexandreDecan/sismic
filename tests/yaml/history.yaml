@@ -5,8 +5,10 @@ statechart:
     It represents a process that loops over three states (s1, s2, s3) on `next` event.
     The process can be interrupted with a `pause` event.
     When paused, the process can either be continued (`continue` event) or stopped (`stop` event).
-  initial: loop
-  states:
+  initial state:
+    name: root
+    initial: loop
+    states:
     - name: loop
       initial: s1
       transitions:

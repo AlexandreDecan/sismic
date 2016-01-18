@@ -6,36 +6,38 @@ statechart:
 
     The stopwatch expects a "stopwatch" object in its initial context.
     This object should support the following methods: "start", "stop", "split", "reset", and "unsplit".
-  initial: active
-  states:
-    - name: active
-      parallel states:
-        - name: timer
-          initial: stopped
-          transitions:
-            - event: reset
-              action: stopwatch.reset()
-          states:
-            - name: running
-              transitions:
-                - event: stop
-                  target: stopped
-                  action: stopwatch.stop()
-            - name: stopped
-              transitions:
-                - event: start
-                  target: running
-                  action: stopwatch.start()
-        - name: display
-          initial: actual time
-          states:
-            - name: actual time
-              transitions:
-                - event: split
-                  target: lap time
-                  action: stopwatch.split()
-            - name: lap time
-              transitions:
-                - event: split
-                  target: actual time
-                  action: stopwatch.unsplit()
+  initial state:
+    name: root
+    initial: active
+    states:
+      - name: active
+        parallel states:
+          - name: timer
+            initial: stopped
+            transitions:
+              - event: reset
+                action: stopwatch.reset()
+            states:
+              - name: running
+                transitions:
+                  - event: stop
+                    target: stopped
+                    action: stopwatch.stop()
+              - name: stopped
+                transitions:
+                  - event: start
+                    target: running
+                    action: stopwatch.start()
+          - name: display
+            initial: actual time
+            states:
+              - name: actual time
+                transitions:
+                  - event: split
+                    target: lap time
+                    action: stopwatch.split()
+              - name: lap time
+                transitions:
+                  - event: split
+                    target: actual time
+                    action: stopwatch.unsplit()

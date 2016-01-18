@@ -1,29 +1,30 @@
 statechart:
   name: statechart with composite states
-  initial: s1
-
-  states:
-    - name: s1
-      initial: s1a
-      transitions:
-      - target: s2
-        event: close
-      states:
-      - name: s1a
+  initial state:
+    name: root
+    initial: s1
+    states:
+      - name: s1
+        initial: s1a
         transitions:
-        - target: s1b
-          event: click
-      - name: s1b
-        initial: s1b1
-        transitions:
-        - target: s1a
-          event: click
+        - target: s2
+          event: close
         states:
-        - name: s1b1
+        - name: s1a
           transitions:
-          - target: s1b2
-            event: validate
-        - name: s1b2
-          type: final
-    - name: s2
-      type: final
+          - target: s1b
+            event: click
+        - name: s1b
+          initial: s1b1
+          transitions:
+          - target: s1a
+            event: click
+          states:
+          - name: s1b1
+            transitions:
+            - target: s1b2
+              event: validate
+          - name: s1b2
+            type: final
+      - name: s2
+        type: final

@@ -4,7 +4,7 @@ Include code in statecharts
 ===========================
 
 A statechart can specify code that needs to be executed under some circumstances.
-For example, the ``on entry`` property on a statechart, the ``guard`` or ``action`` on a transition or the
+For example, the ``initial code`` property on a statechart, the ``guard`` or ``action`` on a transition or the
 ``on entry`` and ``on exit`` properties for a state may all contain code.
 
 In Sismic, these pieces of code can be evaluated and executed by :py:class:`~sismic.code.Evaluator` instances.
@@ -29,12 +29,12 @@ As an example, consider the following partial statechart definition.
 .. code:: yaml
 
     statechart:
-    # ...
-    on entry: |
-      x = 1
-      y = 0
-    states:
-      - name: s1
+      # ...
+      initial code: |
+        x = 1
+        y = 0
+      initial state:
+        name: s1
         on entry: x += 1
 
 When the statechart is initialized, the ``context`` of a :py:class:`~sismic.code.PythonEvaluator` is ``{'x': 1, 'y': 0}``.
@@ -66,11 +66,10 @@ in the YAML, the value set in the initial context will be overridden by the valu
 
     yaml = """statechart:
       name: example
-      on entry:
+      initial code:
         x = 1
-      initial: s
-      states:
-        - name: s
+      initial state:
+        name: s
     """
 
     statechart = import_from_yaml(yaml)

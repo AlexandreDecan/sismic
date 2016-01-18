@@ -9,7 +9,7 @@ class SimulatorElevatorTests(unittest.TestCase):
         sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
         interpreter = Interpreter(sc)
 
-        self.assertEqual(len(interpreter.configuration), 6)
+        self.assertEqual(len(interpreter.configuration), 5)
 
     def test_floor_selection(self):
         sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
@@ -18,7 +18,7 @@ class SimulatorElevatorTests(unittest.TestCase):
         interpreter.queue(Event('floorSelected', floor=4)).execute_once()
         self.assertEqual(interpreter._evaluator.context['destination'], 4)
         interpreter.execute_once()
-        self.assertEqual(sorted(interpreter.configuration), ['active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator', 'root'])
+        self.assertEqual(sorted(interpreter.configuration), ['active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'])
 
     def test_doorsOpen(self):
         sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
