@@ -19,7 +19,10 @@ class Event:
         return isinstance(other, Event) and self.name == other.name
 
     def __getattr__(self, attr):
-        return self.data[attr]
+        try:
+            return self.data[attr]
+        except:
+            raise AttributeError()
 
     def __hash__(self):
         return hash(self.name)
