@@ -1,6 +1,3 @@
-# "Export" most used elements
-from . import code, exceptions, interpreter, io, model, stories, testing
-
 __description__ = 'Sismic Interactive State Machine Interpreter and Checker'
 __version__ = '0.16.0'
 __url__ = 'https://github.com/AlexandreDecan/sismic/'

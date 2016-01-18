@@ -9,7 +9,7 @@ def teststory_from_trace(trace: list) -> Story:
     The story is constructed as follows:
 
      - the story begins with a *started* event.
-     - the delay between pairs of consecutive steps creates a *pause instance.
+     - the delay between pairs of consecutive steps creates a *pause* instance.
      - each time an event is consumed, a *consumed* event is created.
        the consumed event is available through the *event* attribute.
      - each time a state is exited, an *exited* event is created.

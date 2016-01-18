@@ -2,8 +2,8 @@ from collections import deque
 from itertools import combinations
 
 from sismic import model
-from sismic.exceptions import ExecutionError, NonDeterminismError, ConflictingTransitionsError
-from sismic.exceptions import ContractError, InvariantError, PreconditionError, PostconditionError
+from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
+from sismic.exceptions import InvariantError, PreconditionError, PostconditionError
 from sismic.code import PythonEvaluator
 
 

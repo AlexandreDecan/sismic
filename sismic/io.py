@@ -2,8 +2,8 @@ import yaml
 import os
 
 from pykwalify.core import Core
-from sismic.model import Transition, Statechart, BasicState, CompoundState, OrthogonalState, ShallowHistoryState, DeepHistoryState, FinalState
-from sismic.model import StateMixin
+from sismic.model import Transition, Statechart, BasicState, CompoundState, OrthogonalState, ShallowHistoryState, \
+    DeepHistoryState, FinalState, StateMixin
 from sismic.exceptions import InvalidStatechartError
 
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')

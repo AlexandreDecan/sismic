@@ -1,5 +1,6 @@
 import abc
 import copy
+
 from sismic.model import Event, InternalEvent, Transition, StateMixin, Statechart
 from sismic.exceptions import CodeEvaluationError
 
