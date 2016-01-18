@@ -13,6 +13,7 @@ Unreleased
  - (Changed) ``Transition.event`` is a string instead of an ``Event`` instance.
  - (Removed) Contracts and codes for statecharts (define them on root state instead).
  - (Removed) ``io.export_to_yaml``.
+ - (Removed) Cache for several ``model.Statechart`` methods.
 
 0.16.0 (2015-01-15)
 -------------------

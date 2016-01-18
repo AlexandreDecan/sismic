@@ -1,5 +1,3 @@
-from functools import lru_cache
-
 from sismic.exceptions import InvalidStatechartError
 
 
@@ -397,7 +395,6 @@ class Statechart:
                 names.add(transition.event)
         return sorted(names)
 
-    @lru_cache()
     def ancestors_for(self, state: str) -> list:
         """
         Return an ordered list of ancestors for the given state.
@@ -413,7 +410,6 @@ class Statechart:
             parent = self._parent[parent]
         return ancestors
 
-    @lru_cache()
     def descendants_for(self, state: str) -> list:
         """
         Return an ordered list of descendants for the given state.
@@ -433,7 +429,6 @@ class Statechart:
                     descendants.append(child)
         return descendants
 
-    @lru_cache()
     def depth_for(self, state: str) -> int:
         """
         Return the depth of given state (1-indexed).
@@ -444,7 +439,6 @@ class Statechart:
         ancestors = self.ancestors_for(state)
         return len(ancestors) + 1
 
-    @lru_cache()
     def least_common_ancestor(self, s1: str, s2: str) -> str:
         """
         Return the deepest common ancestor for *s1* and *s2*, or ``None`` if
