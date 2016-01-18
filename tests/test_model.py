@@ -140,3 +140,31 @@ class TransitionsTests(unittest.TestCase):
     def test_transitions_with(self):
         self.assertEqual(len(self.sc.transitions_with('next')), 1)
         self.assertEqual(len(self.sc.transitions_with('unknown')), 0)
+
+
+class RemovalTests(unittest.TestCase):
+    def setUp(self):
+        self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))
+
+    def test_remove_transitions(self):
+        transitions = self.sc.transitions
+        for transition in transitions:
+            self.sc.remove_transition(transition)
+        self.assertEqual(len(self.sc.transitions), 0)
+
+        with self.assertRaises(ValueError):
+            self.sc.remove_transition(None)
+
+    def test_remove_states(self):
+        self.sc.remove_state('active')
+        self.assertEqual(len(self.sc.transitions_from('active')), 0)
+        self.assertTrue('active' not in self.sc.states)
+
+        with self.assertRaises(KeyError):
+            self.sc.remove_state('unknown')
+
+        with self.assertRaises(exceptions.InvalidStatechartError):
+            self.sc.remove_state('s2')
+
+        self.sc.remove_state('s1')
+        self.sc.remove_state('s2')

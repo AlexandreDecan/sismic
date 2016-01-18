@@ -323,7 +323,7 @@ class Statechart:
         """
         List of available transitions
         """
-        return self._transitions
+        return list(self._transitions)
 
     def add_transition(self, transition: Transition):
         """
@@ -345,6 +345,14 @@ class Statechart:
             raise InvalidStatechartError('Unknown target state for {}'.format(transition))
 
         self._transitions.append(transition)
+
+    def remove_transition(self, transition: Transition):
+        """
+        Remove given transitions.
+        :param transition: a *Transition* instance
+        :raise ValueError: if transition is not registered
+        """
+        self._transitions.remove(transition)
 
     def transitions_from(self, state: str) -> list:
         """
@@ -430,6 +438,41 @@ class Statechart:
 
         if parent:
             self._children.setdefault(parent, []).append(state.name)
+
+    def remove_state(self, name: str):
+        """
+        Remove given state. The state can only be removed if it has no more children and no more
+        incoming transitions. Outgoing transitions are removed in the process.
+        :param name: name of a state
+        :raise KeyError: if state does not exist
+        :raise InvalidStatechartError: if state cannot be removed
+        """
+        state = self._states[name]
+        if len(self.children_for(name)) == 0:
+            # Incoming transitions?
+            incoming_transitions = self.transitions_to(name)
+            all_internal = all([t.internal for t in incoming_transitions])
+
+            if not all_internal:
+                raise InvalidStatechartError('Cannot remove {} while it has incoming transitions'.format(state))
+
+            # Remove incoming transitions (they are internal ones!)
+            for transition in incoming_transitions:
+                self.remove_transition(transition)
+
+            # Remove outgoing transitions
+            for transition in self.transitions_from(name):
+                self.remove_transition(transition)
+
+            # Unregister state
+            try:
+                self._children.pop(name)
+            except KeyError:
+                pass
+            self._parent.pop(name)
+            self._states.pop(name)
+        else:
+            raise InvalidStatechartError('Cannot remove {} while it has nested states'.format(state))
 
     def state_for(self, name: str) -> StateMixin:
         """
