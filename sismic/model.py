@@ -300,14 +300,14 @@ class Statechart:
         self._children = {}  # name -> list of names
         self._transitions = []  # list of Transition objects
 
-        self._root = None  # Name of the root element
+        self._root = None  # Root state
 
     @property
     def root(self):
         """
         Root state name
         """
-        return self._root
+        return self._root.name
 
     @property
     def bootstrap(self):
@@ -316,38 +316,7 @@ class Statechart:
         """
         return self._bootstrap
 
-    def register_state(self, state: StateMixin, parent):
-        """
-        Register given state. This method also register the given state
-        to its parent.
-
-        :param state: state to add
-        :param parent: name of its parent
-        """
-        # Name should be unused so far
-        if state.name in self._states.keys():
-            raise InvalidStatechartError('State name {} is already used!'.format(state.name))
-
-        # Set root?
-        if parent is None:
-            if self._root:
-                raise InvalidStatechartError('Root is already defined!')
-            else:
-                self._root = state.name
-        self._states[state.name] = state
-        self._parent[state.name] = parent
-
-        # Register on parent state if any
-        if parent:
-            self._children.setdefault(parent, []).append(state.name)
-
-    def register_transition(self, transition: Transition):
-        """
-        Register given transition and register it on the source state
-
-        :param transition: transition to add
-        """
-        self._transitions.append(transition)
+    ########## TRANSITIONS ##########
 
     @property
     def transitions(self):
@@ -355,6 +324,27 @@ class Statechart:
         List of available transitions
         """
         return self._transitions
+
+    def add_transition(self, transition: Transition):
+        """
+        Register given transition and register it on the source state
+
+        :param transition: transition to add
+        """
+        # Check that source state is known
+        if not transition.from_state in self._states:
+            raise InvalidStatechartError('Unknown source state for {}'.format(transition))
+
+        from_state = self.state_for(transition.from_state)
+        # Check that source state is a TransactionStateMixin
+        if not isinstance(from_state, TransitionStateMixin):
+            raise InvalidStatechartError('Cannot add {} on {}'.format(transition, from_state))
+
+        # Check either internal OR target state is known
+        if transition.to_state is not None and transition.to_state not in self._states:
+            raise InvalidStatechartError('Unknown target state for {}'.format(transition))
+
+        self._transitions.append(transition)
 
     def transitions_from(self, state: str) -> list:
         """
@@ -393,12 +383,53 @@ class Statechart:
                 transitions.append(transition)
         return transitions
 
+    ########## STATES ##########
+
     @property
     def states(self):
         """
         List of state names in lexicographic order.
         """
         return sorted(self._states.keys())
+
+    def add_state(self, state: StateMixin, parent):
+        """
+        Register given state. This method also register the given state
+        to its parent.
+
+        :param state: state to add
+        :param parent: name of its parent
+        """
+        # Check name unicity
+        if state.name in self._states.keys():
+            raise InvalidStatechartError('State name {} is already used!'.format(state))
+
+        if not parent:
+            # Check root state
+            if self._root:
+                raise InvalidStatechartError('Root is already defined, {} should declare an existing parent state'.format(state))
+            self._root = state
+        else:
+            parent_state = self.state_for(parent)
+
+            # Check that parent exists
+            if not parent_state:
+                raise InvalidStatechartError('Parent "{}" of {} does not exist!'.format(parent, state))
+
+            # Check that parent is a CompositeStateMixin.
+            if not isinstance(parent_state, CompositeStateMixin):
+                raise InvalidStatechartError('{} cannot be used as a parent for {}'.format(parent_state, state))
+
+            # If state is an HistoryState, its parent must be a CompoundState
+            if isinstance(state, HistoryState) and not isinstance(parent_state, CompoundState):
+                raise InvalidStatechartError('{} cannot be used as a parent for {}'.format(parent_state, state))
+
+        # Save state
+        self._states[state.name] = state
+        self._parent[state.name] = parent
+
+        if parent:
+            self._children.setdefault(parent, []).append(state.name)
 
     def state_for(self, name: str) -> StateMixin:
         """
@@ -466,6 +497,8 @@ class Statechart:
         ancestors = self.ancestors_for(state)
         return len(ancestors) + 1
 
+    ########## STATES UTILS ##########
+
     def least_common_ancestor(self, s1: str, s2: str) -> str:
         """
         Return the deepest common ancestor for *s1* and *s2*, or ``None`` if
@@ -502,6 +535,8 @@ class Statechart:
                 leaves.append(state)
         return leaves
 
+    ########## EVENTS ##########
+
     def events_for(self, state_or_states=None) -> list:
         """
         List of possible event names.
@@ -525,58 +560,6 @@ class Statechart:
             if transition.event and transition.from_state in states:
                 names.add(transition.event)
         return sorted(names)
-
-    def validate(self) -> bool:
-        """
-        Validate current statechart:
-
-         - C1. Check that transitions refer to existing states
-         - C2. Check that history can only be defined as a child of a CompoundState
-         - C3. Check that initial state refer to a parent's child
-         - C4. Check that orthogonal states have at least one child
-         - C5. Check that there is no internal eventless guardless transition
-         - C6. Check that a CompoundState with an incoming transition declares an initial state.
-
-        :return: True if no check fails
-        :raise InvalidStatechartError: if a check fails
-        """
-        # C1 & C5
-        for transition in self._transitions:
-            if (not (transition.from_state in self._states and
-                     (not transition.to_state or transition.to_state in self._states))):
-                raise InvalidStatechartError('C1. Transition {} refers to an unknown state'.format(transition))
-            if not transition.event and not transition.guard and not transition.to_state:
-                raise InvalidStatechartError('C5. Transition {} is an internal, eventless and guardless '
-                                     'transition.'.format(transition))
-
-        for name, state in self._states.items():
-            if isinstance(state, HistoryState):  # C2
-                if not isinstance(self._states.get(self._parent.get(name, None), None), CompoundState):
-                    raise InvalidStatechartError('C2. History state {} can only be defined in a compound '
-                                         '(non-orthogonal) states'.format(state))
-                    # Remove because this can be helpful for orthogonal states
-                    # if state.initial and not (self._parent[state.initial] == self._parent[name]):
-                    #    raise AssertionError('Initial memory of {} should refer to a child of {}'
-                    #           .format(state, self._parent[name]))
-
-            if isinstance(state, CompositeStateMixin):  # C4
-                if len(self.children_for(state.name)) == 0:
-                    raise InvalidStatechartError('C4. Composite state {} should have at least one child'.format(state))
-
-            if isinstance(state, CompoundState):  # C3
-                if state.initial and not (state.initial in self.children_for(state.name)):
-                    raise InvalidStatechartError('C3. Initial state of {} should refer to one of its children'.format(state))
-        # C6
-        for transition in self._transitions:
-            target_state = self._states.get(transition.to_state, self._states[transition.from_state])
-            if isinstance(target_state, CompoundState):
-                if not target_state.initial:
-                    raise InvalidStatechartError('C6. Compound state {} has an incoming transition but does not define an initial state.'.format(target_state))
-
-        return True
-
-    def __repr__(self):
-        return 'statechart "{}"'.format(self.name)
 
 
 class MicroStep:

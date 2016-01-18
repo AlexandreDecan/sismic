@@ -51,23 +51,21 @@ class TraversalTests(unittest.TestCase):
     def test_name_collision(self):
         root = model.CompoundState('root', 'a')
         sc = model.Statechart('test')
-        sc.register_state(root, None)
+        sc.add_state(root, None)
         s1 = model.BasicState('a')
         s2 = model.BasicState('a')
-        sc.register_state(s1, parent='root')
+        sc.add_state(s1, parent='root')
         with self.assertRaises(exceptions.InvalidStatechartError):
-            sc.register_state(s2, parent='root')
+            sc.add_state(s2, parent='root')
 
     def test_root_already_defined(self):
         root = model.CompoundState('root', 'a')
         sc = model.Statechart('test')
-        sc.register_state(root, None)
+        sc.add_state(root, None)
         with self.assertRaises(exceptions.InvalidStatechartError):
-            sc.register_state(root, None)
+            sc.add_state(root, None)
 
-
-class ValidateTests(unittest.TestCase):
-    def test_c1(self):
+    def test_transitions_to_unknown_state(self):
         yaml = """
         statechart:
           name: test
@@ -81,9 +79,8 @@ class ValidateTests(unittest.TestCase):
         """
         with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             io.import_from_yaml(yaml)
-        self.assertTrue(cm.exception.args[0].startswith('C1.'))
 
-    def test_c2_2(self):
+    def test_history_not_in_compound(self):
         yaml = """
         statechart:
           name: test
@@ -98,77 +95,3 @@ class ValidateTests(unittest.TestCase):
         """
         with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             io.import_from_yaml(yaml)
-        self.assertTrue(cm.exception.args[0].startswith('C2.'))
-
-    def test_c3_2(self):
-        yaml = """
-        statechart:
-          name: test
-          initial state:
-            name: root
-            initial: s2
-            states:
-              - name: s3
-              - name: s2
-                initial: s3
-                states:
-                  - name: test
-        """
-        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
-            io.import_from_yaml(yaml)
-        self.assertTrue(cm.exception.args[0].startswith('C3.'))
-
-    def test_c4(self):
-        yaml = """
-        statechart:
-          name: test
-          initial state:
-            name: root
-            initial: s1
-            states:
-              - name: s1
-                states:
-                  - name: s2
-        """
-        statechart = io.import_from_yaml(yaml)
-        statechart._children['s1'].pop(0)
-        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
-            statechart.validate()
-        self.assertTrue(cm.exception.args[0].startswith('C4.'))
-
-    def test_c5(self):
-        yaml = """
-        statechart:
-          name: test
-          initial state:
-            name: root
-            initial: s1
-            states:
-              - name: s1
-                transitions:
-                 - target: s1
-        """
-        statechart = io.import_from_yaml(yaml)
-        statechart._transitions[0]._to_state = None
-        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
-            statechart.validate()
-        self.assertTrue(cm.exception.args[0].startswith('C5.'))
-
-    def test_c6(self):
-        yaml = """
-        statechart:
-          name: test
-          initial state:
-            name: root
-            initial: s1
-            states:
-              - name: s1
-                states:
-                  - name: s3
-              - name: s2
-                transitions:
-                  - target: s1
-        """
-        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
-            io.import_from_yaml(yaml)
-        self.assertTrue(cm.exception.args[0].startswith('C6.'))

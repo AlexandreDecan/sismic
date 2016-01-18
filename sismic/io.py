@@ -1,74 +1,73 @@
 import yaml
 import os
-from pykwalify.core import Core
-from collections import OrderedDict
-from sismic.model import Event, Transition, Statechart, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
-from sismic.model import StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 
+from pykwalify.core import Core
+from sismic.model import Transition, Statechart, BasicState, CompoundState, OrthogonalState, HistoryState, FinalState
+from sismic.model import StateMixin
+from sismic.exceptions import InvalidStatechartError
 
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')
 
 
-def import_from_yaml(statechart: str, validate_yaml=True, validate_statechart=True) -> Statechart:
+def import_from_yaml(statechart: str, ignore_schema=False) -> Statechart:
     """
     Import a statechart from a YAML representation.
     YAML is first validated against ``io.SCHEMA``.
 
     :param statechart: string or any equivalent object
-    :param validate_yaml: set to ``False`` to disable yaml validation.
-    :param validate_statechart: set to ``False`` to disable statechart validation
-      (see ``model.StateChart.validate``).
+    :param ignore_schema: set to ``True`` to disable yaml validation.
     :return: a ``StateChart`` instance
     """
-    statechart_data = yaml.load(statechart)
-    if validate_yaml:
-        checker = Core(source_data=statechart_data, schema_files=[SCHEMA_PATH])
+    data = yaml.load(statechart)
+    if not ignore_schema:
+        checker = Core(source_data=data, schema_files=[SCHEMA_PATH])
         checker.validate(raise_exception=True)
 
-    sc = _import_from_dict(statechart_data['statechart'])
-    if validate_statechart:
-        sc.validate()
+    data = data['statechart']
 
-    return sc
+    statechart = Statechart(name=data['name'],
+                            description=data.get('description', None),
+                            bootstrap=data.get('initial code', None))
 
+    states = []  # (StateMixin instance, parent name)
+    transitions = []  # Transition instances
+    data_to_consider = []  # (State dict, parent name)
 
-def _import_from_dict(data: dict) -> Statechart:
-    """
-    Import a statechart from a (set of nested) dictionary.
+    data_to_consider.append((data['initial state'], None))
 
-    :param data: dict-like structure
-    :return: a StateChart instance
-    """
-    sc = Statechart(data['name'], description=data.get('description', None), bootstrap=data.get('initial code', None))
+    while data_to_consider:
+        state_data, parent_name = data_to_consider.pop()
 
-    states_to_add = []  # list of (state, parent) to be added
-    states_to_add.append((data['initial state'], None))
-
-    # Add states
-    while states_to_add:
-        state_d, parent_name = states_to_add.pop()
-
-        # Create and register state
+        # Get state
         try:
-            state = _state_from_dict(state_d)
+            state = _state_from_dict(state_data)
         except Exception as e:
-            raise ValueError('An exception occurred while trying to parse:\n {1}\n\nException:\n{0}'.format(e, state_d))
-        sc.register_state(state, parent_name)
+            raise InvalidStatechartError('Unable to load given YAML') from e
+        states.append((state, parent_name))
 
-        # Register transitions if any
-        for transition_d in state_d.get('transitions', []):
+        # Get substates
+        if isinstance(state, CompoundState):
+            for substate_data in state_data['states']:
+                data_to_consider.append((substate_data, state.name))
+        elif isinstance(state, OrthogonalState):
+            for substate_data in state_data['parallel states']:
+                data_to_consider.append((substate_data, state.name))
+
+        # Get transition(s)
+        for transition_data in state_data.get('transitions', []):
             try:
-                transition = _transition_from_dict(state.name, transition_d)
+                transition = _transition_from_dict(state.name, transition_data)
             except Exception as e:
-                raise ValueError('An exception occurred while trying to parse transitions in '
-                                 '{2}:\n {1}\n\nException:\n{0}'.format(e, transition_d, state.name))
-            sc.register_transition(transition)
+                raise InvalidStatechartError('Unable to load given YAML') from e
+            transitions.append(transition)
 
-        # Register substates
-        for substate in state_d.get('states', state_d.get('parallel states', [])):
-            states_to_add.append((substate, state.name))
+    # Register on statechart
+    for state, parent in states:
+        statechart.add_state(state, parent)
+    for transition in transitions:
+        statechart.add_transition(transition)
 
-    return sc
+    return statechart
 
 
 def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
