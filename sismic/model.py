@@ -496,6 +496,49 @@ class Statechart:
         else:
             raise InvalidStatechartError('Cannot remove {} while it has nested states'.format(state))
 
+    def rename_state(self, old_name: str, new_name: str):
+        """
+        Change state name, and adapt transitions, initial state, etc.
+        :param old_name: old name of the state
+        :param new_name: new name of the state
+        """
+        if new_name in self._states:
+            raise InvalidStatechartError('State {} already exists!'.format(new_name))
+        state = self._states[old_name]
+
+        # Change state name
+        state._name = new_name
+
+        # Change transitions
+        for transition in self.transitions_from(old_name):
+            transition._from_state = new_name
+
+        for transition in self.transitions_to(old_name):
+            if not transition.internal:
+                transition._to_state = new_name
+
+        for other_state in self._states.values():
+            # Change initial (CompoundState)
+            if isinstance(other_state, CompoundState):
+                if other_state.initial == old_name:
+                    other_state.initial = new_name
+
+            # Change initial (HistoryState)
+            if isinstance(other_state, HistoryStateMixin):
+                if other_state.initial == old_name:
+                    other_state.initial = new_name
+
+            # Adapt parent
+            if self._parent[other_state.name] == old_name:
+                self._parent[other_state.name] = new_name
+
+        # Rename
+        self._states[new_name] = self._states.pop(old_name)
+        try:
+            self._children[new_name] = self._children.pop(old_name)
+        except KeyError:
+            pass
+
     def state_for(self, name: str) -> StateMixin:
         """
         Return the state instance that has given name.

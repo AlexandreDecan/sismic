@@ -168,3 +168,35 @@ class RemovalTests(unittest.TestCase):
 
         self.sc.remove_state('s1')
         self.sc.remove_state('s2')
+
+
+class RenameStateTests(unittest.TestCase):
+    def setUp(self):
+        self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))
+
+    def test_unknown(self):
+        with self.assertRaises(KeyError):
+            self.sc.rename_state('unknown', 's3')
+
+    def test_rename_with_self(self):
+        with self.assertRaises(exceptions.InvalidStatechartError):
+            self.sc.rename_state('s2', 's2')
+
+    def test_rename_with_existing(self):
+        with self.assertRaises(exceptions.InvalidStatechartError):
+            self.sc.rename_state('s2', 's1')
+
+    def test_rename(self):
+        self.sc.rename_state('active', 's3')
+        self.assertTrue('s3' in self.sc.states)
+        self.assertFalse('active' in self.sc.states)
+
+    def test_rename_with_transitions(self):
+        self.sc.rename_state('s1', 's3')
+        self.assertEqual(self.sc.transitions_from('s1'), [])
+        self.assertTrue(len(self.sc.transitions_from('s3')), 1)
+        self.assertTrue(len(self.sc.transitions_to('s2')), 1)
+
+    def test_rename_with_initial(self):
+        self.sc.rename_state('active', 's3')
+        self.assertEqual(self.sc.state_for('root').initial, 's3')

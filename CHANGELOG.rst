@@ -13,6 +13,7 @@ Many backward incompatible changes in this update, look carefully at the changel
    exposes a ``transitions`` property.
  - (Added) Statechart has ``parent_for`` and ``children_for`` methods and exposes a ``states`` property.
  - (Added) Statechart has ``remove_state`` and ``remove_transition`` methods.
+ - (Added) Statechart has a ``rename_state`` method.
  - (Changed) ``Transition.event`` is a string instead of an ``Event`` instance.
  - (Changed) ``Transition.from_state``, ``Transition.to_state`` and ``StateMixin.name`` are protected.
  - (Changed) Rename ``model.StateChart`` to ``model.Statechart``.
