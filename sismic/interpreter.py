@@ -23,12 +23,11 @@ class Interpreter:
 
     def __init__(self, statechart: model.StateChart, evaluator_klass=None,
                  initial_context: dict=None, initial_time: int=0, ignore_contract: bool=False):
-        self._evaluator = evaluator_klass(self, initial_context) if evaluator_klass else PythonEvaluator(self, initial_context)
+        # Internal variables
         self._ignore_contract = ignore_contract
         self._initial_time = initial_time
         self._statechart = statechart
 
-        # Internal variables
         self._time = initial_time  # Internal clock
         self._memory = {}  # History states memory
         self._configuration = set()  # Set of active states
@@ -36,12 +35,12 @@ class Interpreter:
         self._trace = []  # A list of micro steps
         self._bound = []  # List of bound event callbacks
 
-        # Interpreter initialization
-        self._evaluator.execute_onentry(self._statechart)
-        self.__evaluate_contract_conditions(self._statechart, 'preconditions')
+        # Evaluator
+        self._evaluator = evaluator_klass(self, initial_context) if evaluator_klass else PythonEvaluator(self, initial_context)
+        self._evaluator._execute_code(statechart.bootstrap)
 
         # Initial step and stabilization
-        step = model.MicroStep(entered_states=[self._statechart.initial])
+        step = model.MicroStep(entered_states=[self._statechart.root])
         self._execute_step(step)
         self._trace.append(model.MacroStep(time=self.time, steps=[step] + self.__stabilize()))
 
@@ -66,7 +65,7 @@ class Interpreter:
         List of active states names, ordered by depth. Ties are broken according to the lexicographic order
         on the state name.
         """
-        return sorted(self._configuration, key=lambda s: (self._statechart.depth_of(s), s))
+        return sorted(self._configuration, key=lambda s: (self._statechart.depth_for(s), s))
 
     @property
     def context(self) -> dict:
@@ -290,7 +289,7 @@ class Interpreter:
                                       .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
 
             # Define an arbitrary order based on the depth and the name of source states.
-            transitions = sorted(transitions, key=lambda t: (-self._statechart.depth_of(t.from_state), t.from_state))
+            transitions = sorted(transitions, key=lambda t: (-self._statechart.depth_for(t.from_state), t.from_state))
 
         return transitions
 
@@ -360,19 +359,19 @@ class Interpreter:
         # Check if we are in a set of "stable" states
         leaves_names = self._statechart.leaf_for(list(self._configuration))
         leaves = list(map(lambda s: self._statechart.state_for(s), leaves_names))
-        leaves = sorted(leaves, key=lambda s: (-self._statechart.depth_of(s.name), s.name))
+        leaves = sorted(leaves, key=lambda s: (-self._statechart.depth_for(s.name), s.name))
 
         # Final states?
         if len(leaves) > 0 and all([isinstance(s, model.FinalState) for s in leaves]):
             # Leave all states
-            exited_states = sorted(self._configuration, key=lambda s: (-self._statechart.depth_of(s), s))
+            exited_states = sorted(self._configuration, key=lambda s: (-self._statechart.depth_for(s), s))
             return model.MicroStep(exited_states=exited_states)
 
         # Otherwise, develop history, compound and orthogonal states.
         for leaf in leaves:
             if isinstance(leaf, model.HistoryState):
                 states_to_enter = self._memory.get(leaf.name, [leaf.initial])
-                states_to_enter.sort(key=lambda x: (self._statechart.depth_of(x), x))
+                states_to_enter.sort(key=lambda x: (self._statechart.depth_for(x), x))
                 return model.MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, model.OrthogonalState):
                 return model.MicroStep(entered_states=sorted(leaf.children))

@@ -296,25 +296,42 @@ class Transition(ContractMixin):
         return hash(self._from_state)
 
 
-class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixin):
+class StateChart:
     """
     Python structure for a statechart
 
     :param name: Name of this statechart
-    :param initial: Initial state
-    :param on_entry: Code to execute when this statechart is initialized for execution
+    :param root: root state, expects a compound or orthogonal state
+    :param description: optional description
+    :param bootstrap: code to execute to bootstrap the statechart
     """
 
-    def __init__(self, name: str, initial: str, on_entry: str = None):
-        ContractMixin.__init__(self)
-        StateMixin.__init__(self, name)
-        ActionStateMixin.__init__(self, on_entry, None)
-        CompositeStateMixin.__init__(self)
+    def __init__(self, name: str, root: StateMixin, description: str=None, bootstrap: str=None):
+        self.name = name
+        self.description = description
+        self._bootstrap = bootstrap
 
-        self.initial = initial
         self._states = {}  # name -> State object
         self._parent = {}  # name -> parent.name
         self.transitions = []  # list of Transition objects
+
+        self._root = root
+        self._states[root.name] = root
+        self._parent[root.name] = None
+
+    @property
+    def root(self):
+        """
+        Root state name
+        """
+        return self._root.name
+
+    @property
+    def bootstrap(self):
+        """
+        Bootstrap code
+        """
+        return self._bootstrap
 
     def register_state(self, state: StateMixin, parent):
         """
@@ -331,12 +348,8 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
         self._parent[state.name] = parent.name if isinstance(parent, StateMixin) else parent
 
         # Register on parent state
-        parent_state = self._states.get(self._parent[state.name], None)
-        if parent_state is not None:
-            self._states[self._parent[state.name]].children.append(state.name)
-        else:
-            # ... or on top-level state (self!)
-            self.children.append(state.name)
+        self._states[self._parent[state.name]].children.append(state.name)
+
 
     def register_transition(self, transition: Transition):
         """
@@ -416,15 +429,13 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
         return descendants
 
     @lru_cache()
-    def depth_of(self, state: str) -> int:
+    def depth_for(self, state: str) -> int:
         """
-        Return the depth of given state (0-indexed).
+        Return the depth of given state (1-indexed).
 
         :param state: name of the state
         :return: state depth
         """
-        if state is None:
-            return 0
         ancestors = self.ancestors_for(state)
         return len(ancestors) + 1
 
@@ -505,8 +516,6 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
             if isinstance(state, CompoundState):  # C3
                 if state.initial and not (state.initial in state.children):
                     raise InvalidStatechartError('C3. Initial state of {} should refer to one of its children'.format(state))
-        if self.initial and not (self.initial in self.children):
-            raise InvalidStatechartError('C3. Statechart\'s initial state should refer to one of its children')
         # C6
         for transition in self.transitions:
             target_state = self._states.get(transition.to_state, self._states[transition.from_state])

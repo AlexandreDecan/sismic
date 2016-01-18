@@ -39,20 +39,21 @@ def _import_from_dict(data: dict) -> StateChart:
     :param data: dict-like structure
     :return: a StateChart instance
     """
-    sc = StateChart(data['name'], data['initial'], data.get('on entry', None))
+    root = CompoundState('root', initial=data['initial'])
+    sc = StateChart(data['name'], root=root, description=data.get('description', None), bootstrap=data.get('on entry', None))
 
     # Preconditions, postconditions and invariants
     for condition in data.get('contract', []):
         if condition.get('before', None):
-            sc.preconditions.append(condition['before'])
+            root.preconditions.append(condition['before'])
         elif condition.get('after', None):
-            sc.postconditions.append(condition['after'])
+            root.postconditions.append(condition['after'])
         elif condition.get('always', None):
-            sc.invariants.append(condition['always'])
+            root.invariants.append(condition['always'])
 
     states_to_add = []  # list of (state, parent) to be added
     for state in data['states']:
-        states_to_add.append((state, None))
+        states_to_add.append((state, root.name))
 
     # Add states
     while states_to_add:

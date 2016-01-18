@@ -11,6 +11,7 @@ class StoryFromTraceTests(unittest.TestCase):
         Story([Pause(2), Event('goto s2'), Pause(3)]).tell(interpreter)
         story = teststory_from_trace(interpreter.trace)
         expected = Story([Event('started'),
+                          Event('entered', state='root'),
                           Event('entered', state='s1'),
                           Pause(2),
                           Event('consumed', event=Event('goto s2')),
