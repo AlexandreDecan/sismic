@@ -199,7 +199,7 @@ class Interpreter:
 
         # Check state invariants
         for name in self._configuration:
-            state = self._statechart.states[name]
+            state = self._statechart.state_for(name)
             self.__evaluate_contract_conditions(state, 'invariants', macro_step)
 
         # Check statechart invariants
@@ -264,7 +264,7 @@ class Interpreter:
             for t1, t2 in combinations(transitions, 2):
                 # Check (1)
                 lca = self._statechart.least_common_ancestor(t1.from_state, t2.from_state)
-                lca_state = self._statechart.states.get(lca, None)
+                lca_state = self._statechart.state_for(lca)
 
                 # Their LCA must be an orthogonal state!
                 if not isinstance(lca_state, model.OrthogonalState):
@@ -359,7 +359,7 @@ class Interpreter:
         """
         # Check if we are in a set of "stable" states
         leaves_names = self._statechart.leaf_for(list(self._configuration))
-        leaves = list(map(lambda s: self._statechart.states[s], leaves_names))
+        leaves = list(map(lambda s: self._statechart.state_for(s), leaves_names))
         leaves = sorted(leaves, key=lambda s: (-self._statechart.depth_of(s.name), s.name))
 
         # Final states?
@@ -385,8 +385,8 @@ class Interpreter:
 
         :param step: ``MicroStep`` instance
         """
-        entered_states = list(map(lambda s: self._statechart.states[s], step.entered_states))
-        exited_states = list(map(lambda s: self._statechart.states[s], step.exited_states))
+        entered_states = list(map(lambda s: self._statechart.state_for(s), step.entered_states))
+        exited_states = list(map(lambda s: self._statechart.state_for(s), step.exited_states))
 
         # Exit states
         for state in exited_states:
@@ -401,7 +401,7 @@ class Interpreter:
         for state in exited_compound_states:
             # Look for an HistoryState among its children
             for child_name in state.children:
-                child = self._statechart.states[child_name]
+                child = self._statechart.state_for(child_name)
                 if isinstance(child, model.HistoryState):
                     if child.deep:
                         # This MUST contain at least one element!
@@ -475,7 +475,7 @@ class Interpreter:
 
         for condition in unsatisfied_conditions:
             raise exception_klass(configuration=self.configuration, step=step, obj=obj,
-                                        assertion=condition, context=self._evaluator.context)
+                                  assertion=condition, context=self._evaluator.context)
 
     def __repr__(self):
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))

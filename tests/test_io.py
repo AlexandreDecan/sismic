@@ -17,6 +17,7 @@ class ImportFromYamlTests(unittest.TestCase):
             io.import_from_yaml(open(os.path.join('docs', 'examples', f+'.yaml')))
 
 
+@unittest.skip('ExportToDictYAMLTests temporary disabled')
 class ExportToDictYAMLTests(unittest.TestCase):
     def test_yaml_tests(self):
         files = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',

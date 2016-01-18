@@ -16,35 +16,35 @@ class ElevatorContractTests(unittest.TestCase):
         self.assertFalse(self.interpreter.final)
 
     def test_state_precondition(self):
-        self.sc.states['movingUp'].preconditions.append('False')
+        self.sc.state_for('movingUp').preconditions.append('False')
         self.interpreter.queue(Event('floorSelected', floor=4))
         with self.assertRaises(PreconditionError) as cm:
             self.interpreter.execute()
         self.assertTrue(isinstance(cm.exception.obj, StateMixin))
 
     def test_state_postcondition(self):
-        self.sc.states['movingUp'].postconditions.append('False')
+        self.sc.state_for('movingUp').postconditions.append('False')
         self.interpreter.queue(Event('floorSelected', floor=4))
         with self.assertRaises(PostconditionError) as cm:
             self.interpreter.execute()
         self.assertTrue(isinstance(cm.exception.obj, StateMixin))
 
     def test_state_invariant(self):
-        self.sc.states['movingUp'].invariants.append('False')
+        self.sc.state_for('movingUp').invariants.append('False')
         self.interpreter.queue(Event('floorSelected', floor=4))
         with self.assertRaises(InvariantError) as cm:
             self.interpreter.execute()
         self.assertTrue(isinstance(cm.exception.obj, StateMixin))
 
     def test_transition_precondition(self):
-        self.sc.states['floorSelecting'].transitions[0].preconditions.append('False')
+        self.sc.state_for('floorSelecting').transitions[0].preconditions.append('False')
         self.interpreter.queue(Event('floorSelected', floor=4))
         with self.assertRaises(PreconditionError) as cm:
             self.interpreter.execute()
         self.assertTrue(isinstance(cm.exception.obj, Transition))
 
     def test_transition_postcondition(self):
-        self.sc.states['floorSelecting'].transitions[0].postconditions.append('False')
+        self.sc.state_for('floorSelecting').transitions[0].postconditions.append('False')
         self.interpreter.queue(Event('floorSelected', floor=4))
         with self.assertRaises(PostconditionError) as cm:
             self.interpreter.execute()

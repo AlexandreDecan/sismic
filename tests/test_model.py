@@ -140,7 +140,7 @@ class ValidateTests(unittest.TestCase):
                 - name: s2
         """
         statechart = io.import_from_yaml(yaml)
-        statechart.states['s1']._children = []
+        statechart.state_for('s1')._children = []
         with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             statechart.validate()
         self.assertTrue(cm.exception.args[0].startswith('C4.'))

@@ -347,12 +347,13 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
         self.transitions.append(transition)
         self._states[transition.from_state].transitions.append(transition)
 
-    @property
-    def states(self):
+    def state_for(self, name: str) -> StateMixin:
         """
-        A dictionary that associates a state name to a ``StateMixin``
+        Return the state instance that has given name.
+        :param name: a state name
+        :return: a *StateMixin* that has the same name or None
         """
-        return self._states
+        return self._states.get(name, None)
 
     def events(self, state_or_states=None) -> list:
         """
