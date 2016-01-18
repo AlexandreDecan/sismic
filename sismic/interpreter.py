@@ -1,7 +1,9 @@
 from collections import deque
 from itertools import combinations
+
 from sismic import model
-from sismic import testing
+from sismic.exceptions import ExecutionError, NonDeterminismError, ConflictingTransitionsError
+from sismic.exceptions import ContractError, InvariantError, PreconditionError, PostconditionError
 from sismic.code import PythonEvaluator
 
 
@@ -253,7 +255,8 @@ class Interpreter:
 
         :param transitions: a list of ``Transition`` instances
         :return: an ordered list of ``Transition`` instances
-        :raise Warning: In case of non-determinism or conflicting transitions.
+        :raise ExecutionError: In case of non-determinism (NonDeterminismError) or conflicting
+            transitions (ConflictingTransitionsError).
         """
         if len(transitions) > 1:
             # If more than one transition, we check (1) they are from separate regions and (2) they do not conflict
@@ -265,7 +268,7 @@ class Interpreter:
 
                 # Their LCA must be an orthogonal state!
                 if not isinstance(lca_state, model.OrthogonalState):
-                    raise Warning('Non-determinist transitions: {t1} and {t2}'
+                    raise NonDeterminismError('Non-determinist choice between transitions {t1} and {t2}'
                                   '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
                                   .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
 
@@ -282,7 +285,7 @@ class Interpreter:
                     if (transition.to_state and
                             (transition.to_state not in
                                      [last_before_lca] + self._statechart.descendants_for(last_before_lca))):
-                        raise Warning('Conflicting transitions: {t1} and {t2}'
+                        raise ConflictingTransitionsError('Conflicting transitions: {t1} and {t2}'
                                       '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
                                       .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
 
@@ -459,14 +462,14 @@ class Interpreter:
         :param obj: object with preconditions, postconditions or invariants
         :param cond_type: either *preconditions*, *postconditions* or *invariants*
         :param step: step in which the check occurs.
-        :raises ConditionFailed: if a condition fails and ``ignore_contract`` is False.
+        :raises ContractError: if a condition fails and ``ignore_contract`` is False.
         """
         if self._ignore_contract:
             return
 
-        exception_klass = {'preconditions': testing.PreconditionFailed,
-                           'postconditions': testing.PostconditionFailed,
-                           'invariants': testing.InvariantFailed}[cond_type]
+        exception_klass = {'preconditions': PreconditionError,
+                           'postconditions': PostconditionError,
+                           'invariants': InvariantError}[cond_type]
 
         unsatisfied_conditions = getattr(self._evaluator, 'evaluate_' + cond_type)(obj, getattr(step, 'event', None))
 

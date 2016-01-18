@@ -1,6 +1,7 @@
 import abc
 import copy
 from sismic.model import Event, InternalEvent, Transition, StateMixin
+from sismic.exceptions import CodeEvaluationError
 
 
 class Evaluator(metaclass=abc.ABCMeta):
@@ -212,7 +213,7 @@ class PythonEvaluator(Evaluator):
         try:
             return eval(code, exposed_context, self._context)
         except Exception as e:
-            raise type(e)('The above exception occurred while evaluating:\n{}'.format(code)) from e
+            raise CodeEvaluationError('The above exception occurred while evaluating:\n{}'.format(code)) from e
 
     def _execute_code(self, code: str, additional_context: dict = None):
         """
@@ -236,7 +237,7 @@ class PythonEvaluator(Evaluator):
         try:
             exec(code, exposed_context, self._context)
         except Exception as e:
-            raise type(e)('The above exception occurred while executing:\n{}'.format(code)) from e
+            raise CodeEvaluationError('The above exception occurred while executing:\n{}'.format(code)) from e
 
     class FrozenContext:
         """

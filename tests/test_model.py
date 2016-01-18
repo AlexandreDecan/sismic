@@ -1,7 +1,7 @@
 import unittest
 from sismic import io
 from sismic import model
-
+from sismic import exceptions
 
 class TraversalTests(unittest.TestCase):
     def setUp(self):
@@ -52,7 +52,7 @@ class TraversalTests(unittest.TestCase):
         s1 = model.BasicState('a')
         s2 = model.BasicState('a')
         sc.register_state(s1, parent=None)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(exceptions.InvalidStatechartError):
             sc.register_state(s2, parent=None)
 
 
@@ -67,7 +67,7 @@ class ValidateTests(unittest.TestCase):
               transitions:
                - target: s2
         """
-        with self.assertRaises(AssertionError) as cm:
+        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             io.import_from_yaml(yaml)
         self.assertTrue(cm.exception.args[0].startswith('C1.'))
 
@@ -82,7 +82,7 @@ class ValidateTests(unittest.TestCase):
                - name: s2
                  type: shallow history
         """
-        with self.assertRaises(AssertionError) as cm:
+        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             io.import_from_yaml(yaml)
         self.assertTrue(cm.exception.args[0].startswith('C2.'))
 
@@ -95,7 +95,7 @@ class ValidateTests(unittest.TestCase):
             - name: s2
               type: shallow history
         """
-        with self.assertRaises(AssertionError) as cm:
+        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             io.import_from_yaml(yaml)
         self.assertTrue(cm.exception.args[0].startswith('C2.'))
 
@@ -109,7 +109,7 @@ class ValidateTests(unittest.TestCase):
               states:
                 - name: s2
         """
-        with self.assertRaises(AssertionError) as cm:
+        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             io.import_from_yaml(yaml)
         self.assertTrue(cm.exception.args[0].startswith('C3.'))
 
@@ -125,7 +125,7 @@ class ValidateTests(unittest.TestCase):
                 - name: s3
             - name: s2
         """
-        with self.assertRaises(AssertionError) as cm:
+        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             io.import_from_yaml(yaml)
         self.assertTrue(cm.exception.args[0].startswith('C3.'))
 
@@ -141,7 +141,7 @@ class ValidateTests(unittest.TestCase):
         """
         statechart = io.import_from_yaml(yaml)
         statechart.states['s1']._children = []
-        with self.assertRaises(AssertionError) as cm:
+        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             statechart.validate()
         self.assertTrue(cm.exception.args[0].startswith('C4.'))
 
@@ -157,7 +157,7 @@ class ValidateTests(unittest.TestCase):
         """
         statechart = io.import_from_yaml(yaml)
         statechart.transitions[0].to_state = None
-        with self.assertRaises(AssertionError) as cm:
+        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             statechart.validate()
         self.assertTrue(cm.exception.args[0].startswith('C5.'))
 
@@ -174,6 +174,6 @@ class ValidateTests(unittest.TestCase):
               transitions:
                 - target: s1
         """
-        with self.assertRaises(AssertionError) as cm:
+        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             io.import_from_yaml(yaml)
         self.assertTrue(cm.exception.args[0].startswith('C6.'))

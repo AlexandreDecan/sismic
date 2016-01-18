@@ -1,6 +1,7 @@
 import unittest
 from sismic import io
 from sismic.interpreter import Interpreter, run_in_background
+from sismic import exceptions
 from sismic.code import DummyEvaluator
 from sismic.model import Event, InternalEvent
 
@@ -84,7 +85,7 @@ class SimulatorNonDeterminismTests(unittest.TestCase):
         sc = io.import_from_yaml(open('tests/yaml/nondeterministic.yaml'))
         interpreter = Interpreter(sc, DummyEvaluator)
 
-        with self.assertRaises(Warning):
+        with self.assertRaises(exceptions.NonDeterminismError):
             interpreter.execute_once()
 
 
@@ -250,7 +251,7 @@ class ParallelExecutionTests(unittest.TestCase):
         self.interpreter.execute_once()
         self.interpreter.execute_once()
 
-        with self.assertRaises(Warning):
+        with self.assertRaises(exceptions.ConflictingTransitionsError):
             self.interpreter.execute_once()
 
     def test_conflicting_transitions_2(self):
@@ -258,7 +259,7 @@ class ParallelExecutionTests(unittest.TestCase):
         self.interpreter.execute_once()
         self.interpreter.execute_once()
 
-        with self.assertRaises(Warning):
+        with self.assertRaises(exceptions.ConflictingTransitionsError):
             self.interpreter.execute_once()
 
 

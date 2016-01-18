@@ -1,5 +1,6 @@
 import unittest
 from sismic import code
+from sismic import exceptions
 from sismic.model import Event
 
 
@@ -31,9 +32,9 @@ class PythonEvaluatorTests(unittest.TestCase):
         self.assertEqual(self.e.context['x'], 2)
 
     def test_invalid_condition(self):
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(exceptions.CodeEvaluationError):
             self.e._evaluate_code('x.y')
 
     def test_invalid_action(self):
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(exceptions.CodeEvaluationError):
             self.e._execute_code('x = x.y')
