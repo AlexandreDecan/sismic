@@ -74,3 +74,49 @@ class ArcMissing(Mutator):
             mutants.append(new_mutant)
 
         return mutants
+
+
+class WrongStartingState(Mutator):
+    def __init__(self, statechart: model.StateChart = None):
+        super(WrongStartingState, self).__init__(statechart=statechart)
+        self.type = "WrongStartingState"
+
+    def mutate(self) -> list:
+        mutants = list()
+        state_names = set(self.statechart.children)
+        state_names.remove(self.statechart.initial)
+
+        for state_name in state_names:
+            new_mutant = self.separate_instance()
+            new_mutant.type = self.type
+            assert isinstance(new_mutant, model.StateChart)
+
+            new_mutant.initial = state_name
+
+            try:
+                new_mutant.validate()
+            except AssertionError as e:
+                continue
+
+            mutants.append(new_mutant)
+
+        for state in self.statechart.states:
+            if isinstance(state, model.CompositeStateMixin) and hasattr(state, "initial"):
+                state_names = set(state.children)
+                state_names.remove(state.initial)
+
+                for state_name in state_names:
+                    new_mutant = self.separate_instance()
+                    new_mutant.type = self.type
+                    assert isinstance(new_mutant, model.StateChart)
+
+                    new_mutant.initial = state_name
+
+                    try:
+                        new_mutant.validate()
+                    except AssertionError as e:
+                        continue
+
+                    mutants.append(new_mutant)
+
+        return mutants
