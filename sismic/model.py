@@ -122,13 +122,7 @@ class CompositeStateMixin:
     """
     Composite state can have children states.
     """
-
-    def __init__(self):
-        self._children = []
-
-    @property
-    def children(self):
-        return self._children
+    pass
 
 
 class BasicState(ContractMixin, StateMixin, TransitionStateMixin, ActionStateMixin):
@@ -231,8 +225,7 @@ class Transition(ContractMixin):
     :param action: action as code (if any)
     """
 
-    def __init__(self, from_state: str, to_state: str = None, event: str = None, guard: str = None,
-                 action: str = None):
+    def __init__(self, from_state: str, to_state: str = None, event: str = None, guard: str = None, action: str = None):
         ContractMixin.__init__(self)
         self._from_state = from_state
         self._to_state = to_state
@@ -304,6 +297,7 @@ class Statechart:
 
         self._states = {}  # name -> State object
         self._parent = {}  # name -> parent.name
+        self._children = {}  # name -> list of names
         self._transitions = []  # list of Transition objects
 
         self._root = None  # Name of the root element
@@ -345,7 +339,7 @@ class Statechart:
 
         # Register on parent state if any
         if parent:
-            self._states[self._parent[state.name]].children.append(state.name)
+            self._children.setdefault(parent, []).append(state.name)
 
     def register_transition(self, transition: Transition):
         """
@@ -399,6 +393,13 @@ class Statechart:
                 transitions.append(transition)
         return transitions
 
+    @property
+    def states(self):
+        """
+        List of state names in lexicographic order.
+        """
+        return sorted(self._states.keys())
+
     def state_for(self, name: str) -> StateMixin:
         """
         Return the state instance that has given name.
@@ -406,6 +407,22 @@ class Statechart:
         :return: a *StateMixin* that has the same name or None
         """
         return self._states.get(name, None)
+
+    def parent_for(self, name: str) -> str:
+        """
+        Return the name of the parent of given state name.
+        :param name: a state name
+        :return: its parent name, or None.
+        """
+        return self._parent[name]
+
+    def children_for(self, name: str) -> list:
+        """
+        Return the names of the children of the given state.
+        :param name: a state name
+        :return: a (possibly empty) list of children
+        """
+        return self._children.get(name, [])
 
     def ancestors_for(self, state: str) -> list:
         """
@@ -434,11 +451,9 @@ class Statechart:
         states_to_consider = [state]
         while states_to_consider:
             state = states_to_consider.pop(0)
-            state = self._states[state]
-            if isinstance(state, CompositeStateMixin):
-                for child in state.children:
-                    states_to_consider.append(child)
-                    descendants.append(child)
+            for child in self.children_for(state):
+                states_to_consider.append(child)
+                descendants.append(child)
         return descendants
 
     def depth_for(self, state: str) -> int:
@@ -545,11 +560,11 @@ class Statechart:
                     #           .format(state, self._parent[name]))
 
             if isinstance(state, CompositeStateMixin):  # C4
-                if len(state.children) <= 0:
+                if len(self.children_for(state.name)) == 0:
                     raise InvalidStatechartError('C4. Composite state {} should have at least one child'.format(state))
 
             if isinstance(state, CompoundState):  # C3
-                if state.initial and not (state.initial in state.children):
+                if state.initial and not (state.initial in self.children_for(state.name)):
                     raise InvalidStatechartError('C3. Initial state of {} should refer to one of its children'.format(state))
         # C6
         for transition in self._transitions:

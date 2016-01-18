@@ -367,7 +367,7 @@ class Interpreter:
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_for(x), x))
                 return model.MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, model.OrthogonalState):
-                return model.MicroStep(entered_states=sorted(leaf.children))
+                return model.MicroStep(entered_states=sorted(self._statechart.children_for(leaf.name)))
             elif isinstance(leaf, model.CompoundState) and leaf.initial:
                 return model.MicroStep(entered_states=[leaf.initial])
 
@@ -392,7 +392,7 @@ class Interpreter:
         exited_compound_states = list(filter(lambda s: isinstance(s, model.CompoundState), exited_states))
         for state in exited_compound_states:
             # Look for an HistoryState among its children
-            for child_name in state.children:
+            for child_name in self._statechart.children_for(state.name):
                 child = self._statechart.state_for(child_name)
                 if isinstance(child, model.HistoryState):
                     if child.deep:
@@ -402,7 +402,7 @@ class Interpreter:
                         self._memory[child.name] = list(active)
                     else:
                         # This MUST contain exactly one element!
-                        active = self._configuration.intersection(state.children)
+                        active = self._configuration.intersection(self.statechart.children_for(state.name))
                         assert len(active) == 1
                         self._memory[child.name] = list(active)
         # Update configuration
