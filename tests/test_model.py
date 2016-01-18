@@ -149,7 +149,7 @@ class ValidateTests(unittest.TestCase):
                  - target: s1
         """
         statechart = io.import_from_yaml(yaml)
-        statechart.transitions[0]._to_state = None
+        statechart._transitions[0]._to_state = None
         with self.assertRaises(exceptions.InvalidStatechartError) as cm:
             statechart.validate()
         self.assertTrue(cm.exception.args[0].startswith('C5.'))

@@ -6,19 +6,21 @@ Unreleased
 
  - (Added) A new exceptions hierarchy (see ``exceptions`` module).
    The new exceptions are used in place of the old ones (``Warning``, ``AssertionError`` and ``ValueError``).
- - (Added) A *initial code* property (YAML) for statecharts.
+ - (Added) An *initial code* property (YAML) for statecharts.
  - (Changed) Rename ``model.StateChart`` to ``model.Statechart``.
  - (Changed) ``Statechart.states`` becomes ``Statechart.state_for`` method.
  - (Changed) A statechart defines a root state (*initial state* in YAML).
  - (Changed) ``Transition.event`` is a string instead of an ``Event`` instance.
+ - (Changed) ``Transition.from_state``, ``Transition.to_state`` and ``StateMixin.name`` are protected.
  - (Removed) Contracts and codes for statecharts (define them on root state instead).
  - (Removed) ``io.export_to_yaml``.
  - (Removed) Cache for several ``model.Statechart`` methods.
+ - (Removed) ``transitions`` attribute on ``TransitionStateMixin``, use ``Statechart.transitions_for`` instead.
 
 0.16.0 (2015-01-15)
 -------------------
 
-- (Added) Add an ``InternalEvent`` subclass for ``model.Event``.
+- (Added) An ``InternalEvent`` subclass for ``model.Event``.
 - (Added) ``Interpreter`` now exposes its ``statechart``.
 - (Added) ``Statechart.validate`` checks that a targeted compound state declares an initial state.
 - (Changed) ``Interpreter.queue`` does not accept anymore an ``internal`` parameter.

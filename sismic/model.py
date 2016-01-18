@@ -115,13 +115,7 @@ class TransitionStateMixin:
     """
     A simple state can host transitions
     """
-
-    def __init__(self):
-        self._transitions = []
-
-    @property
-    def transitions(self):
-        return self._transitions
+    pass
 
 
 class CompositeStateMixin:
@@ -310,7 +304,7 @@ class Statechart:
 
         self._states = {}  # name -> State object
         self._parent = {}  # name -> parent.name
-        self.transitions = []  # list of Transition objects
+        self._transitions = []  # list of Transition objects
 
         self._root = None  # Name of the root element
 
@@ -360,8 +354,44 @@ class Statechart:
 
         :param transition: transition to add
         """
-        self.transitions.append(transition)
-        self._states[transition.from_state].transitions.append(transition)
+        self._transitions.append(transition)
+
+    def transitions_from(self, state: str) -> list:
+        """
+        Return the list of transitions starting from given state name.
+        :param state: name of source state
+        :return: a list of *Transition* instances
+        """
+        transitions = []
+        for transition in self._transitions:
+            if transition.from_state == state:
+                transitions.append(transition)
+        return transitions
+
+    def transitions_to(self, state: str) -> list:
+        """
+        Return the list of transitions targeting given state name.
+        Internal transitions are returned too.
+        :param state: name of target state
+        :return: a list of *Transition* instances
+        """
+        transitions = []
+        for transition in self._transitions:
+            if transition.to_state == state or (transition.to_state is None and transition.from_state == state):
+                transitions.append(transition)
+        return transitions
+
+    def transitions_with(self, event: str) -> list:
+        """
+        Return the list of transitions that can be triggered by given event name.
+        :param event: name of the event
+        :return: a list of *Transition* instances
+        """
+        transitions = []
+        for transition in self._transitions:
+            if transition.event == event:
+                transitions.append(transition)
+        return transitions
 
     def state_for(self, name: str) -> StateMixin:
         """
@@ -390,7 +420,7 @@ class Statechart:
             states = state_or_states
 
         names = set()
-        for transition in self.transitions:
+        for transition in self._transitions:
             if transition.event and transition.from_state in states:
                 names.add(transition.event)
         return sorted(names)
@@ -490,7 +520,7 @@ class Statechart:
         :raise InvalidStatechartError: if a check fails
         """
         # C1 & C5
-        for transition in self.transitions:
+        for transition in self._transitions:
             if (not (transition.from_state in self._states and
                      (not transition.to_state or transition.to_state in self._states))):
                 raise InvalidStatechartError('C1. Transition {} refers to an unknown state'.format(transition))
@@ -516,7 +546,7 @@ class Statechart:
                 if state.initial and not (state.initial in state.children):
                     raise InvalidStatechartError('C3. Initial state of {} should refer to one of its children'.format(state))
         # C6
-        for transition in self.transitions:
+        for transition in self._transitions:
             target_state = self._states.get(transition.to_state, self._states[transition.from_state])
             if isinstance(target_state, CompoundState):
                 if not target_state.initial:

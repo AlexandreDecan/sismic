@@ -37,14 +37,16 @@ class ElevatorContractTests(unittest.TestCase):
         self.assertTrue(isinstance(cm.exception.obj, StateMixin))
 
     def test_transition_precondition(self):
-        self.sc.state_for('floorSelecting').transitions[0].preconditions.append('False')
+        transitions = self.sc.transitions_from('floorSelecting')
+        transitions[0].preconditions.append('False')
         self.interpreter.queue(Event('floorSelected', floor=4))
         with self.assertRaises(PreconditionError) as cm:
             self.interpreter.execute()
         self.assertTrue(isinstance(cm.exception.obj, Transition))
 
     def test_transition_postcondition(self):
-        self.sc.state_for('floorSelecting').transitions[0].postconditions.append('False')
+        transitions = self.sc.transitions_from('floorSelecting')
+        transitions[0].postconditions.append('False')
         self.interpreter.queue(Event('floorSelected', floor=4))
         with self.assertRaises(PostconditionError) as cm:
             self.interpreter.execute()
@@ -52,7 +54,8 @@ class ElevatorContractTests(unittest.TestCase):
 
     def test_do_not_raise(self):
         self.interpreter = Interpreter(self.sc, ignore_contract=True)
-        self.sc.state_for('floorSelecting').transitions[0].postconditions.append('False')
+        transitions = self.sc.transitions_from('floorSelecting')
+        transitions[0].postconditions.append('False')
         self.interpreter.queue(Event('floorSelected', floor=4))
         self.interpreter.execute()
 
