@@ -27,7 +27,7 @@ class Pause:
 
 class Story(list):
     """
-    A story is a sequence of ``Event`` and ``Pause``.
+    A story is a sequence of *Event* and *Pause*.
 
     """
     def tell(self, interpreter, *args, **kwargs):
@@ -35,8 +35,8 @@ class Story(list):
         Tells the whole story to the interpreter.
 
         :param interpreter: an interpreter instance
-        :param args: additional positional arguments that are passed to ``interpreter.execute``.
-        :param kwargs: additional keywords arguments that are passed to ``interpreter.execute``.
+        :param args: additional positional arguments that are passed to *interpreter.execute*.
+        :param kwargs: additional keywords arguments that are passed to *interpreter.execute*.
         :return: the interpreter, to chain calls
         """
         for item in self:
@@ -57,7 +57,7 @@ def random_stories_generator(items, length: int=None, number: int=None):
     Parameter *items* can be any iterable containing events and/or pauses.
 
     :param items: Items to pick from
-    :param length: Length of the story, or ``len(items)``
+    :param length: Length of the story, or *len(items)*
     :param number: number of stories to generate (None = infinite)
     :return: An infinite Story generator
     """
@@ -81,7 +81,7 @@ def story_from_trace(trace: list) -> Story:
 
     Notice that internal events are ignored.
 
-    :param trace: A list of ``MacroStep`` instances.
+    :param trace: A list of *MacroStep* instances.
     :return: A story
     """
     story = Story()

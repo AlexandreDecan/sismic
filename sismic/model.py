@@ -4,7 +4,7 @@ from sismic.exceptions import InvalidStatechartError
 class Event:
     """
     Simple event with a name and (optionally) some data.
-    Unless the attribute already exists, each key from ``data`` is exposed as an attribute
+    Unless the attribute already exists, each key from *data* is exposed as an attribute
     of this class.
 
     :param name: Name of the event
@@ -179,10 +179,7 @@ class OrthogonalState(ContractMixin, StateMixin, TransitionStateMixin, ActionSta
 
 class HistoryStateMixin:
     """
-    History state can be either 'shallow' (default) or 'deep'.
-    A shallow history state resumes the execution of its parent.
-    A deep history state resumes the execution of its parent, and of every nested
-    active states in its parent.
+    History state has a memory that can be resumed.
 
     :param initial: name of the initial state
     """
@@ -609,12 +606,12 @@ class Statechart:
 
     def least_common_ancestor(self, s1: str, s2: str) -> str:
         """
-        Return the deepest common ancestor for *s1* and *s2*, or ``None`` if
+        Return the deepest common ancestor for *s1* and *s2*, or *None* if
         there is no common ancestor except root (top-level) state.
 
         :param s1: name of first state
         :param s2: name of second state
-        :return: name of deepest common ancestor or ``None``
+        :return: name of deepest common ancestor or *None*
         """
         s1_anc = self.ancestors_for(s1)
         s2_anc = self.ancestors_for(s2)
@@ -653,7 +650,7 @@ class Statechart:
         with a *from_state* equals to given string.
         If *state_or_states* is a list of state names, return the events for all those states.
 
-        :param state_or_states: ``None``, a state name or a list of state names.
+        :param state_or_states: *None*, a state name or a list of state names.
         :return: A list of event names
         """
         if state_or_states is None:
@@ -672,12 +669,12 @@ class Statechart:
 
 class MicroStep:
     """
-    Create a micro step. A step consider ``event``, takes ``transition`` and results in a list
-    of ``entered_states`` and a list of ``exited_states``.
+    Create a micro step. A step consider *event*, takes a *transition* and results in a list
+    of *entered_states* and a list of *exited_states*.
     Order in the two lists is REALLY important!
 
     :param event: Event or None in case of eventless transition
-    :param transition: a ''Transition`` or None if no processed transition
+    :param transition: a *Transition* or None if no processed transition
     :param entered_states: possibly empty list of entered states
     :param exited_states: possibly empty list of exited states
     """
@@ -698,7 +695,7 @@ class MacroStep:
     A macro step is a list of micro steps.
 
     :param time: the time at which this step was executed
-    :param steps: a list of ``MicroStep`` instances
+    :param steps: a list of *MicroStep* instances
     """
 
     def __init__(self, time: int, steps: list):
@@ -722,7 +719,7 @@ class MacroStep:
     @property
     def event(self) -> Event:
         """
-        Event (or ``None``) that were consumed.
+        Event (or *None*) that were consumed.
         """
         for step in self._steps:
             if step.event:

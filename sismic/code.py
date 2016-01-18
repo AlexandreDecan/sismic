@@ -16,7 +16,7 @@ class Evaluator(metaclass=abc.ABCMeta):
     entered or exited, and of the transitions that are processed.
 
     :param interpreter: the interpreter that will use this evaluator,
-        is expected to be an ``Interpreter`` instance
+        is expected to be an *Interpreter* instance
     :param initial_context: an optional dictionary to populate the context
     """
     def __init__(self, interpreter=None, initial_context: dict = None):
@@ -58,6 +58,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         """
         Execute the initial code of a statechart.
         This method is called at the very beginning of the execution.
+
         :param statechart: statechart to consider
         """
         if statechart.bootstrap:
@@ -68,7 +69,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         Evaluate the guard for given transition.
 
         :param transition: the considered transition
-        :param event: instance of ``Event`` if any
+        :param event: instance of *Event* if any
         :return: truth value of *code*
         """
         if transition.guard:
@@ -77,10 +78,10 @@ class Evaluator(metaclass=abc.ABCMeta):
     def execute_action(self, transition: Transition, event: Event) -> bool:
         """
         Execute the action for given transition.
-        This method is called for every transition that is processed, even those with no ``action``.
+        This method is called for every transition that is processed, even those with no *action*.
 
         :param transition: the considered transition
-        :param event: instance of ``Event`` if any
+        :param event: instance of *Event* if any
         :return: truth value of *code*
         """
         if transition.action:
@@ -89,7 +90,7 @@ class Evaluator(metaclass=abc.ABCMeta):
     def execute_onentry(self, state: StateMixin):
         """
         Execute the on entry action for given state.
-        This method is called for every state that is entered, even those with no ``on_entry``.
+        This method is called for every state that is entered, even those with no *on_entry*.
 
         :param state: the considered state
         """
@@ -99,7 +100,7 @@ class Evaluator(metaclass=abc.ABCMeta):
     def execute_onexit(self, state: StateMixin):
         """
         Execute the on exit action for given state.
-        This method is called for every state that is exited, even those with no ``on_exit``.
+        This method is called for every state that is exited, even those with no *on_exit*.
 
         :param state: the considered state
         """
@@ -108,11 +109,11 @@ class Evaluator(metaclass=abc.ABCMeta):
 
     def evaluate_preconditions(self, obj, event: Event = None) -> list:
         """
-        Evaluate the preconditions for given object (either a ``StateMixin`` or a
-        ``Transition``) and return a list of conditions that are not satisfied.
+        Evaluate the preconditions for given object (either a *StateMixin* or a
+        *Transition*) and return a list of conditions that are not satisfied.
         
         :param obj: the considered state or transition
-        :param event: an optional ``Event`` instance, in the case of a transition
+        :param event: an optional *Event* instance, in the case of a transition
         :return: list of unsatisfied conditions
         """
         event_d = {'event': event} if isinstance(obj, Transition) else None
@@ -120,11 +121,11 @@ class Evaluator(metaclass=abc.ABCMeta):
 
     def evaluate_invariants(self, obj, event: Event = None) -> list:
         """
-        Evaluate the invariants for given object (either a ``StateMixin`` or a
-        ``Transition``) and return a list of conditions that are not satisfied.
+        Evaluate the invariants for given object (either a *StateMixin* or a
+        *Transition*) and return a list of conditions that are not satisfied.
         
         :param obj: the considered state or transition
-        :param event: an optional ``Event`` instance, in the case of a transition
+        :param event: an optional *Event* instance, in the case of a transition
         :return: list of unsatisfied conditions
         """
         event_d = {'event': event} if isinstance(obj, Transition) else None
@@ -132,11 +133,11 @@ class Evaluator(metaclass=abc.ABCMeta):
 
     def evaluate_postconditions(self, obj, event: Event = None) -> list:
         """
-        Evaluate the postconditions for given object (either a ``StateMixin`` or a
-        ``Transition``) and return a list of conditions that are not satisfied.
+        Evaluate the postconditions for given object (either a *StateMixin* or a
+        *Transition*) and return a list of conditions that are not satisfied.
         
         :param obj: the considered state or transition
-        :param event: an optional ``Event`` instance, in the case of a transition
+        :param event: an optional *Event* instance, in the case of a transition
         :return: list of unsatisfied conditions
         """
         event_d = {'event': event} if isinstance(obj, Transition) else None
@@ -166,34 +167,34 @@ class PythonEvaluator(Evaluator):
     Depending on the method that is called, the context can expose additional values:
 
     - Always:
-        - A ``time`` value that represents the current time exposed by the interpreter.
-        - An ``active(name) -> bool`` Boolean function that takes a state name and return ``True`` if and only
+        - A *time* value that represents the current time exposed by the interpreter.
+        - An *active(name) -> bool* Boolean function that takes a state name and return *True* if and only
           if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
           that makes use of this evaluator.
     - On code execution:
-        - A ``send`` function that takes an event name and additional keyword parameters and fires an internal event with.
-        - If the code is related to a transition, the ``event`` that fires the transition is exposed.
+        - A *send* function that takes an event name and additional keyword parameters and fires an internal event with.
+        - If the code is related to a transition, the *event* that fires the transition is exposed.
     - On code evaluation:
-        - If the code is related to a transition, the ``event`` that fires the transition is exposed.
+        - If the code is related to a transition, the *event* that fires the transition is exposed.
     - On guard evaluation:
-        - An ``after(sec) -> bool`` Boolean function that returns ``True`` if and only if the source state
+        - An *after(sec) -> bool* Boolean function that returns *True* if and only if the source state
           was entered more than *sec* seconds ago. The time is evaluated according to Interpreter's clock.
-        - A ``idle(sec) -> bool`` Boolean function that returns ``True`` if and only if the source state
+        - A *idle(sec) -> bool* Boolean function that returns *True* if and only if the source state
           did not fire a transition for more than *sec* ago. The time is evaluated according to Interpreter's clock.
     - On postcondition or invariant:
-        - A variable ``__old__`` that has an attribute ``x`` for every ``x`` in the context when either the state
+        - A variable *__old__* that has an attribute *x* for every *x* in the context when either the state
           was entered (if the condition involves a state) or the transition was processed (if the condition
-          involves a transition). The value of ``__old__.x`` is a shallow copy of ``x`` at that time.
+          involves a transition). The value of *__old__.x* is a shallow copy of *x* at that time.
 
-    Unless you override its entry in the context, the ``__builtins__`` of Python are automatically exposed.
+    Unless you override its entry in the context, the *__builtins__* of Python are automatically exposed.
     This implies you can use nearly everything from Python in your code.
 
     If an exception occurred while executing or evaluating a piece of code, it is propagated by the
     evaluator.
 
     :param interpreter: the interpreter that will use this evaluator,
-        is expected to be an ``Interpreter`` instance
-    :param initial_context: a dictionary that will be used as ``__locals__``
+        is expected to be an *Interpreter* instance
+    :param initial_context: a dictionary that will be used as *__locals__*
     """
 
     def __init__(self, interpreter=None, initial_context: dict = None):

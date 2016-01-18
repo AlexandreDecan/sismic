@@ -135,6 +135,7 @@ following methods is not defined in a concrete evaluator instance:
 .. autoclass:: sismic.code.Evaluator
     :members:
     :exclude-members: _evaluate_code, _execute_code, context
+    :member-order: bysource
     :noindex:
 
 In order to understand how the evaluator works, the documentation of the :py:class:`~sismic.code.Evaluator` mentions the following important statements:

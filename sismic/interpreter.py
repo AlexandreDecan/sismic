@@ -13,11 +13,11 @@ class Interpreter:
 
     :param statechart: statechart to interpret
     :param evaluator_klass: An optional callable (eg. a class) that takes an interpreter and an optional initial
-        context as input and return a ``Evaluator`` instance that will be used to initialize the interpreter.
-        By default, the ``PythonEvaluator`` class will be used.
+        context as input and return an *Evaluator* instance that will be used to initialize the interpreter.
+        By default, the *PythonEvaluator* class will be used.
     :param initial_context: an optional initial context that will be provided to the evaluator.
         By default, an empty context is provided
-    :param initial_time: can be used to defined the initial value of the internal clock (see ``self.time``).
+    :param initial_time: can be used to defined the initial value of the internal clock (see *time*).
     :param ignore_contract: set to True to ignore contract checking during the execution.
     """
 
@@ -99,11 +99,11 @@ class Interpreter:
         """
         Bind an interpreter or a callable to the current interpreter.
         Each time an internal event is sent by this interpreter, any bound object will be called
-        with the same event. If *interpreter_or_callable* is an Interpreter instance,  its ``send`` method is called.
-        This is, if ``i1`` and ``i2`` are interpreters, ``i1.bind(i2)`` is equivalent to ``i1.bind(i2.send)``.
+        with the same event. If *interpreter_or_callable* is an *Interpreter* instance,  its *queue* method is called.
+        This is, if *i1* and *i2* are interpreters, *i1.bind(i2)* is equivalent to *i1.bind(i2.queue)*.
 
         :param interpreter_or_callable: interpreter or callable to bind
-        :return: ``self`` so it can be chained
+        :return: *self* so it can be chained
         """
         if isinstance(interpreter_or_callable, Interpreter):
             bound_callable = interpreter_or_callable.queue
@@ -116,11 +116,11 @@ class Interpreter:
     def queue(self, event: model.Event):
         """
         Queue an event to the interpreter.
-        Internal events are propagated to bound callables (see ``bind`` method).
+        Internal events are propagated to bound callables (see *bind* method).
 
-        :param event: an ``Event`` or ``InternalEvent`` instance. If internal, the event is
+        :param event: an *Event* or *InternalEvent* instance. If internal, the event is
             prepended to the events queue and propagated to bound interpreters or callables.
-        :return: ``self`` so it can be chained.
+        :return: *self* so it can be chained.
         """
         if isinstance(event, model.InternalEvent):
             self._events.appendleft(event)
@@ -133,8 +133,8 @@ class Interpreter:
 
     def execute(self, max_steps: int=-1) -> list:
         """
-        Repeatedly calls ``execute_once()`` and return a list containing
-        the returned values of ``execute_once()``.
+        Repeatedly calls *execute_once* and return a list containing
+        the returned values of *execute_once*.
 
         Notice that this does NOT return an iterator but computes the whole list first
         before returning it.
@@ -142,7 +142,7 @@ class Interpreter:
         :param max_steps: An upper bound on the number steps that are computed and returned.
             Default is -1, no limit. Set to a positive integer to avoid infinite loops
             in the statechart execution.
-        :return: A list of ``MacroStep`` instances
+        :return: A list of *MacroStep* instances
         """
         returned_steps = []
         i = 0
@@ -163,7 +163,7 @@ class Interpreter:
         states are exited, transition is processed, states are entered, statechart is stabilized and only
         after that, the next transition is processed.
 
-        :return: a macro step or ``None`` if nothing happened
+        :return: a macro step or *None* if nothing happened
         """
         # Eventless transitions first
         event = None
@@ -209,7 +209,7 @@ class Interpreter:
         """
         Return a list of eventless transitions that can be triggered.
 
-        :return: a list of ``Transition`` instances
+        :return: a list of *Transition* instances
         """
         return self._select_transitions(event=None)
 
@@ -219,7 +219,7 @@ class Interpreter:
         transition if *event* is None.
         Transitions are kept according to a inner-first/source-state semantic.
         :param event: event to consider
-        :return: a list of ``Transition`` instances
+        :return: a list of *Transition* instances
         """
         transitions = set()
 
@@ -245,10 +245,10 @@ class Interpreter:
         Given a list of triggered transitions, return a list of transitions in an order that represents
         the order in which they have to be processed.
 
-        :param transitions: a list of ``Transition`` instances
-        :return: an ordered list of ``Transition`` instances
-        :raise ExecutionError: In case of non-determinism (NonDeterminismError) or conflicting
-            transitions (ConflictingTransitionsError).
+        :param transitions: a list of *Transition* instances
+        :return: an ordered list of *Transition* instances
+        :raise ExecutionError: In case of non-determinism (*NonDeterminismError*) or conflicting
+            transitions (*ConflictingTransitionsError*).
         """
         if len(transitions) > 1:
             # If more than one transition, we check (1) they are from separate regions and (2) they do not conflict
@@ -347,7 +347,7 @@ class Interpreter:
          - Enter the children of an orthogonal state with no active child
          - Exit active states if all "deepest" (leaves) states are final
 
-        :return: A ``MicroStep`` instance or ``None`` if this statechart can not be more stabilized
+        :return: A *MicroStep* instance or *None* if this statechart can not be more stabilized
         """
         # Check if we are in a set of "stable" states
         leaves_names = self._statechart.leaf_for(list(self._configuration))
@@ -373,9 +373,9 @@ class Interpreter:
 
     def _execute_step(self, step: model.MicroStep):
         """
-        Apply given ``MicroStep`` on this statechart
+        Apply given *MicroStep* on this statechart
 
-        :param step: ``MicroStep`` instance
+        :param step: *MicroStep* instance
         """
         entered_states = list(map(lambda s: self._statechart.state_for(s), step.entered_states))
         exited_states = list(map(lambda s: self._statechart.state_for(s), step.exited_states))
@@ -435,7 +435,7 @@ class Interpreter:
         """
         Compute, apply and return stabilization steps.
 
-        :return: A list of ``MicroStep`` instances
+        :return: A list of *MicroStep* instances
         """
         # Stabilization
         steps = []
@@ -451,9 +451,9 @@ class Interpreter:
         Evaluate the conditions for given object.
 
         :param obj: object with preconditions, postconditions or invariants
-        :param cond_type: either *preconditions*, *postconditions* or *invariants*
+        :param cond_type: either "preconditions", "postconditions" or "invariants"
         :param step: step in which the check occurs.
-        :raises ContractError: if a condition fails and ``ignore_contract`` is False.
+        :raises ContractError: if a condition fails and *ignore_contract* is False.
         """
         if self._ignore_contract:
             return
@@ -475,15 +475,15 @@ class Interpreter:
 def run_in_background(interpreter: Interpreter, delay: float=0.05, callback=None):
     """
     Run given interpreter in background. The time is updated according to
-    ``time.time() - starttime``. The interpreter is ran until it reachs a final configuration.
-    You can manually stop the thread using the added ``stop`` of the returned Thread object.
-    This is for convenience only and should be avoided, because a call to ``stop`` puts the interpreter in
+    *time.time() - starttime*. The interpreter is ran until it reachs a final configuration.
+    You can manually stop the thread using the added *stop* of the returned Thread object.
+    This is for convenience only and should be avoided, because a call to *stop* puts the interpreter in
     an empty (and thus final) configuration, without properly leaving the active states.
 
     :param interpreter: an interpreter
-    :param delay: delay between each call to ``execute()``
-    :param callback: a function that accepts the result of ``execute``.
-    :return: started thread (instance of ``threading.Thread``)
+    :param delay: delay between each call to *execute()*
+    :param callback: a function that accepts the result of *execute*.
+    :return: started thread (instance of *threading.Thread*)
     """
     import time
     import threading

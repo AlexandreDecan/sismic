@@ -41,7 +41,7 @@ Other statechart tools do not even define any order on the transitions in such s
     systems such nondeterminism is not acceptable."
     --- `The Rhapsody Semantics of Statecharts <http://research.microsoft.com/pubs/148785/charts04.pdf>`__
 
-We decide to follow Rhapsody and to raise an error (in fact, a ``Warning``) if such cases of
+We decide to follow Rhapsody and to raise an error (in fact, a :py:exc:`~sismic.exceptions.NonDeterminismError`) if such cases of
 nondeterminism occur during the execution. Notice that this only concerns multiple transitions in the same
 composite state, not in parallel states.
 

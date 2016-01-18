@@ -12,11 +12,11 @@ SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')
 def import_from_yaml(statechart: str, ignore_schema=False) -> Statechart:
     """
     Import a statechart from a YAML representation.
-    YAML is first validated against ``io.SCHEMA``.
+    YAML is first validated against *io.SCHEMA*.
 
     :param statechart: string or any equivalent object
-    :param ignore_schema: set to ``True`` to disable yaml validation.
-    :return: a ``StateChart`` instance
+    :param ignore_schema: set to *True* to disable yaml validation.
+    :return: a *StateChart* instance
     """
     data = yaml.load(statechart)
     if not ignore_schema:

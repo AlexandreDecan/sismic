@@ -43,7 +43,7 @@ class ContractError(SismicError):
     All the parameters are optional, and are exposed to ease debug.
 
     :param configuration: list of active states
-    :param step: a ``MicroStep`` or ``MacroStep`` instance.
+    :param step: a *MicroStep* or *MacroStep* instance.
     :param obj: the object that is concerned by the assertion
     :param assertion: the assertion that failed
     :param context: the context in which the condition failed
