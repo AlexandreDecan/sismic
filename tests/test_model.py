@@ -44,9 +44,9 @@ class TraversalTests(unittest.TestCase):
         self.assertEqual(self.sc.leaf_for(['s1', 's1b', 's1b1']), ['s1b1'])
 
     def test_events(self):
-        self.assertEqual(self.sc.events(), ['click', 'close', 'validate'])
-        self.assertEqual(self.sc.events('s1b1'), ['validate'])
-        self.assertEqual(self.sc.events(['s1b1', 's1b']), ['click', 'validate'])
+        self.assertEqual(self.sc.events_for(), ['click', 'close', 'validate'])
+        self.assertEqual(self.sc.events_for('s1b1'), ['validate'])
+        self.assertEqual(self.sc.events_for(['s1b1', 's1b']), ['click', 'validate'])
 
     def test_name_collision(self):
         root = model.CompoundState('root', 'a')

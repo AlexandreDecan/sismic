@@ -8,11 +8,12 @@ Unreleased
    The new exceptions are used in place of the old ones (``Warning``, ``AssertionError`` and ``ValueError``).
  - (Added) An *initial code* property (YAML) for statecharts.
  - (Added) Statechart has ``transitions_from``, ``transitions_to`` and ``transitions_with`` methods.
+ - (Changed) ``Transition.event`` is a string instead of an ``Event`` instance.
+ - (Changed) ``Transition.from_state``, ``Transition.to_state`` and ``StateMixin.name`` are protected.
  - (Changed) Rename ``model.StateChart`` to ``model.Statechart``.
  - (Changed) ``Statechart.states`` becomes ``Statechart.state_for`` method.
  - (Changed) A statechart defines a root state (*initial state* in YAML).
- - (Changed) ``Transition.event`` is a string instead of an ``Event`` instance.
- - (Changed) ``Transition.from_state``, ``Transition.to_state`` and ``StateMixin.name`` are protected.
+ - (Changed) Rename ``Statechart.events`` to ``Statechart.events_for``.
  - (Removed) Contracts and codes for statecharts (define them on root state instead).
  - (Removed) ``io.export_to_yaml``.
  - (Removed) Cache for several ``model.Statechart`` methods.

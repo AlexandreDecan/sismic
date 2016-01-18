@@ -407,30 +407,6 @@ class Statechart:
         """
         return self._states.get(name, None)
 
-    def events(self, state_or_states=None) -> list:
-        """
-        List of possible event names.
-        If *state_or_states* is omitted, returns all possible event names.
-        If *state_or_states* is a string, return the events for which a transition exists
-        with a *from_state* equals to given string.
-        If *state_or_states* is a list of state names, return the events for all those states.
-
-        :param state_or_states: ``None``, a state name or a list of state names.
-        :return: A list of event names
-        """
-        if state_or_states is None:
-            states = self._states.keys()
-        elif isinstance(state_or_states, str):
-            states = [state_or_states]
-        else:
-            states = state_or_states
-
-        names = set()
-        for transition in self._transitions:
-            if transition.event and transition.from_state in states:
-                names.add(transition.event)
-        return sorted(names)
-
     def ancestors_for(self, state: str) -> list:
         """
         Return an ordered list of ancestors for the given state.
@@ -510,6 +486,30 @@ class Statechart:
             if keep:
                 leaves.append(state)
         return leaves
+
+    def events_for(self, state_or_states=None) -> list:
+        """
+        List of possible event names.
+        If *state_or_states* is omitted, returns all possible event names.
+        If *state_or_states* is a string, return the events for which a transition exists
+        with a *from_state* equals to given string.
+        If *state_or_states* is a list of state names, return the events for all those states.
+
+        :param state_or_states: ``None``, a state name or a list of state names.
+        :return: A list of event names
+        """
+        if state_or_states is None:
+            states = self._states.keys()
+        elif isinstance(state_or_states, str):
+            states = [state_or_states]
+        else:
+            states = state_or_states
+
+        names = set()
+        for transition in self._transitions:
+            if transition.event and transition.from_state in states:
+                names.add(transition.event)
+        return sorted(names)
 
     def validate(self) -> bool:
         """

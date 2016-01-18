@@ -150,7 +150,7 @@ and executed by the method.
 
     assert len(interpreter.execute(max_steps=10)) <= 10
 
-For convenience, a :py:class:`~sismic.model.Statechart` has an :py:meth:`~sismic.model.Statechart.events` method
+For convenience, a :py:class:`~sismic.model.Statechart` has an :py:meth:`~sismic.model.Statechart.events_for` method
 that returns the list of all possible events that can be interpreted by this statechart (other events will
 be consumed and ignored).
 This method also accepts a state name or a list of state names to restrict the list of returned events,
@@ -158,7 +158,7 @@ and is thus commonly used to get a list of the "interesting" events:
 
 .. testcode:: interpreter
 
-    print(my_statechart.events(interpreter.configuration))
+    print(my_statechart.events_for(interpreter.configuration))
 
 .. testoutput:: interpreter
     :hide:
