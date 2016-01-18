@@ -28,7 +28,10 @@ class Event:
                 self.data == other.data
 
     def __getattr__(self, attr):
-        return self.data[attr]
+        try:
+            return self.data[attr]
+        except:
+            raise AttributeError('{} has no attribute {}'.format(self, attr))
 
     def __hash__(self):
         return hash(self.name)
