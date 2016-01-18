@@ -229,17 +229,17 @@ class FinalState(ContractMixin, StateMixin, ActionStateMixin):
 class Transition(ContractMixin):
     """
     A Transition between two states.
-    Transition can be eventless or internal (but not both at once).
+    Transition can be eventless or internal.
     A condition (code as string) can be specified as a guard.
 
     :param from_state: name of the source state
     :param to_state: name of the target state (if transition is not internal)
-    :param event: event (if any)
+    :param event: event name (if any)
     :param guard: condition as code (if any)
     :param action: action as code (if any)
     """
 
-    def __init__(self, from_state: str, to_state: str = None, event: Event = None, guard: str = None,
+    def __init__(self, from_state: str, to_state: str = None, event: str = None, guard: str = None,
                  action: str = None):
         ContractMixin.__init__(self)
         self.from_state = from_state
@@ -273,7 +273,7 @@ class Transition(ContractMixin):
 
     def __str__(self):
         to_state = self.to_state if self.to_state else '[' + self.from_state + ']'
-        event = '+' + self.event.name if self.event else ''
+        event = '+' + self.event if self.event else ''
         return self.from_state + event + ' -> ' + to_state
 
     def __hash__(self):
@@ -359,7 +359,7 @@ class StateChart(ContractMixin, StateMixin, ActionStateMixin, CompositeStateMixi
         names = set()
         for transition in self.transitions:
             if transition.event and transition.from_state in states:
-                names.add(transition.event.name)
+                names.add(transition.event)
         return sorted(names)
 
     @lru_cache()

@@ -89,7 +89,7 @@ def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
     :param transition_d: a dictionary containing transition data
     :return: an instance of Transition
     """
-    event = Event(transition_d['event']) if 'event' in transition_d else None
+    event = transition_d.get('event', None)
     transition = Transition(state_name, transition_d.get('target', None), event,
                             transition_d.get('guard', None), transition_d.get('action', None))
 
@@ -214,7 +214,7 @@ def _export_element_to_dict(el, ordered=False) -> dict:
         if not el.internal:
             d['target'] = el.to_state
         if not el.eventless:
-            d['event'] = el.event.name
+            d['event'] = el.event
         if el.guard:
             d['guard'] = el.guard
         if el.action:
