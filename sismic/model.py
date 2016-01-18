@@ -1,5 +1,12 @@
 from sismic.exceptions import InvalidStatechartError
 
+__all__ = ['Event', 'InternalEvent',
+           'ContractMixin', 'StateMixin', 'ActionStateMixin', 'TransitionStateMixin', 'CompositeStateMixin', 'HistoryStateMixin',
+           'BasicState', 'CompoundState', 'OrthogonalState', 'ShallowHistoryState', 'DeepHistoryState', 'FinalState',
+           'Transition',
+           'Statechart',
+           'MicroStep', 'MacroStep']
+
 
 class Event:
     """
@@ -125,6 +132,17 @@ class CompositeStateMixin:
     pass
 
 
+class HistoryStateMixin:
+    """
+    History state has a memory that can be resumed.
+
+    :param initial: name of the initial state
+    """
+
+    def __init__(self, initial: str = None):
+        self.initial = initial
+
+
 class BasicState(ContractMixin, StateMixin, TransitionStateMixin, ActionStateMixin):
     """
     A basic state, with a name, transitions, actions, etc. but no child state.
@@ -175,17 +193,6 @@ class OrthogonalState(ContractMixin, StateMixin, TransitionStateMixin, ActionSta
         TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
         CompositeStateMixin.__init__(self)
-
-
-class HistoryStateMixin:
-    """
-    History state has a memory that can be resumed.
-
-    :param initial: name of the initial state
-    """
-
-    def __init__(self, initial: str = None):
-        self.initial = initial
 
 
 class ShallowHistoryState(StateMixin, ContractMixin, HistoryStateMixin):

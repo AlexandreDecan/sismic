@@ -1,6 +1,8 @@
 from sismic.stories import Story, Pause
 from sismic.model import Event
 
+__all__ = ['teststory_from_trace']
+
 
 def teststory_from_trace(trace: list) -> Story:
     """

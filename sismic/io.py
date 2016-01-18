@@ -6,6 +6,9 @@ from sismic.model import Transition, Statechart, BasicState, CompoundState, Orth
     DeepHistoryState, FinalState, StateMixin
 from sismic.exceptions import InvalidStatechartError
 
+__all__ = ['import_from_yaml']
+
+
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')
 
 

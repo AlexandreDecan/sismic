@@ -1,7 +1,7 @@
 import unittest
 from sismic import io
 from sismic.interpreter import Interpreter
-from sismic.model import MacroStep, MicroStep
+from sismic.model import MacroStep, MicroStep, Event, InternalEvent
 from sismic.stories import *
 
 

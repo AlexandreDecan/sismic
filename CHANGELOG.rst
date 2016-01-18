@@ -26,6 +26,8 @@ Many backward incompatible changes in this update, look carefully at the changel
    accept a ``validate_statechart`` parameter. Its ``validate_schema`` parameter is now ``not ignore_schema``.
  - (Changed) Split ``model.HistoryState`` into a mixin ``model.HistoryStateMixin`` and two concrete subclasses,
    namely ``ShallowHistoryState`` and ``DeepHistoryState``.
+ - (Changed) Adapt module hierarchy (no API change, but see ``code`` module).
+ - (Changed) Define ``__all__`` in each module, to restrict usage of imported stuff.
  - (Removed) Contracts and codes for statecharts (define them on root state instead).
  - (Removed) Cache for several ``model.Statechart`` methods.
  - (Removed) ``Statechart.validate`` (C1, C2 and C4 are now included in the construction process).

@@ -1,6 +1,8 @@
 from sismic.model import Event, InternalEvent
 import random
 
+__all__ = ['Pause', 'Story', 'random_stories_generator', 'story_from_trace']
+
 
 class Pause:
     """

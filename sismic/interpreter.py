@@ -6,6 +6,8 @@ from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
 from sismic.exceptions import InvariantError, PreconditionError, PostconditionError
 from sismic.code import PythonEvaluator
 
+__all__ = ['Interpreter', 'run_in_background']
+
 
 class Interpreter:
     """
