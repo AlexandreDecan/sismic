@@ -452,13 +452,59 @@ class Statechart:
             if self._parent[other_state.name] == old_name:
                 self._parent[other_state.name] = new_name
 
-        # Rename
-        state._name = new_name
+        # Renaming
+        self._root = new_name if self.root == old_name else self.root
+
+        parent_name = self._parent[old_name]
+
         self._states[new_name] = self._states.pop(old_name)
-        try:
-            self._children[new_name] = self._children.pop(old_name)
-        except KeyError:
-            pass
+        self._parent[new_name] = self._parent.pop(old_name)
+        self._children[new_name] = self._children.pop(old_name, [])
+
+        parent_children = self._children.get(parent_name, [old_name])  # Default to avoid catching an exception
+        parent_children.remove(old_name)
+        parent_children.append(new_name)
+        self._children[parent_name] = parent_children
+
+    def move_state(self, name: str, new_parent: str):
+        """
+        Move given state (and its children) such that its new parent is *new_parent*.
+
+        Notice that a state cannot be moved inside itself or inside one of its descendants.
+        If the state to move is the target of an *initial* or *memory* property of its parent,
+        this property will be set to None. The same occurs if given state is an history state.
+
+        :param name: name of the state to move
+        :param new_parent: name of the new parent
+        """
+        # Check that both states exist
+        state = self.state_for(name)
+        new_parent_state = self.state_for(new_parent)
+
+        # Check that parent is not a descendant (or self) of given state
+        if new_parent in [name] + self.descendants_for(name):
+            raise StatechartError('State {} cannot be moved into itself or one of its descendant.'.format(state))
+
+        # Change its parent and register state as a child
+        old_parent = self.parent_for(name)
+        self._parent[name] = new_parent
+        self._children[old_parent].remove(name)
+        self._children.setdefault(new_parent, []).append(name)
+
+        # Check memory property
+        if isinstance(state, HistoryStateMixin):
+            state.memory = None
+
+        for other_state in self._states.values():
+            # Change initial (CompoundState)
+            if isinstance(other_state, CompoundState):
+                if other_state.initial == name:
+                    other_state.initial = None
+
+            # Change memory (HistoryState)
+            if isinstance(other_state, HistoryStateMixin):
+                if other_state.memory == name:
+                    other_state.memory = None
 
     def state_for(self, name: str) -> StateMixin:
         """

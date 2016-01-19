@@ -195,6 +195,7 @@ class TransitionRotationTests(unittest.TestCase):
 
         with self.assertRaises(exceptions.StatechartError):
             self.sc.rotate_transition(tr, new_source='unknown')
+        self.sc.validate()
 
     def test_rotate_target(self):
         tr = list(filter(lambda t: t.source == 's1', self.sc.transitions))[0]
@@ -210,6 +211,7 @@ class TransitionRotationTests(unittest.TestCase):
 
         with self.assertRaises(exceptions.StatechartError):
             self.sc.rotate_transition(tr, new_target='unknown')
+        self.sc.validate()
 
     def test_rotate_both(self):
         tr = list(filter(lambda t: t.source == 's1', self.sc.transitions))[0]
@@ -217,8 +219,9 @@ class TransitionRotationTests(unittest.TestCase):
         self.sc.rotate_transition(tr, new_source='s1', new_target='s2')
         self.assertEqual(tr.source, 's1')
         self.assertEqual(tr.target, 's2')
+        self.sc.validate()
 
-    def test_rotate_both_inexistant(self):
+    def test_rotate_both_unexisting(self):
         tr = list(filter(lambda t: t.source == 's1', self.sc.transitions))[0]
 
         with self.assertRaises(ValueError):
@@ -229,6 +232,7 @@ class TransitionRotationTests(unittest.TestCase):
 
         with self.assertRaises(exceptions.StatechartError):
             self.sc.rotate_transition(tr, new_source='s2', new_target='s2')
+        self.sc.validate()
 
     def test_rotate_both_with_internal(self):
         tr = list(filter(lambda t: t.source == 's1', self.sc.transitions))[0]
@@ -237,6 +241,7 @@ class TransitionRotationTests(unittest.TestCase):
         self.assertEqual(tr.source, 's1')
         self.assertEqual(tr.target, None)
         self.assertTrue(tr.internal)
+        self.sc.validate()
 
 
 class RemoveTransitionsTests(unittest.TestCase):
@@ -248,12 +253,14 @@ class RemoveTransitionsTests(unittest.TestCase):
         for transition in transitions:
             self.sc.remove_transition(transition)
         self.assertEqual(len(self.sc.transitions), 0)
+        self.sc.validate()
 
     def test_remove_unexisting_transition(self):
         with self.assertRaises(exceptions.StatechartError):
             self.sc.remove_transition(None)
         with self.assertRaises(exceptions.StatechartError):
             self.sc.remove_transition(model.Transition('a', 'b'))
+        self.sc.validate()
 
 
 class RemoveStatesTests(unittest.TestCase):
@@ -275,20 +282,24 @@ class RemoveStatesTests(unittest.TestCase):
             if transition.target == 'active':
                 nb_transitions += 1
         self.assertEqual(nb_transitions, 0)
+        self.sc.validate()
 
     def test_remove_unexisting_state(self):
         with self.assertRaises(exceptions.StatechartError):
             self.sc.remove_state('unknown')
+        self.sc.validate()
 
     def test_remove_root_state(self):
         self.sc.remove_state('root')
         self.assertEqual(len(self.sc.transitions), 0)
         self.assertEqual(len(self.sc.states), 0)
+        self.sc.validate()
 
     def test_remove_appropriate_state(self):
         self.sc.remove_state('active')
         self.sc.remove_state('s1')
         self.sc.remove_state('s2')
+        self.sc.validate()
 
 
 class RenameStatesTests(unittest.TestCase):
@@ -298,18 +309,22 @@ class RenameStatesTests(unittest.TestCase):
     def test_rename_unexisting_state(self):
         with self.assertRaises(KeyError):
             self.sc.rename_state('unknown', 's3')
+        self.sc.validate()
 
     def test_do_not_change_name(self):
         self.sc.rename_state('s2', 's2')
+        self.sc.validate()
 
     def test_rename_to_an_existing_state(self):
         with self.assertRaises(exceptions.StatechartError):
             self.sc.rename_state('s2', 's1')
+        self.sc.validate()
 
     def test_rename_simple(self):
         self.sc.rename_state('active', 's3')
         self.assertTrue('s3' in self.sc.states)
         self.assertFalse('active' in self.sc.states)
+        self.sc.validate()
 
     def test_rename_with_transitions(self):
         self.sc.rename_state('s1', 's3')
@@ -331,13 +346,70 @@ class RenameStatesTests(unittest.TestCase):
 
         self.assertTrue(len(self.sc.transitions_from('s3')), 1)
         self.assertTrue(len(self.sc.transitions_to('s2')), 1)
+        self.sc.validate()
+
+    def test_rename_root(self):
+        self.sc.rename_state('root', 'new root')
+        self.assertEqual(self.sc.parent_for('new root'), None)
+        self.assertEqual(self.sc.parent_for('s1'), 'new root')
+        self.assertFalse('root' in self.sc.states)
+        self.sc.validate()
 
     def test_rename_change_initial(self):
         self.sc.rename_state('active', 's3')
         self.assertEqual(self.sc.state_for('root').initial, 's3')
+        self.sc.validate()
 
     def test_rename_change_memory(self):
         self.sc = io.import_from_yaml(open('tests/yaml/history.yaml'))
         self.sc.state_for('loop.H').memory = 's1'
         self.sc.rename_state('s1', 's4')
         self.assertEqual(self.sc.state_for('loop.H').memory, 's4')
+        self.sc.validate()
+
+
+class MoveStateTest(unittest.TestCase):
+    def setUp(self):
+        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+
+    def test_move_simple(self):
+        self.sc.move_state('s1b2', 's1b1')
+        self.assertTrue('s1b2' in self.sc.children_for('s1b1'))
+        self.assertFalse('s1b2' in self.sc.children_for('s1b'))
+        self.assertEqual('s1b1', self.sc.parent_for('s1b2'))
+        self.sc.validate()
+
+    def test_move_composite(self):
+        self.sc.move_state('s1b', 's1a')
+        self.assertTrue('s1b' in self.sc.children_for('s1a'))
+        self.assertFalse('s1b' in self.sc.children_for('s1'))
+        self.assertEqual('s1a', self.sc.parent_for('s1b'))
+        self.sc.validate()
+
+    def test_move_to_descendant(self):
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.move_state('s1b', 's1b')
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.move_state('s1b', 's1b1')
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.move_state('s1', 's1b1')
+        self.sc.validate()
+
+    def test_move_unexisting(self):
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.move_state('unknown', 's1b1')
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.move_state('s1b1', 'unknown')
+        self.sc.validate()
+
+    def test_move_with_initial(self):
+        self.sc.move_state('s1a', 'root')
+        self.assertEqual(self.sc.state_for('s1').initial, None)
+        self.sc.validate()
+
+    def test_move_with_memory(self):
+        self.sc = io.import_from_yaml(open('tests/yaml/history.yaml'))
+        self.sc.state_for('loop.H').memory = 's1'
+        self.sc.move_state('s1', 's2')
+        self.assertEqual(self.sc.state_for('loop.H').memory, None)
+        self.sc.validate()

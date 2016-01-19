@@ -9,8 +9,8 @@ The YAML format of a statechart also changed, look carefully at the changelog an
 
 - (Added) YAML: an history state can declare *on entry* and *on exit*.
 - (Added) Statechart: new methods to manipulate transitions: ``transitions_from``, ``transitions_to``,
-  ``transitions_with``, ``remove_transitions`` and ``rotate_transitions``.
-- (Added) Statechart: new methods to manipulate states: ``remove_states``, ``rename_states``,
+  ``transitions_with``, ``remove_transition`` and ``rotate_transition``.
+- (Added) Statechart: new methods to manipulate states: ``remove_state``, ``rename_state``, ``move_state``,
   ``state_for``, ``parent_for``, ``children_for``.
 - (Added) Module: a new exceptions hierarchy (see ``exceptions`` module).
   The new exceptions are used in place of the old ones (``Warning``, ``AssertionError`` and ``ValueError``).
