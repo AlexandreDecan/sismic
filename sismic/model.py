@@ -302,7 +302,7 @@ class Statechart:
 
         self._states = {}  # name -> State object
         self._parent = {}  # name -> parent.name
-        self._children = {}  # name -> list of names
+        self._children = {None: []}  # name -> list of names
         self._transitions = []  # list of Transition objects
 
     @property
@@ -365,9 +365,8 @@ class Statechart:
         # Save state
         self._states[state.name] = state
         self._parent[state.name] = parent
-
-        if parent:
-            self._children.setdefault(parent, []).append(state.name)
+        self._children[state.name] = []
+        self._children[parent].append(state.name)
 
     def remove_state(self, name: str):
         """
@@ -383,7 +382,7 @@ class Statechart:
         state = self.state_for(name)
 
         # Remove children
-        for child in self.children_for(state.name):
+        for child in list(self.children_for(state.name)):
             self.remove_state(child)
 
         # Remove transitions
@@ -399,16 +398,11 @@ class Statechart:
                 other_state.memory = None
 
         # Remove state
-        try:
-            self._children.pop(name)
-        except KeyError:
-            pass
-        try:
-            self._parent.pop(name)
-        except KeyError:
-            pass
-
         self._states.pop(name)
+        parent = self._parent.pop(name)
+        self._children.pop(name)
+
+        self._children[parent].remove(name)
 
     def rename_state(self, old_name: str, new_name: str):
         """
@@ -453,12 +447,10 @@ class Statechart:
 
         self._states[new_name] = self._states.pop(old_name)
         self._parent[new_name] = self._parent.pop(old_name)
-        self._children[new_name] = self._children.pop(old_name, [])
+        self._children[new_name] = self._children.pop(old_name)
 
-        parent_children = self._children.get(parent_name, [old_name])  # Default to avoid catching an exception
-        parent_children.remove(old_name)
-        parent_children.append(new_name)
-        self._children[parent_name] = parent_children
+        self._children[parent_name].remove(old_name)
+        self._children[parent_name].append(new_name)
 
     def move_state(self, name: str, new_parent: str):
         """
@@ -536,7 +528,7 @@ class Statechart:
         """
         self.state_for(name)  # Raise StatechartError if state does not exist
 
-        return self._children.get(name, [])
+        return self._children[name]
 
     def ancestors_for(self, name: str) -> list:
         """

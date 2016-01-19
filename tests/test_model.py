@@ -284,6 +284,11 @@ class RemoveStatesTests(unittest.TestCase):
         self.assertEqual(nb_transitions, 0)
         self.sc.validate()
 
+    def test_remove_unregister_parent_children(self):
+        self.sc.remove_state('s1')
+        self.assertFalse('s1' in self.sc.children_for('active'))
+        self.sc.validate()
+
     def test_remove_unexisting_state(self):
         with self.assertRaises(exceptions.StatechartError):
             self.sc.remove_state('unknown')
@@ -293,12 +298,18 @@ class RemoveStatesTests(unittest.TestCase):
         self.sc.remove_state('root')
         self.assertEqual(len(self.sc.transitions), 0)
         self.assertEqual(len(self.sc.states), 0)
+        self.assertEqual(self.sc.root, None)
         self.sc.validate()
 
-    def test_remove_appropriate_state(self):
-        self.sc.remove_state('active')
+    def test_remove_nested_states(self):
+        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
         self.sc.remove_state('s1')
-        self.sc.remove_state('s2')
+        self.assertFalse('s1a' in self.sc.states)
+        self.sc.validate()
+
+        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+        self.sc.remove_state('s1a')
+        self.assertFalse('s1a' in self.sc.states)
         self.sc.validate()
 
 
@@ -313,6 +324,11 @@ class RenameStatesTests(unittest.TestCase):
 
     def test_do_not_change_name(self):
         self.sc.rename_state('s2', 's2')
+
+        self.assertTrue('s2' in self.sc.states)
+        self.assertEqual(self.sc.parent_for('s2'), 'root')
+        self.assertTrue('s2' in self.sc.children_for('root'))
+
         self.sc.validate()
 
     def test_rename_to_an_existing_state(self):
@@ -320,17 +336,37 @@ class RenameStatesTests(unittest.TestCase):
             self.sc.rename_state('s2', 's1')
         self.sc.validate()
 
-    def test_rename_simple(self):
-        self.sc.rename_state('active', 's3')
-        self.assertTrue('s3' in self.sc.states)
-        self.assertFalse('active' in self.sc.states)
+    def test_rename_old_disappears(self):
+        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+        self.sc.rename_state('s1', 'new s1')
+
+        self.assertFalse('s1' in self.sc.states)
+        self.assertNotEqual('s1', self.sc.parent_for('s1a'))
+        self.assertFalse('s1' in self.sc.children_for('root'))
+
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.state_for('s1')
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.children_for('s1')
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.parent_for('s1')
         self.sc.validate()
 
-    def test_rename_with_transitions(self):
-        self.sc.rename_state('s1', 's3')
+    def test_rename_new_appears(self):
+        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+        self.sc.rename_state('s1', 'new s1')
 
-        self.assertTrue('s1' not in self.sc.states)
-        self.assertTrue('s3' in self.sc.states)
+        self.assertTrue('new s1' in self.sc.states)
+        self.assertEqual('new s1', self.sc.parent_for('s1a'))
+        self.assertTrue('new s1' in self.sc.children_for('root'))
+
+        self.sc.state_for('new s1')
+        self.sc.children_for('new s1')
+        self.sc.parent_for('new s1')
+        self.sc.validate()
+
+    def test_rename_adapt_transitions(self):
+        self.sc.rename_state('s1', 's3')
 
         nb_transitions = 0
         for transition in self.sc.transitions:
@@ -353,6 +389,13 @@ class RenameStatesTests(unittest.TestCase):
         self.assertEqual(self.sc.parent_for('new root'), None)
         self.assertEqual(self.sc.parent_for('s1'), 'new root')
         self.assertFalse('root' in self.sc.states)
+
+        self.assertTrue('new root' in self.sc.states)
+        self.assertFalse('root' in self.sc.states)
+        self.assertEqual(self.sc.parent_for('new root'), None)
+        self.assertEqual(self.sc.parent_for('active'), 'new root')
+        self.assertTrue('active' in self.sc.children_for('new root'))
+
         self.sc.validate()
 
     def test_rename_change_initial(self):
