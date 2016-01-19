@@ -244,6 +244,7 @@ For example:
         assert isinstance(statechart, model.Statechart)
 
 The parser performs an automatic validation against the YAML schema of the next subsection.
+It also does several other checks using :py:class:`~sismic.model.Statechart.validate`` method.
 
 YAML validation schema
 **********************

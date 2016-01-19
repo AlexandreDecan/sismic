@@ -107,6 +107,31 @@ class TraversalTests(unittest.TestCase):
             io.import_from_yaml(yaml)
 
 
+class ValidateTests(unittest.TestCase):
+    # REMARK: "Positive" tests are already done during io.import_from_yaml!
+    def test_history_memory(self):
+        statechart = io.import_from_yaml(open('tests/yaml/history.yaml'))
+        memory = statechart.state_for('loop.H').memory
+
+        statechart.state_for('loop.H').memory = 'unknown'
+        with self.assertRaises(exceptions.StatechartError) as cm:
+            statechart._validate_historystate_memory()
+
+        statechart.state_for('loop.H').memory = memory
+        statechart._validate_historystate_memory()
+
+    def test_compound_initial(self):
+        statechart = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+        initial = statechart.state_for('s1b').initial
+
+        statechart.state_for('s1b').initial = 'unknown'
+        with self.assertRaises(exceptions.StatechartError) as cm:
+            statechart._validate_compoundstate_initial()
+
+        statechart.state_for('s1b').initial = initial
+        statechart._validate_compoundstate_initial()
+
+
 class TransitionsTests(unittest.TestCase):
     def setUp(self):
         self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))

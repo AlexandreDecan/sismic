@@ -12,13 +12,15 @@ __all__ = ['import_from_yaml']
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')
 
 
-def import_from_yaml(statechart: str, ignore_schema=False) -> Statechart:
+def import_from_yaml(statechart: str, ignore_schema: bool=False, ignore_validation: bool=False) -> Statechart:
     """
     Import a statechart from a YAML representation.
-    YAML is first validated against *io.SCHEMA_PATH*.
+    YAML is first validated against *io.SCHEMA_PATH*, and resulting statechart is validated
+    using its *validate* method.
 
     :param statechart: string or any equivalent object
     :param ignore_schema: set to *True* to disable yaml validation.
+    :param ignore_validation: set to *True* to disable statechart validation.
     :return: a *StateChart* instance
     """
     data = yaml.load(statechart)
@@ -69,6 +71,9 @@ def import_from_yaml(statechart: str, ignore_schema=False) -> Statechart:
         statechart.add_state(state, parent)
     for transition in transitions:
         statechart.add_transition(transition)
+
+    if not ignore_validation:
+        statechart.validate()
 
     return statechart
 

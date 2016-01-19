@@ -737,6 +737,43 @@ class Statechart:
                     names.add(transition.event)
         return sorted(names)
 
+    ########## TOOLS ##########
+
+    def _validate_compoundstate_initial(self):
+        """
+        Checks that every *CompoundState*'s initial state refer to one of its children
+        :raise StatechartError:
+        """
+        for name, state in self._states.items():
+            if isinstance(state, CompoundState) and state.initial:
+                if not state.initial in self._states:
+                    raise StatechartError('Initial state {} of {} does not exist'.format(state.initial, state))
+                if not state.initial in self.children_for(name):
+                    raise StatechartError('Initial state {} of {} must be a child state'.format(state.initial, state))
+
+    def _validate_historystate_memory(self):
+        """
+        Checks that every *HistoryStateMixin*'s memory refer to one of its parent's children
+
+        :raise StatechartError:
+        """
+        for name, state in self._states.items():
+            if isinstance(state, HistoryStateMixin) and state.memory:
+                if not state.memory in self._states:
+                    raise StatechartError('Initial memory {} of {} does not exist'.format(state.memory, state))
+                if not state.memory in self.children_for(self.parent_for(name)):
+                    raise StatechartError('Initial memory {} of {} must be a child of its parent'.format(state.memory, state))
+
+    def validate(self):
+        """
+        Checks that every *CompoundState*'s initial state refer to one of its children
+        Checks that every *HistoryStateMixin*'s memory refer to one of its parent's children
+
+        :raise StatechartError:
+        """
+        self._validate_compoundstate_initial()
+        self._validate_historystate_memory()
+
 
 class MicroStep:
     """
