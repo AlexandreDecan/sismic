@@ -367,6 +367,7 @@ class Statechart:
     def remove_transition(self, transition: Transition):
         """
         Remove given transitions.
+
         :param transition: a *Transition* instance
         :raise StatechartError: if transition is not registered
         """
@@ -375,34 +376,43 @@ class Statechart:
         except ValueError:
             raise StatechartError('Transition {} does not exist'.format(transition))
 
-    def transitions_from(self, state: str) -> list:
+    def transitions_from(self, name: str) -> list:
         """
         Return the list of transitions starting from given state name.
-        :param state: name of source state
+
+        :param name: name of source state
         :return: a list of *Transition* instances
+        :raise StatechartError: if state does not exist
         """
+        self.state_for(name)  # Raise StatechartError if state does not exist
+
         transitions = []
         for transition in self._transitions:
-            if transition.from_state == state:
+            if transition.from_state == name:
                 transitions.append(transition)
         return transitions
 
-    def transitions_to(self, state: str) -> list:
+    def transitions_to(self, name: str) -> list:
         """
         Return the list of transitions targeting given state name.
         Internal transitions are returned too.
-        :param state: name of target state
+
+        :param name: name of target state
         :return: a list of *Transition* instances
+        :raise StatechartError: if state does not exist
         """
+        self.state_for(name)  # Raise StatechartError if state does not exist
+
         transitions = []
         for transition in self._transitions:
-            if transition.to_state == state or (transition.to_state is None and transition.from_state == state):
+            if transition.to_state == name or (transition.to_state is None and transition.from_state == name):
                 transitions.append(transition)
         return transitions
 
     def transitions_with(self, event: str) -> list:
         """
         Return the list of transitions that can be triggered by given event name.
+
         :param event: name of the event
         :return: a list of *Transition* instances
         """
@@ -465,6 +475,7 @@ class Statechart:
         """
         Remove given state. The state can only be removed if it has no more children and no more
         incoming transitions. Outgoing transitions are removed in the process.
+
         :param name: name of a state
         :raise StatechartError:
         """
@@ -499,6 +510,7 @@ class Statechart:
     def rename_state(self, old_name: str, new_name: str):
         """
         Change state name, and adapt transitions, initial state, etc.
+
         :param old_name: old name of the state
         :param new_name: new name of the state
         """
@@ -542,6 +554,7 @@ class Statechart:
     def state_for(self, name: str) -> StateMixin:
         """
         Return the state instance that has given name.
+
         :param name: a state name
         :return: a *StateMixin* that has the same name or None
         :raise StatechartError: if state does not exist
@@ -554,6 +567,7 @@ class Statechart:
     def parent_for(self, name: str) -> str:
         """
         Return the name of the parent of given state name.
+
         :param name: a state name
         :return: its parent name, or None.
         :raise StatechartError: if state does not exist
@@ -566,6 +580,7 @@ class Statechart:
     def children_for(self, name: str) -> list:
         """
         Return the names of the children of the given state.
+
         :param name: a state name
         :return: a (possibly empty) list of children
         :raise StatechartError: if state does not exist
@@ -627,43 +642,45 @@ class Statechart:
 
     ########## STATES UTILS ##########
 
-    def least_common_ancestor(self, s1: str, s2: str) -> str:
+    def least_common_ancestor(self, name_first: str, name_second: str) -> str:
         """
         Return the deepest common ancestor for *s1* and *s2*, or *None* if
         there is no common ancestor except root (top-level) state.
 
-        :param s1: name of first state
-        :param s2: name of second state
+        :param name_first: name of first state
+        :param name_second: name of second state
         :return: name of deepest common ancestor or *None*
         :raise StatechartError: if state does not exist
         """
-        self.state_for(s1)  # Raise StatechartError if state does not exist
-        self.state_for(s2)
+        self.state_for(name_first)  # Raise StatechartError if state does not exist
+        self.state_for(name_second)
 
-        s1_anc = self.ancestors_for(s1)
-        s2_anc = self.ancestors_for(s2)
+        s1_anc = self.ancestors_for(name_first)
+        s2_anc = self.ancestors_for(name_second)
         for state in s1_anc:
             if state in s2_anc:
                 return state
 
-    def leaf_for(self, states: list) -> list:
+    def leaf_for(self, names: list) -> list:
         """
+        Return the leaves of *names*.
+
         Considering the list of states names in *states*, return a list containing each
         element of *states* such that this element has no descendant in *states*.
         In other words, this method returns the leaves from the given list of states.
 
-        :param states: a list of names
+        :param names: a list of names
         :return: the names of the leaves in *states*
         :raise StatechartError: if state does not exist
         """
-        [self.state_for(s) for s in states]  # Raise StatechartError if state does not exist
+        [self.state_for(s) for s in names]  # Raise StatechartError if state does not exist
 
         leaves = []
         # TODO: Need a more efficient way to compute this set
-        for state in states:
+        for state in names:
             keep = True
             for descendant in self.descendants_for(state):
-                if descendant in states:
+                if descendant in names:
                     keep = False
                     break
             if keep:
@@ -672,34 +689,37 @@ class Statechart:
 
     ########## EVENTS ##########
 
-    def events_for(self, state_or_states=None) -> list:
+    def events_for(self, name_or_names=None) -> list:
         """
-        List of possible event names.
-        If *state_or_states* is omitted, returns all possible event names.
-        If *state_or_states* is a string, return the events for which a transition exists
-        with a *from_state* equals to given string.
-        If *state_or_states* is a list of state names, return the events for all those states.
+        Return a list containing the name of every event that guards a transition in this statechart.
 
-        :param state_or_states: *None*, a state name or a list of state names.
+        If *name_or_names* is specified, it must be the name of a state (or a list of such names).
+        Only transitions that have a source state from this list will be considered.
+        By default, the list contains all the states.
+
+        :param name_or_names: *None*, a state name or a list of state names.
         :return: A list of event names
         """
-        if state_or_states is None:
+        if name_or_names is None:
             states = self._states.keys()
-        elif isinstance(state_or_states, str):
-            states = [state_or_states]
+        elif isinstance(name_or_names, str):
+            states = [name_or_names]
         else:
-            states = state_or_states
+            states = name_or_names
 
         names = set()
-        for transition in self._transitions:
-            if transition.event and transition.from_state in states:
-                names.add(transition.event)
+        for state in states:
+            for transition in self.transitions_from(state):
+                if transition.event:
+                    names.add(transition.event)
         return sorted(names)
 
 
 class MicroStep:
     """
-    Create a micro step. A step consider *event*, takes a *transition* and results in a list
+    Create a micro step.
+
+    A step consider *event*, takes a *transition* and results in a list
     of *entered_states* and a list of *exited_states*.
     Order in the two lists is REALLY important!
 
