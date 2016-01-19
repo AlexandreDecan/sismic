@@ -1,6 +1,6 @@
 statechart:
   name: Test that the elevator goes to ground floor after 10 seconds (timeout set to 12 seconds)
-  initial code: floor = 0
+  preamble: floor = 0
   initial state:
     name: root
     initial: active

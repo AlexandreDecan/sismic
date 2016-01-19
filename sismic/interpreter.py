@@ -365,7 +365,7 @@ class Interpreter:
         # Otherwise, develop history, compound and orthogonal states.
         for leaf in leaves:
             if isinstance(leaf, model.HistoryStateMixin):
-                states_to_enter = self._memory.get(leaf.name, [leaf.initial])
+                states_to_enter = self._memory.get(leaf.name, [leaf.memory])
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_for(x), x))
                 return model.MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, model.OrthogonalState):

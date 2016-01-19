@@ -43,20 +43,20 @@ The root of the YAML file **must** declare a statechart:
 The ``name`` and the ``initial state`` are mandatory, the ``description`` is optional.
 The ``initial state`` key contains a state definition (see below).
 If specific code needs to be executed during initialization of the statechart, this can be specified
-using ``initial code``. In this example, the code is written in Python.
+using ``preamble``. In this example, the code is written in Python.
 
 .. code:: yaml
 
     statechart:
       name: statechart containing initialization code
-      initial code: x = 1
+      preamble: x = 1
 
 
 Code can be written on multiple lines as follows:
 
 .. code:: yaml
 
-    initial code: |
+    preamble: |
       x = 1
       y = 2
 
@@ -112,14 +112,14 @@ We refer to the semantics of UML and SCXML for the difference between both types
     - name: history state
       type: shallow history
 
-A history state can optionally declare a default initial memory using ``initial``.
-Importantly, the ``initial`` memory value **must** refer to a parent's substate.
+A history state can optionally declare a default initial memory using ``memory``.
+Importantly, the ``memory`` value **must** refer to a parent's substate.
 
 .. code:: yaml
 
   - name: history state
     type: deep history
-    initial: s1
+    memory: s1
 
 
 Composite states

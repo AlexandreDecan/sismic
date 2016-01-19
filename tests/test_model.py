@@ -150,6 +150,68 @@ class TransitionsTests(unittest.TestCase):
         self.assertEqual(len(self.sc.transitions_with('unknown')), 0)
 
 
+class TransitionRotationTests(unittest.TestCase):
+    def setUp(self):
+        self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))
+
+    def test_rotate_source(self):
+        tr = list(filter(lambda t: t.source == 's1', self.sc.transitions))[0]
+        self.sc.rotate_transition(tr, new_source='s1')
+        self.assertEqual(tr.source, 's1')
+
+        self.sc.rotate_transition(tr, new_source='active')
+        self.assertEqual(tr.source, 'active')
+
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.rotate_transition(tr, new_source=None)
+
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.rotate_transition(tr, new_source='s2')
+
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.rotate_transition(tr, new_source='unknown')
+
+    def test_rotate_target(self):
+        tr = list(filter(lambda t: t.source == 's1', self.sc.transitions))[0]
+        self.sc.rotate_transition(tr, new_target='s2')
+        self.assertEqual(tr.target, 's2')
+
+        self.sc.rotate_transition(tr, new_target='active')
+        self.assertEqual(tr.target, 'active')
+
+        self.sc.rotate_transition(tr, new_target=None)
+        self.assertEqual(tr.target, None)
+        self.assertTrue(tr.internal)
+
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.rotate_transition(tr, new_target='unknown')
+
+    def test_rotate_both(self):
+        tr = list(filter(lambda t: t.source == 's1', self.sc.transitions))[0]
+
+        with self.assertRaises(ValueError):
+            self.sc.rotate_transition(tr)
+
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.rotate_transition(tr, new_source=None, new_target=None)
+
+        with self.assertRaises(exceptions.StatechartError):
+            self.sc.rotate_transition(tr, new_source='s2', new_target='s2')
+
+        self.sc.rotate_transition(tr, new_source='s1', new_target='s2')
+        self.assertEqual(tr.source, 's1')
+        self.assertEqual(tr.target, 's2')
+
+        self.sc.rotate_transition(tr, new_source='active', new_target='s1')
+        self.assertEqual(tr.source, 'active')
+        self.assertEqual(tr.target, 's1')
+
+        self.sc.rotate_transition(tr, new_source='s1', new_target=None)
+        self.assertEqual(tr.source, 's1')
+        self.assertEqual(tr.target, None)
+        self.assertTrue(tr.internal)
+
+
 class RemovalTests(unittest.TestCase):
     def setUp(self):
         self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))

@@ -1,6 +1,6 @@
 statechart:
   name: Elevator
-  initial code: |
+  preamble: |
     current = 0
     destination = 0
 

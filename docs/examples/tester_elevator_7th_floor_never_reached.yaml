@@ -1,6 +1,6 @@
 statechart:
   name: Test that the elevator never reachs 7th floor
-  initial code: floor = 0
+  preamble: floor = 0
   initial state:
     name: root
     initial: standing

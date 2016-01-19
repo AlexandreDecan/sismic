@@ -11,7 +11,7 @@ statechart:
      - A "timer" region which increments "elapsed_time" if timer is running
      - A "display" region that refreshes the display according to the actual time/lap time feature
 
-  initial code: elapsed_time = 0
+  preamble: elapsed_time = 0
   initial state:
     name: active
     parallel states:

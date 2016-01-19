@@ -76,13 +76,13 @@ class StateMixin:
         return self._name
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, self._name)
+        return '{}({})'.format(self.__class__.__name__, self.name)
 
     def __eq__(self, other):
-        return isinstance(other, StateMixin) and self._name == other._name
+        return isinstance(other, StateMixin) and self.name == other.name
 
     def __hash__(self):
-        return hash(self._name)
+        return hash(self.name)
 
 
 class ActionStateMixin:
@@ -116,11 +116,11 @@ class HistoryStateMixin:
     """
     History state has a memory that can be resumed.
 
-    :param initial: name of the initial state
+    :param memory: name of the initial state
     """
 
-    def __init__(self, initial: str = None):
-        self.initial = initial
+    def __init__(self, memory: str = None):
+        self.memory = memory
 
 
 class BasicState(ContractMixin, StateMixin, TransitionStateMixin, ActionStateMixin):
@@ -181,12 +181,12 @@ class ShallowHistoryState(StateMixin, ContractMixin, HistoryStateMixin):
     It activates the latest visited state of its parent.
 
     :param name: name of this state
-    :param initial: name of the initial state
+    :param memory: name of the initial state
     """
-    def __init__(self, name: str, initial: str=None):
+    def __init__(self, name: str, memory: str=None):
         StateMixin.__init__(self, name)
         ContractMixin.__init__(self)
-        HistoryStateMixin.__init__(self, initial)
+        HistoryStateMixin.__init__(self, memory)
 
 
 class DeepHistoryState(StateMixin, ContractMixin, HistoryStateMixin):
@@ -195,12 +195,12 @@ class DeepHistoryState(StateMixin, ContractMixin, HistoryStateMixin):
     active states in its parent.
 
     :param name: name of this state
-    :param initial: name of the initial state
+    :param memory: name of the initial state
     """
-    def __init__(self, name: str, initial: str=None):
+    def __init__(self, name: str, memory: str=None):
         StateMixin.__init__(self, name)
         ContractMixin.__init__(self)
-        HistoryStateMixin.__init__(self, initial)
+        HistoryStateMixin.__init__(self, memory)
 
 
 class FinalState(ContractMixin, StateMixin, ActionStateMixin):
@@ -220,8 +220,9 @@ class FinalState(ContractMixin, StateMixin, ActionStateMixin):
 
 class Transition(ContractMixin):
     """
-    A Transition between two states.
-    Transition can be eventless or internal.
+    Represent a transition from a source state to a target state.
+
+    A transition can be eventless (no event) or internal (no target).
     A condition (code as string) can be specified as a guard.
 
     :param source: name of the source state
@@ -233,18 +234,26 @@ class Transition(ContractMixin):
 
     def __init__(self, source: str, target: str = None, event: str = None, guard: str = None, action: str = None):
         ContractMixin.__init__(self)
-        self.source = source
-        self.target = target
+        self._source = source
+        self._target = target
         self.event = event
         self.guard = guard
         self.action = action
+
+    @property
+    def source(self):
+        return self._source
+
+    @property
+    def target(self):
+        return self._target
 
     @property
     def internal(self):
         """
         Boolean indicating whether this transition is an internal transition.
         """
-        return self.target is None
+        return self._target is None
 
     @property
     def eventless(self):
@@ -265,9 +274,7 @@ class Transition(ContractMixin):
         return 'Transition({0}, {1}, {2})'.format(self.source, self.target, self.event)
 
     def __str__(self):
-        to_state = self.target if self.target else '[' + self.source + ']'
-        event = '+' + self.event if self.event else ''
-        return self.source + event + ' -> ' + to_state
+        return '{} [{}] -> '.format(self.source, self.event, self.target if self.target else '')
 
     def __hash__(self):
         return hash(self.source)
@@ -279,13 +286,13 @@ class Statechart:
 
     :param name: Name of this statechart
     :param description: optional description
-    :param bootstrap: code to execute to bootstrap the statechart
+    :param preamble: code to execute to bootstrap the statechart
     """
 
-    def __init__(self, name: str, description: str=None, bootstrap: str=None):
+    def __init__(self, name: str, description: str=None, preamble: str=None):
         self.name = name
         self.description = description
-        self._bootstrap = bootstrap
+        self._preamble = preamble
 
         self._states = {}  # name -> State object
         self._parent = {}  # name -> parent.name
@@ -302,11 +309,11 @@ class Statechart:
         return self._root.name
 
     @property
-    def bootstrap(self):
+    def preamble(self):
         """
-        Bootstrap code
+        Preamble code
         """
-        return self._bootstrap
+        return self._preamble
 
     ########## STATES ##########
 
@@ -409,10 +416,10 @@ class Statechart:
             if transition.source == old_name:
                 if transition.internal:
                     transition.target = new_name
-                transition.source = new_name
+                transition._source = new_name
 
             if transition.target == old_name:
-                transition.target = new_name
+                transition._target = new_name
 
         for other_state in self._states.values():
             # Change initial (CompoundState)
@@ -614,15 +621,40 @@ class Statechart:
         except ValueError:
             raise StatechartError('Transition {} does not exist'.format(transition))
 
-    def rotate_transition(self, transition: Transition, source_state: str=None, target_state: str=None):
+    def rotate_transition(self, transition: Transition, **kwargs):
         """
+        Rotate given transition.
 
-        :param transition:
-        :param source_state:
-        :param target_state:
-        :return:
+        You MUST specify either *new_source* (a valid state name) or *new_target* (a valid state name or None)
+        or both.
+
+        :param transition: a *Transition* instance
+        :param new_source: a state name
+        :param new_target: a state name or None
+        :raise StatechartError: if transition or state do not exist.
         """
-        pass
+        # Check that either new_source or new_target is set
+        if 'new_source' not in kwargs and 'new_target' not in kwargs:
+            raise ValueError('You must at least specify the new source or new target')
+
+        # Check that transition exists
+        if transition not in self._transitions:
+            raise StatechartError('Unknown transition {}'.format(transition))
+
+        # Rotate using source
+        if 'new_source' in kwargs:
+            new_source_state = self.state_for(kwargs['new_source'])
+            if not isinstance(new_source_state, TransitionStateMixin):
+                raise StatechartError('{} can not have transitions'.format(new_source_state))
+            transition._source = new_source_state.name
+
+        # Rotate using target
+        if 'new_target' in kwargs:
+            if kwargs['new_target'] is None:
+                transition._target = None
+            else:
+                new_target_state = self.state_for(kwargs['new_target'])
+                transition._target = new_target_state.name
 
     def transitions_from(self, source: str) -> list:
         """

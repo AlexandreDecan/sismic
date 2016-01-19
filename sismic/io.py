@@ -30,7 +30,7 @@ def import_from_yaml(statechart: str, ignore_schema=False) -> Statechart:
 
     statechart = Statechart(name=data['name'],
                             description=data.get('description', None),
-                            bootstrap=data.get('initial code', None))
+                            preamble=data.get('preamble', None))
 
     states = []  # (StateMixin instance, parent name)
     transitions = []  # Transition instances
@@ -110,20 +110,20 @@ def _state_from_dict(state_d: dict) -> StateMixin:
         name = state_d.get('name')
         on_entry = state_d.get('on entry', None)
         on_exit = state_d.get('on exit', None)
-        state = FinalState(name, on_entry, on_exit)
+        state = FinalState(name, on_entry=on_entry, on_exit=on_exit)
     elif state_d.get('type', None) == 'shallow history':
         # Shallow history pseudo state
-        state = ShallowHistoryState(state_d['name'], state_d.get('initial'))
+        state = ShallowHistoryState(state_d['name'], memory=state_d.get('memory'))
     elif state_d.get('type', None) == 'deep history':
         # Deep history pseudo state
-        state = DeepHistoryState(state_d['name'], state_d.get('initial'))
+        state = DeepHistoryState(state_d['name'], memory=state_d.get('memory'))
     else:
         name = state_d.get('name')
         on_entry = state_d.get('on entry', None)
         on_exit = state_d.get('on exit', None)
         if 'states' in state_d:  # Compound state
             initial = state_d.get('initial', None)
-            state = CompoundState(name, initial, on_entry, on_exit)
+            state = CompoundState(name, initial=initial, on_entry=on_entry, on_exit=on_exit)
         elif 'parallel states' in state_d:  # Orthogonal state
             state = OrthogonalState(name, on_entry, on_exit)
         else:
