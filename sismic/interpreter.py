@@ -227,16 +227,16 @@ class Interpreter:
 
         # Retrieve the firable transitions for all active state
         for transition in self._statechart.transitions:
-            if (transition.event == getattr(event, 'name', None) and transition.from_state in self._configuration and
+            if (transition.event == getattr(event, 'name', None) and transition.source in self._configuration and
                     (transition.guard is None or self._evaluator.evaluate_guard(transition, event))):
                 transitions.add(transition)
 
         # inner-first/source-state
         removed_transitions = set()
         for transition in transitions:
-            source_state_descendants = self._statechart.descendants_for(transition.from_state)
+            source_state_descendants = self._statechart.descendants_for(transition.source)
             for other_transition in transitions:
-                if other_transition.from_state in source_state_descendants:
+                if other_transition.source in source_state_descendants:
                     removed_transitions.add(transition)
                     break
 
@@ -257,7 +257,7 @@ class Interpreter:
             # Two transitions conflict if one of them leaves the parallel state
             for t1, t2 in combinations(transitions, 2):
                 # Check (1)
-                lca = self._statechart.least_common_ancestor(t1.from_state, t2.from_state)
+                lca = self._statechart.least_common_ancestor(t1.source, t2.source)
                 lca_state = self._statechart.state_for(lca)
 
                 # Their LCA must be an orthogonal state!
@@ -270,21 +270,21 @@ class Interpreter:
                 # This check must be done wrt. to LCA, as the combination of from_states could
                 # come from nested parallel regions!
                 for transition in [t1, t2]:
-                    last_before_lca = transition.from_state
-                    for state in self._statechart.ancestors_for(transition.from_state):
+                    last_before_lca = transition.source
+                    for state in self._statechart.ancestors_for(transition.source):
                         if state == lca:
                             break
                         last_before_lca = state
                     # Target must be a descendant (or self) of this state
-                    if (transition.to_state and
-                            (transition.to_state not in
+                    if (transition.target and
+                            (transition.target not in
                                      [last_before_lca] + self._statechart.descendants_for(last_before_lca))):
                         raise ConflictingTransitionsError('Conflicting transitions: {t1} and {t2}'
                                       '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
                                       .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
 
             # Define an arbitrary order based on the depth and the name of source states.
-            transitions = sorted(transitions, key=lambda t: (-self._statechart.depth_for(t.from_state), t.from_state))
+            transitions = sorted(transitions, key=lambda t: (-self._statechart.depth_for(t.source), t.source))
 
         return transitions
 
@@ -300,19 +300,19 @@ class Interpreter:
         returned_steps = []
         for transition in transitions:
             # Internal transition
-            if transition.to_state is None:
+            if transition.target is None:
                 returned_steps.append(model.MicroStep(event, transition, [], []))
                 continue
 
-            lca = self._statechart.least_common_ancestor(transition.from_state, transition.to_state)
-            from_ancestors = self._statechart.ancestors_for(transition.from_state)
-            to_ancestors = self._statechart.ancestors_for(transition.to_state)
+            lca = self._statechart.least_common_ancestor(transition.source, transition.target)
+            from_ancestors = self._statechart.ancestors_for(transition.source)
+            to_ancestors = self._statechart.ancestors_for(transition.target)
 
             # Exited states
             exited_states = []
 
             # last_before_lca is the "highest" ancestor or from_state that is a child of LCA
-            last_before_lca = transition.from_state
+            last_before_lca = transition.source
             for state in from_ancestors:
                 if state == lca:
                     break
@@ -329,7 +329,7 @@ class Interpreter:
                 exited_states.append(last_before_lca)
 
             # Entered states
-            entered_states = [transition.to_state]
+            entered_states = [transition.target]
             for state in to_ancestors:
                 if state == lca:
                     break
@@ -365,7 +365,7 @@ class Interpreter:
         # Otherwise, develop history, compound and orthogonal states.
         for leaf in leaves:
             if isinstance(leaf, model.HistoryStateMixin):
-                states_to_enter = self._memory.get(leaf.name, [leaf.initial])
+                states_to_enter = self._memory.get(leaf.name, [leaf.memory])
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_for(x), x))
                 return model.MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, model.OrthogonalState):

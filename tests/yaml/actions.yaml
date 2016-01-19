@@ -1,6 +1,6 @@
 statechart:
   name: statechart with executable content
-  initial code: |
+  preamble: |
     x = 1
     y = 2
   initial state:

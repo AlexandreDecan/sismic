@@ -36,6 +36,8 @@ schema;state:
       required: yes
     "initial":
       type: str
+    "memory":
+      type: str
     "on entry":
       type: str
     "on exit":
@@ -69,7 +71,7 @@ mapping:
         required: yes
       "description":
         type: str
-      "initial code":
+      "preamble":
         type: str
       "initial state":
         type: map

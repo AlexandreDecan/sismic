@@ -61,8 +61,8 @@ class Evaluator(metaclass=abc.ABCMeta):
 
         :param statechart: statechart to consider
         """
-        if statechart.bootstrap:
-            return self._execute_code(statechart.bootstrap)
+        if statechart.preamble:
+            return self._execute_code(statechart.preamble)
 
     def evaluate_guard(self, transition: Transition, event: Event) -> bool:
         """

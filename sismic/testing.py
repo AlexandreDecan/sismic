@@ -53,8 +53,8 @@ def teststory_from_trace(trace: list) -> Story:
             for state in microstep.exited_states:
                 story.append(Event('exited', state=state))
             if microstep.transition:
-                story.append(Event('processed', source=microstep.transition.from_state,
-                                   target=microstep.transition.to_state,
+                story.append(Event('processed', source=microstep.transition.source,
+                                   target=microstep.transition.target,
                                    event=macrostep.event))
             for state in microstep.entered_states:
                 story.append(Event('entered', state=state))

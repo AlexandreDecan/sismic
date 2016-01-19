@@ -111,8 +111,8 @@ class PythonEvaluator(Evaluator):
         if transition.guard:
             context = {
                 'event': event,
-                'after': lambda i: self._interpreter.time - i >= self._entry_time[transition.from_state],
-                'idle': lambda i: self._interpreter.time - i >= self._idle_time[transition.from_state]
+                'after': lambda i: self._interpreter.time - i >= self._entry_time[transition.source],
+                'idle': lambda i: self._interpreter.time - i >= self._idle_time[transition.source]
             }
             return self._evaluate_code(transition.guard, context)
 
@@ -130,7 +130,7 @@ class PythonEvaluator(Evaluator):
         # Set memory
         self._memory[id(transition)] = PythonEvaluator.FrozenContext(self._context)
         # Set timer
-        self._idle_time[transition.from_state] = self._interpreter.time
+        self._idle_time[transition.source] = self._interpreter.time
 
         super().execute_action(transition, event)
 

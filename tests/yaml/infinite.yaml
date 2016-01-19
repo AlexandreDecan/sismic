@@ -1,6 +1,6 @@
 statechart:
   name: infinite statechart
-  initial code: x = 0
+  preamble: x = 0
   initial state:
     name: root
     initial: s1

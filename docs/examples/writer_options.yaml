@@ -1,6 +1,6 @@
 statechart:
   name: Simplified writer. Supported events are keyPress (with key attribute), leave, toggle, toggle_italic, toggle_bold
-  initial code: |
+  preamble: |
     output = []
   initial state:
     name: root

@@ -279,7 +279,7 @@ class NestedParallelExecutionTests(unittest.TestCase):
         self.assertEqual(self.interpreter.configuration, self.common_states + ['j1', 'j2', 'j3', 'j4'])
         self.assertEqual(step.exited_states, ['i1', 'i2', 'i3', 'i4'])
         self.assertEqual(step.entered_states, ['j1', 'j2', 'j3', 'j4'])
-        self.assertEqual([t.from_state for t in step.transitions], ['i1', 'i2', 'i3', 'i4'])
+        self.assertEqual([t.source for t in step.transitions], ['i1', 'i2', 'i3', 'i4'])
 
     def test_partial_parallel_order(self):
         self.interpreter.queue(Event('next')).queue(Event('click'))
@@ -289,7 +289,7 @@ class NestedParallelExecutionTests(unittest.TestCase):
         self.assertEqual(self.interpreter.configuration, self.common_states + ['j1', 'j3', 'k2', 'k4'])
         self.assertEqual(step.exited_states, ['j2', 'j4'])
         self.assertEqual(step.entered_states, ['k2', 'k4'])
-        self.assertEqual([t.from_state for t in step.transitions], ['j2', 'j4'])
+        self.assertEqual([t.source for t in step.transitions], ['j2', 'j4'])
 
     def test_partial_unnested_transition(self):
         self.interpreter.queue(Event('next')).queue(Event('reset'))
@@ -308,7 +308,7 @@ class NestedParallelExecutionTests(unittest.TestCase):
         self.assertLess(step.entered_states.index('r2'), step.entered_states.index('p2'))
         self.assertLess(step.entered_states.index('p2'), step.entered_states.index('r3'))
         self.assertLess(step.entered_states.index('p2'), step.entered_states.index('r4'))
-        self.assertEqual([t.from_state for t in step.transitions], ['r2', 'r4'])
+        self.assertEqual([t.source for t in step.transitions], ['r2', 'r4'])
 
     def test_name_order(self):
         self.interpreter.queue(Event('next')).queue(Event('click')).queue(Event('next')).queue(Event('next'))
@@ -327,7 +327,7 @@ class NestedParallelExecutionTests(unittest.TestCase):
         self.assertLess(step.entered_states.index('z'), step.entered_states.index('x'))
         self.assertLess(step.entered_states.index('x'), step.entered_states.index('y'))
 
-        self.assertEqual([t.from_state for t in step.transitions], ['k1', 'k3', 'x', 'y'])
+        self.assertEqual([t.source for t in step.transitions], ['k1', 'k3', 'x', 'y'])
 
         step = self.interpreter.queue(Event('next')).execute_once()
 
@@ -339,7 +339,7 @@ class NestedParallelExecutionTests(unittest.TestCase):
         self.assertLess(step.entered_states.index('x'), step.entered_states.index('y'))
         self.assertLess(step.entered_states.index('y'), step.entered_states.index('z'))
 
-        self.assertEqual([t.from_state for t in step.transitions], ['k1', 'x', 'y', 'z'])
+        self.assertEqual([t.source for t in step.transitions], ['k1', 'x', 'y', 'z'])
 
 
 class BindTests(unittest.TestCase):

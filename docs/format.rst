@@ -40,23 +40,23 @@ The root of the YAML file **must** declare a statechart:
         [...]
 
 
-The ``name`` and the ``initial state`` are mandatory, the ``description`` is optional.
-The ``initial state`` key contains a state definition (see below).
+The *name* and the *initial state* are mandatory, the *description* is optional.
+The *initial state* key contains a state definition (see below).
 If specific code needs to be executed during initialization of the statechart, this can be specified
-using ``initial code``. In this example, the code is written in Python.
+using *preamble*. In this example, the code is written in Python.
 
 .. code:: yaml
 
     statechart:
       name: statechart containing initialization code
-      initial code: x = 1
+      preamble: x = 1
 
 
 Code can be written on multiple lines as follows:
 
 .. code:: yaml
 
-    initial code: |
+    preamble: |
       x = 1
       y = 2
 
@@ -65,7 +65,7 @@ States
 ******
 
 A statechart must declare an initial state.
-Each state consist of at least a mandatory ``name``. Depending on the state type, other optional fields can be declared.
+Each state consist of at least a mandatory *name*. Depending on the state type, other optional fields can be declared.
 
 .. code:: yaml
 
@@ -78,7 +78,7 @@ Each state consist of at least a mandatory ``name``. Depending on the state type
 Entry and exit actions
 **********************
 
-For each declared state, the optional ``on entry`` and ``on exit`` fields can be used to specify the code that has to be executed when entering and leaving the state:
+For each declared state, the optional *on entry* and *on exit* fields can be used to specify the code that has to be executed when entering and leaving the state:
 
 .. code:: yaml
 
@@ -91,7 +91,7 @@ For each declared state, the optional ``on entry`` and ``on exit`` fields can be
 Final states
 ************
 
-A *final state* can be declared by specifying the ``type: final`` property:
+A *final state* can be declared by specifying *type: final*:
 
 .. code:: yaml
 
@@ -103,8 +103,8 @@ Shallow and deep history states
 
 *History states* can be declared as follows:
 
-The ``type: shallow history`` property declares a *shallow history* state;
-the ``type: deep history`` property declares a *deep history* state.
+*type: shallow history* property declares a *shallow history* state;
+*type: deep history* property declares a *deep history* state.
 We refer to the semantics of UML and SCXML for the difference between both types of histories.
 
 .. code:: yaml
@@ -112,14 +112,14 @@ We refer to the semantics of UML and SCXML for the difference between both types
     - name: history state
       type: shallow history
 
-A history state can optionally declare a default initial memory using ``initial``.
-Importantly, the ``initial`` memory value **must** refer to a parent's substate.
+A history state can optionally declare a default initial memory using *memory*.
+Importantly, the *memory* value **must** refer to a parent's substate.
 
 .. code:: yaml
 
   - name: history state
     type: deep history
-    initial: s1
+    memory: s1
 
 
 Composite states
@@ -148,7 +148,7 @@ Orthogonal states
 *****************
 
 *Orthogonal states* (sometimes referred as *parallel states*) allow to specify multiple nested statecharts running in parallel.
-They must declare their nested states using ``parallel states`` instead of ``states``.
+They must declare their nested states using *parallel states* instead of *states*.
 
 .. code:: yaml
 
@@ -163,8 +163,8 @@ They must declare their nested states using ``parallel states`` instead of ``sta
 Transitions
 ***********
 
-*Transitions* between states, compound states and parallel states can be declared with the ``transitions`` field.
-Transitions typically specify a target state using the ``target`` field:
+*Transitions* between states, compound states and parallel states can be declared with the *transitions* field.
+Transitions typically specify a target state using the *target* field:
 
 .. code:: yaml
 
@@ -173,9 +173,9 @@ Transitions typically specify a target state using the ``target`` field:
       - target: other state
 
 Other optional fields can be specified for a transition:
-a ``guard`` (a Boolean expression that will be evaluated to determine if the transition can be followed),
-an ``event`` (name of the event that will trigger the transition),
-an ``action`` (code that will be executed if the transition is processed).
+a *guard* (a Boolean expression that will be evaluated to determine if the transition can be followed),
+an *event* (name of the event that will trigger the transition),
+an *action* (code that will be executed if the transition is processed).
 Here is a full example of a transition specification:
 
 .. code:: yaml
@@ -187,15 +187,15 @@ Here is a full example of a transition specification:
         guard: x > 1
         action: print('Hello World!')
 
-One type of transition, called an *internal transition*, does not require to declare a ``target``.
+One type of transition, called an *internal transition*, does not require to declare a *target*.
 Instead, it **must** either define an event or define a guard to determine when it should become active
 (Otherwise, infinite loops would occur during simulation or execution).
-
-.. _yaml_example:
 
 
 Statechart examples
 -------------------
+
+.. _elevator_example:
 
 Elevator
 ********
@@ -224,6 +224,7 @@ Notice the use of the ``description`` field in the YAML specification given belo
 Importing and validating statecharts
 ------------------------------------
 
+The :py:class:`~sismic.model.Statechart` class provides several methods to construct, to query and to manipulate a statechart.
 A YAML definition of a statechart can be easily imported to a :py:class:`~sismic.model.Statechart` instance.
 The module :py:mod:`sismic.io` provides a convenient loader :py:func:`~sismic.io.import_from_yaml`
 which takes a textual YAML definition of a statechart.
@@ -242,9 +243,7 @@ For example:
         statechart = io.import_from_yaml(f)
         assert isinstance(statechart, model.Statechart)
 
-
 The parser performs an automatic validation against the YAML schema of the next subsection.
-
 
 YAML validation schema
 **********************
