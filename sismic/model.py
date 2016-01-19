@@ -1,4 +1,4 @@
-from sismic.exceptions import InvalidStatechartError
+from sismic.exceptions import StatechartError
 
 __all__ = ['Event', 'InternalEvent',
            'ContractMixin', 'StateMixin', 'ActionStateMixin', 'TransitionStateMixin', 'CompositeStateMixin', 'HistoryStateMixin',
@@ -23,9 +23,9 @@ class Event:
         self.data = additional_parameters
 
     def __eq__(self, other):
-        return  isinstance(other, Event) and \
-                self.name == other.name and \
-                self.data == other.data
+        return isinstance(other, Event) and \
+               self.name == other.name and \
+               self.data == other.data
 
     def __getattr__(self, attr):
         try:
@@ -347,19 +347,20 @@ class Statechart:
         Register given transition and register it on the source state
 
         :param transition: transition to add
+        :raise StatechartError:
         """
         # Check that source state is known
         if not transition.from_state in self._states:
-            raise InvalidStatechartError('Unknown source state for {}'.format(transition))
+            raise StatechartError('Unknown source state for {}'.format(transition))
 
         from_state = self.state_for(transition.from_state)
         # Check that source state is a TransactionStateMixin
         if not isinstance(from_state, TransitionStateMixin):
-            raise InvalidStatechartError('Cannot add {} on {}'.format(transition, from_state))
+            raise StatechartError('Cannot add {} on {}'.format(transition, from_state))
 
         # Check either internal OR target state is known
         if transition.to_state is not None and transition.to_state not in self._states:
-            raise InvalidStatechartError('Unknown target state for {}'.format(transition))
+            raise StatechartError('Unknown target state for {}'.format(transition))
 
         self._transitions.append(transition)
 
@@ -367,9 +368,12 @@ class Statechart:
         """
         Remove given transitions.
         :param transition: a *Transition* instance
-        :raise ValueError: if transition is not registered
+        :raise StatechartError: if transition is not registered
         """
-        self._transitions.remove(transition)
+        try:
+            self._transitions.remove(transition)
+        except ValueError:
+            raise StatechartError('Transition {} does not exist'.format(transition))
 
     def transitions_from(self, state: str) -> list:
         """
@@ -424,30 +428,31 @@ class Statechart:
 
         :param state: state to add
         :param parent: name of its parent
+        :raise StatechartError:
         """
         # Check name unicity
         if state.name in self._states.keys():
-            raise InvalidStatechartError('State name {} is already used!'.format(state))
+            raise StatechartError('State {} already exists!'.format(state))
 
         if not parent:
             # Check root state
             if self._root:
-                raise InvalidStatechartError('Root is already defined, {} should declare an existing parent state'.format(state))
+                raise StatechartError('Root is already defined, {} should declare an existing parent state'.format(state))
             self._root = state
         else:
             parent_state = self.state_for(parent)
 
             # Check that parent exists
             if not parent_state:
-                raise InvalidStatechartError('Parent "{}" of {} does not exist!'.format(parent, state))
+                raise StatechartError('Parent "{}" of {} does not exist!'.format(parent, state))
 
             # Check that parent is a CompositeStateMixin.
             if not isinstance(parent_state, CompositeStateMixin):
-                raise InvalidStatechartError('{} cannot be used as a parent for {}'.format(parent_state, state))
+                raise StatechartError('{} cannot be used as a parent for {}'.format(parent_state, state))
 
             # If state is an HistoryState, its parent must be a CompoundState
             if isinstance(state, HistoryStateMixin) and not isinstance(parent_state, CompoundState):
-                raise InvalidStatechartError('{} cannot be used as a parent for {}'.format(parent_state, state))
+                raise StatechartError('{} cannot be used as a parent for {}'.format(parent_state, state))
 
         # Save state
         self._states[state.name] = state
@@ -461,17 +466,17 @@ class Statechart:
         Remove given state. The state can only be removed if it has no more children and no more
         incoming transitions. Outgoing transitions are removed in the process.
         :param name: name of a state
-        :raise KeyError: if state does not exist
-        :raise InvalidStatechartError: if state cannot be removed
+        :raise StatechartError:
         """
-        state = self._states[name]
+        state = self.state_for(name)
+
         if len(self.children_for(name)) == 0:
-            # Incoming transitions?
+            # Transitions?
             incoming_transitions = self.transitions_to(name)
             all_internal = all([t.internal for t in incoming_transitions])
 
             if not all_internal:
-                raise InvalidStatechartError('Cannot remove {} while it has incoming transitions'.format(state))
+                raise StatechartError('Cannot remove {} while it has incoming transitions'.format(state))
 
             # Remove incoming transitions (they are internal ones!)
             for transition in incoming_transitions:
@@ -489,7 +494,7 @@ class Statechart:
             self._parent.pop(name)
             self._states.pop(name)
         else:
-            raise InvalidStatechartError('Cannot remove {} while it has nested states'.format(state))
+            raise StatechartError('Cannot remove {} while it has nested states'.format(state))
 
     def rename_state(self, old_name: str, new_name: str):
         """
@@ -498,7 +503,7 @@ class Statechart:
         :param new_name: new name of the state
         """
         if new_name in self._states:
-            raise InvalidStatechartError('State {} already exists!'.format(new_name))
+            raise StatechartError('State {} already exists!'.format(new_name))
         state = self._states[old_name]
 
         # Change state name
@@ -539,65 +544,85 @@ class Statechart:
         Return the state instance that has given name.
         :param name: a state name
         :return: a *StateMixin* that has the same name or None
+        :raise StatechartError: if state does not exist
         """
-        return self._states.get(name, None)
+        try:
+            return self._states[name]
+        except KeyError as e:
+            raise StatechartError('State {} does not exist'.format(name)) from e
 
     def parent_for(self, name: str) -> str:
         """
         Return the name of the parent of given state name.
         :param name: a state name
         :return: its parent name, or None.
+        :raise StatechartError: if state does not exist
         """
-        return self._parent[name]
+        try:
+            return self._parent[name]
+        except KeyError as e:
+            raise StatechartError('State {} does not exist'.format(name)) from e
 
     def children_for(self, name: str) -> list:
         """
         Return the names of the children of the given state.
         :param name: a state name
         :return: a (possibly empty) list of children
+        :raise StatechartError: if state does not exist
         """
+        self.state_for(name)  # Raise StatechartError if state does not exist
+
         return self._children.get(name, [])
 
-    def ancestors_for(self, state: str) -> list:
+    def ancestors_for(self, name: str) -> list:
         """
         Return an ordered list of ancestors for the given state.
         Ancestors are ordered by decreasing depth.
 
         :param state: name of the state
         :return: state's ancestors
+        :raise StatechartError: if state does not exist
         """
+        self.state_for(name)  # Raise StatechartError if state does not exist
+
         ancestors = []
-        parent = self._parent[state]
+        parent = self._parent[name]
         while parent:
             ancestors.append(parent)
             parent = self._parent[parent]
         return ancestors
 
-    def descendants_for(self, state: str) -> list:
+    def descendants_for(self, name: str) -> list:
         """
         Return an ordered list of descendants for the given state.
         Descendants are ordered by increasing depth.
 
-        :param state: name of the state
+        :param name: name of the state
         :return: state's descendants
+        :raise StatechartError: if state does not exist
         """
+        self.state_for(name)  # Raise StatechartError if state does not exist
+
         descendants = []
-        states_to_consider = [state]
+        states_to_consider = [name]
         while states_to_consider:
-            state = states_to_consider.pop(0)
-            for child in self.children_for(state):
+            name = states_to_consider.pop(0)
+            for child in self.children_for(name):
                 states_to_consider.append(child)
                 descendants.append(child)
         return descendants
 
-    def depth_for(self, state: str) -> int:
+    def depth_for(self, name: str) -> int:
         """
         Return the depth of given state (1-indexed).
 
-        :param state: name of the state
+        :param name: name of the state
         :return: state depth
+        :raise StatechartError: if state does not exist
         """
-        ancestors = self.ancestors_for(state)
+        self.state_for(name)  # Raise StatechartError if state does not exist
+
+        ancestors = self.ancestors_for(name)
         return len(ancestors) + 1
 
     ########## STATES UTILS ##########
@@ -610,7 +635,11 @@ class Statechart:
         :param s1: name of first state
         :param s2: name of second state
         :return: name of deepest common ancestor or *None*
+        :raise StatechartError: if state does not exist
         """
+        self.state_for(s1)  # Raise StatechartError if state does not exist
+        self.state_for(s2)
+
         s1_anc = self.ancestors_for(s1)
         s2_anc = self.ancestors_for(s2)
         for state in s1_anc:
@@ -625,7 +654,10 @@ class Statechart:
 
         :param states: a list of names
         :return: the names of the leaves in *states*
+        :raise StatechartError: if state does not exist
         """
+        [self.state_for(s) for s in states]  # Raise StatechartError if state does not exist
+
         leaves = []
         # TODO: Need a more efficient way to compute this set
         for state in states:

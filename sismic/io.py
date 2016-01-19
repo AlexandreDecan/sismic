@@ -4,7 +4,7 @@ import os
 from pykwalify.core import Core
 from sismic.model import Transition, Statechart, BasicState, CompoundState, OrthogonalState, ShallowHistoryState, \
     DeepHistoryState, FinalState, StateMixin
-from sismic.exceptions import InvalidStatechartError
+from sismic.exceptions import StatechartError
 
 __all__ = ['import_from_yaml']
 
@@ -45,7 +45,7 @@ def import_from_yaml(statechart: str, ignore_schema=False) -> Statechart:
         try:
             state = _state_from_dict(state_data)
         except Exception as e:
-            raise InvalidStatechartError('Unable to load given YAML') from e
+            raise StatechartError('Unable to load given YAML') from e
         states.append((state, parent_name))
 
         # Get substates
@@ -61,7 +61,7 @@ def import_from_yaml(statechart: str, ignore_schema=False) -> Statechart:
             try:
                 transition = _transition_from_dict(state.name, transition_data)
             except Exception as e:
-                raise InvalidStatechartError('Unable to load given YAML') from e
+                raise StatechartError('Unable to load given YAML') from e
             transitions.append(transition)
 
     # Register on statechart

@@ -11,7 +11,7 @@ class TraversalTests(unittest.TestCase):
     def test_parent(self):
         self.assertEqual(self.sc.parent_for('s2'), 'root')
         self.assertEqual(self.sc.parent_for('root'), None)
-        with self.assertRaises(KeyError):
+        with self.assertRaises(exceptions.StatechartError):
             self.sc.parent_for('unknown')
 
     def test_children(self):
@@ -65,14 +65,14 @@ class TraversalTests(unittest.TestCase):
         s1 = model.BasicState('a')
         s2 = model.BasicState('a')
         sc.add_state(s1, parent='root')
-        with self.assertRaises(exceptions.InvalidStatechartError):
+        with self.assertRaises(exceptions.StatechartError):
             sc.add_state(s2, parent='root')
 
     def test_root_already_defined(self):
         root = model.CompoundState('root', 'a')
         sc = model.Statechart('test')
         sc.add_state(root, None)
-        with self.assertRaises(exceptions.InvalidStatechartError):
+        with self.assertRaises(exceptions.StatechartError):
             sc.add_state(root, None)
 
     def test_transitions_to_unknown_state(self):
@@ -87,7 +87,7 @@ class TraversalTests(unittest.TestCase):
                 transitions:
                   - target: s2
         """
-        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
+        with self.assertRaises(exceptions.StatechartError) as cm:
             io.import_from_yaml(yaml)
 
     def test_history_not_in_compound(self):
@@ -103,7 +103,7 @@ class TraversalTests(unittest.TestCase):
                  - name: s2
                    type: shallow history
         """
-        with self.assertRaises(exceptions.InvalidStatechartError) as cm:
+        with self.assertRaises(exceptions.StatechartError) as cm:
             io.import_from_yaml(yaml)
 
 
@@ -131,7 +131,7 @@ class TransitionsTests(unittest.TestCase):
         for transition in self.sc.transitions_from('s2'):
             self.assertEqual(transition.to_state, 's2')
 
-        with self.assertRaises(exceptions.InvalidStatechartError):
+        with self.assertRaises(exceptions.StatechartError):
             self.sc.add_transition(model.Transition('s2'))
 
         self.sc.add_transition(model.Transition('s1'))
@@ -152,7 +152,7 @@ class RemovalTests(unittest.TestCase):
             self.sc.remove_transition(transition)
         self.assertEqual(len(self.sc.transitions), 0)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(exceptions.StatechartError):
             self.sc.remove_transition(None)
 
     def test_remove_states(self):
@@ -160,10 +160,10 @@ class RemovalTests(unittest.TestCase):
         self.assertEqual(len(self.sc.transitions_from('active')), 0)
         self.assertTrue('active' not in self.sc.states)
 
-        with self.assertRaises(KeyError):
+        with self.assertRaises(exceptions.StatechartError):
             self.sc.remove_state('unknown')
 
-        with self.assertRaises(exceptions.InvalidStatechartError):
+        with self.assertRaises(exceptions.StatechartError):
             self.sc.remove_state('s2')
 
         self.sc.remove_state('s1')
@@ -179,11 +179,11 @@ class RenameStateTests(unittest.TestCase):
             self.sc.rename_state('unknown', 's3')
 
     def test_rename_with_self(self):
-        with self.assertRaises(exceptions.InvalidStatechartError):
+        with self.assertRaises(exceptions.StatechartError):
             self.sc.rename_state('s2', 's2')
 
     def test_rename_with_existing(self):
-        with self.assertRaises(exceptions.InvalidStatechartError):
+        with self.assertRaises(exceptions.StatechartError):
             self.sc.rename_state('s2', 's1')
 
     def test_rename(self):

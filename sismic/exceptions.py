@@ -2,9 +2,9 @@ class SismicError(Exception):
     pass
 
 
-class InvalidStatechartError(SismicError):
+class StatechartError(SismicError):
     """
-    Base error for anything that makes a statechart invalid.
+    Base error for anything that is related to a statechart.
     """
     pass
 
