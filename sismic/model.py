@@ -305,14 +305,14 @@ class Statechart:
         self._children = {}  # name -> list of names
         self._transitions = []  # list of Transition objects
 
-        self._root = None  # Root state
-
     @property
     def root(self):
         """
         Root state name
         """
-        return self._root.name
+        for name, parent in self._parent.items():
+            if parent is None:
+                return name
 
     @property
     def preamble(self):
@@ -345,9 +345,8 @@ class Statechart:
 
         if not parent:
             # Check root state
-            if self._root:
+            if self.root:
                 raise StatechartError('Root is already defined, {} should declare an existing parent state'.format(state))
-            self._root = state
         else:
             parent_state = self.state_for(parent)
 
@@ -411,9 +410,6 @@ class Statechart:
 
         self._states.pop(name)
 
-        if self.root == state.name:
-            self._root = None
-
     def rename_state(self, old_name: str, new_name: str):
         """
         Change state name, and adapt transitions, initial state, memory, etc.
@@ -453,8 +449,6 @@ class Statechart:
                 self._parent[other_state.name] = new_name
 
         # Renaming
-        self._root = new_name if self.root == old_name else self.root
-
         parent_name = self._parent[old_name]
 
         self._states[new_name] = self._states.pop(old_name)
