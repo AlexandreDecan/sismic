@@ -493,9 +493,6 @@ class Statechart:
             raise StatechartError('State {} already exists!'.format(new_name))
         state = self._states[old_name]
 
-        # Change state name
-        state._name = new_name
-
         # Change transitions
         for transition in self.transitions_from(old_name):
             transition.from_state = new_name
@@ -520,6 +517,7 @@ class Statechart:
                 self._parent[other_state.name] = new_name
 
         # Rename
+        state._name = new_name
         self._states[new_name] = self._states.pop(old_name)
         try:
             self._children[new_name] = self._children.pop(old_name)
