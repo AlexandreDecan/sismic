@@ -32,4 +32,4 @@ The documentation can be built from the *docs* directory using ``make html``.
 Tests are available both for the code and the documentation:
 
 - ``make doctest`` in the *docs* directory (documentation tests)
-- ``python unittest discover`` from the root directory (code tests)
+- ``python -m unittest discover`` from the root directory (code tests)
