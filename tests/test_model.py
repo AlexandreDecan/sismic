@@ -118,12 +118,12 @@ class TransitionsTests(unittest.TestCase):
 
         nb_transitions = 0
         for transition in self.sc.transitions:
-            if transition.from_state == 'unknown':
+            if transition.source == 'unknown':
                 nb_transitions += 1
         self.assertEqual(nb_transitions, 0)
 
         for transition in self.sc.transitions_from('active'):
-            self.assertEqual(transition.from_state, 'active')
+            self.assertEqual(transition.source, 'active')
 
     def test_transitions_to(self):
         self.assertEqual(self.sc.transitions_to('root'), [])
@@ -132,12 +132,12 @@ class TransitionsTests(unittest.TestCase):
 
         nb_transitions = 0
         for transition in self.sc.transitions:
-            if transition.from_state == 'unknown':
+            if transition.source == 'unknown':
                 nb_transitions += 1
         self.assertEqual(nb_transitions, 0)
 
         for transition in self.sc.transitions_from('s2'):
-            self.assertEqual(transition.to_state, 's2')
+            self.assertEqual(transition.target, 's2')
 
         with self.assertRaises(exceptions.StatechartError):
             self.sc.add_transition(model.Transition('s2'))
@@ -169,7 +169,13 @@ class RemovalTests(unittest.TestCase):
         self.assertTrue('active' not in self.sc.states)
         nb_transitions = 0
         for transition in self.sc.transitions:
-            if transition.from_state == 'active':
+            if transition.source == 'active':
+                nb_transitions += 1
+        self.assertEqual(nb_transitions, 0)
+
+        nb_transitions = 0
+        for transition in self.sc.transitions:
+            if transition.target == 'active':
                 nb_transitions += 1
         self.assertEqual(nb_transitions, 0)
 
@@ -212,7 +218,13 @@ class RenameStateTests(unittest.TestCase):
 
         nb_transitions = 0
         for transition in self.sc.transitions:
-            if transition.from_state == 's1':
+            if transition.source == 's1':
+                nb_transitions += 1
+        self.assertEqual(nb_transitions, 0)
+
+        nb_transitions = 0
+        for transition in self.sc.transitions:
+            if transition.target == 's1':
                 nb_transitions += 1
         self.assertEqual(nb_transitions, 0)
 

@@ -224,17 +224,17 @@ class Transition(ContractMixin):
     Transition can be eventless or internal.
     A condition (code as string) can be specified as a guard.
 
-    :param from_state: name of the source state
-    :param to_state: name of the target state (if transition is not internal)
+    :param source: name of the source state
+    :param target: name of the target state (if transition is not internal)
     :param event: event name (if any)
     :param guard: condition as code (if any)
     :param action: action as code (if any)
     """
 
-    def __init__(self, from_state: str, to_state: str = None, event: str = None, guard: str = None, action: str = None):
+    def __init__(self, source: str, target: str = None, event: str = None, guard: str = None, action: str = None):
         ContractMixin.__init__(self)
-        self.from_state = from_state
-        self.to_state = to_state
+        self.source = source
+        self.target = target
         self.event = event
         self.guard = guard
         self.action = action
@@ -244,7 +244,7 @@ class Transition(ContractMixin):
         """
         Boolean indicating whether this transition is an internal transition.
         """
-        return self.to_state is None
+        return self.target is None
 
     @property
     def eventless(self):
@@ -255,22 +255,22 @@ class Transition(ContractMixin):
 
     def __eq__(self, other):
         return (isinstance(other, Transition) and
-                self.from_state == other.from_state and
-                self.to_state == other.to_state and
+                self.source == other.source and
+                self.target == other.target and
                 self.event == other.event and
                 self.guard == other.guard and
                 self.action == other.action)
 
     def __repr__(self):
-        return 'Transition({0}, {1}, {2})'.format(self.from_state, self.to_state, self.event)
+        return 'Transition({0}, {1}, {2})'.format(self.source, self.target, self.event)
 
     def __str__(self):
-        to_state = self.to_state if self.to_state else '[' + self.from_state + ']'
+        to_state = self.target if self.target else '[' + self.source + ']'
         event = '+' + self.event if self.event else ''
-        return self.from_state + event + ' -> ' + to_state
+        return self.source + event + ' -> ' + to_state
 
     def __hash__(self):
-        return hash(self.from_state)
+        return hash(self.source)
 
 
 class Statechart:
@@ -307,95 +307,6 @@ class Statechart:
         Bootstrap code
         """
         return self._bootstrap
-
-    ########## TRANSITIONS ##########
-
-    @property
-    def transitions(self):
-        """
-        List of available transitions
-        """
-        return list(self._transitions)
-
-    def add_transition(self, transition: Transition):
-        """
-        Register given transition and register it on the source state
-
-        :param transition: transition to add
-        :raise StatechartError:
-        """
-        # Check that source state is known
-        if not transition.from_state in self._states:
-            raise StatechartError('Unknown source state for {}'.format(transition))
-
-        from_state = self.state_for(transition.from_state)
-        # Check that source state is a TransactionStateMixin
-        if not isinstance(from_state, TransitionStateMixin):
-            raise StatechartError('Cannot add {} on {}'.format(transition, from_state))
-
-        # Check either internal OR target state is known
-        if transition.to_state is not None and transition.to_state not in self._states:
-            raise StatechartError('Unknown target state for {}'.format(transition))
-
-        self._transitions.append(transition)
-
-    def remove_transition(self, transition: Transition):
-        """
-        Remove given transitions.
-
-        :param transition: a *Transition* instance
-        :raise StatechartError: if transition is not registered
-        """
-        try:
-            self._transitions.remove(transition)
-        except ValueError:
-            raise StatechartError('Transition {} does not exist'.format(transition))
-
-    def transitions_from(self, name: str) -> list:
-        """
-        Return the list of transitions starting from given state name.
-
-        :param name: name of source state
-        :return: a list of *Transition* instances
-        :raise StatechartError: if state does not exist
-        """
-        self.state_for(name)  # Raise StatechartError if state does not exist
-
-        transitions = []
-        for transition in self._transitions:
-            if transition.from_state == name:
-                transitions.append(transition)
-        return transitions
-
-    def transitions_to(self, name: str) -> list:
-        """
-        Return the list of transitions targeting given state name.
-        Internal transitions are returned too.
-
-        :param name: name of target state
-        :return: a list of *Transition* instances
-        :raise StatechartError: if state does not exist
-        """
-        self.state_for(name)  # Raise StatechartError if state does not exist
-
-        transitions = []
-        for transition in self._transitions:
-            if transition.to_state == name or (transition.to_state is None and transition.from_state == name):
-                transitions.append(transition)
-        return transitions
-
-    def transitions_with(self, event: str) -> list:
-        """
-        Return the list of transitions that can be triggered by given event name.
-
-        :param event: name of the event
-        :return: a list of *Transition* instances
-        """
-        transitions = []
-        for transition in self._transitions:
-            if transition.event == event:
-                transitions.append(transition)
-        return transitions
 
     ########## STATES ##########
 
@@ -494,12 +405,14 @@ class Statechart:
         state = self._states[old_name]
 
         # Change transitions
-        for transition in self.transitions_from(old_name):
-            transition.from_state = new_name
+        for transition in self.transitions:
+            if transition.source == old_name:
+                if transition.internal:
+                    transition.target = new_name
+                transition.source = new_name
 
-        for transition in self.transitions_to(old_name):
-            if not transition.internal:
-                transition.to_state = new_name
+            if transition.target == old_name:
+                transition.target = new_name
 
         for other_state in self._states.values():
             # Change initial (CompoundState)
@@ -613,8 +526,6 @@ class Statechart:
         ancestors = self.ancestors_for(name)
         return len(ancestors) + 1
 
-    ########## STATES UTILS ##########
-
     def least_common_ancestor(self, name_first: str, name_second: str) -> str:
         """
         Return the deepest common ancestor for *s1* and *s2*, or *None* if
@@ -659,6 +570,105 @@ class Statechart:
             if keep:
                 leaves.append(state)
         return leaves
+
+    ########## TRANSITIONS ##########
+
+    @property
+    def transitions(self):
+        """
+        List of available transitions
+        """
+        return list(self._transitions)
+
+    def add_transition(self, transition: Transition):
+        """
+        Register given transition and register it on the source state
+
+        :param transition: transition to add
+        :raise StatechartError:
+        """
+        # Check that source state is known
+        if not transition.source in self._states:
+            raise StatechartError('Unknown source state for {}'.format(transition))
+
+        from_state = self.state_for(transition.source)
+        # Check that source state is a TransactionStateMixin
+        if not isinstance(from_state, TransitionStateMixin):
+            raise StatechartError('Cannot add {} on {}'.format(transition, from_state))
+
+        # Check either internal OR target state is known
+        if transition.target is not None and transition.target not in self._states:
+            raise StatechartError('Unknown target state for {}'.format(transition))
+
+        self._transitions.append(transition)
+
+    def remove_transition(self, transition: Transition):
+        """
+        Remove given transitions.
+
+        :param transition: a *Transition* instance
+        :raise StatechartError: if transition is not registered
+        """
+        try:
+            self._transitions.remove(transition)
+        except ValueError:
+            raise StatechartError('Transition {} does not exist'.format(transition))
+
+    def rotate_transition(self, transition: Transition, source_state: str=None, target_state: str=None):
+        """
+
+        :param transition:
+        :param source_state:
+        :param target_state:
+        :return:
+        """
+        pass
+
+    def transitions_from(self, source: str) -> list:
+        """
+        Return the list of transitions whose source is given name.
+
+        :param source: name of source state
+        :return: a list of *Transition* instances
+        :raise StatechartError: if state does not exist
+        """
+        self.state_for(source)  # Raise StatechartError if state does not exist
+
+        transitions = []
+        for transition in self._transitions:
+            if transition.source == source:
+                transitions.append(transition)
+        return transitions
+
+    def transitions_to(self, target: str) -> list:
+        """
+        Return the list of transitions whose target is given name.
+        Internal transitions are returned too.
+
+        :param target: name of target state
+        :return: a list of *Transition* instances
+        :raise StatechartError: if state does not exist
+        """
+        self.state_for(target)  # Raise StatechartError if state does not exist
+
+        transitions = []
+        for transition in self._transitions:
+            if transition.target == target or (transition.target is None and transition.source == target):
+                transitions.append(transition)
+        return transitions
+
+    def transitions_with(self, event: str) -> list:
+        """
+        Return the list of transitions that can be triggered by given event name.
+
+        :param event: name of the event
+        :return: a list of *Transition* instances
+        """
+        transitions = []
+        for transition in self._transitions:
+            if transition.event == event:
+                transitions.append(transition)
+        return transitions
 
     ########## EVENTS ##########
 

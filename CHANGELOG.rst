@@ -19,6 +19,7 @@ The YAML format of a statechart also changed, look carefully at the changelog an
 - (Changed) Rename ``Statechart.events`` to ``Statechart.events_for``.
 - (Changed) Rename ``Statechart.register_state`` to ``Statechart.add_state`` and ``Statechart.register_transition``.
 - (Changed) ``Transition.event`` is a string instead of an ``Event`` instance.
+- (Changed) Attributes ``from_state`` and ``to_state`` of a ``Transition`` are renamed into ``source`` and ``target``.
 - (Changed) ``Event.__eq__`` includes a comparison of its ``data`` attribute.
 - (Changed) ``Event.foo`` raises an ``AttributeError`` instead of a ``KeyError`` if ``foo`` is not defined.
 - (Changed) ``StateMixin.name`` is now read-only (use ``Statechart.rename_state``).
