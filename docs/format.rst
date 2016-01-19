@@ -195,6 +195,8 @@ Instead, it **must** either define an event or define a guard to determine when 
 Statechart examples
 -------------------
 
+.. _elevator_example:
+
 Elevator
 ********
 

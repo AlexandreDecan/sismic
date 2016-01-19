@@ -56,7 +56,7 @@ If ``tester`` ends in a final configuration, ie. ``tester.final`` holds, then th
 Examples
 --------
 
-The following *tester statechart* examples are relative to :ref:`this statechart <yaml_example>`.
+The following *tester statechart* examples are relative to :ref:`this statechart <elevator_example>`.
 They show the specification of some testers in YAML, and how to execute them.
 Note that these testers are currently used as unit tests for Sismic.
 
