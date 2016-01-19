@@ -56,30 +56,9 @@ class ContractMixin:
     """
 
     def __init__(self):
-        self._preconditions = []
-        self._postconditions = []
-        self._invariants = []
-
-    @property
-    def preconditions(self):
-        """
-        A list of preconditions (str).
-        """
-        return self._preconditions
-
-    @property
-    def postconditions(self):
-        """
-        A list of postconditions (str).
-        """
-        return self._postconditions
-
-    @property
-    def invariants(self):
-        """
-        A list of invariants (str).
-        """
-        return self._invariants
+        self.preconditions = []
+        self.postconditions = []
+        self.invariants = []
 
 
 class StateMixin:
@@ -90,16 +69,20 @@ class StateMixin:
     """
 
     def __init__(self, name: str):
-        self.name = name
+        self._name = name
+
+    @property
+    def name(self):
+        return self._name
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, self.name)
+        return '{}({})'.format(self.__class__.__name__, self._name)
 
     def __eq__(self, other):
-        return isinstance(other, StateMixin) and self.name == other.name
+        return isinstance(other, StateMixin) and self._name == other._name
 
     def __hash__(self):
-        return hash(self.name)
+        return hash(self._name)
 
 
 class ActionStateMixin:
@@ -111,16 +94,8 @@ class ActionStateMixin:
     """
 
     def __init__(self, on_entry: str = None, on_exit: str = None):
-        self._on_entry = on_entry
-        self._on_exit = on_exit
-
-    @property
-    def on_entry(self):
-        return self._on_entry
-
-    @property
-    def on_exit(self):
-        return self._on_exit
+        self.on_entry = on_entry
+        self.on_exit = on_exit
 
 
 class TransitionStateMixin:
