@@ -116,7 +116,11 @@ class TransitionsTests(unittest.TestCase):
         self.assertEqual(len(self.sc.transitions_from('active')), 2)
         self.assertEqual(len(self.sc.transitions_from('s1')), 1)
 
-        self.assertEqual(len(self.sc.transitions_from('unknown')),0)
+        nb_transitions = 0
+        for transition in self.sc.transitions:
+            if transition.from_state == 'unknown':
+                nb_transitions += 1
+        self.assertEqual(nb_transitions, 0)
 
         for transition in self.sc.transitions_from('active'):
             self.assertEqual(transition.from_state, 'active')
@@ -126,7 +130,11 @@ class TransitionsTests(unittest.TestCase):
         self.assertEqual(len(self.sc.transitions_to('s1')), 1)
         self.assertEqual(len(self.sc.transitions_to('s2')), 2)
 
-        self.assertEqual(len(self.sc.transitions_to('unknown')), 0)
+        nb_transitions = 0
+        for transition in self.sc.transitions:
+            if transition.from_state == 'unknown':
+                nb_transitions += 1
+        self.assertEqual(nb_transitions, 0)
 
         for transition in self.sc.transitions_from('s2'):
             self.assertEqual(transition.to_state, 's2')
@@ -157,8 +165,13 @@ class RemovalTests(unittest.TestCase):
 
     def test_remove_states(self):
         self.sc.remove_state('active')
-        self.assertEqual(len(self.sc.transitions_from('active')), 0)
+
         self.assertTrue('active' not in self.sc.states)
+        nb_transitions = 0
+        for transition in self.sc.transitions:
+            if transition.from_state == 'active':
+                nb_transitions += 1
+        self.assertEqual(nb_transitions, 0)
 
         with self.assertRaises(exceptions.StatechartError):
             self.sc.remove_state('unknown')
@@ -193,7 +206,16 @@ class RenameStateTests(unittest.TestCase):
 
     def test_rename_with_transitions(self):
         self.sc.rename_state('s1', 's3')
-        self.assertEqual(self.sc.transitions_from('s1'), [])
+
+        self.assertTrue('s1' not in self.sc.states)
+        self.assertTrue('s3' in self.sc.states)
+
+        nb_transitions = 0
+        for transition in self.sc.transitions:
+            if transition.from_state == 's1':
+                nb_transitions += 1
+        self.assertEqual(nb_transitions, 0)
+
         self.assertTrue(len(self.sc.transitions_from('s3')), 1)
         self.assertTrue(len(self.sc.transitions_to('s2')), 1)
 
