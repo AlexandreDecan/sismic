@@ -123,7 +123,7 @@ class HistoryStateMixin:
         self.memory = memory
 
 
-class BasicState(ContractMixin, StateMixin, TransitionStateMixin, ActionStateMixin):
+class BasicState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMixin):
     """
     A basic state, with a name, transitions, actions, etc. but no child state.
 
@@ -135,11 +135,11 @@ class BasicState(ContractMixin, StateMixin, TransitionStateMixin, ActionStateMix
     def __init__(self, name: str, on_entry: str = None, on_exit: str = None):
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
-        TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
+        TransitionStateMixin.__init__(self)
 
 
-class CompoundState(ContractMixin, StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
+class CompoundState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin):
     """
     Compound states must have children states.
 
@@ -152,13 +152,13 @@ class CompoundState(ContractMixin, StateMixin, TransitionStateMixin, ActionState
     def __init__(self, name: str, initial: str = None, on_entry: str = None, on_exit: str = None):
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
-        TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
+        TransitionStateMixin.__init__(self)
         CompositeStateMixin.__init__(self)
         self.initial = initial
 
 
-class OrthogonalState(ContractMixin, StateMixin, TransitionStateMixin, ActionStateMixin, CompositeStateMixin):
+class OrthogonalState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin):
     """
     Orthogonal states run their children simultaneously.
 
@@ -170,36 +170,42 @@ class OrthogonalState(ContractMixin, StateMixin, TransitionStateMixin, ActionSta
     def __init__(self, name: str, on_entry: str = None, on_exit: str = None):
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
-        TransitionStateMixin.__init__(self)
         ActionStateMixin.__init__(self, on_entry, on_exit)
+        TransitionStateMixin.__init__(self)
         CompositeStateMixin.__init__(self)
 
 
-class ShallowHistoryState(StateMixin, ContractMixin, HistoryStateMixin):
+class ShallowHistoryState(ContractMixin, StateMixin, ActionStateMixin, HistoryStateMixin):
     """
     A shallow history state resumes the execution of its parent.
     It activates the latest visited state of its parent.
 
     :param name: name of this state
+    :param on_entry: code to execute when state is entered
+    :param on_exit: code to execute when state is exited
     :param memory: name of the initial state
     """
-    def __init__(self, name: str, memory: str=None):
-        StateMixin.__init__(self, name)
+    def __init__(self, name: str, on_entry: str=None, on_exit: str=None, memory: str=None):
         ContractMixin.__init__(self)
+        StateMixin.__init__(self, name)
+        ActionStateMixin.__init__(self, on_entry, on_exit)
         HistoryStateMixin.__init__(self, memory)
 
 
-class DeepHistoryState(StateMixin, ContractMixin, HistoryStateMixin):
+class DeepHistoryState(ContractMixin, StateMixin, ActionStateMixin, HistoryStateMixin):
     """
     A deep history state resumes the execution of its parent, and of every nested
     active states in its parent.
 
     :param name: name of this state
+    :param on_entry: code to execute when state is entered
+    :param on_exit: code to execute when state is exited
     :param memory: name of the initial state
     """
-    def __init__(self, name: str, memory: str=None):
-        StateMixin.__init__(self, name)
+    def __init__(self, name: str, on_entry: str=None, on_exit: str=None, memory: str=None):
         ContractMixin.__init__(self)
+        StateMixin.__init__(self, name)
+        ActionStateMixin.__init__(self, on_entry, on_exit)
         HistoryStateMixin.__init__(self, memory)
 
 

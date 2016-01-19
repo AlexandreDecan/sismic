@@ -15,7 +15,7 @@ SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')
 def import_from_yaml(statechart: str, ignore_schema=False) -> Statechart:
     """
     Import a statechart from a YAML representation.
-    YAML is first validated against *io.SCHEMA*.
+    YAML is first validated against *io.SCHEMA_PATH*.
 
     :param statechart: string or any equivalent object
     :param ignore_schema: set to *True* to disable yaml validation.
@@ -104,31 +104,29 @@ def _state_from_dict(state_d: dict) -> StateMixin:
     :param state_d: a dictionary containing state data
     :return: a specialized instance of State
     """
-    # Guess the type of state
-    if state_d.get('type', None) == 'final':
-        # Final pseudo state
-        name = state_d.get('name')
-        on_entry = state_d.get('on entry', None)
-        on_exit = state_d.get('on exit', None)
+    name = state_d.get('name')
+    type = state_d.get('type', None)
+    on_entry = state_d.get('on entry', None)
+    on_exit = state_d.get('on exit', None)
+
+    if type == 'final':
         state = FinalState(name, on_entry=on_entry, on_exit=on_exit)
-    elif state_d.get('type', None) == 'shallow history':
-        # Shallow history pseudo state
-        state = ShallowHistoryState(state_d['name'], memory=state_d.get('memory'))
-    elif state_d.get('type', None) == 'deep history':
-        # Deep history pseudo state
-        state = DeepHistoryState(state_d['name'], memory=state_d.get('memory'))
-    else:
-        name = state_d.get('name')
-        on_entry = state_d.get('on entry', None)
-        on_exit = state_d.get('on exit', None)
-        if 'states' in state_d:  # Compound state
-            initial = state_d.get('initial', None)
-            state = CompoundState(name, initial=initial, on_entry=on_entry, on_exit=on_exit)
-        elif 'parallel states' in state_d:  # Orthogonal state
-            state = OrthogonalState(name, on_entry, on_exit)
+    elif type == 'shallow history':
+        state = ShallowHistoryState(name, on_entry=on_entry, on_exit=on_exit, memory=state_d.get('memory', None))
+    elif type == 'deep history':
+        state = DeepHistoryState(name, on_entry=on_entry, on_exit=on_exit, memory=state_d.get('memory', None))
+    elif type == None:
+        substates = state_d.get('states', None)
+        parallel_substates = state_d.get('parallel states', None)
+
+        if substates:
+            state = CompoundState(name, initial=state_d.get('initial', None), on_entry=on_entry, on_exit=on_exit)
+        elif parallel_substates:
+            state = OrthogonalState(name, on_entry=on_entry, on_exit=on_exit)
         else:
-            # Simple state
-            state = BasicState(name, on_entry, on_exit)
+            state = BasicState(name, on_entry=on_entry, on_exit=on_exit)
+    else:
+        raise StatechartError('Unknown type {} for state {}'.format(type, name))
 
     # Preconditions, postconditions and invariants
     for condition in state_d.get('contract', []):

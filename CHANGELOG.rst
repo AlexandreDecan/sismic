@@ -7,12 +7,13 @@ Unreleased
 Many backward incompatible changes in this update, especially if you used to work with ``model``.
 The YAML format of a statechart also changed, look carefully at the changelog and the documentation.
 
-- (Added) Module: a new exceptions hierarchy (see ``exceptions`` module).
-  The new exceptions are used in place of the old ones (``Warning``, ``AssertionError`` and ``ValueError``).
+- (Added) YAML: an history state can declare *on entry* and *on exit*.
 - (Added) Statechart: new methods to manipulate transitions: ``transitions_from``, ``transitions_to``,
   ``transitions_with``, ``remove_transitions`` and ``rotate_transitions``.
 - (Added) Statechart: new methods to manipulate states: ``remove_states``, ``rename_states``,
   ``state_for``, ``parent_for``, ``children_for``.
+- (Added) Module: a new exceptions hierarchy (see ``exceptions`` module).
+  The new exceptions are used in place of the old ones (``Warning``, ``AssertionError`` and ``ValueError``).
 - (Changed) YAML: uppermost *states:* should be replaced by *initial state:* and can contain at most one state.
 - (Changed) YAML: uppermost *on entry:* should be replaced by *preamble:*.
 - (Changed) YAML: initial memory of an history state should be specified using *memory* instead of *initial*.
