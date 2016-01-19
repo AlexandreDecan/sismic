@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.17.0 (unreleased)
+-------------------
 
 Many backward incompatible changes in this update, especially if you used to work with ``model``.
 The YAML format of a statechart also changed, look carefully at the changelog and the documentation.
