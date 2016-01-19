@@ -408,7 +408,7 @@ class Statechart:
 
     def rename_state(self, old_name: str, new_name: str):
         """
-        Change state name, and adapt transitions, initial state, etc.
+        Change state name, and adapt transitions, initial state, memory, etc.
 
         :param old_name: old name of the state
         :param new_name: new name of the state
@@ -433,10 +433,10 @@ class Statechart:
                 if other_state.initial == old_name:
                     other_state.initial = new_name
 
-            # Change initial (HistoryState)
+            # Change memory (HistoryState)
             if isinstance(other_state, HistoryStateMixin):
-                if other_state.initial == old_name:
-                    other_state.initial = new_name
+                if other_state.memory == old_name:
+                    other_state.memory = new_name
 
             # Adapt parent
             if self._parent[other_state.name] == old_name:
