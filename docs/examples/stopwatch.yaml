@@ -37,7 +37,7 @@ statechart:
         states:
           - name: actual time
             transitions:
-              - guard: after(0.1)
+              - guard: after(0.2)
                 target: actual time
                 action: |
                   send('refresh', time=elapsed_time)
