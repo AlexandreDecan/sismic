@@ -4,8 +4,8 @@ Include code in statecharts
 ===========================
 
 A statechart can specify code that needs to be executed under some circumstances.
-For example, the ``initial code`` property on a statechart, the ``guard`` or ``action`` on a transition or the
-``on entry`` and ``on exit`` properties for a state may all contain code.
+For example, the *preamble* property on a statechart, the *guard* or *action* on a transition or the
+*on entry* and *on exit* properties for a state may all contain code.
 
 In Sismic, these pieces of code can be evaluated and executed by :py:class:`~sismic.code.Evaluator` instances.
 
@@ -17,8 +17,8 @@ Built-in Python code evaluator
 By default, Sismic provides two built-in :py:class:`~sismic.code.Evaluator` subclasses:
 
  - A default :py:class:`~sismic.code.PythonEvaluator` that allows the statecharts to execute Python code directly.
- - A :py:class:`~sismic.code.DummyEvaluator` that always evaluates to ``True`` and silently ignores
-   ``action``, ``on entry`` and ``on exit``. Its context is an empty dictionary.
+ - A :py:class:`~sismic.code.DummyEvaluator` that always evaluates to ``True`` and silently executes nothing when
+   it is called. Its context is an empty dictionary.
 
 An instance of :py:class:`~sismic.code.PythonEvaluator` can evaluate and execute Python code specified in the statechart.
 The key point to understand how it works is the concept of ``context``, which is a dictionary-like structure that contains the data
@@ -30,7 +30,7 @@ As an example, consider the following partial statechart definition.
 
     statechart:
       # ...
-      initial code: |
+      preamble: |
         x = 1
         y = 0
       initial state:
@@ -66,7 +66,7 @@ in the YAML, the value set in the initial context will be overridden by the valu
 
     yaml = """statechart:
       name: example
-      initial code:
+      preamble:
         x = 1
       initial state:
         name: s
@@ -141,10 +141,10 @@ following methods is not defined in a concrete evaluator instance:
 In order to understand how the evaluator works, the documentation of the :py:class:`~sismic.code.Evaluator` mentions the following important statements:
 
  - Methods :py:meth:`~sismic.code.Evaluator.execute_onentry` and :py:meth:`~sismic.code.Evaluator.execute_onexit`
-   are called respectively when a state is entered or exited, even if this state does not define a ``on_entry`` or
-   ``on_exit`` attribute.
+   are called respectively when a state is entered or exited, even if this state does not define a *on_entry* or
+   *on_exit* attribute.
  - Method :py:meth:`~sismic.code.Evaluator.execute_action` is called when a transition is processed, even if
-   the transition does not define any ``action``.
+   the transition does not define any *action*.
 
 This allows the evaluator to keep track of the states that are entered or exited, and of the transitions that are
 processed.

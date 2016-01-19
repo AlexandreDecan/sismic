@@ -39,8 +39,8 @@ At each level, a contract can contain preconditions, postconditions and/or invar
 Their semantics is straightforward:
 
  - For states:
-    - the preconditions are checked before the state is entered (i.e., **before** executing ``on entry``).
-    - the postconditions are checked after the state is exited (i.e., **after** executing ``on exit``).
+    - the preconditions are checked before the state is entered (i.e., **before** executing *on entry*).
+    - the postconditions are checked after the state is exited (i.e., **after** executing *on exit*).
     - the invariants are checked at the end of each *macro step*. The state must be in the active configuration.
  - For transitions:
     - the preconditions are checked before starting the process of the transition (and **before** executing the optional transition action).
@@ -51,9 +51,9 @@ Their semantics is straightforward:
 Defining contracts in YAML
 --------------------------
 
-Contracts can easily be added to the YAML definition of a statechart (see :ref:`yaml_statecharts`) through the use of the  ``contract`` property.
-Preconditions, postconditions and invariants are defined as nested items of the ``contract`` property.
-The name of these optional contractual conditions is respectively ``before`` (for preconditions), ``after`` (for postconditions) and ``always`` (for invariants):
+Contracts can easily be added to the YAML definition of a statechart (see :ref:`yaml_statecharts`) through the use of the *contract* property.
+Preconditions, postconditions and invariants are defined as nested items of the *contract* property.
+The name of these optional contractual conditions is respectively *before* (for preconditions), *after* (for postconditions) and *always* (for invariants):
 
 .. code:: yaml
 
