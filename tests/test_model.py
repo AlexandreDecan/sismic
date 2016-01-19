@@ -274,8 +274,7 @@ class RenameStatesTests(unittest.TestCase):
             self.sc.rename_state('unknown', 's3')
 
     def test_do_not_change_name(self):
-        with self.assertRaises(exceptions.StatechartError):
-            self.sc.rename_state('s2', 's2')
+        self.sc.rename_state('s2', 's2')
 
     def test_rename_to_an_existing_state(self):
         with self.assertRaises(exceptions.StatechartError):

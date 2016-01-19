@@ -413,6 +413,8 @@ class Statechart:
         :param old_name: old name of the state
         :param new_name: new name of the state
         """
+        if old_name == new_name:
+            return
         if new_name in self._states:
             raise StatechartError('State {} already exists!'.format(new_name))
         state = self._states[old_name]
