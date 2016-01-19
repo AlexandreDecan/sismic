@@ -24,6 +24,7 @@ The YAML format of a statechart also changed, look carefully at the changelog an
 - (Changed) Statechart: ``register_state`` is now ``add_state``.
 - (Changed) Statechart: ``register_transition`` is now ``add_transition``.
 - (Changed) Statechart: now defines a root state.
+- (Changed) Statechart: checks done in ``validate``.
 - (Changed) Transition: ``.event`` is a string instead of an ``Event`` instance.
 - (Changed) Transition: attributes ``from_state`` and ``to_state`` are renamed into ``source`` and ``target``.
 - (Changed) Event: ``__eq__`` takes ``data`` attribute into account.
@@ -31,12 +32,10 @@ The YAML format of a statechart also changed, look carefully at the changelog an
 - (Changed) State: ``StateMixin.name`` is now read-only (use ``Statechart.rename_state``).
 - (Changed) State: split ``HistoryState`` into a mixin ``HistoryStateMixin`` and two concrete subclasses,
   namely ``ShallowHistoryState`` and ``DeepHistoryState``.
-- (Changed) IO: Complete rewrite of ``io.import_from_yaml`` to load states before transitions. This function does not anymore
-  accept a ``validate_statechart`` parameter. Its ``validate_schema`` parameter is now ``not ignore_schema``.
+- (Changed) IO: Complete rewrite of ``io.import_from_yaml`` to load states before transitions. Parameter names have changed.
 - (Changed) Module: adapt module hierarchy (no visible API change).
 - (Changed) Module: expose module content through ``__all__``.
 - (Removed) IO: ``io.export_to_yaml``.
-- (Removed) Statechart: ``validate`` method.
 - (Removed) Transition: ``transitions`` attribute on ``TransitionStateMixin``, use ``Statechart.transitions_for`` instead.
 - (Removed) State: ``CompositeStateMixin.children``, use ``Statechart.children_for`` instead.
 

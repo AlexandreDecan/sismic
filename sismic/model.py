@@ -372,39 +372,47 @@ class Statechart:
 
     def remove_state(self, name: str):
         """
-        Remove given state. The state can only be removed if it has no more children and no more
-        incoming transitions. Outgoing transitions are removed in the process.
+        Remove given state.
+
+        The transitions that involve this state will be removed too.
+        If the state is the target of an *initial* or *memory* property, their value will be set to None.
+        If the state has children, they will be removed too.
 
         :param name: name of a state
         :raise StatechartError:
         """
         state = self.state_for(name)
 
-        if len(self.children_for(name)) == 0:
-            # Transitions?
-            incoming_transitions = self.transitions_to(name)
-            all_internal = all([t.internal for t in incoming_transitions])
+        # Remove children
+        for child in self.children_for(state.name):
+            self.remove_state(child)
 
-            if not all_internal:
-                raise StatechartError('Cannot remove {} while it has incoming transitions'.format(state))
-
-            # Remove incoming transitions (they are internal ones!)
-            for transition in incoming_transitions:
+        # Remove transitions
+        for transition in list(self.transitions):  # Make a copy!
+            if transition.source == state.name or transition.target == state.name:
                 self.remove_transition(transition)
 
-            # Remove outgoing transitions
-            for transition in self.transitions_from(name):
-                self.remove_transition(transition)
+        # Remove compoundstate's initial and historystate's memory
+        for other_name, other_state in self._states.items():
+            if isinstance(other_state, CompoundState):
+                other_state.initial = None
+            elif isinstance(other_state, HistoryStateMixin):
+                other_state.memory = None
 
-            # Unregister state
-            try:
-                self._children.pop(name)
-            except KeyError:
-                pass
+        # Remove state
+        try:
+            self._children.pop(name)
+        except KeyError:
+            pass
+        try:
             self._parent.pop(name)
-            self._states.pop(name)
-        else:
-            raise StatechartError('Cannot remove {} while it has nested states'.format(state))
+        except KeyError:
+            pass
+
+        self._states.pop(name)
+
+        if self.root == state.name:
+            self._root = None
 
     def rename_state(self, old_name: str, new_name: str):
         """

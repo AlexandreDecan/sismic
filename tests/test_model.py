@@ -280,9 +280,10 @@ class RemoveStatesTests(unittest.TestCase):
         with self.assertRaises(exceptions.StatechartError):
             self.sc.remove_state('unknown')
 
-    def test_remove_inappropriate_state(self):
-        with self.assertRaises(exceptions.StatechartError):
-            self.sc.remove_state('s2')
+    def test_remove_root_state(self):
+        self.sc.remove_state('root')
+        self.assertEqual(len(self.sc.transitions), 0)
+        self.assertEqual(len(self.sc.states), 0)
 
     def test_remove_appropriate_state(self):
         self.sc.remove_state('active')
