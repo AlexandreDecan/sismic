@@ -35,7 +35,6 @@ The YAML format of a statechart also changed, look carefully at the changelog an
 - (Changed) IO: Complete rewrite of ``io.import_from_yaml`` to load states before transitions. Parameter names have changed.
 - (Changed) Module: adapt module hierarchy (no visible API change).
 - (Changed) Module: expose module content through ``__all__``.
-- (Removed) IO: ``io.export_to_yaml``.
 - (Removed) Transition: ``transitions`` attribute on ``TransitionStateMixin``, use ``Statechart.transitions_for`` instead.
 - (Removed) State: ``CompositeStateMixin.children``, use ``Statechart.children_for`` instead.
 

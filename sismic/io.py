@@ -1,18 +1,19 @@
+from collections import OrderedDict
+
 import yaml
 import os
 
 from pykwalify.core import Core
 from sismic.model import Transition, Statechart, BasicState, CompoundState, OrthogonalState, ShallowHistoryState, \
-    DeepHistoryState, FinalState, StateMixin
+    DeepHistoryState, FinalState, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 from sismic.exceptions import StatechartError
 
-__all__ = ['import_from_yaml']
-
+__all__ = ['import_from_yaml', 'export_to_yaml']
 
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')
 
 
-def import_from_yaml(statechart: str, ignore_schema: bool=False, ignore_validation: bool=False) -> Statechart:
+def import_from_yaml(statechart: str, ignore_schema: bool = False, ignore_validation: bool = False) -> Statechart:
     """
     Import a statechart from a YAML representation.
     YAML is first validated against *io.SCHEMA_PATH*, and resulting statechart is validated
@@ -28,6 +29,13 @@ def import_from_yaml(statechart: str, ignore_schema: bool=False, ignore_validati
         checker = Core(source_data=data, schema_files=[SCHEMA_PATH])
         checker.validate(raise_exception=True)
 
+    statechart = _import_from_dict(data)
+    if not ignore_validation:
+        statechart.validate()
+    return statechart
+
+
+def _import_from_dict(data):
     data = data['statechart']
 
     statechart = Statechart(name=data['name'],
@@ -36,9 +44,7 @@ def import_from_yaml(statechart: str, ignore_schema: bool=False, ignore_validati
 
     states = []  # (StateMixin instance, parent name)
     transitions = []  # Transition instances
-    data_to_consider = []  # (State dict, parent name)
-
-    data_to_consider.append((data['initial state'], None))
+    data_to_consider = [(data['initial state'], None)]  # (State dict, parent name)
 
     while data_to_consider:
         state_data, parent_name = data_to_consider.pop()
@@ -71,9 +77,6 @@ def import_from_yaml(statechart: str, ignore_schema: bool=False, ignore_validati
         statechart.add_state(state, parent)
     for transition in transitions:
         statechart.add_transition(transition)
-
-    if not ignore_validation:
-        statechart.validate()
 
     return statechart
 
@@ -120,11 +123,13 @@ def _state_from_dict(state_d: dict) -> StateMixin:
         state = ShallowHistoryState(name, on_entry=on_entry, on_exit=on_exit, memory=state_d.get('memory', None))
     elif type == 'deep history':
         state = DeepHistoryState(name, on_entry=on_entry, on_exit=on_exit, memory=state_d.get('memory', None))
-    elif type == None:
+    elif type is None:
         substates = state_d.get('states', None)
         parallel_substates = state_d.get('parallel states', None)
 
-        if substates:
+        if substates and parallel_substates:
+            raise StatechartError('{} cannot declare both a "states" and a "parallel states" property'.format(name))
+        elif substates:
             state = CompoundState(name, initial=state_d.get('initial', None), on_entry=on_entry, on_exit=on_exit)
         elif parallel_substates:
             state = OrthogonalState(name, on_entry=on_entry, on_exit=on_exit)
@@ -144,7 +149,6 @@ def _state_from_dict(state_d: dict) -> StateMixin:
     return state
 
 
-'''
 def export_to_yaml(statechart: Statechart) -> str:
     """
     Export given StateChart instance to YAML
@@ -161,74 +165,50 @@ def _export_to_dict(statechart: Statechart, ordered=True) -> dict:
     Export given StateChart instance to a dict.
 
     :param statechart: a StateChart instance
-    :param ordered: set to True to use OrderedDict instead
-    :return: a dict that can be used in ``import_from_dict``
+    :return: a dict that can be used in *_import_from_dict``
     """
-    d = OrderedDict() if ordered else dict()
+    d = OrderedDict() if ordered else {}
     d['name'] = statechart.name
-    d['initial'] = statechart.initial
-    d['states'] = statechart.children
-    if statechart.on_entry:
-        d['on entry'] = statechart.on_entry
+    if statechart.description:
+        d['description'] = statechart.description
+    if statechart.preamble:
+        d['preamble'] = statechart.preamble
 
-    preconditions = getattr(statechart, 'preconditions', [])
-    postconditions = getattr(statechart, 'postconditions', [])
-    invariants = getattr(statechart, 'invariants', [])
-    if preconditions or postconditions or invariants:
-        conditions = []
-        for condition in preconditions:
-            conditions.append({'before': condition})
-        for condition in postconditions:
-            conditions.append({'after': condition})
-        for condition in invariants:
-            conditions.append({'always': condition})
-        d['contract'] = conditions
+    d['initial state'] = _export_state_to_dict(statechart, statechart.root, ordered)
 
-    statelist_to_expand = [d['states']]
-    while statelist_to_expand:
-        statelist = statelist_to_expand.pop()
-        for i, state in enumerate(statelist):
-            statelist[i] = _export_element_to_dict(statechart.states[state], ordered)
-            new_statelist = statelist[i].get('states', statelist[i].get('parallel states', []))
-            if len(new_statelist) > 0:
-                statelist_to_expand.append(new_statelist)
     return {'statechart': d}
 
 
-def _export_element_to_dict(el, ordered=False) -> dict:
-    """
-    Export an element (State, Transition, etc.) to a dict.
-    Is used in ``export_to_dict`` to generate a global representation.
+def _export_state_to_dict(statechart, state_name, ordered=True) -> dict:
+    data = OrderedDict() if ordered else {}
 
-    :param el: an instance of ``model.*``
-    :param ordered: set to True to use OrderedDict instead of dict
-    :return: a dict
-    """
-    d = OrderedDict() if ordered else dict()
+    state = statechart.state_for(state_name)
 
-    if isinstance(el, Transition):
-        if not el.internal:
-            d['target'] = el.to_state
-        if not el.eventless:
-            d['event'] = el.event
-        if el.guard:
-            d['guard'] = el.guard
-        if el.action:
-            d['action'] = el.action
-    if isinstance(el, StateMixin):
-        d['name'] = el.name
-    if isinstance(el, CompoundState):
-        if el.initial:
-            d['initial'] = el.initial
-    if isinstance(el, ActionStateMixin):
-        if el.on_entry:
-            d['on entry'] = el.on_entry
-        if el.on_exit:
-            d['on exit'] = el.on_exit
+    data['name'] = state.name
+    if isinstance(state, ShallowHistoryState):
+        data['type'] = 'shallow history'
+        if state.memory:
+            data['memory'] = state.memory
+    elif isinstance(state, DeepHistoryState):
+        data['type'] = 'deep history'
+        if state.memory:
+            data['memory'] = state.memory
+    elif isinstance(state, FinalState):
+        data['type'] = 'final'
 
-    preconditions = getattr(el, 'preconditions', [])
-    postconditions = getattr(el, 'postconditions', [])
-    invariants = getattr(el, 'invariants', [])
+    if isinstance(state, ActionStateMixin):
+        if state.on_entry:
+            data['on entry'] = state.on_entry
+        if state.on_exit:
+            data['on exit'] = state.on_exit
+
+    if isinstance(state, CompoundState):
+        if state.initial:
+            data['initial'] = state.initial
+
+    preconditions = getattr(state, 'preconditions', [])
+    postconditions = getattr(state, 'postconditions', [])
+    invariants = getattr(state, 'invariants', [])
     if preconditions or postconditions or invariants:
         conditions = []
         for condition in preconditions:
@@ -237,24 +217,33 @@ def _export_element_to_dict(el, ordered=False) -> dict:
             conditions.append({'after': condition})
         for condition in invariants:
             conditions.append({'always': condition})
-        d['contract'] = conditions
+        data['contract'] = conditions
 
-    if isinstance(el, TransitionStateMixin):
-        if len(el.transitions) > 0:
-            d['transitions'] = [_export_element_to_dict(t) for t in el.transitions]
-    if isinstance(el, CompositeStateMixin):
-        if isinstance(el, OrthogonalState):
-            d['parallel states'] = el.children
-        else:
-            d['states'] = el.children
-    if isinstance(el, HistoryState):
-        if el.deep:
-            d['type'] = 'deep history'
-        else:
-            d['type'] = 'shallow history'
-        if el.initial:
-            d['initial'] = el.initial
-    if isinstance(el, FinalState):
-        d['type'] = 'final'
-    return d
-'''
+    if isinstance(state, TransitionStateMixin):
+        # event, guard, target, action
+        transitions = statechart.transitions_from(state.name)
+        if len(transitions) > 0:
+            data['transitions'] = []
+
+            for transition in transitions:
+                transition_data = OrderedDict() if ordered else {}
+                if transition.event:
+                    transition_data['event'] = transition.event
+                if transition.guard:
+                    transition_data['guard'] = transition.guard
+                if transition.target:
+                    transition_data['target'] = transition.target
+                if transition.action:
+                    transition_data['action'] = transition.action
+                data['transitions'].append(transition_data)
+
+    if isinstance(state, CompositeStateMixin):
+        children = statechart.children_for(state.name)
+        children_data = [_export_state_to_dict(statechart, child, ordered) for child in children]
+
+        if isinstance(state, CompoundState):
+            data['states'] = children_data
+        elif isinstance(state, OrthogonalState):
+            data['parallel states'] = children_data
+
+    return data
