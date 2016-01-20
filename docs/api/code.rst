@@ -5,4 +5,6 @@ Module *code*
     :members:
     :member-order: bysource
     :show-inheritance:
+    :inherited-members:
+
 
