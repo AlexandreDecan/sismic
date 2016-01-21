@@ -14,7 +14,7 @@ In particular, eventless transitions are processed *before* transitions containi
 The main difference between SCXML and Sismic's default interpreter resides in how multiple transitions
 can be triggered simultaneously. This may occur for transitions in orthogonal/parallel states, or when transitions declaring the same event have guards that are not mutually exclusive.
 
-Simulating the simultaneious triggering of multiple transitions is problematic,
+Simulating the simultaneous triggering of multiple transitions is problematic,
 since it implies to make a non-deterministic choice on the order in which the transitions must be processed,
 and on the order in which the source states must the exited and the target states must be entered.
 The UML 2.5 specification explicitly leaves this issue unresolved, thereby delegating the decision to tool developers:
@@ -76,7 +76,7 @@ to the relevant orthogonal regions*", UML specification). In practice, however, 
 Using *Interpreter*
 -------------------
 
-A :py:class:`~sismic.interpreter.Interpreter` instance is constructed upon a :py:class:`~sismic.model.Statechart`
+An :py:class:`~sismic.interpreter.Interpreter` instance is constructed upon a :py:class:`~sismic.model.Statechart`
 instance and an optional callable that returns an :py:class:`~sismic.code.Evaluator`.
 This callable must accept an interpreter and an initial execution context as input (see :ref:`code_evaluation`).
 If no evaluator is specified, the :py:class:`~sismic.code.PythonEvaluator` class will be used with an empty
