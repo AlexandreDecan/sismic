@@ -514,13 +514,15 @@ class Statechart:
 
     def _validate_historystate_memory(self):
         """
-        Checks that every *HistoryStateMixin*'s memory refer to one of its parent's children
+        Checks that every *HistoryStateMixin*'s memory refer to one of its parent's children, except itself.
 
         :return: True
         :raise StatechartError:
         """
         for name, state in self._states.items():
             if isinstance(state, HistoryStateMixin) and state.memory:
+                if state.memory == state.name:
+                    raise StatechartError('Initial memory {} of {} cannot target itself'.format(state.memory, state))
                 if state.memory not in self._states:
                     raise StatechartError('Initial memory {} of {} does not exist'.format(state.memory, state))
                 if state.memory not in self.children_for(self.parent_for(name)):

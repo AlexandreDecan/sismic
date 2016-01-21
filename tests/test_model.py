@@ -109,27 +109,41 @@ class TraversalTests(unittest.TestCase):
 
 class ValidateTests(unittest.TestCase):
     # REMARK: "Positive" tests are already done during io.import_from_yaml!
-    def test_history_memory(self):
+    def test_history_memory_not_child(self):
         statechart = io.import_from_yaml(open('tests/yaml/history.yaml'))
-        memory = statechart.state_for('loop.H').memory
 
-        statechart.state_for('loop.H').memory = 'unknown'
-        with self.assertRaises(exceptions.StatechartError) as cm:
+        statechart.state_for('loop.H').memory = 'pause'
+        with self.assertRaises(exceptions.StatechartError):
             statechart._validate_historystate_memory()
 
-        statechart.state_for('loop.H').memory = memory
-        statechart._validate_historystate_memory()
+    def test_history_memory_unknown(self):
+        statechart = io.import_from_yaml(open('tests/yaml/history.yaml'))
 
-    def test_compound_initial(self):
+        statechart.state_for('loop.H').memory = 'unknown'
+        with self.assertRaises(exceptions.StatechartError):
+            statechart._validate_historystate_memory()
+
+    def test_history_memory_self(self):
+        statechart = io.import_from_yaml(open('tests/yaml/history.yaml'))
+
+        statechart.state_for('loop.H').memory = 'loop.H'
+        with self.assertRaises(exceptions.StatechartError):
+            statechart._validate_historystate_memory()
+
+    def test_compound_initial_unknown(self):
         statechart = io.import_from_yaml(open('tests/yaml/composite.yaml'))
-        initial = statechart.state_for('s1b').initial
 
         statechart.state_for('s1b').initial = 'unknown'
-        with self.assertRaises(exceptions.StatechartError) as cm:
+        with self.assertRaises(exceptions.StatechartError):
             statechart._validate_compoundstate_initial()
 
-        statechart.state_for('s1b').initial = initial
-        statechart._validate_compoundstate_initial()
+    def test_compound_initial_not_child(self):
+        statechart = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+
+        statechart.state_for('s1b').initial = 's1'
+        with self.assertRaises(exceptions.StatechartError):
+            statechart._validate_compoundstate_initial()
+
 
 
 class TransitionsTests(unittest.TestCase):
