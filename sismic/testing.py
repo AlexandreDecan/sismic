@@ -12,6 +12,7 @@ def teststory_from_trace(trace: list) -> Story:
 
      - the story begins with a *started* event.
      - the delay between pairs of consecutive steps creates a *pause* instance.
+     - each time a step begins, a *step* event is created.
      - each time an event is consumed, a *consumed* event is created.
        the consumed event is available through the *event* attribute.
      - each time a state is exited, an *exited* event is created.
@@ -45,6 +46,8 @@ def teststory_from_trace(trace: list) -> Story:
         if macrostep.time > time:
             story.append(Pause(macrostep.time - time))
             time = macrostep.time
+
+        story.append(Event('step'))
 
         if macrostep.event:
             story.append(Event('consumed', event=macrostep.event))

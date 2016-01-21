@@ -14,6 +14,7 @@ The YAML format of a statechart also changed, look carefully at the changelog an
   ``state_for``, ``parent_for``, ``children_for``.
 - (Added) Steps: ``__eq__`` for ``MacroStep`` and ``MicroStep``.
 - (Added) Stories: ``tell_by_step`` method for a ``Story``.
+- (Added) Testing: ``teststory_from_trace`` generates a *step* event at the beginning of each step.
 - (Added) Module: a new exceptions hierarchy (see ``exceptions`` module).
   The new exceptions are used in place of the old ones (``Warning``, ``AssertionError`` and ``ValueError``).
 - (Changed) YAML: uppermost *states:* should be replaced by *initial state:* and can contain at most one state.
