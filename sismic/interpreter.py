@@ -129,8 +129,10 @@ class Interpreter:
             external_event = model.Event(event.name, **event.data)
             for bound_callable in self._bound:
                 bound_callable(external_event)
-        else:
+        elif isinstance(event, model.Event):
             self._events.append(event)
+        else:
+            raise ValueError('{} is not an Event instance'.format(event))
         return self
 
     def execute(self, max_steps: int=-1) -> list:

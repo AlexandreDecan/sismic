@@ -12,6 +12,9 @@ The YAML format of a statechart also changed, look carefully at the changelog an
   ``transitions_with``, ``remove_transition`` and ``rotate_transition``.
 - (Added) Statechart: new methods to manipulate states: ``remove_state``, ``rename_state``, ``move_state``,
   ``state_for``, ``parent_for``, ``children_for``.
+- (Added) Steps: ``__eq__`` for ``MacroStep`` and ``MicroStep``.
+- (Added) Stories: ``tell_by_step`` method for a ``Story``.
+- (Added) Testing: ``teststory_from_trace`` generates a *step* event at the beginning of each step.
 - (Added) Module: a new exceptions hierarchy (see ``exceptions`` module).
   The new exceptions are used in place of the old ones (``Warning``, ``AssertionError`` and ``ValueError``).
 - (Changed) YAML: uppermost *states:* should be replaced by *initial state:* and can contain at most one state.
@@ -35,7 +38,6 @@ The YAML format of a statechart also changed, look carefully at the changelog an
 - (Changed) IO: Complete rewrite of ``io.import_from_yaml`` to load states before transitions. Parameter names have changed.
 - (Changed) Module: adapt module hierarchy (no visible API change).
 - (Changed) Module: expose module content through ``__all__``.
-- (Removed) IO: ``io.export_to_yaml``.
 - (Removed) Transition: ``transitions`` attribute on ``TransitionStateMixin``, use ``Statechart.transitions_for`` instead.
 - (Removed) State: ``CompositeStateMixin.children``, use ``Statechart.children_for`` instead.
 

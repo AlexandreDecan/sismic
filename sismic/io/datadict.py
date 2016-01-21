@@ -1,0 +1,211 @@
+from collections import OrderedDict
+
+from sismic.model import Transition, Statechart, BasicState, CompoundState, OrthogonalState, ShallowHistoryState, \
+    DeepHistoryState, FinalState, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
+from sismic.exceptions import StatechartError
+
+
+__all__ = ['import_from_dict', 'export_to_dict']
+
+
+def import_from_dict(data):
+    data = data['statechart']
+
+    statechart = Statechart(name=data['name'],
+                            description=data.get('description', None),
+                            preamble=data.get('preamble', None))
+
+    states = []  # (StateMixin instance, parent name)
+    transitions = []  # Transition instances
+    data_to_consider = [(data['initial state'], None)]  # (State dict, parent name)
+
+    while data_to_consider:
+        state_data, parent_name = data_to_consider.pop()
+
+        # Get state
+        try:
+            state = _import_state_from_dict(state_data)
+        except Exception as e:
+            raise StatechartError('Unable to load given YAML') from e
+        states.append((state, parent_name))
+
+        # Get substates
+        if isinstance(state, CompoundState):
+            for substate_data in state_data['states']:
+                data_to_consider.append((substate_data, state.name))
+        elif isinstance(state, OrthogonalState):
+            for substate_data in state_data['parallel states']:
+                data_to_consider.append((substate_data, state.name))
+
+        # Get transition(s)
+        for transition_data in state_data.get('transitions', []):
+            try:
+                transition = _import_transition_from_dict(state.name, transition_data)
+            except Exception as e:
+                raise StatechartError('Unable to load given YAML') from e
+            transitions.append(transition)
+
+    # Register on statechart
+    for state, parent in states:
+        statechart.add_state(state, parent)
+    for transition in transitions:
+        statechart.add_transition(transition)
+
+    return statechart
+
+
+def _import_transition_from_dict(state_name: str, transition_d: dict) -> Transition:
+    """
+    Return a Transition instance from given dict.
+
+    :param state_name: name of the state in which the transition is defined
+    :param transition_d: a dictionary containing transition data
+    :return: an instance of Transition
+    """
+    event = transition_d.get('event', None)
+    transition = Transition(state_name, transition_d.get('target', None), event,
+                            transition_d.get('guard', None), transition_d.get('action', None))
+
+    # Preconditions, postconditions and invariants
+    for condition in transition_d.get('contract', []):
+        if condition.get('before', None):
+            transition.preconditions.append(condition['before'])
+        elif condition.get('after', None):
+            transition.postconditions.append(condition['after'])
+        elif condition.get('always', None):
+            transition.invariants.append(condition['always'])
+
+    return transition
+
+
+def _import_state_from_dict(state_d: dict) -> StateMixin:
+    """
+    Return the appropriate type of state from given dict.
+
+    :param state_d: a dictionary containing state data
+    :return: a specialized instance of State
+    """
+    name = state_d.get('name')
+    type = state_d.get('type', None)
+    on_entry = state_d.get('on entry', None)
+    on_exit = state_d.get('on exit', None)
+
+    if type == 'final':
+        state = FinalState(name, on_entry=on_entry, on_exit=on_exit)
+    elif type == 'shallow history':
+        state = ShallowHistoryState(name, on_entry=on_entry, on_exit=on_exit, memory=state_d.get('memory', None))
+    elif type == 'deep history':
+        state = DeepHistoryState(name, on_entry=on_entry, on_exit=on_exit, memory=state_d.get('memory', None))
+    elif type is None:
+        substates = state_d.get('states', None)
+        parallel_substates = state_d.get('parallel states', None)
+
+        if substates and parallel_substates:
+            raise StatechartError('{} cannot declare both a "states" and a "parallel states" property'.format(name))
+        elif substates:
+            state = CompoundState(name, initial=state_d.get('initial', None), on_entry=on_entry, on_exit=on_exit)
+        elif parallel_substates:
+            state = OrthogonalState(name, on_entry=on_entry, on_exit=on_exit)
+        else:
+            state = BasicState(name, on_entry=on_entry, on_exit=on_exit)
+    else:
+        raise StatechartError('Unknown type {} for state {}'.format(type, name))
+
+    # Preconditions, postconditions and invariants
+    for condition in state_d.get('contract', []):
+        if condition.get('before', None):
+            state.preconditions.append(condition['before'])
+        elif condition.get('after', None):
+            state.postconditions.append(condition['after'])
+        elif condition.get('always', None):
+            state.invariants.append(condition['always'])
+    return state
+
+
+def export_to_dict(statechart: Statechart, ordered=True) -> dict:
+    """
+    Export given StateChart instance to a dict.
+
+    :param statechart: a StateChart instance
+    :return: a dict that can be used in *_import_from_dict``
+    """
+    d = OrderedDict() if ordered else {}
+    d['name'] = statechart.name
+    if statechart.description:
+        d['description'] = statechart.description
+    if statechart.preamble:
+        d['preamble'] = statechart.preamble
+
+    d['initial state'] = _export_state_to_dict(statechart, statechart.root, ordered)
+
+    return {'statechart': d}
+
+
+def _export_state_to_dict(statechart, state_name, ordered=True) -> dict:
+    data = OrderedDict() if ordered else {}
+
+    state = statechart.state_for(state_name)
+
+    data['name'] = state.name
+    if isinstance(state, ShallowHistoryState):
+        data['type'] = 'shallow history'
+        if state.memory:
+            data['memory'] = state.memory
+    elif isinstance(state, DeepHistoryState):
+        data['type'] = 'deep history'
+        if state.memory:
+            data['memory'] = state.memory
+    elif isinstance(state, FinalState):
+        data['type'] = 'final'
+
+    if isinstance(state, ActionStateMixin):
+        if state.on_entry:
+            data['on entry'] = state.on_entry
+        if state.on_exit:
+            data['on exit'] = state.on_exit
+
+    if isinstance(state, CompoundState):
+        if state.initial:
+            data['initial'] = state.initial
+
+    preconditions = getattr(state, 'preconditions', [])
+    postconditions = getattr(state, 'postconditions', [])
+    invariants = getattr(state, 'invariants', [])
+    if preconditions or postconditions or invariants:
+        conditions = []
+        for condition in preconditions:
+            conditions.append({'before': condition})
+        for condition in postconditions:
+            conditions.append({'after': condition})
+        for condition in invariants:
+            conditions.append({'always': condition})
+        data['contract'] = conditions
+
+    if isinstance(state, TransitionStateMixin):
+        # event, guard, target, action
+        transitions = statechart.transitions_from(state.name)
+        if len(transitions) > 0:
+            data['transitions'] = []
+
+            for transition in transitions:
+                transition_data = OrderedDict() if ordered else {}
+                if transition.event:
+                    transition_data['event'] = transition.event
+                if transition.guard:
+                    transition_data['guard'] = transition.guard
+                if transition.target:
+                    transition_data['target'] = transition.target
+                if transition.action:
+                    transition_data['action'] = transition.action
+                data['transitions'].append(transition_data)
+
+    if isinstance(state, CompositeStateMixin):
+        children = statechart.children_for(state.name)
+        children_data = [_export_state_to_dict(statechart, child, ordered) for child in children]
+
+        if isinstance(state, CompoundState):
+            data['states'] = children_data
+        elif isinstance(state, OrthogonalState):
+            data['parallel states'] = children_data
+
+    return data

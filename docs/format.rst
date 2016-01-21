@@ -137,6 +137,20 @@ Such a state is commonly called a *composite state*.
         states:
           - name: nested state 2a
 
+A composite state can define its initial state using *initial*.
+
+.. code:: yaml
+
+  - name: composite state
+    initial: nested state 1
+    states:
+      - name: nested state 1
+      - name: nested state 2
+        initial: nested state a2
+        states:
+          - name: nested state 2a
+
+
 Regions
 *******
 
@@ -227,7 +241,7 @@ Importing and validating statecharts
 The :py:class:`~sismic.model.Statechart` class provides several methods to construct, to query and to manipulate a statechart.
 A YAML definition of a statechart can be easily imported to a :py:class:`~sismic.model.Statechart` instance.
 The module :py:mod:`sismic.io` provides a convenient loader :py:func:`~sismic.io.import_from_yaml`
-which takes a textual YAML definition of a statechart.
+which takes a textual YAML definition of a statechart and returns a :py:class:~sismic.model.Statechart` instance.
 
 .. automodule:: sismic.io
     :members: import_from_yaml
@@ -251,6 +265,6 @@ YAML validation schema
 
 See `pykwalify <https://github.com/Grokzen/pykwalify/>`__ for more information about the semantic.
 
-.. literalinclude:: ../sismic/schema.yaml
+.. literalinclude:: ../sismic/io/schema.yaml
     :language: yaml
 
