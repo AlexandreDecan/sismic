@@ -57,15 +57,33 @@ a scenario.
     assert isinstance(interpreter, Interpreter)
 
     story.tell(interpreter)
-    print(interpreter.time)
-    print(interpreter.context.get('current'))
+    print(interpreter.time, interpreter.context.get('current'))
 
 After having *told* the story to the interpreter, we observe that 15 seconds have passed, and the elevator has moved to the ground floor.
 
 .. testoutput::
 
-    15
-    0
+    15 0
+
+
+While telling a whole story at once can be convenient, it is sometimes interesting to tell the story step by step.
+The :py:meth:`~sismic.stories.Story.tell_by_step` returns a generator that yields the object (either a pause or an event)
+that was told to the interpreter, and the result of calling :py:meth:`~sismic.interpreter.Interpreter.execute`.
+
+.. testcode::
+
+    # Recreate the interpreter
+    interpreter = Interpreter(statechart)
+
+    for told, macrosteps in story.tell_by_step(interpreter):
+        print(interpreter.time, told, interpreter.context.get('current'))
+
+.. testoutput::
+
+    0 Event(floorSelected, floor=4) 4
+    5 Pause(5) 4
+    5 Event(floorSelected, floor=2) 2
+    15 Pause(10) 0
 
 
 Storywriters

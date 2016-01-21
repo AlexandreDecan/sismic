@@ -49,6 +49,24 @@ class Story(list):
             interpreter.execute(*args, **kwargs)
         return interpreter
 
+    def tell_by_step(self, interpreter, *args, **kwargs):
+        """
+        Tells the story to the interpreter, step by step.
+        This method returns a generator which yields the event or the pause that was told to the interpreter and
+        the result of *interpreter.execute*.
+
+        :param interpreter: an interpreter instance
+        :param args: additional positional arguments that are passed to *interpreter.execute*.
+        :param kwargs: additional keywords arguments that are passed to *interpreter.execute*.
+        :return: a generator that yields (told event or pause, result of *interpreter.execute*).
+        """
+        for item in self:
+            if isinstance(item, Event):
+                interpreter.queue(item)
+            elif isinstance(item, Pause):
+                interpreter.time += item.duration
+            yield item, interpreter.execute(*args, **kwargs)
+
     def __repr__(self):
         return 'Story({})'.format(super().__repr__())
 
