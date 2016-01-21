@@ -137,6 +137,20 @@ Such a state is commonly called a *composite state*.
         states:
           - name: nested state 2a
 
+A composite state can define its initial state using *initial*.
+
+.. code:: yaml
+
+  - name: composite state
+    initial: nested state 1
+    states:
+      - name: nested state 1
+      - name: nested state 2
+        initial: nested state a2
+        states:
+          - name: nested state 2a
+
+
 Regions
 *******
 
