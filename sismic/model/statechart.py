@@ -50,11 +50,11 @@ class Statechart:
 
     def add_state(self, state: StateMixin, parent):
         """
-        Register given state. This method also register the given state
-        to its parent.
+        Add given state (a *StateMixin* instance) on given parent (its name as an *str*).
+        If given state should be use as a root state, set *parent* to None.
 
         :param state: state to add
-        :param parent: name of its parent
+        :param parent: name of its parent, or None
         :raise StatechartError:
         """
         # Check name unicity
