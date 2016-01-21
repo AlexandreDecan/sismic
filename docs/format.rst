@@ -265,6 +265,6 @@ YAML validation schema
 
 See `pykwalify <https://github.com/Grokzen/pykwalify/>`__ for more information about the semantic.
 
-.. literalinclude:: ../sismic/schema.yaml
+.. literalinclude:: ../sismic/io/schema.yaml
     :language: yaml
 

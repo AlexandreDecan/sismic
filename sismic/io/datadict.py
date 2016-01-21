@@ -1,41 +1,14 @@
 from collections import OrderedDict
 
-import yaml
-import os
-
-from pykwalify.core import Core
 from sismic.model import Transition, Statechart, BasicState, CompoundState, OrthogonalState, ShallowHistoryState, \
     DeepHistoryState, FinalState, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 from sismic.exceptions import StatechartError
 
-__all__ = ['import_from_yaml', 'export_to_yaml']
 
-SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')
-
-
-def import_from_yaml(statechart: str, ignore_schema: bool = False, ignore_validation: bool = False) -> Statechart:
-    """
-    Import a statechart from a YAML representation.
-    YAML is first validated against *io.SCHEMA_PATH*, and resulting statechart is validated
-    using its *validate* method.
-
-    :param statechart: string or any equivalent object
-    :param ignore_schema: set to *True* to disable yaml validation.
-    :param ignore_validation: set to *True* to disable statechart validation.
-    :return: a *StateChart* instance
-    """
-    data = yaml.load(statechart)
-    if not ignore_schema:
-        checker = Core(source_data=data, schema_files=[SCHEMA_PATH])
-        checker.validate(raise_exception=True)
-
-    statechart = _import_from_dict(data)
-    if not ignore_validation:
-        statechart.validate()
-    return statechart
+__all__ = ['import_from_dict', 'export_to_dict']
 
 
-def _import_from_dict(data):
+def import_from_dict(data):
     data = data['statechart']
 
     statechart = Statechart(name=data['name'],
@@ -51,7 +24,7 @@ def _import_from_dict(data):
 
         # Get state
         try:
-            state = _state_from_dict(state_data)
+            state = _import_state_from_dict(state_data)
         except Exception as e:
             raise StatechartError('Unable to load given YAML') from e
         states.append((state, parent_name))
@@ -67,7 +40,7 @@ def _import_from_dict(data):
         # Get transition(s)
         for transition_data in state_data.get('transitions', []):
             try:
-                transition = _transition_from_dict(state.name, transition_data)
+                transition = _import_transition_from_dict(state.name, transition_data)
             except Exception as e:
                 raise StatechartError('Unable to load given YAML') from e
             transitions.append(transition)
@@ -81,7 +54,7 @@ def _import_from_dict(data):
     return statechart
 
 
-def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
+def _import_transition_from_dict(state_name: str, transition_d: dict) -> Transition:
     """
     Return a Transition instance from given dict.
 
@@ -105,7 +78,7 @@ def _transition_from_dict(state_name: str, transition_d: dict) -> Transition:
     return transition
 
 
-def _state_from_dict(state_d: dict) -> StateMixin:
+def _import_state_from_dict(state_d: dict) -> StateMixin:
     """
     Return the appropriate type of state from given dict.
 
@@ -149,18 +122,7 @@ def _state_from_dict(state_d: dict) -> StateMixin:
     return state
 
 
-def export_to_yaml(statechart: Statechart) -> str:
-    """
-    Export given StateChart instance to YAML
-
-    :param statechart:
-    :return: A textual YAML representation
-    """
-    return yaml.dump(_export_to_dict(statechart, ordered=False),
-                     width=1000, default_flow_style=False, default_style='"')
-
-
-def _export_to_dict(statechart: Statechart, ordered=True) -> dict:
+def export_to_dict(statechart: Statechart, ordered=True) -> dict:
     """
     Export given StateChart instance to a dict.
 
