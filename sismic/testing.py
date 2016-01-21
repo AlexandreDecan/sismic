@@ -32,7 +32,7 @@ def teststory_from_trace(trace: list) -> Story:
        a. states are exited
        b. transition is processed
        c. states are entered
-       d. statechart is stabilized (states are entered)
+       d. statechart is stabilized (some states are exited and/or entered)
 
     :param trace: a list of *MacroStep* instances
     :return: A story
