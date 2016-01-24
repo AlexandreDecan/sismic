@@ -52,13 +52,13 @@ The documentation can also be directly built from the `docs <https://github.com/
 Changelog
 ---------
 
-See documentatin's `changelog <http://sismic.readthedocs.org/en/stable/changelog.html>`_.
+See documentation's `changelog <http://sismic.readthedocs.org/en/stable/changelog.html>`_.
 Unreleased changes are visible `here <CHANGELOG.rst>`_.
 
 Credits
 -------
 
-The Sismic library for Python (version 3.4 or higher)
+The Sismic library for Python
 is developed at the `Software Engineering Lab <http://informatique.umons.ac.be/genlog>`_
 of the `University of Mons <http://www.umons.ac.be>`_
 as part of an ongoing software modeling research project.
