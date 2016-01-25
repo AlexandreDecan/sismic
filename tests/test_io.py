@@ -1,74 +1,22 @@
 import os
 import unittest
-from sismic import io, exceptions
+from sismic import io
 
 
 class ImportFromYamlTests(unittest.TestCase):
     def test_yaml_tests(self):
         files = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',
                  'nondeterministic', 'parallel', 'simple', 'timer']
-        for filename in files:
-            with self.subTest(filename=filename):
-                with open(os.path.join('tests', 'yaml', filename + '.yaml')) as f:
-                    io.import_from_yaml(f)
+        for f in files:
+            with self.subTest(filename=f):
+                io.import_from_yaml(open(os.path.join('tests', 'yaml', f+'.yaml')))
 
     def test_examples(self):
         files = ['elevator', 'elevator_contract', 'microwave', 'tester_elevator_7th_floor_never_reached',
                  'tester_elevator_moves_after_10s', 'writer_options']
-        for filename in files:
-            with self.subTest(filename=filename):
-                with open(os.path.join('docs', 'examples', filename + '.yaml')) as f:
-                    io.import_from_yaml(f)
-
-    def test_transitions_to_unknown_state(self):
-        yaml = """
-        statechart:
-          name: test
-          root state:
-            name: root
-            initial: s1
-            states:
-              - name: s1
-                transitions:
-                  - target: s2
-        """
-        with self.assertRaises(exceptions.StatechartError) as cm:
-            io.import_from_yaml(yaml)
-        self.assertIn('Unknown target state', str(cm.exception))
-
-    def test_history_not_in_compound(self):
-        yaml = """
-        statechart:
-          name: test
-          root state:
-            name: root
-            initial: s1
-            states:
-              - name: s1
-                parallel states:
-                 - name: s2
-                   type: shallow history
-        """
-        with self.assertRaises(exceptions.StatechartError) as cm:
-            io.import_from_yaml(yaml)
-        self.assertIn('cannot be used as a parent for', str(cm.exception))
-
-    def test_declare_both_states_and_parallel_states(self):
-        yaml = """
-        statechart:
-          name: test
-          root state:
-            name: root
-            initial: s1
-            states:
-              - name: s1
-            parallel states:
-              - name: s2
-        """
-
-        with self.assertRaises(exceptions.StatechartError) as cm:
-            io.import_from_yaml(yaml)
-        self.assertIn('root cannot declare both a "states" and a "parallel states" property', str(cm.exception))
+        for f in files:
+            with self.subTest(filename=f):
+                io.import_from_yaml(open(os.path.join('docs', 'examples', f+'.yaml')))
 
 
 class ExportToDictYAMLTests(unittest.TestCase):
@@ -90,7 +38,7 @@ class ExportToDictYAMLTests(unittest.TestCase):
         for f, filename in self.files:
             with self.subTest(filename=filename):
                 sc_1 = io.import_from_yaml(f)
-                io.export_to_yaml(sc_1)
+                ex_1 = io.export_to_yaml(sc_1)
 
     def test_export_valid(self):
         for f, filename in self.files:
@@ -101,19 +49,13 @@ class ExportToDictYAMLTests(unittest.TestCase):
 
                 self.assertTrue(sc_2.validate())
 
-
 class ExportToTreeTests(unittest.TestCase):
+
     def setUp(self):
         files_t = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',
                    'nondeterministic', 'parallel', 'simple', 'timer']
 
-        self.files = []
-        for filename in files_t:
-            with open(os.path.join('tests', 'yaml', filename + '.yaml')) as f:
-                self.files.append((filename, io.import_from_yaml(f)))
-
-    def test_output(self):
-        results = [
+        self.results = [
             ['root', '   s1', '   s2', '   s3'],
             ['root', '   s1', '      s1a', '      s1b', '         s1b1', '         s1b2', '   s2'],
             ['root', '   active', '      active.H*', '      concurrent_processes', '         process_1',
@@ -132,25 +74,14 @@ class ExportToTreeTests(unittest.TestCase):
             ['root', '   s1', '   s2', '   s3', '   s4']
         ]
 
-        for (filename, statechart), r in zip(self.files, results):
-            with self.subTest(filename=filename):
-                self.assertEqual(io.text.export_to_tree(statechart), r)
+        self.files = []
+        for filename in files_t:
+            with open(os.path.join('tests', 'yaml', filename + '.yaml')) as f:
+                self.files.append('\n'.join(f.readlines()))
 
-    def test_all_states_are_exported(self):
-        for filename, statechart in self.files:
-            with self.subTest(filename=filename):
-                result = set(io.text.export_to_tree(statechart, spaces=0))
-                expected = set(statechart.states)
-                self.assertSetEqual(result, expected)
+    def test_export(self):
+        from sismic.io.text import export_to_tree
 
-    def test_indentation_is_correct(self):
-        for filename, statechart in self.files:
-            with self.subTest(filename=filename):
-                result = sorted(io.text.export_to_tree(statechart, spaces=1))
-
-                for r in result:
-                    name = r.lstrip()
-                    depth = statechart.depth_for(name)
-                    spaces = len(r) - len(name)
-                    self.assertEqual(depth - 1, spaces)
-
+        for f, r in zip(self.files, self.results):
+            statechart = io.import_from_yaml(f)
+            self.assertEquals(export_to_tree(statechart), r)
