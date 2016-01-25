@@ -8,13 +8,15 @@ class ImportFromYamlTests(unittest.TestCase):
         files = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',
                  'nondeterministic', 'parallel', 'simple', 'timer']
         for f in files:
-            io.import_from_yaml(open(os.path.join('tests', 'yaml', f+'.yaml')))
+            with self.subTest(filename=f):
+                io.import_from_yaml(open(os.path.join('tests', 'yaml', f+'.yaml')))
 
     def test_examples(self):
         files = ['elevator', 'elevator_contract', 'microwave', 'tester_elevator_7th_floor_never_reached',
                  'tester_elevator_moves_after_10s', 'writer_options']
         for f in files:
-            io.import_from_yaml(open(os.path.join('docs', 'examples', f+'.yaml')))
+            with self.subTest(filename=f):
+                io.import_from_yaml(open(os.path.join('docs', 'examples', f+'.yaml')))
 
 
 class ExportToDictYAMLTests(unittest.TestCase):
@@ -34,13 +36,15 @@ class ExportToDictYAMLTests(unittest.TestCase):
 
     def test_export(self):
         for f, filename in self.files:
-            sc_1 = io.import_from_yaml(f)
-            ex_1 = io.export_to_yaml(sc_1)
+            with self.subTest(filename=filename):
+                sc_1 = io.import_from_yaml(f)
+                ex_1 = io.export_to_yaml(sc_1)
 
     def test_export_valid(self):
         for f, filename in self.files:
-            sc_1 = io.import_from_yaml(f)
-            ex_1 = io.export_to_yaml(sc_1)
-            sc_2 = io.import_from_yaml(ex_1)
+            with self.subTest(filename=filename):
+                sc_1 = io.import_from_yaml(f)
+                ex_1 = io.export_to_yaml(sc_1)
+                sc_2 = io.import_from_yaml(ex_1)
 
-            self.assertTrue(sc_2.validate())
+                self.assertTrue(sc_2.validate())

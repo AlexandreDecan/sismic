@@ -68,8 +68,9 @@ class ElevatorStoryTests(unittest.TestCase):
         ]
 
         for story in stories:
-            tested = Interpreter(tested_sc)
-            test_story = teststory_from_trace(story.tell(tested).trace)
+            with self.subTest(story=story):
+                tested = Interpreter(tested_sc)
+                test_story = teststory_from_trace(story.tell(tested).trace)
 
-            tester = Interpreter(tester_sc)
-            self.assertTrue(test_story.tell(tester).final)
+                tester = Interpreter(tester_sc)
+                self.assertTrue(test_story.tell(tester).final)
