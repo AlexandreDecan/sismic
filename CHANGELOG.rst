@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.17.0 (unreleased)
+0.17.1 (2016-01-25)
 -------------------
 
 Many backward incompatible changes in this update, especially if you used to work with ``model``.
@@ -42,7 +42,7 @@ The YAML format of a statechart also changed, look carefully at the changelog an
 - (Removed) State: ``CompositeStateMixin.children``, use ``Statechart.children_for`` instead.
 
 
-0.16.0 (2015-01-15)
+0.16.0 (2016-01-15)
 -------------------
 
 - (Added) An ``InternalEvent`` subclass for ``model.Event``.
@@ -53,13 +53,13 @@ The YAML format of a statechart also changed, look carefully at the changelog an
 - (Fixed) ``Story.story_from_trace`` now ignores internal events (#19).
 - (Fixed) Condition C3 in ``Statechart.validate``.
 
-0.15.0 (2015-01-12)
+0.15.0 (2016-01-12)
 -------------------
 
 - (Changed) Rename ``Interpreter.send`` to ``Interpreter.queue`` (#18).
 - (Changed) Rename ``evaluator`` module to ``code``.
 
-0.14.3 (2015-01-12)
+0.14.3 (2016-01-12)
 -------------------
 
 - (Added) Changelog.
