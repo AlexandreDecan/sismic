@@ -6,6 +6,19 @@ from sismic.exceptions import CodeEvaluationError
 __all__ = ['PythonEvaluator']
 
 
+class FrozenContext:
+    """
+    A shallow copy of a context. The keys of the underlying context are
+    exposed as attributes.
+    """
+
+    def __init__(self, context: dict):
+        self.__frozencontext = {k: copy.copy(v) for k, v in context.items()}
+
+    def __getattr__(self, item):
+        return self.__frozencontext[item]
+
+
 class PythonEvaluator(Evaluator):
     """
     Evaluator that interprets Python code.
@@ -49,6 +62,32 @@ class PythonEvaluator(Evaluator):
         self._idle_time = {}  # Associate a timer to each state name (idle timer)
         self._entry_time = {}  # Associate a timer to each state name (entry timer)
 
+    def __set_memory(self, obj):
+        """
+        Freeze current context and associate it to given *obj*.
+
+        :param obj: *StateMixin* or *Transition*
+        """
+        self._memory[id(obj)] = FrozenContext(self._context)
+
+    def __get_memory(self, obj):
+        """
+        Return frozen context for given *obj*.
+
+        :param obj: *StateMixin* or *Transition*
+        :return: an instance of *FrozenContext*
+        """
+        return self._memory.get(id(obj), None)
+
+    def __send(self, name: str, **kwargs):
+        """
+        Add an internal event to interpreter queue.
+
+        :param name: name of the event
+        :param kwargs: additional parameters
+        """
+        self._interpreter.queue(InternalEvent(name, **kwargs))
+
     def _evaluate_code(self, code: str, additional_context: dict = None) -> bool:
         """
         Evaluate given code using Python.
@@ -62,7 +101,7 @@ class PythonEvaluator(Evaluator):
 
         exposed_context = {
             'active': lambda s: s in self._interpreter.configuration,
-            'time': getattr(self._interpreter, 'time', 0)
+            'time': self._interpreter.time,
         }
         exposed_context.update(additional_context if additional_context else {})
 
@@ -81,12 +120,10 @@ class PythonEvaluator(Evaluator):
         if not code:
             return
 
-        def send(name, **kwargs): self._interpreter.queue(InternalEvent(name, **kwargs))
-
         exposed_context = {
             'active': lambda s: s in self._interpreter.configuration,
-            'time': getattr(self._interpreter, 'time', 0),
-            'send': send,
+            'time': self._interpreter.time,
+            'send': self.__send,
         }
         exposed_context.update(additional_context if additional_context else {})
 
@@ -94,18 +131,6 @@ class PythonEvaluator(Evaluator):
             exec(code, exposed_context, self._context)
         except Exception as e:
             raise CodeEvaluationError('The above exception occurred while executing:\n{}'.format(code)) from e
-
-    class FrozenContext:
-        """
-        A shallow copy of a context. The keys of the underlying context are
-        exposed as attributes.
-        """
-
-        def __init__(self, context: dict):
-            self.__frozencontext = {k: copy.copy(v) for k, v in context.items()}
-
-        def __getattr__(self, item):
-            return self.__frozencontext[item]
 
     def evaluate_guard(self, transition: Transition, event: Event) -> bool:
         if transition.guard:
@@ -118,7 +143,7 @@ class PythonEvaluator(Evaluator):
 
     def execute_onentry(self, state: StateMixin):
         # Set memory
-        self._memory[id(state)] = PythonEvaluator.FrozenContext(self._context)
+        self.__set_memory(state)
 
         # Set timer
         self._entry_time[state.name] = self._interpreter.time
@@ -128,7 +153,8 @@ class PythonEvaluator(Evaluator):
 
     def execute_action(self, transition: Transition, event: Event):
         # Set memory
-        self._memory[id(transition)] = PythonEvaluator.FrozenContext(self._context)
+        self.__set_memory(transition)
+
         # Set timer
         self._idle_time[transition.source] = self._interpreter.time
 
@@ -136,12 +162,12 @@ class PythonEvaluator(Evaluator):
 
     def evaluate_postconditions(self, obj, event: Event = None):
         context = {'event': event} if isinstance(obj, Transition) else {}
-        context['__old__'] = (self._memory.get(id(obj), None))
+        context['__old__'] = self.__get_memory(obj)
 
         return filter(lambda c: not self._evaluate_code(c, context), getattr(obj, 'postconditions', []))
 
     def evaluate_invariants(self, obj, event: Event = None):
         context = {'event': event} if isinstance(obj, Transition) else {}
-        context['__old__'] = (self._memory.get(id(obj), None))
+        context['__old__'] = self.__get_memory(obj)
 
         return filter(lambda c: not self._evaluate_code(c, context), getattr(obj, 'invariants', []))

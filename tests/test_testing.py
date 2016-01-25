@@ -11,13 +11,16 @@ class StoryFromTraceTests(unittest.TestCase):
         Story([Pause(2), Event('goto s2'), Pause(3)]).tell(interpreter)
         story = teststory_from_trace(interpreter.trace)
         expected = Story([Event('started'),
+                          Event('step'),
                           Event('entered', state='root'),
                           Event('entered', state='s1'),
                           Pause(2),
+                          Event('step'),
                           Event('consumed', event=Event('goto s2')),
                           Event('exited', state='s1'),
                           Event('processed', source='s1', target='s2', event=Event('goto s2')),
                           Event('entered', state='s2'),
+                          Event('step'),
                           Event('exited', state='s2'),
                           Event('processed', source='s2', target='s3', event=None),
                           Event('entered', state='s3'),
@@ -65,8 +68,9 @@ class ElevatorStoryTests(unittest.TestCase):
         ]
 
         for story in stories:
-            tested = Interpreter(tested_sc)
-            test_story = teststory_from_trace(story.tell(tested).trace)
+            with self.subTest(story=story):
+                tested = Interpreter(tested_sc)
+                test_story = teststory_from_trace(story.tell(tested).trace)
 
-            tester = Interpreter(tester_sc)
-            self.assertTrue(test_story.tell(tester).final)
+                tester = Interpreter(tester_sc)
+                self.assertTrue(test_story.tell(tester).final)

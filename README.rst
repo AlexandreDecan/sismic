@@ -5,8 +5,6 @@ Sismic for Python
     :target: https://travis-ci.org/AlexandreDecan/sismic
 .. image:: https://coveralls.io/repos/AlexandreDecan/sismic/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/AlexandreDecan/sismic?branch=master
-.. image:: https://landscape.io/github/AlexandreDecan/sismic/master/landscape.svg?style=flat
-    :target: https://landscape.io/github/AlexandreDecan/sismic/master    
 .. image:: https://badge.fury.io/py/sismic.svg
     :target: https://pypi.python.org/pypi/sismic
 .. image:: https://readthedocs.org/projects/sismic/badge/?version=stable
@@ -37,7 +35,7 @@ This will install the latest stable version.
 You can also install Sismic from this repository by cloning it.
 The development occurs in the *master* branch, the latest stable distributed version is in the *stable* branch.
 
-Sismic requires Python >=3.4 but should also work with Python 3.3.
+Sismic requires Python >=3.4
 
 Documentation
 -------------
@@ -52,13 +50,13 @@ The documentation can also be directly built from the `docs <https://github.com/
 Changelog
 ---------
 
-See documentatin's `changelog <http://sismic.readthedocs.org/en/stable/changelog.html>`_.
+See documentation's `changelog <http://sismic.readthedocs.org/en/stable/changelog.html>`_.
 Unreleased changes are visible `here <CHANGELOG.rst>`_.
 
 Credits
 -------
 
-The Sismic library for Python (version 3.4 or higher)
+The Sismic library for Python
 is developed at the `Software Engineering Lab <http://informatique.umons.ac.be/genlog>`_
 of the `University of Mons <http://www.umons.ac.be>`_
 as part of an ongoing software modeling research project.
