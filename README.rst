@@ -35,7 +35,7 @@ This will install the latest stable version.
 You can also install Sismic from this repository by cloning it.
 The development occurs in the *master* branch, the latest stable distributed version is in the *stable* branch.
 
-Sismic requires Python >=3.4 but should also work with Python 3.3.
+Sismic requires Python >=3.4
 
 Documentation
 -------------

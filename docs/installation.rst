@@ -6,7 +6,7 @@ From PyPi using pip
 
 Sismic can be installed using ``pip`` as usual: ``pip install sismic``.
 This will install the latest stable version.
-Sismic requires Python >=3.4 but should also work with Python 3.3.
+Sismic requires Python >=3.4.
 You can isolate Sismic installation by using virtual environments:
 
 1. Get the tool to create virtual environments: ``pip install virtualenv``
