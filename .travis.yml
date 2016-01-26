@@ -3,14 +3,13 @@ python:
 - 3.4
 - 3.5
 install:
-- pip install -r requirements.txt
+- pip install coveralls coverage wheel sphinx
 - pip install -e .
-- pip install coveralls
 script:
 - coverage run --source sismic -m unittest discover
-- cd docs
-- make doctest
-- cd ..
+- cd docs && make doctest && cd ..
+- sismic-behave docs/examples/elevator.yaml --features docs/examples/elevator.feature
+- sismic-behave docs/examples/microwave.yaml --features docs/examples/microwave.feature
 after_success:
 - coveralls
 deploy:

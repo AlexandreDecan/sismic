@@ -49,6 +49,7 @@ statechart:
                     guard: active('door.open')
                   - target: heating.off
                     guard: duration == 0
+                    action: send('ding')
                   - target: heating.off
                     event: startstop
                   - guard: idle(1)
