@@ -1,3 +1,5 @@
+from functools import partial
+
 import copy
 from sismic.code import Evaluator
 from sismic.model import Event, InternalEvent, Transition, StateMixin
@@ -31,7 +33,7 @@ class PythonEvaluator(Evaluator):
           if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
           that makes use of this evaluator.
     - On code execution:
-        - A *send* function that takes an event name and additional keyword parameters and fires an internal event with.
+        - A *send(name, **kwargs)* function that takes an event name and additional keyword parameters and fires an internal event with.
         - If the code is related to a transition, the *event* that fires the transition is exposed.
     - On code evaluation:
         - If the code is related to a transition, the *event* that fires the transition is exposed.
@@ -84,9 +86,34 @@ class PythonEvaluator(Evaluator):
         Add an internal event to interpreter queue.
 
         :param name: name of the event
-        :param kwargs: additional parameters
+        :param kwargs: additional event parameters
         """
         self._interpreter.queue(InternalEvent(name, **kwargs))
+
+    def __active(self, name: str):
+        """
+        Return True if given state name is active.
+        :param name: name of a state
+        """
+        return name in self._interpreter.configuration
+
+    def __after(self, name: str, seconds: float):
+        """
+        Return True if given state was entered more than *seconds* ago.
+        :param name:
+        :param seconds:
+        :return:
+        """
+        return self._interpreter.time - seconds >= self._entry_time[name]
+
+    def __idle(self, name: str, seconds: float):
+        """
+        Return True if given state was the target of a transition more than *seconds* ago.
+        :param name:
+        :param seconds:
+        :return:
+        """
+        return self._interpreter.time - seconds >= self._idle_time[name]
 
     def _evaluate_code(self, code: str, additional_context: dict = None) -> bool:
         """
@@ -100,7 +127,7 @@ class PythonEvaluator(Evaluator):
             return True
 
         exposed_context = {
-            'active': lambda s: s in self._interpreter.configuration,
+            'active': self.__active,
             'time': self._interpreter.time,
         }
         exposed_context.update(additional_context if additional_context else {})
@@ -121,7 +148,7 @@ class PythonEvaluator(Evaluator):
             return
 
         exposed_context = {
-            'active': lambda s: s in self._interpreter.configuration,
+            'active': self.__active,
             'time': self._interpreter.time,
             'send': self.__send,
         }
@@ -136,8 +163,8 @@ class PythonEvaluator(Evaluator):
         if transition.guard:
             context = {
                 'event': event,
-                'after': lambda i: self._interpreter.time - i >= self._entry_time[transition.source],
-                'idle': lambda i: self._interpreter.time - i >= self._idle_time[transition.source]
+                'after': partial(self.__after, transition.source),
+                'idle': partial(self.__idle, transition.source),
             }
             return self._evaluate_code(transition.guard, context)
 
