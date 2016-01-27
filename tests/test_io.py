@@ -112,7 +112,6 @@ class ExportToTreeTests(unittest.TestCase):
         for f in self.files:
             statechart = io.import_from_yaml(f)
             result = sorted(export_to_tree(statechart, spaces=1))
-            substates = self.states(statechart)
 
             for r in result:
                 name = r.lstrip()
