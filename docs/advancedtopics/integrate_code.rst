@@ -20,8 +20,7 @@ Of course, one could also use a hybrid approach, combining ideas from the three 
 Running example
 ---------------
 
-In this document, we will present the main differences between the second and the third approach (see
-:ref:`code_evaluation` for the first approach), on the basis of a simple example of a Graphical User Interface (GUI)
+In this document, we will present the main differences between the two approaches, on the basis of a simple example of a Graphical User Interface (GUI)
 whose behaviour is defined by a statechart. All the source code and YAML files  for this example, discussed in more
 detail below, is available in the *docs/examples* directory of Sismic’s repository.
 

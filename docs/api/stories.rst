@@ -6,5 +6,6 @@ Module *stories*
     :member-order: bysource
     :show-inheritance:
     :inherited-members:
+    :imported-members:
 
 

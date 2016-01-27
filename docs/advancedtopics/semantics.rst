@@ -22,8 +22,9 @@ These methods can be overridden or combined easily to define other variants of t
 
 
 These methods are called directly (or not) by :py:class:`~sismic.interpreter.Interpreter.execute_once`.
-Consider looking at the source of :py:class:`~sismic.interpreter.Interpreter.execute_once` to understand
-how these methods are related and organized.
+
+.. seealso:: Consider looking at the source of :py:class:`~sismic.interpreter.Interpreter.execute_once` to understand
+    how these methods are related and organized.
 
 
 
@@ -35,8 +36,9 @@ inner-first/source-state one that Sismic provides by default),
 one should subclass :py:class:`~sismic.interpreter.Interpreter`
 and override :py:class:`~sismic.interpreter.Interpreter._select_eventless_transitions` and
 :py:class:`~sismic.interpreter.Interpreter._select_transitions`.
-Actually, as the former relies on the second, the changes will only concern the traversal order in the
-:py:class:`~sismic.interpreter.Interpreter._select_transitions` method.
+
+.. note:: Actually, as the former relies on the later, the changes will only concern the traversal order in the
+    :py:class:`~sismic.interpreter.Interpreter._select_transitions` method.
 
 
 Example: Semantics where internal events have no priority
