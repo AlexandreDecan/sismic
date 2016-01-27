@@ -23,8 +23,8 @@ without requiring the implementation of a visual notation, statecharts are expre
 notation (the alternative of using something like SCXML was discarded because its notation is too verbose and not
 really "human-readable".)
 
-This section explains how the elements that compose a valid statechart in Sismic can be defined using YAML.
-If you are not familiar with YAML, have a look at `YAML official documentation <http://yaml.org/spec/1.1/>`__.
+.. seealso:: This section explains how the elements that compose a valid statechart in Sismic can be defined using YAML.
+    If you are not familiar with YAML, have a look at `YAML official documentation <http://yaml.org/spec/1.1/>`__.
 
 Statechart
 **********
@@ -103,9 +103,8 @@ Shallow and deep history states
 
 *History states* can be declared as follows:
 
-*type: shallow history* property declares a *shallow history* state;
-*type: deep history* property declares a *deep history* state.
-We refer to the semantics of UML and SCXML for the difference between both types of histories.
+- *type: shallow history* to declare a *shallow history* state;
+- *type: deep history* to declare a *deep history* state.
 
 .. code:: yaml
 
@@ -120,6 +119,8 @@ Importantly, the *memory* value **must** refer to a parent's substate.
   - name: history state
     type: deep history
     memory: s1
+
+.. seealso:: We refer to the semantics of UML for the difference between both types of histories.
 
 
 Composite states
@@ -151,11 +152,8 @@ A composite state can define its initial state using *initial*.
           - name: nested state 2a
 
 
-Regions
-*******
-
-A region is essentially a logical set of nested states. Unlike UML, but similarly to SCXML, Sismic does
-not explicitly represent the concept of *region*, as it is implicitly defined by its composite state.
+.. note:: Unlike UML, but similarly to SCXML, Sismic does not explicitly represent the concept of *region*.
+    A region is essentially a logical set of nested states, and thus can be viewed as a specialization of a composite state.
 
 
 Orthogonal states
@@ -217,6 +215,7 @@ Elevator
 The Elevator statechart is one of the running examples in this documentation. Its visual description (currently not supported by Sismic) could look as follows:
 
 .. image:: /images/elevator.png
+    :align: center
 
 The corresponding YAML description is given below. To make the statechart self-contained, a Python class ``Doors``
 is included containing two methods ``open()`` and ``close()`` and a boolean variable ``opened``. Upon entering in the *active* state, a ``doors`` object of this class will be created and initialised by setting the value of ``opened`` to ``True``.
@@ -258,7 +257,7 @@ For example:
         assert isinstance(statechart, model.Statechart)
 
 The parser performs an automatic validation against the YAML schema of the next subsection.
-It also does several other checks using :py:class:`~sismic.model.Statechart.validate` method.
+It also does several other checks using its :py:class:`~sismic.model.Statechart.validate` method.
 
 YAML validation schema
 **********************

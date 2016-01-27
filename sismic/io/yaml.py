@@ -13,7 +13,7 @@ SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')
 def import_from_yaml(statechart: str, ignore_schema: bool = False, ignore_validation: bool = False) -> Statechart:
     """
     Import a statechart from a YAML representation.
-    YAML is first validated against *io.yaml.SCHEMA_PATH*, and resulting statechart is validated
+    YAML is first validated against *sismic.io.yaml.SCHEMA_PATH*, and resulting statechart is validated
     using its *validate* method.
 
     :param statechart: string or any equivalent object

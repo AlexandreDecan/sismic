@@ -70,8 +70,9 @@ When an internal event is sent by an interpreter, the bound interpreters also re
 event.
 In the last example, when an internal event is sent by ``interpreter_3``, then a corresponding external event
 is sent both to ``interpreter_1`` and ``interpreter_2``.
-Practically, unless you subclassed :py:class:`~sismic.interpreter.Interpreter`, the only difference between
-internal and external events are the priority order in which they are processed by the interpreter.
+
+.. note:: Practically, unless you subclassed :py:class:`~sismic.interpreter.Interpreter`, the only difference between
+    internal and external events are the priority order in which they are processed by the interpreter.
 
 
 .. testcode:: bind
@@ -124,7 +125,7 @@ We bind our panel with our elevator, such that the panel can control the elevato
     buttons.bind(elevator)
 
 Events that are sent **to** ``buttons`` are not propagated, but events that are sent **by** ``buttons``
-are autoatically propagated to ``elevator``:
+are automatically propagated to ``elevator``:
 
 .. testcode:: buttons
 

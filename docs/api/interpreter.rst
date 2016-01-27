@@ -6,5 +6,6 @@ Module *interpreter*
     :member-order: bysource
     :show-inheritance:
     :inherited-members:
+    :imported-members:
 
 
