@@ -49,7 +49,17 @@ class ExportToDictYAMLTests(unittest.TestCase):
 
                 self.assertTrue(sc_2.validate())
 
+
 class ExportToTreeTests(unittest.TestCase):
+
+    def states(self, statechart):
+        def rec_states(root):
+            import itertools
+
+            substates = list(map(lambda child: rec_states(child), statechart.children_for(root)))
+            flat_substates = list(itertools.chain.from_iterable(substates))
+            return [root] + flat_substates
+        return rec_states(statechart.root)
 
     def setUp(self):
         files_t = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',
@@ -85,3 +95,28 @@ class ExportToTreeTests(unittest.TestCase):
         for f, r in zip(self.files, self.results):
             statechart = io.import_from_yaml(f)
             self.assertEquals(export_to_tree(statechart), r)
+
+    def test_all_states_exported(self):
+        from sismic.io.text import export_to_tree
+
+        for f in self.files:
+            statechart = io.import_from_yaml(f)
+            result = sorted(export_to_tree(statechart, spaces=0))
+            expected = sorted(self.states(statechart))
+
+            self.assertEquals(expected, result)
+
+    def test_correct_spaces(self):
+        from sismic.io.text import export_to_tree
+
+        for f in self.files:
+            statechart = io.import_from_yaml(f)
+            result = sorted(export_to_tree(statechart, spaces=1))
+            substates = self.states(statechart)
+
+            for r in result:
+                name = r.lstrip()
+                depth = statechart.depth_for(name)
+                spaces = len(r) - len(name)
+                self.assertEquals(depth-1, spaces)
+
