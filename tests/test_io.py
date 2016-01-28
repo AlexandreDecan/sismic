@@ -51,21 +51,17 @@ class ExportToDictYAMLTests(unittest.TestCase):
 
 
 class ExportToTreeTests(unittest.TestCase):
-
-    def states(self, statechart):
-        def rec_states(root):
-            import itertools
-
-            substates = list(map(lambda child: rec_states(child), statechart.children_for(root)))
-            flat_substates = list(itertools.chain.from_iterable(substates))
-            return [root] + flat_substates
-        return rec_states(statechart.root)
-
     def setUp(self):
         files_t = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',
                    'nondeterministic', 'parallel', 'simple', 'timer']
 
-        self.results = [
+        self.files = []
+        for filename in files_t:
+            with open(os.path.join('tests', 'yaml', filename + '.yaml')) as f:
+                self.files.append((filename, io.import_from_yaml(f)))
+
+    def test_output(self):
+        results = [
             ['root', '   s1', '   s2', '   s3'],
             ['root', '   s1', '      s1a', '      s1b', '         s1b1', '         s1b2', '   s2'],
             ['root', '   active', '      active.H*', '      concurrent_processes', '         process_1',
@@ -84,38 +80,25 @@ class ExportToTreeTests(unittest.TestCase):
             ['root', '   s1', '   s2', '   s3', '   s4']
         ]
 
-        self.files = []
-        for filename in files_t:
-            with open(os.path.join('tests', 'yaml', filename + '.yaml')) as f:
-                self.files.append('\n'.join(f.readlines()))
+        for (filename, statechart), r in zip(self.files, results):
+            with self.subTest(filename=filename):
+                self.assertEquals(io.text.export_to_tree(statechart), r)
 
-    def test_export(self):
-        from sismic.io.text import export_to_tree
+    def test_all_states_are_exported(self):
+        for filename, statechart in self.files:
+            with self.subTest(filename=filename):
+                result = set(io.text.export_to_tree(statechart, spaces=0))
+                expected = set(statechart.states)
+                self.assertSetEqual(result, expected)
 
-        for f, r in zip(self.files, self.results):
-            statechart = io.import_from_yaml(f)
-            self.assertEquals(export_to_tree(statechart), r)
+    def test_indentation_is_correct(self):
+        for filename, statechart in self.files:
+            with self.subTest(filename=filename):
+                result = sorted(io.text.export_to_tree(statechart, spaces=1))
 
-    def test_all_states_exported(self):
-        from sismic.io.text import export_to_tree
-
-        for f in self.files:
-            statechart = io.import_from_yaml(f)
-            result = sorted(export_to_tree(statechart, spaces=0))
-            expected = sorted(self.states(statechart))
-
-            self.assertEquals(expected, result)
-
-    def test_correct_spaces(self):
-        from sismic.io.text import export_to_tree
-
-        for f in self.files:
-            statechart = io.import_from_yaml(f)
-            result = sorted(export_to_tree(statechart, spaces=1))
-
-            for r in result:
-                name = r.lstrip()
-                depth = statechart.depth_for(name)
-                spaces = len(r) - len(name)
-                self.assertEquals(depth-1, spaces)
+                for r in result:
+                    name = r.lstrip()
+                    depth = statechart.depth_for(name)
+                    spaces = len(r) - len(name)
+                    self.assertEquals(depth - 1, spaces)
 
