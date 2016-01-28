@@ -240,7 +240,7 @@ Importing and validating statecharts
 The :py:class:`~sismic.model.Statechart` class provides several methods to construct, to query and to manipulate a statechart.
 A YAML definition of a statechart can be easily imported to a :py:class:`~sismic.model.Statechart` instance.
 The module :py:mod:`sismic.io` provides a convenient loader :py:func:`~sismic.io.import_from_yaml`
-which takes a textual YAML definition of a statechart and returns a :py:class:~sismic.model.Statechart` instance.
+which takes a textual YAML definition of a statechart and returns a :py:class:`~sismic.model.Statechart` instance.
 
 .. automodule:: sismic.io
     :members: import_from_yaml
