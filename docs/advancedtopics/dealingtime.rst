@@ -256,6 +256,5 @@ function that run an interpreter in a thread, and does the job of synchronizing 
     Final: []
 
 .. note:: An optional argument ``callback`` can be passed to :py:func:`~sismic.interpreter.run_in_background`.
-    It must be a callable that accepts an :py:class:`~sismic.interpreter.Interpreter` instance and a (possibly empty) list
-    of :py:class:`~sismic.model.MacroStep`. This callable will be called each time the interpreter's ``execute`` method
-    is called.
+    It must be a callable that accepts the (possibly empty) list of :py:class:`~sismic.model.MacroStep` returned by 
+    the underlying call to :py:meth:`~sismic.interpreter.Interpreter.execute`. 
