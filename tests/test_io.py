@@ -48,3 +48,74 @@ class ExportToDictYAMLTests(unittest.TestCase):
                 sc_2 = io.import_from_yaml(ex_1)
 
                 self.assertTrue(sc_2.validate())
+
+
+class ExportToTreeTests(unittest.TestCase):
+
+    def states(self, statechart):
+        def rec_states(root):
+            import itertools
+
+            substates = list(map(lambda child: rec_states(child), statechart.children_for(root)))
+            flat_substates = list(itertools.chain.from_iterable(substates))
+            return [root] + flat_substates
+        return rec_states(statechart.root)
+
+    def setUp(self):
+        files_t = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',
+                   'nondeterministic', 'parallel', 'simple', 'timer']
+
+        self.results = [
+            ['root', '   s1', '   s2', '   s3'],
+            ['root', '   s1', '      s1a', '      s1b', '         s1b1', '         s1b2', '   s2'],
+            ['root', '   active', '      active.H*', '      concurrent_processes', '         process_1',
+             '            s11', '            s12', '            s13', '         process_2', '            s21',
+             '            s22', '            s23', '   pause', '   stop'],
+            ['root', '   s1', '   s2', '   stop'],
+            ['root', '   active', '   s1', '   s2'],
+            ['root', '   s1', '      p1', '         r1', '            i1', '            j1', '            k1',
+             '         r2', '            i2', '            j2', '            k2', '            y', '      p2',
+             '         r3', '            i3', '            j3', '            k3', '            z', '         r4',
+             '            i4', '            j4', '            k4', '            x'],
+            ['root', '   s1', '   s2', '   s3'],
+            ['root', '   s1', '      p1', '         a1', '         b1', '         c1', '         initial1', '      p2',
+             '         a2', '         b2', '         c2', '         initial2'],
+            ['root', '   final', '   s1', '   s2', '   s3'],
+            ['root', '   s1', '   s2', '   s3', '   s4']
+        ]
+
+        self.files = []
+        for filename in files_t:
+            with open(os.path.join('tests', 'yaml', filename + '.yaml')) as f:
+                self.files.append('\n'.join(f.readlines()))
+
+    def test_export(self):
+        from sismic.io.text import export_to_tree
+
+        for f, r in zip(self.files, self.results):
+            statechart = io.import_from_yaml(f)
+            self.assertEquals(export_to_tree(statechart), r)
+
+    def test_all_states_exported(self):
+        from sismic.io.text import export_to_tree
+
+        for f in self.files:
+            statechart = io.import_from_yaml(f)
+            result = sorted(export_to_tree(statechart, spaces=0))
+            expected = sorted(self.states(statechart))
+
+            self.assertEquals(expected, result)
+
+    def test_correct_spaces(self):
+        from sismic.io.text import export_to_tree
+
+        for f in self.files:
+            statechart = io.import_from_yaml(f)
+            result = sorted(export_to_tree(statechart, spaces=1))
+
+            for r in result:
+                name = r.lstrip()
+                depth = statechart.depth_for(name)
+                spaces = len(r) - len(name)
+                self.assertEquals(depth-1, spaces)
+
