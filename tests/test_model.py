@@ -212,7 +212,7 @@ class TransitionRotationTests(unittest.TestCase):
         self.sc.validate()
 
     def test_rotate_target(self):
-        tr = list(filter(lambda t: t.source == 's1', self.sc.transitions))[0]
+        tr = next(t for t in self.sc.transitions if t.source == 's1')
         self.sc.rotate_transition(tr, new_target='s2')
         self.assertEqual(tr.target, 's2')
 
@@ -228,7 +228,7 @@ class TransitionRotationTests(unittest.TestCase):
         self.sc.validate()
 
     def test_rotate_both(self):
-        tr = list(filter(lambda t: t.source == 's1', self.sc.transitions))[0]
+        tr = next(t for t in self.sc.transitions if t.source == 's1')
 
         self.sc.rotate_transition(tr, new_source='s1', new_target='s2')
         self.assertEqual(tr.source, 's1')
@@ -236,7 +236,7 @@ class TransitionRotationTests(unittest.TestCase):
         self.sc.validate()
 
     def test_rotate_both_unexisting(self):
-        tr = list(filter(lambda t: t.source == 's1', self.sc.transitions))[0]
+        tr = next(t for t in self.sc.transitions if t.source == 's1')
 
         with self.assertRaises(ValueError):
             self.sc.rotate_transition(tr)
@@ -249,7 +249,7 @@ class TransitionRotationTests(unittest.TestCase):
         self.sc.validate()
 
     def test_rotate_both_with_internal(self):
-        tr = list(filter(lambda t: t.source == 's1', self.sc.transitions))[0]
+        tr = next(t for t in self.sc.transitions if t.source == 's1')
 
         self.sc.rotate_transition(tr, new_source='s1', new_target=None)
         self.assertEqual(tr.source, 's1')
