@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- (Added) An ``io.text.export_to_tree`` that returns a textual representation of the states.
+- (Changed) ``Statechart.rename_to`` does not anymore raise ``KeyError`` but ``exceptions.StatechartError``.
+
+
 0.17.1 (2016-01-25)
 -------------------
 

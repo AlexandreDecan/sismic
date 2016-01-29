@@ -38,7 +38,7 @@ class Interpreter:
         self._bound = []  # List of bound event callbacks
 
         # Evaluator
-        self._evaluator = evaluator_klass(self, initial_context) if evaluator_klass else PythonEvaluator(self, initial_context)
+        self._evaluator = (evaluator_klass if evaluator_klass else PythonEvaluator)(self, initial_context)
         self._evaluator.execute_statechart(statechart)
 
         # Initial step and stabilization
@@ -264,9 +264,11 @@ class Interpreter:
 
                 # Their LCA must be an orthogonal state!
                 if not isinstance(lca_state, model.OrthogonalState):
-                    raise NonDeterminismError('Non-determinist choice between transitions {t1} and {t2}'
-                                  '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
-                                  .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
+                    raise NonDeterminismError(
+                        'Non-determinist choice between transitions {t1} and {t2}'
+                        '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
+                        .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2)
+                    )
 
                 # Check (2)
                 # This check must be done wrt. to LCA, as the combination of from_states could
@@ -280,10 +282,12 @@ class Interpreter:
                     # Target must be a descendant (or self) of this state
                     if (transition.target and
                             (transition.target not in
-                                     [last_before_lca] + self._statechart.descendants_for(last_before_lca))):
-                        raise ConflictingTransitionsError('Conflicting transitions: {t1} and {t2}'
-                                      '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
-                                      .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
+                             [last_before_lca] + self._statechart.descendants_for(last_before_lca))):
+                        raise ConflictingTransitionsError(
+                            'Conflicting transitions: {t1} and {t2}'
+                            '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
+                            .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2)
+                        )
 
             # Define an arbitrary order based on the depth and the name of source states.
             transitions = sorted(transitions, key=lambda t: (-self._statechart.depth_for(t.source), t.source))
@@ -355,7 +359,7 @@ class Interpreter:
         """
         # Check if we are in a set of "stable" states
         leaves_names = self._statechart.leaf_for(list(self._configuration))
-        leaves = list(map(lambda s: self._statechart.state_for(s), leaves_names))
+        leaves = map(self._statechart.state_for, leaves_names)
         leaves = sorted(leaves, key=lambda s: (-self._statechart.depth_for(s.name), s.name))
 
         # Final states?
@@ -381,8 +385,8 @@ class Interpreter:
 
         :param step: *MicroStep* instance
         """
-        entered_states = list(map(lambda s: self._statechart.state_for(s), step.entered_states))
-        exited_states = list(map(lambda s: self._statechart.state_for(s), step.exited_states))
+        entered_states = list(map(self._statechart.state_for, step.entered_states))
+        exited_states = list(map(self._statechart.state_for, step.exited_states))
 
         # Exit states
         for state in exited_states:
@@ -492,7 +496,7 @@ def run_in_background(interpreter: Interpreter, delay: float=0.05, callback=None
     import time
     import threading
 
-    def _task(interpreter, delay):
+    def _task():
         starttime = time.time()
         while not interpreter.final:
             interpreter.time = time.time() - starttime
@@ -500,9 +504,11 @@ def run_in_background(interpreter: Interpreter, delay: float=0.05, callback=None
             if callback:
                 callback(steps)
             time.sleep(delay)
-    thread = threading.Thread(target=_task, args=(interpreter, delay))
+    thread = threading.Thread(target=_task)
 
-    def stop_thread(): interpreter._configuration = []
+    def stop_thread():
+        interpreter._configuration = []
+
     thread.stop = stop_thread
 
     thread.start()

@@ -85,7 +85,7 @@ def random_stories_generator(items, length: int=None, number: int=None):
     number = number if number else -1
     while number != 0:
         story = Story()
-        for i in range(length):
+        for _ in range(length):
             story.append(random.choice(items))  # Not random.sample, replacements needed
         yield story
         number -= 1

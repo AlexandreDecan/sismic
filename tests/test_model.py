@@ -332,7 +332,7 @@ class RenameStatesTests(unittest.TestCase):
         self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))
 
     def test_rename_unexisting_state(self):
-        with self.assertRaises(KeyError):
+        with self.assertRaises(exceptions.StatechartError):
             self.sc.rename_state('unknown', 's3')
         self.sc.validate()
 
@@ -365,6 +365,13 @@ class RenameStatesTests(unittest.TestCase):
         with self.assertRaises(exceptions.StatechartError):
             self.sc.parent_for('s1')
         self.sc.validate()
+
+    def test_rename_change_state_name(self):
+        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+
+        state = self.sc.state_for('s1')
+        self.sc.rename_state('s1', 'new s1')
+        self.assertEqual(state.name, 'new s1')
 
     def test_rename_new_appears(self):
         self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))

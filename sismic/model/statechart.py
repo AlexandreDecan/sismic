@@ -39,7 +39,7 @@ class Statechart:
         """
         return self._preamble
 
-    ########## STATES ##########
+    # ######### STATES ##########
 
     @property
     def states(self):
@@ -64,7 +64,7 @@ class Statechart:
         if not parent:
             # Check root state
             if self.root:
-                raise StatechartError('Root is already defined, {} should declare an existing parent state'.format(state))
+                raise StatechartError('Root already defined, {} should declare an existing parent state'.format(state))
         else:
             parent_state = self.state_for(parent)
 
@@ -109,11 +109,11 @@ class Statechart:
                 self.remove_transition(transition)
 
         # Remove compoundstate's initial and historystate's memory
-        for other_name, other_state in self._states.items():
-            if isinstance(other_state, CompoundState):
-                other_state.initial = None
-            elif isinstance(other_state, HistoryStateMixin):
-                other_state.memory = None
+        for o_state in self._states.values():
+            if isinstance(o_state, CompoundState):
+                o_state.initial = None
+            elif isinstance(o_state, HistoryStateMixin):
+                o_state.memory = None
 
         # Remove state
         self._states.pop(name)
@@ -133,7 +133,9 @@ class Statechart:
             return
         if new_name in self._states:
             raise StatechartError('State {} already exists!'.format(new_name))
-        state = self._states[old_name]
+
+        # Check state exists
+        state = self.state_for(old_name)
 
         # Change transitions
         for transition in self.transitions:
@@ -160,15 +162,17 @@ class Statechart:
             if self._parent[other_state.name] == old_name:
                 self._parent[other_state.name] = new_name
 
-        # Renaming
+        # Adapt structures
         parent_name = self._parent[old_name]
+        self._children[parent_name].remove(old_name)
+        self._children[parent_name].append(new_name)
 
         self._states[new_name] = self._states.pop(old_name)
         self._parent[new_name] = self._parent.pop(old_name)
         self._children[new_name] = self._children.pop(old_name)
 
-        self._children[parent_name].remove(old_name)
-        self._children[parent_name].append(new_name)
+        # Rename state!
+        state._name = new_name
 
     def move_state(self, name: str, new_parent: str):
         """
@@ -183,7 +187,7 @@ class Statechart:
         """
         # Check that both states exist
         state = self.state_for(name)
-        new_parent_state = self.state_for(new_parent)
+        self.state_for(new_parent)
 
         # Check that parent is not a descendant (or self) of given state
         if new_parent in [name] + self.descendants_for(name):
@@ -253,7 +257,7 @@ class Statechart:
         Return an ordered list of ancestors for the given state.
         Ancestors are ordered by decreasing depth.
 
-        :param state: name of the state
+        :param name: name of the state
         :return: state's ancestors
         :raise StatechartError: if state does not exist
         """
@@ -344,7 +348,7 @@ class Statechart:
                 leaves.append(state)
         return leaves
 
-    ########## TRANSITIONS ##########
+    # ######### TRANSITIONS ##########
 
     @property
     def transitions(self):
@@ -361,7 +365,7 @@ class Statechart:
         :raise StatechartError:
         """
         # Check that source state is known
-        if not transition.source in self._states:
+        if transition.source not in self._states:
             raise StatechartError('Unknown source state for {}'.format(transition))
 
         from_state = self.state_for(transition.source)
@@ -391,8 +395,7 @@ class Statechart:
         """
         Rotate given transition.
 
-        You MUST specify either *new_source* (a valid state name) or *new_target* (a valid state name or None)
-        or both.
+        You MUST specify *new_source* (a valid state name) or *new_target* (a valid state name or None) or both.
 
         :param transition: a *Transition* instance
         :param new_source: a state name
@@ -468,7 +471,7 @@ class Statechart:
                 transitions.append(transition)
         return transitions
 
-    ########## EVENTS ##########
+    # ######### EVENTS ##########
 
     def events_for(self, name_or_names=None) -> list:
         """
@@ -495,7 +498,7 @@ class Statechart:
                     names.add(transition.event)
         return sorted(names)
 
-    ########## TOOLS ##########
+    # ######### TOOLS ##########
 
     def _validate_compoundstate_initial(self):
         """
@@ -506,9 +509,9 @@ class Statechart:
         """
         for name, state in self._states.items():
             if isinstance(state, CompoundState) and state.initial:
-                if not state.initial in self._states:
+                if state.initial not in self._states:
                     raise StatechartError('Initial state {} of {} does not exist'.format(state.initial, state))
-                if not state.initial in self.children_for(name):
+                if state.initial not in self.children_for(name):
                     raise StatechartError('Initial state {} of {} must be a child state'.format(state.initial, state))
         return True
 
@@ -526,7 +529,9 @@ class Statechart:
                 if state.memory not in self._states:
                     raise StatechartError('Initial memory {} of {} does not exist'.format(state.memory, state))
                 if state.memory not in self.children_for(self.parent_for(name)):
-                    raise StatechartError('Initial memory {} of {} must be a child of its parent'.format(state.memory, state))
+                    raise StatechartError(
+                        'Initial memory {} of {} must be a parent\'s child'.format(state.memory, state)
+                    )
         return True
 
     def validate(self):

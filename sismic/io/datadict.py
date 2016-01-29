@@ -86,17 +86,17 @@ def _import_state_from_dict(state_d: dict) -> StateMixin:
     :return: a specialized instance of State
     """
     name = state_d.get('name')
-    type = state_d.get('type', None)
+    stype = state_d.get('type', None)
     on_entry = state_d.get('on entry', None)
     on_exit = state_d.get('on exit', None)
 
-    if type == 'final':
+    if stype == 'final':
         state = FinalState(name, on_entry=on_entry, on_exit=on_exit)
-    elif type == 'shallow history':
+    elif stype == 'shallow history':
         state = ShallowHistoryState(name, on_entry=on_entry, on_exit=on_exit, memory=state_d.get('memory', None))
-    elif type == 'deep history':
+    elif stype == 'deep history':
         state = DeepHistoryState(name, on_entry=on_entry, on_exit=on_exit, memory=state_d.get('memory', None))
-    elif type is None:
+    elif stype is None:
         substates = state_d.get('states', None)
         parallel_substates = state_d.get('parallel states', None)
 
@@ -109,7 +109,7 @@ def _import_state_from_dict(state_d: dict) -> StateMixin:
         else:
             state = BasicState(name, on_entry=on_entry, on_exit=on_exit)
     else:
-        raise StatechartError('Unknown type {} for state {}'.format(type, name))
+        raise StatechartError('Unknown type {} for state {}'.format(stype, name))
 
     # Preconditions, postconditions and invariants
     for condition in state_d.get('contract', []):
@@ -127,7 +127,8 @@ def export_to_dict(statechart: Statechart, ordered=True) -> dict:
     Export given StateChart instance to a dict.
 
     :param statechart: a StateChart instance
-    :return: a dict that can be used in *_import_from_dict``
+    :param ordered: set to True to use an ordereddict instead of a dict
+    :return: a dict that can be used in *_import_from_dict*
     """
     d = OrderedDict() if ordered else {}
     d['name'] = statechart.name

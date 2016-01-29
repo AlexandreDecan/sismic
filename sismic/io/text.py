@@ -16,7 +16,7 @@ def export_to_tree(statechart: Statechart, spaces: int=3) -> str:
     def to_tree(state: str):
         children = sorted(statechart.children_for(state))
 
-        trees = map(lambda child: to_tree(child), children)
+        trees = map(to_tree, children)
         flat_trees = itertools.chain.from_iterable(trees)
         children_repr = map(lambda x: spaces * ' ' + x, flat_trees)
         return [state] + list(children_repr)

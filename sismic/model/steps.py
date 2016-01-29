@@ -26,7 +26,8 @@ class MicroStep:
         self.exited_states = exited_states if exited_states else []
 
     def __repr__(self):
-        return 'MicroStep({}, {}, >{}, <{})'.format(self.event, self.transition, self.entered_states, self.exited_states)
+        return 'MicroStep({}, {}, >{}, <{})'.format(self.event, self.transition,
+                                                    self.entered_states, self.exited_states)
 
     def __eq__(self, other):
         return (isinstance(other, MicroStep) and

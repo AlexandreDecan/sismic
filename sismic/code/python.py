@@ -33,7 +33,8 @@ class PythonEvaluator(Evaluator):
           if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
           that makes use of this evaluator.
     - On code execution:
-        - A *send(name, **kwargs)* function that takes an event name and additional keyword parameters and fires an internal event with.
+        - A *send(name, **kwargs)* function that takes an event name and additional keyword parameters and fires
+          an internal event with.
         - If the code is related to a transition, the *event* that fires the transition is exposed.
     - On code evaluation:
         - If the code is related to a transition, the *event* that fires the transition is exposed.
@@ -79,7 +80,7 @@ class PythonEvaluator(Evaluator):
         :param obj: *StateMixin* or *Transition*
         :return: an instance of *FrozenContext*
         """
-        return self._memory.get(id(obj), None)
+        return self._memory.get(id(obj), {})
 
     def __send(self, name: str, **kwargs):
         """
