@@ -1,12 +1,12 @@
 Changelog
 =========
 
-0.17.2 (2016-01-29)
+0.17.3 (2016-01-29)
 -------------------
 
 - (Added) An ``io.text.export_to_tree`` that returns a textual representation of the states.
 - (Changed) ``Statechart.rename_to`` does not anymore raise ``KeyError`` but ``exceptions.StatechartError``.
-- (Removed) Wheel build
+- (Changed) Wheel build should work on Windows
 
 0.17.1 (2016-01-25)
 -------------------

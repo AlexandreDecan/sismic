@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
@@ -62,7 +62,7 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=['sismic'],
+    packages=find_packages(),
     #packages=find_packages(exclude=['docs', 'examples', 'tests']),
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
@@ -82,6 +82,10 @@ setup(
     extras_require={
         #'dev': ['check-manifest'],
         'dev': ['coverage', 'sphinx'],
+    },
+
+    package_data={
+        'sismic.io': ['schema.yaml']
     },
 
     # To provide executable scripts, use entry points in preference to the
