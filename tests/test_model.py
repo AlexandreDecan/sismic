@@ -87,7 +87,7 @@ class TraversalTests(unittest.TestCase):
                 transitions:
                   - target: s2
         """
-        with self.assertRaises(exceptions.StatechartError) as cm:
+        with self.assertRaises(exceptions.StatechartError):
             io.import_from_yaml(yaml)
 
     def test_history_not_in_compound(self):
@@ -103,7 +103,7 @@ class TraversalTests(unittest.TestCase):
                  - name: s2
                    type: shallow history
         """
-        with self.assertRaises(exceptions.StatechartError) as cm:
+        with self.assertRaises(exceptions.StatechartError):
             io.import_from_yaml(yaml)
 
 
@@ -194,7 +194,7 @@ class TransitionRotationTests(unittest.TestCase):
         self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))
 
     def test_rotate_source(self):
-        tr = list(filter(lambda t: t.source == 's1', self.sc.transitions))[0]
+        tr = next(t for t in self.sc.transitions if t.source == 's1')
         self.sc.rotate_transition(tr, new_source='s1')
         self.assertEqual(tr.source, 's1')
 

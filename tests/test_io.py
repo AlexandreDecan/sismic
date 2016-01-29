@@ -38,7 +38,7 @@ class ExportToDictYAMLTests(unittest.TestCase):
         for f, filename in self.files:
             with self.subTest(filename=filename):
                 sc_1 = io.import_from_yaml(f)
-                ex_1 = io.export_to_yaml(sc_1)
+                io.export_to_yaml(sc_1)
 
     def test_export_valid(self):
         for f, filename in self.files:

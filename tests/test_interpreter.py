@@ -93,6 +93,7 @@ class SimulatorHistoryTests(unittest.TestCase):
     def test_init(self):
         sc = io.import_from_yaml(open('tests/yaml/history.yaml'))
         Interpreter(sc, DummyEvaluator)
+        self.assertTrue(True)
 
     def test_memory(self):
         sc = io.import_from_yaml(open('tests/yaml/history.yaml'))

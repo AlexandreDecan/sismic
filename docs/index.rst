@@ -10,6 +10,8 @@ Sismic user manual
     :target: https://travis-ci.org/AlexandreDecan/sismic
 .. image:: https://coveralls.io/repos/AlexandreDecan/sismic/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/AlexandreDecan/sismic?branch=master
+.. image:: https://api.codacy.com/project/badge/grade/10d0a71b01c144859db571ddf17bb7d4
+    :target: https://www.codacy.com/app/alexandre-decan/sismic
 .. image:: https://badge.fury.io/py/sismic.svg
     :target: https://pypi.python.org/pypi/sismic
 .. image:: https://readthedocs.org/projects/sismic/badge/?version=stable

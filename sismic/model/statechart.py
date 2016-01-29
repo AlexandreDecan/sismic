@@ -334,18 +334,20 @@ class Statechart:
         :return: the names of the leaves in *states*
         :raise StatechartError: if state does not exist
         """
-        [self.state_for(s) for s in names]  # Raise StatechartError if state does not exist
+        # Check that states exist
+        for name in names:
+            self.state_for(name)  # Raise a StatechartError if it does not exist!
 
         leaves = []
         # TODO: Need a more efficient way to compute this set
-        for state in names:
+        for name in names:
             keep = True
-            for descendant in self.descendants_for(state):
+            for descendant in self.descendants_for(name):
                 if descendant in names:
                     keep = False
                     break
             if keep:
-                leaves.append(state)
+                leaves.append(name)
         return leaves
 
     # ######### TRANSITIONS ##########
