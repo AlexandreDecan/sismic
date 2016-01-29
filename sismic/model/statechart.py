@@ -191,7 +191,7 @@ class Statechart:
 
         # Check that parent is not a descendant (or self) of given state
         if new_parent in [name] + self.descendants_for(name):
-            raise StatechartError('State {} cannot be moved into itself or one of its descendant.'.format(state))
+            raise StatechartError('State {} cannot be moved into itself or one of its descendants.'.format(state))
 
         # Change its parent and register state as a child
         old_parent = self.parent_for(name)
@@ -416,7 +416,7 @@ class Statechart:
         if 'new_source' in kwargs:
             new_source_state = self.state_for(kwargs['new_source'])
             if not isinstance(new_source_state, TransitionStateMixin):
-                raise StatechartError('{} can not have transitions'.format(new_source_state))
+                raise StatechartError('{} cannot have transitions'.format(new_source_state))
             transition._source = new_source_state.name
 
         # Rotate using target

@@ -1,6 +1,6 @@
 import os
 import unittest
-from sismic import io
+from sismic import io, exceptions
 
 
 class ImportFromYamlTests(unittest.TestCase):
@@ -17,6 +17,56 @@ class ImportFromYamlTests(unittest.TestCase):
         for f in files:
             with self.subTest(filename=f):
                 io.import_from_yaml(open(os.path.join('docs', 'examples', f+'.yaml')))
+
+    def test_transitions_to_unknown_state(self):
+        yaml = """
+        statechart:
+          name: test
+          initial state:
+            name: root
+            initial: s1
+            states:
+              - name: s1
+                transitions:
+                  - target: s2
+        """
+        with self.assertRaises(exceptions.StatechartError) as cm:
+            io.import_from_yaml(yaml)
+        self.assertIn('Unknown target state', str(cm.exception))
+
+    def test_history_not_in_compound(self):
+        yaml = """
+        statechart:
+          name: test
+          initial state:
+            name: root
+            initial: s1
+            states:
+              - name: s1
+                parallel states:
+                 - name: s2
+                   type: shallow history
+        """
+        with self.assertRaises(exceptions.StatechartError) as cm:
+            io.import_from_yaml(yaml)
+        self.assertIn('cannot be used as a parent for', str(cm.exception))
+
+    def test_declare_both_states_and_parallel_states(self):
+        yaml = """
+        statechart:
+          name: test
+          initial state:
+            name: root
+            initial: s1
+            states:
+              - name: s1
+            parallel states:
+              - name: s2
+        """
+
+        with self.assertRaises(exceptions.StatechartError) as cm:
+            io.import_from_yaml(yaml)
+        self.assertIn('root cannot declare both a "states" and a "parallel states" property', str(cm.exception))
 
 
 class ExportToDictYAMLTests(unittest.TestCase):

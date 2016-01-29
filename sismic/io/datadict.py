@@ -25,6 +25,8 @@ def import_from_dict(data):
         # Get state
         try:
             state = _import_state_from_dict(state_data)
+        except StatechartError:
+            raise
         except Exception as e:
             raise StatechartError('Unable to load given YAML') from e
         states.append((state, parent_name))
@@ -41,6 +43,8 @@ def import_from_dict(data):
         for transition_data in state_data.get('transitions', []):
             try:
                 transition = _import_transition_from_dict(state.name, transition_data)
+            except StatechartError:
+                raise
             except Exception as e:
                 raise StatechartError('Unable to load given YAML') from e
             transitions.append(transition)

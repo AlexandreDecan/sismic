@@ -5,6 +5,23 @@ from sismic import exceptions
 from sismic.model import Event, InternalEvent
 
 
+class DummyEvaluatorTests(unittest.TestCase):
+    def setUp(self):
+        interpreter = MagicMock(name='interpreter')
+        self.evaluator = code.DummyEvaluator(interpreter=interpreter)
+
+    def test_condition(self):
+        self.assertTrue(self.evaluator._evaluate_code('blablabla'))
+        self.assertTrue(self.evaluator._evaluate_code('False'))
+
+        self.assertEqual(self.evaluator.context, {})
+
+    def test_execution(self):
+        self.assertIsNone(self.evaluator._execute_code('blablabla'))
+
+        self.assertEqual(self.evaluator.context, {})
+
+
 class PythonEvaluatorTests(unittest.TestCase):
     def setUp(self):
         context = {
