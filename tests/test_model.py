@@ -4,6 +4,33 @@ from sismic import model
 from sismic import exceptions
 
 
+class EventTests(unittest.TestCase):
+    def test_creation(self):
+        self.assertEqual(model.Event(name='hello'), model.Event('hello'))
+        with self.assertRaises(TypeError):
+            model.Event()
+
+    def test_with_parameters(self):
+        event = model.Event('test', a=1, b=2, c=3)
+        self.assertEqual(event.data, {'a': 1, 'b': 2, 'c': 3})
+
+    def test_parameter_name(self):
+        with self.assertRaises(TypeError):
+            model.Event('test', name='fail')
+
+    def test_parameters_access(self):
+        event = model.Event('test', a=1, b=2, c=3)
+        self.assertEqual(event.a, 1)
+        self.assertEqual(event.b, 2)
+        self.assertEqual(event.c, 3)
+
+        with self.assertRaises(AttributeError):
+            _ = event.d
+
+        with self.assertRaises(KeyError):
+            _ = event.data['d']
+
+
 class TraversalTests(unittest.TestCase):
     def setUp(self):
         self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
@@ -143,7 +170,6 @@ class ValidateTests(unittest.TestCase):
         statechart.state_for('s1b').initial = 's1'
         with self.assertRaises(exceptions.StatechartError):
             statechart._validate_compoundstate_initial()
-
 
 
 class TransitionsTests(unittest.TestCase):
