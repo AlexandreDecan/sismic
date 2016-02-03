@@ -123,7 +123,7 @@ Given I disable automatic execution
     awaiting). With this step, one can turn of the automatic execution.
 
 Given I enable automatic execution
-    Enable the automatic execution of the statechart. (It is enabled by default.)
+    Enable the automatic execution of the statechart (it is enabled by default).
 
 Given/when I import a statechart from {path}
     Import a statechart from a `yaml` file.

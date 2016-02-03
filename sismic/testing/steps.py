@@ -115,21 +115,21 @@ def wait_seconds(context, seconds, repeat):
         _execute_statechart(context)
 
 
-@given('I set variable {variable} to {value}')
-def set_variable(context, variable, value):
-    context._interpreter.context[variable] = eval(value, {}, {})
+@given('I set variable {variable_name} to {value}')
+def set_variable(context, variable_name, value):
+    context._interpreter.context[variable_name] = eval(value, {}, {})
 
 
-@then('state {state} should be active')
-def state_is_active(context, state):
-    assert state in context._statechart.states, 'Unknown state {}'.format(state)
-    assert state in context._interpreter.configuration, 'State {} is not active'.format(state)
+@then('state {state_name} should be active')
+def state_is_active(context, state_name):
+    assert state_name in context._statechart.states, 'Unknown state {}'.format(state_name)
+    assert state_name in context._interpreter.configuration, 'State {} is not active'.format(state_name)
 
 
-@then('state {state} should not be active')
-def state_is_not_active(context, state):
-    assert state in context._statechart.states, 'Unknown state {}'.format(state)
-    assert state not in context._interpreter.configuration, 'State {} is active'.format(state)
+@then('state {state_name} should not be active')
+def state_is_not_active(context, state_name):
+    assert state_name in context._statechart.states, 'Unknown state {}'.format(state_name)
+    assert state_name not in context._interpreter.configuration, 'State {} is active'.format(state_name)
 
 
 @then('event {event_name} should be fired')
@@ -161,17 +161,17 @@ def no_event_received(context):
     assert len(context._events) == 0, 'Sent events: {}'.format(context._events)
 
 
-@then('variable {variable} should be defined')
-def variable_is_defined(context, variable):
-    assert variable in context._interpreter.context, '{} is not defined'.format(variable)
+@then('variable {variable_name} should be defined')
+def variable_is_defined(context, variable_name):
+    assert variable_name in context._interpreter.context, '{} is not defined'.format(variable_name)
 
 
-@then('the value of {variable} should be {value}')
-def variable_equals_value(context, variable, value):
-    variable_is_defined(context, variable)
+@then('the value of {variable_name} should be {value}')
+def variable_equals_value(context, variable_name, value):
+    variable_is_defined(context, variable_name)
     value = eval(value, {}, {})
-    context_value = context._interpreter.context[variable]
-    assert context_value == value, 'Variable {} equals {} != {}'.format(variable, context_value, value)
+    context_value = context._interpreter.context[variable_name]
+    assert context_value == value, 'Variable {} equals {} != {}'.format(variable_name, context_value, value)
 
 
 @then('expression {expression} should hold')
