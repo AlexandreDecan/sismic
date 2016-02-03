@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.18.0 (2016-02-03)
+0.18.1 (2016-02-03)
 -------------------
 
 - (Added) Support for behavior-driven-development using Behave.
