@@ -1,10 +1,14 @@
 Changelog
 =========
 
-0.17.3 (2016-01-29)
+0.18.0 (2016-02-03)
 -------------------
 
 - (Added) Support for behavior-driven-development using Behave.
+
+0.17.3 (2016-01-29)
+-------------------
+
 - (Added) An ``io.text.export_to_tree`` that returns a textual representation of the states.
 - (Changed) ``Statechart.rename_to`` does not anymore raise ``KeyError`` but ``exceptions.StatechartError``.
 - (Changed) Wheel build should work on Windows
