@@ -15,7 +15,7 @@ Sismic user manual
 .. image:: https://badge.fury.io/py/sismic.svg
     :target: https://pypi.python.org/pypi/sismic
 .. image:: https://readthedocs.org/projects/sismic/badge/?version=stable
-    :target: https://sismic.readthedocs.org/stable
+    :target: https://sismic.readthedocs.org/en/stable
 
 About
 -----
