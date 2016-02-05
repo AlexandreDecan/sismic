@@ -69,7 +69,7 @@ Each state consist of at least a mandatory *name*. Depending on the state type, 
 
 .. code:: yaml
 
-    statemachine:
+    statechart:
       name: with state
       initial state:
         name: root
