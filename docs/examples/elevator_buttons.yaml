@@ -2,7 +2,7 @@ statechart:
   name: Elevator buttons
   description: |
     Buttons that remotely control the elevator.
-  initial state:
+  root state:
     name: active
     parallel states:
       - name: button_0

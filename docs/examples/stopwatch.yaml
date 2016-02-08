@@ -12,7 +12,7 @@ statechart:
      - A "display" region that refreshes the display according to the actual time/lap time feature
 
   preamble: elapsed_time = 0
-  initial state:
+  root state:
     name: active
     parallel states:
       - name: timer

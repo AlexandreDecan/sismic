@@ -36,12 +36,12 @@ The root of the YAML file **must** declare a statechart:
     statechart:
       name: Name of the statechart
       description: Description of the statechart
-      initial state:
+      root state:
         [...]
 
 
-The *name* and the *initial state* are mandatory, the *description* is optional.
-The *initial state* key contains a state definition (see below).
+The *name* and the *root state* keys are mandatory, the *description* is optional.
+The *root state* key contains a state definition (see below).
 If specific code needs to be executed during initialization of the statechart, this can be specified
 using *preamble*. In this example, the code is written in Python.
 
@@ -64,14 +64,14 @@ Code can be written on multiple lines as follows:
 States
 ******
 
-A statechart must declare an initial state.
+A statechart must declare a root state.
 Each state consist of at least a mandatory *name*. Depending on the state type, other optional fields can be declared.
 
 .. code:: yaml
 
     statechart:
       name: with state
-      initial state:
+      root state:
         name: root
 
 
@@ -88,6 +88,7 @@ For each declared state, the optional *on entry* and *on exit* fields can be use
         x -= 1
         y = 2
 
+
 Final states
 ************
 
@@ -97,6 +98,7 @@ A *final state* can be declared by specifying *type: final*:
 
     - name: s1
       type: final
+
 
 Shallow and deep history states
 *******************************
@@ -171,6 +173,7 @@ They must declare their nested states using *parallel states* instead of *states
       parallel states:
         - name: process 1
         - name: process 2
+
 
 Transitions
 ***********
@@ -258,6 +261,7 @@ For example:
 
 The parser performs an automatic validation against the YAML schema of the next subsection.
 It also does several other checks using its :py:class:`~sismic.model.Statechart.validate` method.
+
 
 YAML validation schema
 **********************

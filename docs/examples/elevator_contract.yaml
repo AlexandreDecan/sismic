@@ -15,7 +15,7 @@ statechart:
         self.opened = False
 
     doors = Doors()
-  initial state:
+  root state:
     name: active
     contract:
       - before: current == 0

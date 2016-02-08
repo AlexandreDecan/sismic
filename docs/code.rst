@@ -33,7 +33,7 @@ As an example, consider the following partial statechart definition.
       preamble: |
         x = 1
         y = 0
-      initial state:
+      root state:
         name: s1
         on entry: x += 1
 
@@ -68,7 +68,7 @@ constructor.
       name: example
       preamble:
         x = 1
-      initial state:
+      root state:
         name: s
     """
 

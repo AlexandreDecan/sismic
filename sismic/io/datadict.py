@@ -17,7 +17,7 @@ def import_from_dict(data):
 
     states = []  # (StateMixin instance, parent name)
     transitions = []  # Transition instances
-    data_to_consider = [(data['initial state'], None)]  # (State dict, parent name)
+    data_to_consider = [(data['root state'], None)]  # (State dict, parent name)
 
     while data_to_consider:
         state_data, parent_name = data_to_consider.pop()
@@ -141,7 +141,7 @@ def export_to_dict(statechart: Statechart, ordered=True) -> dict:
     if statechart.preamble:
         d['preamble'] = statechart.preamble
 
-    d['initial state'] = _export_state_to_dict(statechart, statechart.root, ordered)
+    d['root state'] = _export_state_to_dict(statechart, statechart.root, ordered)
 
     return {'statechart': d}
 

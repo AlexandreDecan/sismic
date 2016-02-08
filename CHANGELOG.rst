@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased
+----------
+- (Changed) YAM: use *root state:* instead of *initial state:*.
+
+
 0.18.1 (2016-02-03)
 -------------------
 

@@ -1,6 +1,6 @@
 statechart:
   name: "Counter-example: non deterministic statechart"  # Use quotes to protect ':'
-  initial state:
+  root state:
     name: root
     initial: s1
     states:

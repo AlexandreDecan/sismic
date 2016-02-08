@@ -9,7 +9,7 @@ statechart:
      - decDuration : substract 5 seconds
     The microwave is bundled with a turntable, a lamp and a door.
   preamble: duration = 0
-  initial state:
+  root state:
     name: root
     initial: plugged
     states:

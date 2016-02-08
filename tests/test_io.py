@@ -22,7 +22,7 @@ class ImportFromYamlTests(unittest.TestCase):
         yaml = """
         statechart:
           name: test
-          initial state:
+          root state:
             name: root
             initial: s1
             states:
@@ -38,7 +38,7 @@ class ImportFromYamlTests(unittest.TestCase):
         yaml = """
         statechart:
           name: test
-          initial state:
+          root state:
             name: root
             initial: s1
             states:
@@ -55,7 +55,7 @@ class ImportFromYamlTests(unittest.TestCase):
         yaml = """
         statechart:
           name: test
-          initial state:
+          root state:
             name: root
             initial: s1
             states:
