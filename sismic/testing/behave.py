@@ -39,9 +39,13 @@ def execute_behave(statechart, features, parameters):
             step.write(DEFAULT_STEPS_CONTENT)
 
         # Execute behave
+        # subprocess.call(['behave'] + parameters, cwd=tempdir)
+        cwd = os.getcwd()
         os.chdir(tempdir)
         behave_main.main(parameters)
-        # subprocess.call(['behave'] + parameters, cwd=tempdir)
+        os.chdir(cwd)
+
+
 
 
 def main():
