@@ -4,7 +4,7 @@ Changelog
 Unreleased
 ----------
 - (Changed) YAM: use *root state:* instead of *initial state:*.
-
+- (Changed) Testing: Behave is now called directly from Python instead of using a subprocess.
 
 0.18.1 (2016-02-03)
 -------------------

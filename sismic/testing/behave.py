@@ -46,8 +46,6 @@ def execute_behave(statechart, features, parameters):
         os.chdir(cwd)
 
 
-
-
 def main():
     parser = argparse.ArgumentParser(prog='sismic-behave',
                                      description='Command-line utility to execute Gherkin feature files using Behave.\n'
