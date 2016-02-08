@@ -17,7 +17,9 @@ class StoryTests(unittest.TestCase):
 
     def test_tell(self):
         story = Story([Event('goto s2'), Pause(5), Event('goto final')])
-        sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
+        with open('tests/yaml/simple.yaml') as f:
+            sc = io.import_from_yaml(f)
+
         interpreter = Interpreter(sc)
         story.tell(interpreter)
 
@@ -27,7 +29,9 @@ class StoryTests(unittest.TestCase):
 
     def test_tell_by_step(self):
         story = Story([Event('goto s2'), Pause(5), Event('goto final')])
-        sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
+        with open('tests/yaml/simple.yaml') as f:
+            sc = io.import_from_yaml(f)
+
         interpreter = Interpreter(sc)
         teller = story.tell_by_step(interpreter)
         self.assertEqual(Event('goto s2'), next(teller)[0])

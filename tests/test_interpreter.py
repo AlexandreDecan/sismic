@@ -8,55 +8,56 @@ from sismic.model import Event, InternalEvent
 
 class RunInBackgroundTests(unittest.TestCase):
     def test_run_in_background(self):
-        sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
-        intp = Interpreter(sc)
-        task = run_in_background(intp, 0.001)
-        intp.queue(Event('goto s2'))
-        intp.queue(Event('goto final'))
+        with open('tests/yaml/simple.yaml') as f:
+            sc = io.import_from_yaml(f)
+        interpreter = Interpreter(sc)
+        task = run_in_background(interpreter, 0.001)
+        interpreter.queue(Event('goto s2'))
+        interpreter.queue(Event('goto final'))
         task.join()
-        self.assertTrue(intp.final)
+        self.assertTrue(interpreter.final)
 
 
 class SimulatorSimpleTests(unittest.TestCase):
+    def setUp(self):
+        with open('tests/yaml/simple.yaml') as f:
+            sc = io.import_from_yaml(f)
+        self.interpreter = Interpreter(sc, DummyEvaluator)
+
     def test_init(self):
-        sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
-        interpreter = Interpreter(sc, DummyEvaluator)
-        self.assertEqual(interpreter.configuration, ['root', 's1'])
-        self.assertFalse(interpreter.final)
+        with open('tests/yaml/simple.yaml') as f:
+            sc = io.import_from_yaml(f)
+        self.assertEqual(self.interpreter.configuration, ['root', 's1'])
+        self.assertFalse(self.interpreter.final)
 
     def test_simple_configuration(self):
-        sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
-        interpreter = Interpreter(sc, DummyEvaluator)
-        interpreter.execute_once()  # Should do nothing!
-        self.assertEqual(interpreter.configuration, ['root', 's1'])
-        interpreter.queue(Event('goto s2'))
-        interpreter.execute_once()
-        self.assertEqual(interpreter.configuration, ['root', 's2'])
-        interpreter.execute_once()
-        self.assertEqual(interpreter.configuration, ['root', 's3'])
+        self.interpreter.execute_once()  # Should do nothing!
+        self.assertEqual(self.interpreter.configuration, ['root', 's1'])
+        self.interpreter.queue(Event('goto s2'))
+        self.interpreter.execute_once()
+        self.assertEqual(self.interpreter.configuration, ['root', 's2'])
+        self.interpreter.execute_once()
+        self.assertEqual(self.interpreter.configuration, ['root', 's3'])
 
     def test_simple_entered(self):
-        sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
-        interpreter = Interpreter(sc, DummyEvaluator)
-        interpreter.queue(Event('goto s2'))
-        self.assertEqual(interpreter.execute_once().entered_states, ['s2'])
-        interpreter.queue(Event('goto final'))
-        self.assertEqual(interpreter.execute_once().entered_states, ['s3'])
-        self.assertEqual(interpreter.execute_once().entered_states, ['final'])
-        self.assertEqual(interpreter.configuration, [])
-        self.assertTrue(interpreter.final)
+        self.interpreter.queue(Event('goto s2'))
+        self.assertEqual(self.interpreter.execute_once().entered_states, ['s2'])
+        self.interpreter.queue(Event('goto final'))
+        self.assertEqual(self.interpreter.execute_once().entered_states, ['s3'])
+        self.assertEqual(self.interpreter.execute_once().entered_states, ['final'])
+        self.assertEqual(self.interpreter.configuration, [])
+        self.assertTrue(self.interpreter.final)
 
     def test_simple_final(self):
-        sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
-        interpreter = Interpreter(sc, DummyEvaluator)
-        interpreter.queue(Event('goto s2')).queue(Event('goto final'))
-        interpreter.execute()
-        self.assertTrue(interpreter.final)
+        self.interpreter.queue(Event('goto s2')).queue(Event('goto final'))
+        self.interpreter.execute()
+        self.assertTrue(self.interpreter.final)
 
 
 class InternalTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))
+        with open('tests/yaml/internal.yaml') as f:
+            self.sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(self.sc)
 
     def testInternalSent(self):
@@ -82,7 +83,8 @@ class InternalTests(unittest.TestCase):
 
 class SimulatorNonDeterminismTests(unittest.TestCase):
     def test_nondeterminism(self):
-        sc = io.import_from_yaml(open('tests/yaml/nondeterministic.yaml'))
+        with open('tests/yaml/nondeterministic.yaml') as f:
+            sc = io.import_from_yaml(f)
         interpreter = Interpreter(sc, DummyEvaluator)
 
         with self.assertRaises(exceptions.NonDeterminismError):
@@ -90,78 +92,69 @@ class SimulatorNonDeterminismTests(unittest.TestCase):
 
 
 class SimulatorHistoryTests(unittest.TestCase):
-    def test_init(self):
-        sc = io.import_from_yaml(open('tests/yaml/history.yaml'))
-        Interpreter(sc, DummyEvaluator)
+    def setUp(self):
+        with open('tests/yaml/history.yaml') as f:
+            sc = io.import_from_yaml(f)
+        self.interpreter = Interpreter(sc, DummyEvaluator)
         self.assertTrue(True)
 
     def test_memory(self):
-        sc = io.import_from_yaml(open('tests/yaml/history.yaml'))
-        interpreter = Interpreter(sc, DummyEvaluator)
+        self.interpreter.queue(Event('next')).execute_once()
+        self.assertEqual(sorted(self.interpreter.configuration), ['loop', 'root', 's2'])
 
-        interpreter.queue(Event('next')).execute_once()
-        self.assertEqual(sorted(interpreter.configuration), ['loop', 'root', 's2'])
-
-        step = interpreter.queue(Event('pause')).execute_once()
+        step = self.interpreter.queue(Event('pause')).execute_once()
         self.assertEqual(step.exited_states, ['s2', 'loop'])
-        self.assertEqual(sorted(interpreter.configuration), ['pause', 'root'])
+        self.assertEqual(sorted(self.interpreter.configuration), ['pause', 'root'])
 
     def test_resume_memory(self):
-        sc = io.import_from_yaml(open('tests/yaml/history.yaml'))
-        interpreter = Interpreter(sc, DummyEvaluator)
-
-        interpreter.queue(Event('next')).queue(Event('pause')).queue(Event('continue'))
-        steps = interpreter.execute()
+        self.interpreter.queue(Event('next')).queue(Event('pause')).queue(Event('continue'))
+        steps = self.interpreter.execute()
         step = steps[-1]
 
         self.assertEqual(step.entered_states, ['loop', 'loop.H', 's2'])
         self.assertEqual(step.exited_states, ['pause', 'loop.H'])
-        self.assertEqual(sorted(interpreter.configuration), ['loop', 'root', 's2'])
+        self.assertEqual(sorted(self.interpreter.configuration), ['loop', 'root', 's2'])
 
     def test_after_memory(self):
-        sc = io.import_from_yaml(open('tests/yaml/history.yaml'))
-        interpreter = Interpreter(sc, DummyEvaluator)
+        self.interpreter.queue(Event('next')).queue(Event('pause')).queue(Event('continue'))
+        self.interpreter.queue(Event('next')).queue(Event('next'))
+        self.interpreter.execute()
+        self.assertEqual(sorted(self.interpreter.configuration), ['loop', 'root', 's1'])
 
-        interpreter.queue(Event('next')).queue(Event('pause')).queue(Event('continue'))
-        interpreter.queue(Event('next')).queue(Event('next'))
-        interpreter.execute()
-        self.assertEqual(sorted(interpreter.configuration), ['loop', 'root', 's1'])
-
-        interpreter.queue(Event('pause')).queue(Event('stop'))
-        interpreter.execute()
-        self.assertTrue(interpreter.final)
+        self.interpreter.queue(Event('pause')).queue(Event('stop'))
+        self.interpreter.execute()
+        self.assertTrue(self.interpreter.final)
 
 
 class SimulatorDeepHistoryTests(unittest.TestCase):
+    def setUp(self):
+        with open('tests/yaml/deep_history.yaml') as f:
+            sc = io.import_from_yaml(f)
+        self.interpreter = Interpreter(sc, DummyEvaluator)
+
     def test_deep_memory(self):
-        sc = io.import_from_yaml(open('tests/yaml/deep_history.yaml'))
-        interpreter = Interpreter(sc, DummyEvaluator)
+        self.interpreter.queue(Event('next1')).queue(Event('next2'))
+        self.interpreter.execute()
+        self.assertEqual(sorted(self.interpreter.configuration), ['active', 'concurrent_processes', 'process_1', 'process_2', 'root', 's12', 's22'])
 
-        interpreter.queue(Event('next1')).queue(Event('next2'))
-        interpreter.execute()
-        self.assertEqual(sorted(interpreter.configuration), ['active', 'concurrent_processes', 'process_1', 'process_2', 'root', 's12', 's22'])
+        self.interpreter.queue(Event('error1'))
+        self.interpreter.execute()
+        self.assertEqual(self.interpreter.configuration, ['root', 'pause'])
+        self.assertEqual(sorted(self.interpreter._memory['active.H*']), ['concurrent_processes', 'process_1', 'process_2', 's12', 's22'])
 
-        interpreter.queue(Event('error1'))
-        interpreter.execute()
-        self.assertEqual(interpreter.configuration, ['root', 'pause'])
-        self.assertEqual(sorted(interpreter._memory['active.H*']), ['concurrent_processes', 'process_1', 'process_2', 's12', 's22'])
-
-        interpreter.queue(Event('continue'))
-        interpreter.execute()
-        self.assertEqual(sorted(interpreter.configuration), ['active', 'concurrent_processes', 'process_1',
+        self.interpreter.queue(Event('continue'))
+        self.interpreter.execute()
+        self.assertEqual(sorted(self.interpreter.configuration), ['active', 'concurrent_processes', 'process_1',
                                                            'process_2', 'root', 's12', 's22'])
 
     def test_entered_order(self):
-        sc = io.import_from_yaml(open('tests/yaml/deep_history.yaml'))
-        interpreter = Interpreter(sc, DummyEvaluator)
-
-        interpreter.queue(Event('next1')).queue(Event('next2')).queue(Event('pause'))
-        step = interpreter.execute()[-1]
+        self.interpreter.queue(Event('next1')).queue(Event('next2')).queue(Event('pause'))
+        step = self.interpreter.execute()[-1]
 
         self.assertEqual(step.entered_states, ['pause'])
-        self.assertEqual(sorted(interpreter.configuration), ['pause', 'root'])
+        self.assertEqual(sorted(self.interpreter.configuration), ['pause', 'root'])
 
-        step = interpreter.queue(Event('continue')).execute_once()
+        step = self.interpreter.queue(Event('continue')).execute_once()
         self.assertTrue(step.entered_states.index('active') < step.entered_states.index('active.H*'))
         self.assertTrue(step.entered_states.index('active.H*') < step.entered_states.index('concurrent_processes'))
         self.assertTrue(step.entered_states.index('concurrent_processes') < step.entered_states.index('process_1'))
@@ -169,30 +162,28 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
         self.assertTrue(step.entered_states.index('process_1') < step.entered_states.index('s12'))
         self.assertTrue(step.entered_states.index('process_2') < step.entered_states.index('s22'))
 
-        interpreter.queue(Event('next1')).queue(Event('next2')).execute()
-        self.assertTrue(interpreter.final)
+        self.interpreter.queue(Event('next1')).queue(Event('next2')).execute()
+        self.assertTrue(self.interpreter.final)
 
     def test_exited_order(self):
-        sc = io.import_from_yaml(open('tests/yaml/deep_history.yaml'))
-        interpreter = Interpreter(sc, DummyEvaluator)
-
-        interpreter.queue(Event('next1')).queue(Event('next2')).queue(Event('pause'))
-        step = interpreter.execute()[-1]
+        self.interpreter.queue(Event('next1')).queue(Event('next2')).queue(Event('pause'))
+        step = self.interpreter.execute()[-1]
 
         self.assertEqual(step.exited_states, ['s12', 's22', 'process_1', 'process_2', 'concurrent_processes', 'active'])
-        self.assertEqual(sorted(interpreter.configuration), ['pause', 'root'])
+        self.assertEqual(sorted(self.interpreter.configuration), ['pause', 'root'])
 
-        step = interpreter.queue(Event('continue')).execute_once()
+        step = self.interpreter.queue(Event('continue')).execute_once()
         self.assertEqual(step.exited_states, ['pause', 'active.H*'])
 
-        interpreter.queue(Event('next1')).queue(Event('next2')).execute()
-        self.assertTrue(interpreter.final)
+        self.interpreter.queue(Event('next1')).queue(Event('next2')).execute()
+        self.assertTrue(self.interpreter.final)
 
 
 class InfiniteExecutionTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/infinite.yaml'))
-        self.interpreter = Interpreter(self.sc)
+        with open('tests/yaml/infinite.yaml') as f:
+            sc = io.import_from_yaml(f)
+        self.interpreter = Interpreter(sc)
 
     def test_three_steps(self):
         self.assertEqual(self.interpreter.configuration, ['root', 's1'])
@@ -219,8 +210,9 @@ class InfiniteExecutionTests(unittest.TestCase):
 
 class ParallelExecutionTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/parallel.yaml'))
-        self.interpreter = Interpreter(self.sc)
+        with open('tests/yaml/parallel.yaml') as f:
+            sc = io.import_from_yaml(f)
+        self.interpreter = Interpreter(sc)
 
     def test_concurrent_transitions(self):
         step = self.interpreter.queue(Event('nextA')).execute_once()
@@ -266,8 +258,9 @@ class ParallelExecutionTests(unittest.TestCase):
 
 class NestedParallelExecutionTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/nested_parallel.yaml'))
-        self.interpreter = Interpreter(self.sc)
+        with open('tests/yaml/nested_parallel.yaml') as f:
+            sc = io.import_from_yaml(f)
+        self.interpreter = Interpreter(sc)
         self.common_states = ['root', 's1', 'p1', 'p2', 'r1', 'r2', 'r3', 'r4']
 
     def test_initial(self):
@@ -345,11 +338,13 @@ class NestedParallelExecutionTests(unittest.TestCase):
 
 class BindTests(unittest.TestCase):
     def setUp(self):
-        sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
+        with open('tests/yaml/simple.yaml') as f:
+            sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(sc)
 
     def test_bind(self):
-        other_sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
+        with open('tests/yaml/simple.yaml') as f:
+            other_sc = io.import_from_yaml(f)
         other_interpreter = Interpreter(other_sc)
 
         self.interpreter.bind(other_interpreter)
@@ -360,7 +355,8 @@ class BindTests(unittest.TestCase):
         self.assertTrue(other_interpreter._events.pop(), Event('test'))
 
     def test_bind_callable(self):
-        other_sc = io.import_from_yaml(open('tests/yaml/simple.yaml'))
+        with open('tests/yaml/simple.yaml') as f:
+            other_sc = io.import_from_yaml(f)
         other_interpreter = Interpreter(other_sc)
 
         self.interpreter.bind(other_interpreter.queue)
