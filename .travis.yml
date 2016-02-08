@@ -7,9 +7,9 @@ install:
 - pip install -e .
 script:
 - coverage run --source sismic -m unittest discover
-- cd docs && make doctest && cd ..
 - coverage run -a --source sismic -m sismic.testing.behave docs/examples/elevator.yaml --features docs/examples/elevator.feature
 - coverage run -a --source sismic -m sismic.testing.behave docs/examples/microwave.yaml --features docs/examples/microwave.feature
+- cd docs && make doctest && cd ..
 after_success:
 - coveralls
 deploy:

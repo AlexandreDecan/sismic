@@ -134,7 +134,7 @@ class ExportToTreeTests(unittest.TestCase):
 
         for (filename, statechart), r in zip(self.files, results):
             with self.subTest(filename=filename):
-                self.assertEquals(io.text.export_to_tree(statechart), r)
+                self.assertEqual(io.text.export_to_tree(statechart), r)
 
     def test_all_states_are_exported(self):
         for filename, statechart in self.files:
@@ -152,5 +152,5 @@ class ExportToTreeTests(unittest.TestCase):
                     name = r.lstrip()
                     depth = statechart.depth_for(name)
                     spaces = len(r) - len(name)
-                    self.assertEquals(depth - 1, spaces)
+                    self.assertEqual(depth - 1, spaces)
 
