@@ -1,9 +1,8 @@
 import tempfile
 import shutil
 import os
-import subprocess
 import argparse
-
+from behave import __main__ as behave_main
 
 DEFAULT_STEPS_CONTENT = """
 from sismic.testing.steps import *
@@ -40,7 +39,9 @@ def execute_behave(statechart, features, parameters):
             step.write(DEFAULT_STEPS_CONTENT)
 
         # Execute behave
-        subprocess.call(['behave'] + parameters, cwd=tempdir)
+        os.chdir(tempdir)
+        behave_main.main(parameters)
+        # subprocess.call(['behave'] + parameters, cwd=tempdir)
 
 
 def main():
