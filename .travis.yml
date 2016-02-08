@@ -8,8 +8,8 @@ install:
 script:
 - coverage run --source sismic -m unittest discover
 - cd docs && make doctest && cd ..
-- coverage run --source sismic -m sismic-behave docs/examples/elevator.yaml --features docs/examples/elevator.feature
-- coverage run --source sismic -m sismic-behave docs/examples/microwave.yaml --features docs/examples/microwave.feature
+- coverage run --source sismic sismic-behave docs/examples/elevator.yaml --features docs/examples/elevator.feature
+- coverage run --source sismic sismic-behave docs/examples/microwave.yaml --features docs/examples/microwave.feature
 after_success:
 - coveralls
 deploy:
