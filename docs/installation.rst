@@ -18,7 +18,7 @@ From GitHub
 -----------
 
 You can also install Sismic from its repository by cloning it.
-The development occurs in the *master* branch, the latest stable distributed version is in the *stable* branch.
+The development occurs in the *devel* branch, the latest stable distributed version is in the *master* branch.
 
 1. Get the tool to create virtual environments: ``pip install virtualenv``
 2. Create the environment: ``virtualenv -p python3.4 env``
