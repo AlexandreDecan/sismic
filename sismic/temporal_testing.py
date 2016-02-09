@@ -2,7 +2,7 @@ from sismic.model import Statechart, BasicState, FinalState, Transition, Compoun
 
 
 class Condition:
-    def add_to(self, statechart: Statechart, id: str, parent_state_id: str, output_state_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_state_id: str, success_state_id: str):
         pass
 
 
@@ -10,7 +10,7 @@ class TrueCondition(Condition):
     def __init__(self):
         Condition.__init__(self)
 
-    def add_to(self, statechart: Statechart, id: str, parent_state_id: str, output_state_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_state_id: str, success_state_id: str):
         waiting_id = Counter.random()
 
         composite = CompoundState(id, initial=waiting_id)
@@ -19,14 +19,14 @@ class TrueCondition(Condition):
         waiting = BasicState(waiting_id)
         statechart.add_state(waiting, id)
 
-        statechart.add_transition(Transition(source=waiting_id, target=output_state_id))
+        statechart.add_transition(Transition(source=waiting_id, target=success_state_id))
 
 
 class FalseCondition(Condition):
     def __init__(self):
         Condition.__init__(self)
 
-    def add_to(self, statechart: Statechart, id: str, parent_state_id: str, output_state_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_state_id: str, success_state_id: str):
         waiting_id = Counter.random()
 
         composite = CompoundState(id, initial=waiting_id)
@@ -56,7 +56,7 @@ class Enter(Condition):
         Condition.__init__(self)
         self.state_id = state_id
 
-    def add_to(self, statechart: Statechart, id: str, parent_id: str, output_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str):
         waiting_id = Counter.random()
         exit_id = Counter.random()
 
@@ -74,7 +74,7 @@ class Enter(Condition):
                                              event='entered',
                                              guard='event.state == "{}"'.format(self.state_id)))
 
-        statechart.add_transition(Transition(source=id, target=output_id, guard='active("{}")'.format(exit_id)))
+        statechart.add_transition(Transition(source=id, target=success_state_id, guard='active("{}")'.format(exit_id)))
 
 
 class Exit(Condition):
@@ -82,7 +82,7 @@ class Exit(Condition):
         Condition.__init__(self)
         self.state_id = state_id
 
-    def add_to(self, statechart: Statechart, id: str, parent_id: str, output_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str):
         waiting_id = Counter.random()
         exit_id = Counter.random()
 
@@ -100,7 +100,7 @@ class Exit(Condition):
                                              event='exited',
                                              guard=('event.state == "{}"'.format(self.state_id))))
 
-        statechart.add_transition(Transition(source=id, target=output_id, guard='active("{}")'.format(exit_id)))
+        statechart.add_transition(Transition(source=id, target=success_state_id, guard='active("{}")'.format(exit_id)))
 
 
 class Consume(Condition):
@@ -149,7 +149,7 @@ class And(Condition):
         self.a = a
         self.b = b
 
-    def add_to(self, statechart: Statechart, id: str, parent_id: str, output_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str):
         parallel_state = OrthogonalState(id)
         statechart.add_state(parallel_state, parent=parent_id)
         a_id = Counter.random()
@@ -173,7 +173,7 @@ class And(Condition):
         self.b.add_to(statechart, b_id, composite_b_id, exit_b_id)
 
         statechart.add_transition(Transition(source=id,
-                                             target=output_id,
+                                             target=success_state_id,
                                              guard='active("{}") and active("{}")'.format(exit_a_id, exit_b_id)))
 
 
@@ -183,7 +183,7 @@ class Or(Condition):
         self.a = a
         self.b = b
 
-    def add_to(self, statechart: Statechart, id: str, parent_id: str, output_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str):
         parallel_state = OrthogonalState(id)
         statechart.add_state(parallel_state, parent=parent_id)
         a_id = Counter.random()
@@ -207,7 +207,7 @@ class Or(Condition):
         self.b.add_to(statechart, b_id, composite_b_id, exit_b_id)
 
         statechart.add_transition(Transition(source=id,
-                                             target=output_id,
+                                             target=success_state_id,
                                              guard='active("{}") or active("{}")'.format(exit_a_id, exit_b_id)))
 
 
