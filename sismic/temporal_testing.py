@@ -2,7 +2,8 @@ from sismic.model import Statechart, BasicState, FinalState, Transition, Compoun
 
 
 class Condition:
-    def add_to(self, statechart: Statechart, id: str, parent_state_id: str, success_state_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_state_id: str,
+               success_state_id: str, failure_state_id: str):
         pass
 
 
@@ -10,7 +11,8 @@ class TrueCondition(Condition):
     def __init__(self):
         Condition.__init__(self)
 
-    def add_to(self, statechart: Statechart, id: str, parent_state_id: str, success_state_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_state_id: str, success_state_id: str,
+               failure_state_id: str):
         waiting_id = Counter.random()
 
         composite = CompoundState(id, initial=waiting_id)
@@ -26,7 +28,8 @@ class FalseCondition(Condition):
     def __init__(self):
         Condition.__init__(self)
 
-    def add_to(self, statechart: Statechart, id: str, parent_state_id: str, success_state_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_state_id: str, success_state_id: str,
+               failure_state_id: str):
         waiting_id = Counter.random()
 
         composite = CompoundState(id, initial=waiting_id)
@@ -34,6 +37,7 @@ class FalseCondition(Condition):
 
         waiting = BasicState(waiting_id)
         statechart.add_state(waiting, id)
+        statechart.add_transition(Transition(source=waiting_id, target=failure_state_id))
 
 
 
@@ -56,7 +60,7 @@ class Enter(Condition):
         Condition.__init__(self)
         self.state_id = state_id
 
-    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str, failure_state_id: str):
         waiting_id = Counter.random()
         exit_id = Counter.random()
 
@@ -82,7 +86,7 @@ class Exit(Condition):
         Condition.__init__(self)
         self.state_id = state_id
 
-    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str, failure_state_id: str):
         waiting_id = Counter.random()
         exit_id = Counter.random()
 
@@ -149,7 +153,7 @@ class And(Condition):
         self.a = a
         self.b = b
 
-    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str, failure_state_id: str):
         parallel_state = OrthogonalState(id)
         statechart.add_state(parallel_state, parent=parent_id)
         a_id = Counter.random()
@@ -157,24 +161,44 @@ class And(Condition):
 
         composite_a_id = Counter.random()
         composite_b_id = Counter.random()
-        exit_a_id = Counter.random()
-        exit_b_id = Counter.random()
+
+        success_a_id = Counter.random()
+        success_b_id = Counter.random()
+
+        # These sentry states are required because one can not have two transitions leaving two states in different
+        # parallel regions for reaching a third state being out of these regions.
+        failure_a_id = Counter.random()
+        failure_b_id = Counter.random()
 
         composite_a = CompoundState(composite_a_id, initial=a_id)
         statechart.add_state(composite_a, parent=id)
-        exit_a = BasicState(exit_a_id)
-        statechart.add_state(exit_a, parent=composite_a_id)
-        self.a.add_to(statechart, a_id, composite_a_id, exit_a_id)
+
+        success_a = BasicState(success_a_id)
+        statechart.add_state(success_a, parent=composite_a_id)
+
+        failure_a = BasicState(failure_a_id)
+        statechart.add_state(failure_a, parent=composite_a_id)
+
+        self.a.add_to(statechart, a_id, composite_a_id, success_a_id, failure_a_id)
 
         composite_b = CompoundState(composite_b_id, initial=b_id)
         statechart.add_state(composite_b, parent=id)
-        exit_b = BasicState(exit_b_id)
-        statechart.add_state(exit_b, parent=composite_b_id)
-        self.b.add_to(statechart, b_id, composite_b_id, exit_b_id)
+
+        success_b = BasicState(success_b_id)
+        statechart.add_state(success_b, parent=composite_b_id)
+
+        failure_b = BasicState(failure_b_id)
+        statechart.add_state(failure_b, parent=composite_b_id)
+
+        self.b.add_to(statechart, b_id, composite_b_id, success_b_id, failure_b_id)
 
         statechart.add_transition(Transition(source=id,
                                              target=success_state_id,
-                                             guard='active("{}") and active("{}")'.format(exit_a_id, exit_b_id)))
+                                             guard='active("{}") and active("{}")'.format(success_a_id, success_b_id)))
+
+        statechart.add_transition(Transition(source=id,
+                                             target=failure_state_id,
+                                             guard='active("{}") or active("{}")'.format(failure_a_id, failure_b_id)))
 
 
 class Or(Condition):
@@ -183,7 +207,7 @@ class Or(Condition):
         self.a = a
         self.b = b
 
-    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str, failure_state_id: str):
         parallel_state = OrthogonalState(id)
         statechart.add_state(parallel_state, parent=parent_id)
         a_id = Counter.random()
@@ -191,24 +215,44 @@ class Or(Condition):
 
         composite_a_id = Counter.random()
         composite_b_id = Counter.random()
-        exit_a_id = Counter.random()
-        exit_b_id = Counter.random()
+
+        success_a_id = Counter.random()
+        success_b_id = Counter.random()
+
+        # These sentry states are required because one can not have two transitions leaving two states in different
+        # parallel regions for reaching a third state being out of these regions.
+        failure_a_id = Counter.random()
+        failure_b_id = Counter.random()
 
         composite_a = CompoundState(composite_a_id, initial=a_id)
         statechart.add_state(composite_a, parent=id)
-        exit_a = BasicState(exit_a_id)
-        statechart.add_state(exit_a, parent=composite_a_id)
-        self.a.add_to(statechart, a_id, composite_a_id, exit_a_id)
+
+        success_a = BasicState(success_a_id)
+        statechart.add_state(success_a, parent=composite_a_id)
+
+        failure_a = BasicState(failure_a_id)
+        statechart.add_state(failure_a, parent=composite_a_id)
+
+        self.a.add_to(statechart, a_id, composite_a_id, success_a_id, failure_a_id)
 
         composite_b = CompoundState(composite_b_id, initial=b_id)
         statechart.add_state(composite_b, parent=id)
-        exit_b = BasicState(exit_b_id)
-        statechart.add_state(exit_b, parent=composite_b_id)
-        self.b.add_to(statechart, b_id, composite_b_id, exit_b_id)
+
+        success_b = BasicState(success_b_id)
+        statechart.add_state(success_b, parent=composite_b_id)
+
+        failure_b = BasicState(failure_b_id)
+        statechart.add_state(failure_b, parent=composite_b_id)
+
+        self.b.add_to(statechart, b_id, composite_b_id, success_b_id, failure_b_id)
 
         statechart.add_transition(Transition(source=id,
                                              target=success_state_id,
-                                             guard='active("{}") or active("{}")'.format(exit_a_id, exit_b_id)))
+                                             guard='active("{}") or active("{}")'.format(success_a_id, success_b_id)))
+
+        statechart.add_transition(Transition(source=id,
+                                             target=failure_state_id,
+                                             guard='active("{}") and active("{}")'.format(failure_a_id, failure_b_id)))
 
 
 class Then(Condition):
