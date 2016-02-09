@@ -48,7 +48,7 @@ class Statechart:
         """
         return sorted(self._states.keys())
 
-    def add_state(self, state: StateMixin, parent):
+    def add_state(self, state: StateMixin, parent: str):
         """
         Add given state (a *StateMixin* instance) on given parent (its name as an *str*).
         If given state should be use as a root state, set *parent* to None.
