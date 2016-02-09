@@ -67,7 +67,7 @@ class TemporalTests(unittest.TestCase):
         out_state = BasicState('out')
         statechart.add_state(initial_state, None)
         statechart.add_state(out_state, 'initial_state')
-        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', output_id='out')
+        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', success_state_id='out')
         interpreter = Interpreter(statechart)
 
         self.assertFalse('out' in interpreter.configuration)
@@ -90,7 +90,7 @@ class TemporalTests(unittest.TestCase):
         out_state = BasicState('out')
         statechart.add_state(initial_state, None)
         statechart.add_state(out_state, 'initial_state')
-        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', output_id='out')
+        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', success_state_id='out')
         interpreter = Interpreter(statechart)
 
         self.assertFalse('out' in interpreter.configuration)
@@ -113,7 +113,7 @@ class TemporalTests(unittest.TestCase):
         out_state = BasicState('out')
         statechart.add_state(initial_state, None)
         statechart.add_state(out_state, 'initial_state')
-        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', output_id='out')
+        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', success_state_id='out')
         interpreter = Interpreter(statechart)
 
         self.assertFalse('out' in interpreter.configuration)
@@ -136,7 +136,7 @@ class TemporalTests(unittest.TestCase):
         out_state = BasicState('out')
         statechart.add_state(initial_state, None)
         statechart.add_state(out_state, 'initial_state')
-        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', output_id='out')
+        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', success_state_id='out')
         interpreter = Interpreter(statechart)
 
         self.assertFalse('out' in interpreter.configuration)
@@ -159,7 +159,7 @@ class TemporalTests(unittest.TestCase):
         out_state = BasicState('out')
         statechart.add_state(initial_state, None)
         statechart.add_state(out_state, 'initial_state')
-        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', output_id='out')
+        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', success_state_id='out')
         interpreter = Interpreter(statechart)
 
         self.assertFalse('out' in interpreter.configuration)
@@ -182,7 +182,7 @@ class TemporalTests(unittest.TestCase):
         out_state = BasicState('out')
         statechart.add_state(initial_state, None)
         statechart.add_state(out_state, 'initial_state')
-        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', output_id='out')
+        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', success_state_id='out')
         interpreter = Interpreter(statechart)
 
         self.assertFalse('out' in interpreter.configuration)
@@ -205,7 +205,7 @@ class TemporalTests(unittest.TestCase):
         out_state = BasicState('out')
         statechart.add_state(initial_state, None)
         statechart.add_state(out_state, 'initial_state')
-        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', output_id='out')
+        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', success_state_id='out')
         interpreter = Interpreter(statechart)
 
         self.assertFalse('out' in interpreter.configuration)
@@ -224,7 +224,7 @@ class TemporalTests(unittest.TestCase):
         out_state = BasicState('out')
         statechart.add_state(initial_state, None)
         statechart.add_state(out_state, 'initial_state')
-        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', output_id='out')
+        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', success_state_id='out')
         interpreter = Interpreter(statechart)
 
         self.assertFalse('out' in interpreter.configuration)
@@ -243,7 +243,7 @@ class TemporalTests(unittest.TestCase):
         out_state = BasicState('out')
         statechart.add_state(initial_state, None)
         statechart.add_state(out_state, 'initial_state')
-        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', output_id='out')
+        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', success_state_id='out')
         interpreter = Interpreter(statechart)
 
         self.assertFalse('out' in interpreter.configuration)
@@ -262,7 +262,7 @@ class TemporalTests(unittest.TestCase):
         out_state = BasicState('out')
         statechart.add_state(initial_state, None)
         statechart.add_state(out_state, 'initial_state')
-        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', output_id='out')
+        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', success_state_id='out')
         interpreter = Interpreter(statechart)
 
         self.assertFalse('out' in interpreter.configuration)
@@ -281,7 +281,7 @@ class TemporalTests(unittest.TestCase):
         out_state = BasicState('out')
         statechart.add_state(initial_state, None)
         statechart.add_state(out_state, 'initial_state')
-        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', output_id='out')
+        and_state.add_to(statechart=statechart, id='And', parent_id='initial_state', success_state_id='out')
         interpreter = Interpreter(statechart)
 
         self.assertFalse('out' in interpreter.configuration)
