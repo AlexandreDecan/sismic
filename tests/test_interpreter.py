@@ -25,8 +25,6 @@ class SimulatorSimpleTests(unittest.TestCase):
         self.interpreter = Interpreter(sc, DummyEvaluator)
 
     def test_init(self):
-        with open('tests/yaml/simple.yaml') as f:
-            sc = io.import_from_yaml(f)
         self.assertEqual(self.interpreter.configuration, ['root', 's1'])
         self.assertFalse(self.interpreter.final)
 
