@@ -1,5 +1,6 @@
 import unittest
-from sismic.temporal_testing import Enter, Exit, And, Or, FalseCondition, TrueCondition, Condition
+from sismic.temporal_testing import Enter, Exit, And, Or, Not, FalseCondition, TrueCondition, UndeterminedCondition
+from sismic.temporal_testing import Condition
 from sismic.interpreter import Interpreter
 from sismic.model import Event, Statechart, CompoundState, BasicState, Transition
 from sismic.testing import teststory_from_trace
@@ -127,6 +128,21 @@ class TemporalTests(unittest.TestCase):
     def test_false_and_false(self):
         self.generic_test(And(FalseCondition(), FalseCondition()), False, True)
 
+    def test_true_and_undertermined(self):
+        self.generic_test(And(TrueCondition(), UndeterminedCondition()), False, False)
+
+    def test_false_and_undertermined(self):
+        self.generic_test(And(FalseCondition(), UndeterminedCondition()), False, True)
+
+    def test_undertermined_and_true(self):
+        self.generic_test(And(UndeterminedCondition(), TrueCondition()), False, False)
+
+    def test_undertermined_and_false(self):
+        self.generic_test(And(UndeterminedCondition(), FalseCondition()), False, True)
+
+    def test_undertermined_and_undertermined(self):
+        self.generic_test(And(UndeterminedCondition(), UndeterminedCondition()), False, False)
+
     def test_or(self):
         """
         Tests if a is exited OR b is entered.
@@ -171,6 +187,30 @@ class TemporalTests(unittest.TestCase):
 
     def test_false_or_false(self):
         self.generic_test(Or(FalseCondition(), FalseCondition()), False, True)
+
+    def test_true_or_undetermined(self):
+        self.generic_test(Or(TrueCondition(), UndeterminedCondition()), True, False)
+
+    def test_false_or_undetermined(self):
+        self.generic_test(Or(FalseCondition(), UndeterminedCondition()), False, False)
+
+    def test_undetermined_or_true(self):
+        self.generic_test(Or(UndeterminedCondition(), TrueCondition()), True, False)
+
+    def test_undetermined_or_false(self):
+        self.generic_test(Or(UndeterminedCondition(), FalseCondition()), False, False)
+
+    def test_undetermined_or_undetermined(self):
+        self.generic_test(Or(UndeterminedCondition(), UndeterminedCondition()), False, False)
+
+    def test_not_true(self):
+        self.generic_test(Not(TrueCondition()), False, True)
+
+    def test_not_false(self):
+        self.generic_test(Not(FalseCondition()), True, False)
+
+    def test_not_undetermined(self):
+        self.generic_test(Not(UndeterminedCondition()), False, False)
 
 
 

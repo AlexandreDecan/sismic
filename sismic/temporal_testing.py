@@ -40,6 +40,22 @@ class FalseCondition(Condition):
         statechart.add_transition(Transition(source=waiting_id, target=failure_state_id))
 
 
+class UndeterminedCondition(Condition):
+    def __init__(self):
+        Condition.__init__(self)
+
+    def add_to(self, statechart: Statechart, id: str, parent_state_id: str,
+               success_state_id: str, failure_state_id: str):
+        waiting_state = BasicState(id)
+        statechart.add_state(waiting_state, parent_state_id)
+
+        # Non fireable transitions so that this is linked to success and failure states, as usual
+        statechart.add_transition(Transition(source=id, target = success_state_id, guard='False'))
+        statechart.add_transition(Transition(source=id, target = failure_state_id, guard='False'))
+
+
+
+
 
 class Counter(object):
     next = 1
@@ -255,22 +271,19 @@ class Or(Condition):
                                              guard='active("{}") and active("{}")'.format(failure_a_id, failure_b_id)))
 
 
-class Then(Condition):
-    """
-        This condition combines two successive conditions a and b.
-        To succeed, a must be verified, and after that, b must be verified.
-    """
-    def __init__(self, a, b):
+class Not(Condition):
+    def __init__(self, cond :Condition):
         Condition.__init__(self)
-        self.a = a
-        self.b = b
+        self.condition = cond
 
-    def add_to(self, statechart: Statechart, id: str, parent_id: str, output_id: str):
-        a_id = Counter.random()
-        b_id = Counter.random()
-
-        composite = CompoundState(id, initial=a_id)
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str, failure_state_id: str):
+        condition_id = Counter.random()
+        composite = CompoundState(id, initial=condition_id)
         statechart.add_state(composite, parent_id)
 
-        self.b.add_to(statechart, b_id, id, output_id)
-        self.a.add_to(statechart, a_id, id, b_id)
+        self.condition.add_to(statechart, condition_id, id,
+                              success_state_id=failure_state_id, failure_state_id=success_state_id)
+
+
+class Then(Condition):
+    pass
