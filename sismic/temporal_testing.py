@@ -286,4 +286,24 @@ class Not(Condition):
 
 
 class Then(Condition):
-    pass
+    """
+    This condition is verified if a first condition is verified, and after that a second condition is verified.
+    The verification of the second condition does not start before the first condition is verified.
+    """
+
+    def __init__(self, a :Condition, b :Condition):
+        Condition.__init__(self)
+        self.a = a
+        self.b = b
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str, failure_state_id: str):
+        a_id = Counter.random()
+        b_id = Counter.random()
+
+        composite = CompoundState(id, initial=a_id)
+        statechart.add_state(composite, parent_id)
+
+        self.b.add_to(statechart, b_id, id, success_state_id=success_state_id, failure_state_id=failure_state_id)
+        self.a.add_to(statechart, a_id, id, success_state_id=a_id, failure_state_id=failure_state_id)
+
+

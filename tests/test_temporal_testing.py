@@ -1,6 +1,6 @@
 import unittest
-from sismic.temporal_testing import Enter, Exit, And, Or, Not, FalseCondition, TrueCondition, UndeterminedCondition
-from sismic.temporal_testing import Condition
+from sismic.temporal_testing import Enter, Exit, And, Or, Not, Then
+from sismic.temporal_testing import Condition, FalseCondition, TrueCondition, UndeterminedCondition
 from sismic.interpreter import Interpreter
 from sismic.model import Event, Statechart, CompoundState, BasicState, Transition
 from sismic.testing import teststory_from_trace
@@ -211,6 +211,33 @@ class TemporalTests(unittest.TestCase):
 
     def test_not_undetermined(self):
         self.generic_test(Not(UndeterminedCondition()), False, False)
+
+    def true_then_true(self):
+        self.generic_test(Then(TrueCondition(), TrueCondition()), True, False)
+
+    def true_then_false(self):
+        self.generic_test(Then(TrueCondition(), FalseCondition()), False, True)
+
+    def true_then_undetermined(self):
+        self.generic_test(Then(TrueCondition(), UndeterminedCondition()), False, False)
+
+    def false_then_true(self):
+        self.generic_test(Then(FalseCondition(), TrueCondition()), False, True)
+
+    def false_then_false(self):
+        self.generic_test(Then(FalseCondition(), FalseCondition()), False, True)
+
+    def false_then_undetermined(self):
+        self.generic_test(Then(FalseCondition(), UndeterminedCondition()), False, False)
+
+    def undetermined_then_true(self):
+        self.generic_test(Then(UndeterminedCondition(), TrueCondition()), False, False)
+
+    def undetermined_then_false(self):
+        self.generic_test(Then(UndeterminedCondition(), FalseCondition()), False, False)
+
+    def undetermined_then_undetermined(self):
+        self.generic_test(Then(UndeterminedCondition(), UndeterminedCondition()), False, False)
 
 
 
