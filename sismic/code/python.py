@@ -18,7 +18,10 @@ class FrozenContext:
         self.__frozencontext = {k: copy.copy(v) for k, v in context.items()}
 
     def __getattr__(self, item):
-        return self.__frozencontext[item]
+        try:
+            return self.__frozencontext[item]
+        except KeyError:
+            raise AttributeError('{} has no attribute {}'.format(self, item))
 
 
 class PythonEvaluator(Evaluator):
