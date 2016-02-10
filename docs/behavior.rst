@@ -100,6 +100,22 @@ and display as summary of all executed scenarios and encountered errors:
     22 steps passed, 0 failed, 0 skipped, 0 undefined
     Took 0m0.027s
 
+Coverage data, including the states that were visited and the transitions that were processed, can be displayed
+using the ``--coverage`` argument, as in ``sismic-behave statechart.yaml --feature tests.feature --coverage``:
+
+.. code::
+
+    [...]
+
+    State coverage: 55.56%
+    Entered states: floorSelecting (2) | floorListener (1) | doorsOpen (1) | active (1) | movingElevator (1)
+    Remaining states: doorsClosed | moving | movingDown | movingUp
+    Transition coverage: 12.50%
+    Processed transitions: floorSelecting [floorSelected] -> floorSelecting (1)
+
+    [...]
+
+
 
 "Given" and "when" steps
 ------------------------

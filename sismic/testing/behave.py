@@ -11,6 +11,11 @@ from sismic.testing.steps import *
 DEFAULT_ENVIRONMENT_CONTENT = """
 from behave.model import Step
 
+def before_scenario(context, scenario):
+    context.execute_steps('Given I import a statechart from {{path}}')
+"""
+
+COVERAGE_ENVIRONMENT_CONTENT = """
 from itertools import chain
 from collections import Counter
 
@@ -30,10 +35,6 @@ def transitions_coverage(transitions, processed):
 
     print('Transition coverage: {:.2f}%'.format(100 * coverage_stat))
     print('Processed transitions:', ' | '.join(('{} ({})'.format(k, v) for k, v in processed_stats.most_common())))
-
-
-def before_scenario(context, scenario):
-    context.execute_steps('Given I import a statechart from {{path}}')
 
 
 def after_scenario(context, scenario):
@@ -65,7 +66,7 @@ def after_feature(context, feature):
 """
 
 
-def execute_behave(statechart, features, parameters):
+def execute_behave(statechart, features, coverage, parameters):
     # Create temporary directory
     with tempfile.TemporaryDirectory() as tempdir:
         # Move statechart inside
@@ -79,7 +80,10 @@ def execute_behave(statechart, features, parameters):
 
         # Create an environment file
         with open(os.path.join(tempdir, 'environment.py'), 'w') as environment:
-            environment.write(DEFAULT_ENVIRONMENT_CONTENT.replace('{{path}}', os.path.join(tempdir, statechart_filename)))
+            content = DEFAULT_ENVIRONMENT_CONTENT
+            if coverage:
+                content += COVERAGE_ENVIRONMENT_CONTENT
+            environment.write(content.replace('{{path}}', os.path.join(tempdir, statechart_filename)))
 
         # Create a steps subdirectory
         os.mkdir(os.path.join(tempdir, 'steps'))
@@ -105,9 +109,11 @@ def main():
                         help='A YAML file describing a statechart')
     parser.add_argument('--features', metavar='features', nargs='+', type=str,
                         help='A list of files containing features')
+    parser.add_argument('--coverage', action='store_true', default=False,
+                        help='Display coverage data')
 
     args, parameters = parser.parse_known_args()
-    execute_behave(args.statechart, args.features, parameters)
+    execute_behave(args.statechart, args.features, args.coverage, parameters)
 
 
 if __name__ == '__main__':

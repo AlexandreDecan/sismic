@@ -24,7 +24,7 @@ More specifically, Sismic provides:
 - Synchronous and asynchronous simulation, in real time or simulated time
 - Support for communication between statecharts and co-simulation
 - Built-in support for expressing actions and guards using regular Python code
-- A design-by-contract approach for statecharts
+- Design-by-contract and behavior-driven development approaches for statecharts
 - A unit testing framework for statecharts, including generation of test scenarios
 
 
