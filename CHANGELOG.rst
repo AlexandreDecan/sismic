@@ -1,10 +1,14 @@
 Changelog
 =========
 
-Unreleased
-----------
-- (Changed) YAM: use *root state:* instead of *initial state:*.
-- (Changed) Testing: Behave is now called directly from Python instead of using a subprocess.
+0.19.0 (2016-02-10)
+-------------------
+
+- (Added) BDD can now output coverage data using ``--coverage`` command-line argument.
+- (Changed) The YAML definition of a statechart must use *root state:* instead of *initial state:*.
+- (Changed) When a contract is evaluated by a ``PythonEvaluator``, ``__old__.x`` raises an ``AttributeError`` instead
+  of a ``KeyError`` if ``x`` does not exist.
+- (Changed) Behave is now called from Python instead of using a subprocess and thus allows debugging.
 
 0.18.1 (2016-02-03)
 -------------------
