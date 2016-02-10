@@ -29,7 +29,7 @@ def repeat_step(context, step, repeat):
     keyword = step.split(' ', 1)[0].lower()
     assert keyword in ['given', 'when', 'and', 'but', 'then'], 'Step {} should start with a supported keyword'.format(step)
 
-    for x in range(repeat):
+    for _ in range(repeat):
         context.execute_steps(step)
 
 
@@ -60,7 +60,7 @@ def load_statechart(context, path):
     context._steps = []
     context._events = []
     context._automatic_execution = True
-    context._interpreter.bind(lambda e: context._events.append(e))
+    context._interpreter.bind(context._events.append)
 
 
 @given('I execute the statechart')
@@ -100,7 +100,7 @@ def send_event(context, event_name, parameter=None, value=None):
 @given('I wait {seconds:g} second')
 @when('I wait {seconds:g} seconds')
 @when('I wait {seconds:g} second')
-def wait_seconds(context, seconds):
+def wait_seconds_once(context, seconds):
     context._interpreter.time += seconds
     _execute_statechart(context)
 
@@ -110,9 +110,8 @@ def wait_seconds(context, seconds):
 @when('I wait {seconds:g} seconds {repeat:d} times')
 @when('I wait {seconds:g} second {repeat:d} times')
 def wait_seconds(context, seconds, repeat):
-    for i in range(repeat):
-        context._interpreter.time += seconds
-        _execute_statechart(context)
+    for _ in range(repeat):
+        wait_seconds_once(context, seconds)
 
 
 @given('I set variable {variable_name} to {value}')
