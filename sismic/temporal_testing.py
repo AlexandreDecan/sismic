@@ -429,11 +429,9 @@ def prepare_expression(decision: bool, premise: Condition, consequence: Conditio
     rule_not_satisfied_id = Counter.random()
     final_state_id = Counter.random()
 
-    #statechart.add_state(OrthogonalState(parallel_id), None)
-    #statechart.add_state(OrthogonalState(status_id), parallel_id)
-    #statechart.add_state(CompoundState(machine_id, initial=rule_id), parallel_id)
-    statechart.add_state(CompoundState(machine_id, initial=premise_id), None)
-    #statechart.add_state(CompoundState(machine_id), None)
+    statechart.add_state(OrthogonalState(parallel_id), None)
+    statechart.add_state(OrthogonalState(status_id), parallel_id)
+    statechart.add_state(CompoundState(machine_id, initial=premise_id), parallel_id)
 
     final_state = FinalState(final_state_id)
     statechart.add_state(final_state, machine_id)
