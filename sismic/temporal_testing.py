@@ -389,6 +389,78 @@ class Then(Condition):
         statechart.add_state(composite, parent_id)
 
         self.b.add_to(statechart, b_id, id, success_state_id=success_state_id, failure_state_id=failure_state_id)
-        self.a.add_to(statechart, a_id, id, success_state_id=a_id, failure_state_id=failure_state_id)
+        self.a.add_to(statechart, a_id, id, success_state_id=b_id, failure_state_id=failure_state_id)
 
+
+def prepare_expression(decision: bool, premise: Condition, consequence: Condition):
+    CHECK_EVENT = 'check'
+
+    """
+    Generate a statechart representing the expression of a constraint. Each constraint has the following structure:
+
+    decision premise consequence
+
+    Where:
+
+    - premise is a condition
+    - consequence is a condition that must be verified if the premise is verified
+    - decision determines if the rule verification is desired or not:
+    true if the rule must be verified, false if the rule must be not verified.
+
+    For instance, prepare_expression(Forbid(), A, B) means that, if A is verified, B must not be verified.
+
+    The resulting statechart has a unique final state that is reached if the expression is satisfied.
+
+    :param premise: a condition
+    :param consequence: a condition being checked if premise is verified
+    :return: A statechart representing the given expression
+    """
+
+    statechart = Statechart(Counter.random())
+
+    parallel_id = Counter.random()
+    status_id = Counter.random()
+    machine_id = Counter.random()
+    premise_id = Counter.random()
+    consequence_id = Counter.random()
+    success_id = Counter.random()
+    failure_id = Counter.random()
+    rule_satisfied_id = Counter.random()
+    rule_not_satisfied_id = Counter.random()
+    final_state_id = Counter.random()
+
+    #statechart.add_state(OrthogonalState(parallel_id), None)
+    #statechart.add_state(OrthogonalState(status_id), parallel_id)
+    #statechart.add_state(CompoundState(machine_id, initial=rule_id), parallel_id)
+    statechart.add_state(CompoundState(machine_id, initial=premise_id), None)
+    #statechart.add_state(CompoundState(machine_id), None)
+
+    final_state = FinalState(final_state_id)
+    statechart.add_state(final_state, machine_id)
+
+    rule_satisfied = BasicState(rule_satisfied_id)
+    statechart.add_state(rule_satisfied, machine_id)
+    if decision:
+        statechart.add_transition(Transition(source=rule_satisfied_id, target=final_state_id))
+
+    rule_not_satisfied = BasicState(rule_not_satisfied_id)
+    statechart.add_state(rule_not_satisfied, machine_id)
+    if not decision:
+        statechart.add_transition(Transition(source=rule_not_satisfied_id, target=final_state_id))
+
+    success = BasicState(success_id)
+    statechart.add_state(success, machine_id)
+    statechart.add_transition(Transition(source=success_id, target=rule_satisfied_id, event=CHECK_EVENT))
+
+    failure = BasicState(failure_id)
+    statechart.add_state(failure, machine_id)
+    statechart.add_transition(Transition(source=failure_id, target=rule_not_satisfied_id, event=CHECK_EVENT))
+
+    consequence.add_to(statechart, consequence_id, machine_id, success_state_id=success_id, failure_state_id=failure_id)
+    statechart.add_transition(Transition(source=consequence_id, target=rule_not_satisfied_id, event=CHECK_EVENT))
+
+    premise.add_to(statechart, premise_id, machine_id, success_state_id=consequence_id, failure_state_id=final_state_id)
+    statechart.add_transition(Transition(source=premise_id, target=final_state_id, event=CHECK_EVENT))
+
+    return statechart
 
