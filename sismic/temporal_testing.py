@@ -418,6 +418,7 @@ def prepare_expression(decision: bool, premise: Condition, consequence: Conditio
 
     statechart = Statechart(Counter.random())
 
+    global_id = Counter.random()
     parallel_id = Counter.random()
     status_id = Counter.random()
     machine_id = Counter.random()
@@ -429,12 +430,16 @@ def prepare_expression(decision: bool, premise: Condition, consequence: Conditio
     rule_not_satisfied_id = Counter.random()
     final_state_id = Counter.random()
 
-    statechart.add_state(OrthogonalState(parallel_id), None)
+    statechart.add_state(CompoundState(global_id, initial=parallel_id), None)
+    statechart.add_state(OrthogonalState(parallel_id), global_id)
+
     statechart.add_state(OrthogonalState(status_id), parallel_id)
+    # Without this 'useless' basic state, an empty orthogonal state prevents the stachart to finish.
+    statechart.add_state(BasicState(Counter.random()), status_id)
     statechart.add_state(CompoundState(machine_id, initial=premise_id), parallel_id)
 
     final_state = FinalState(final_state_id)
-    statechart.add_state(final_state, machine_id)
+    statechart.add_state(final_state, global_id)
 
     rule_satisfied = BasicState(rule_satisfied_id)
     statechart.add_state(rule_satisfied, machine_id)
