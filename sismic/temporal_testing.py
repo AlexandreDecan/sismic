@@ -392,11 +392,11 @@ class Then(Condition):
         self.a.add_to(statechart, a_id, id, success_state_id=b_id, failure_state_id=failure_state_id)
 
 
-def prepare_expression(decision: bool, premise: Condition, consequence: Condition):
+def prepare_first_time_expression(decision: bool, premise: Condition, consequence: Condition):
     CHECK_EVENT = 'check'
 
     """
-    Generate a statechart representing the expression of a constraint. Each constraint has the following structure:
+    Generate a statechart representing the expression of a rule. Each rule has the following structure:
 
     decision premise consequence
 
@@ -405,11 +405,15 @@ def prepare_expression(decision: bool, premise: Condition, consequence: Conditio
     - premise is a condition
     - consequence is a condition that must be verified if the premise is verified
     - decision determines if the rule verification is desired or not:
-    true if the rule must be verified, false if the rule must be not verified.
+    True if the rule must be verified, False if the rule must be not verified.
 
-    For instance, prepare_expression(Forbid(), A, B) means that, if A is verified, B must not be verified.
+    For instance, prepare_first_time_expression(False, A, B) means that, after the first time A is verified,
+    B must not be verified.
+
+    If the premise is never verified, the rule is reputed to be verified.
 
     The resulting statechart has a unique final state that is reached if the expression is satisfied.
+
 
     :param premise: a condition
     :param consequence: a condition being checked if premise is verified
@@ -462,8 +466,9 @@ def prepare_expression(decision: bool, premise: Condition, consequence: Conditio
     consequence.add_to(statechart, consequence_id, machine_id, success_state_id=success_id, failure_state_id=failure_id)
     statechart.add_transition(Transition(source=consequence_id, target=rule_not_satisfied_id, event=CHECK_EVENT))
 
-    premise.add_to(statechart, premise_id, machine_id, success_state_id=consequence_id, failure_state_id=final_state_id)
-    statechart.add_transition(Transition(source=premise_id, target=final_state_id, event=CHECK_EVENT))
+    premise.add_to(statechart, premise_id, machine_id,
+                   success_state_id=rule_satisfied_id, failure_state_id=rule_not_satisfied_id)
+    statechart.add_transition(Transition(source=premise_id, target=rule_satisfied_id, event=CHECK_EVENT))
 
     return statechart
 
