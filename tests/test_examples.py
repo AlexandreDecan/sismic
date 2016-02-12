@@ -4,7 +4,7 @@ from sismic.interpreter import Interpreter
 from sismic.model import Event
 
 
-class SimulatorElevatorTests(unittest.TestCase):
+class ElevatorTests(unittest.TestCase):
     def setUp(self):
         with open('docs/examples/elevator.yaml') as f:
             self.sc = io.import_from_yaml(f)
@@ -15,19 +15,26 @@ class SimulatorElevatorTests(unittest.TestCase):
 
     def test_floor_selection(self):
         self.interpreter.queue(Event('floorSelected', floor=4)).execute_once()
-        self.assertEqual(self.interpreter._evaluator.context['destination'], 4)
+        self.assertEqual(self.interpreter.context['destination'], 4)
         self.interpreter.execute_once()
         self.assertEqual(sorted(self.interpreter.configuration), ['active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'])
 
     def test_doorsOpen(self):
         self.interpreter.queue(Event('floorSelected', floor=4))
         self.interpreter.execute()
-        self.assertEqual(self.interpreter._evaluator.context['current'], 4)
+        self.assertEqual(self.interpreter.context['current'], 4)
         self.interpreter.time += 10
         self.interpreter.execute()
 
         self.assertTrue('doorsOpen' in self.interpreter.configuration)
-        self.assertEqual(self.interpreter._evaluator.context['current'], 0)
+        self.assertEqual(self.interpreter.context['current'], 0)
+
+
+class ElevatorContractTests(ElevatorTests):
+    def setUp(self):
+        with open('docs/examples/elevator_contract.yaml') as f:
+            self.sc = io.import_from_yaml(f)
+        self.interpreter = Interpreter(self.sc)
 
 
 class WriterExecutionTests(unittest.TestCase):
