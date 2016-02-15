@@ -3,6 +3,7 @@ from sismic import io
 from sismic.interpreter import Interpreter
 from sismic.stories import Story, Pause, Event
 from sismic.testing import teststory_from_trace
+from sismic.testing.tester import ExecutionWatcher
 
 
 class StoryFromTraceTests(unittest.TestCase):
@@ -18,17 +19,17 @@ class StoryFromTraceTests(unittest.TestCase):
             Event('started'),
             Pause(2),
             Event('step'),
-            Event('entered', state='root'),
-            Event('entered', state='s1'),
+            Event('entered', entered_state='root'),
+            Event('entered', entered_state='s1'),
             Event('step'),
-            Event('consumed', event=Event('goto s2')),
-            Event('exited', state='s1'),
-            Event('processed', source='s1', target='s2', event=Event('goto s2')),
-            Event('entered', state='s2'),
+            Event('consumed', consumed_event=Event('goto s2')),
+            Event('exited', exited_state='s1'),
+            Event('processed', source_state='s1', target_state='s2', consumed_event=Event('goto s2')),
+            Event('entered', entered_state='s2'),
             Event('step'),
-            Event('exited', state='s2'),
-            Event('processed', source='s2', target='s3', event=None),
-            Event('entered', state='s3'),
+            Event('exited', exited_state='s2'),
+            Event('processed', source_state='s2', target_state='s3', consumed_event=None),
+            Event('entered', entered_state='s3'),
             Event('stopped')
         ])
         for a, b in zip(story, expected):
@@ -90,3 +91,58 @@ class ElevatorStoryTests(unittest.TestCase):
                     tester = Interpreter(io.import_from_yaml(f))
                 test_story.tell(tester)
                 self.assertTrue(tester.final)
+
+
+class WatchElevatorTests(unittest.TestCase):
+    def setUp(self):
+        with open('docs/examples/elevator.yaml') as f:
+            sc = io.import_from_yaml(f)
+        self.tested = Interpreter(sc)
+        self.watcher = ExecutionWatcher(self.tested)
+
+    def test_7th_floor_never_reached(self):
+        with open('docs/examples/tester_elevator_7th_floor_never_reached.yaml') as f:
+            tester_sc = io.import_from_yaml(f)
+
+        tester = self.watcher.watch_with(tester_sc)
+        self.watcher.start()
+
+        # Send elevator to 4th
+        self.tested.queue(Event('floorSelected', floor=4)).execute()
+        self.watcher.stop()
+        self.assertTrue(tester.final)
+
+    def test_7th_floor_never_reached_fails(self):
+        with open('docs/examples/tester_elevator_7th_floor_never_reached.yaml') as f:
+            tester_sc = io.import_from_yaml(f)
+
+        tester = self.watcher.watch_with(tester_sc)
+        self.watcher.start()
+
+        # Send elevator to 7th
+        self.tested.queue(Event('floorSelected', floor=7)).execute()
+        self.watcher.stop()
+        self.assertFalse(tester.final)
+
+    def test_destination_reached(self):
+        with open('docs/examples/tester_elevator_destination_reached.yaml') as f:
+            tester_statechart = io.import_from_yaml(f)
+
+        # Create the interpreter and the watcher
+        watcher = ExecutionWatcher(self.tested)
+
+        # Add the tester and start watching
+        tester = watcher.watch_with(tester_statechart)
+        watcher.start()
+
+        # Send the elevator to 4th
+        self.tested.queue(Event('floorSelected', floor=4)).execute(max_steps=2)
+        self.assertEqual(tester.context['destinations'], [4])
+
+        self.tested.execute()
+        self.assertEqual(tester.context['destinations'], [])
+
+        # Stop watching. The tester must be in a final state
+        watcher.stop()
+
+        self.assertTrue(tester.final)

@@ -1,9 +1,24 @@
 import unittest
 from sismic import io
-from sismic.interpreter import Interpreter, run_in_background
+from sismic.interpreter import Interpreter, run_in_background, log
 from sismic import exceptions
 from sismic.code import DummyEvaluator
 from sismic.model import Event, InternalEvent
+
+
+class LogTraceTests(unittest.TestCase):
+    def setUp(self):
+        with open('docs/examples/elevator.yaml') as f:
+            sc = io.import_from_yaml(f)
+        self.tested = Interpreter(sc)
+        self.steps = log(self.tested)
+
+    def test_empty_trace(self):
+        self.assertEqual(self.steps, [])
+
+    def test_nonempty_trace(self):
+        self.tested.queue(Event('floorSelected', floor=4)).execute()
+        self.assertTrue(len(self.steps) > 0)
 
 
 class RunInBackgroundTests(unittest.TestCase):

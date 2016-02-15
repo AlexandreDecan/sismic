@@ -6,7 +6,7 @@ from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
 from sismic.exceptions import InvariantError, PreconditionError, PostconditionError
 from sismic.code import PythonEvaluator
 
-__all__ = ['Interpreter', 'run_in_background']
+__all__ = ['Interpreter', 'log', 'run_in_background']
 
 
 class Interpreter:
@@ -470,6 +470,25 @@ class Interpreter:
 
     def __repr__(self):
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))
+
+
+def log(interpreter: Interpreter) -> list:
+    """
+    Return a list that will be populated by each value returned by the *execute_once* method
+    of given interpreter.
+    :param interpreter: an *Interpreter* instance
+    :return: a list of *MacroStep*
+    """
+    func = interpreter.execute_once
+    trace = []
+
+    def new_func(*args, **kwargs):
+        step = func(*args, **kwargs)
+        trace.append(step)
+        return step
+
+    interpreter.execute_once = new_func
+    return trace
 
 
 def run_in_background(interpreter: Interpreter, delay: float=0.05, callback=None):

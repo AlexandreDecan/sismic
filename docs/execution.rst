@@ -227,6 +227,8 @@ that can be used to see what happens. In particular:
 
  - The :py:meth:`~sismic.interpreter.Interpreter.execute_once` (resp. :py:meth:`~sismic.interpreter.Interpreter.execute`)
    method returns an instance of (resp. a list of) :py:class:`sismic.model.MacroStep`.
+ - The :py:func:`~sismic.interpreter.log` function can be used to log all the steps that were processed during the
+   execution of an interpreter. This methods takes an interpreter and returns a (dynamic) list of macro steps.
  - The list of active states can be retrieved using :py:attr:`~sismic.interpreter.Interpreter.configuration`.
  - The context of the execution is available using :py:attr:`~sismic.interpreter.Interpreter.context`
    (see :ref:`code_evaluation`).
