@@ -476,6 +476,7 @@ def log(interpreter: Interpreter) -> list:
     """
     Return a list that will be populated by each value returned by the *execute_once* method
     of given interpreter.
+
     :param interpreter: an *Interpreter* instance
     :return: a list of *MacroStep*
     """

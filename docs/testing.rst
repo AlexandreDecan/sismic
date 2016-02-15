@@ -55,6 +55,7 @@ Class :py:class:`~sismic.testing.ExecutionWatcher` can be used to associate a st
 
 .. autoclass:: sismic.testing.ExecutionWatcher
     :noindex:
+    :members: start, stop, watch_with
 
 
 To summarize, if you want to test (**at runtime**) the execution of a *statechart under test* ``tested``, you need to:
@@ -69,7 +70,7 @@ To summarize, if you want to test (**at runtime**) the execution of a *statechar
 If ``tester`` ends in a final configuration, ie. ``tester.final`` holds, then the test is **considered** successful.
 
 
-The following *tester statechart* example is relative to :ref:`this statechart <elevator_example>`.
+The following *tester statechart* examples are relative to :ref:`this statechart <elevator_example>`.
 They show the specification of some testers in YAML, and how to execute them.
 
 Destination should be reached
@@ -116,7 +117,6 @@ It can be tested as follows:
     assert tester.final
 
 
-
 Testing an execution trace
 --------------------------
 
@@ -142,9 +142,7 @@ To summarize, if you want to test the **trace** of a *statechart under test* ``t
 If ``tester`` ends in a final configuration, ie. ``tester.final`` holds, then the test is **considered** successful.
 
 
-The following *tester statechart* examples are relative to :ref:`this statechart <elevator_example>`.
-They show the specification of some testers in YAML, and how to execute them.
-Note that these testers are currently used as unit tests for Sismic.
+Examples follow. Note that these testers are currently used as unit tests for Sismic.
 
 7th floor is never reached
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
