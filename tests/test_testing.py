@@ -10,23 +10,27 @@ class StoryFromTraceTests(unittest.TestCase):
         with open('tests/yaml/simple.yaml') as f:
             sc = io.import_from_yaml(f)
         interpreter = Interpreter(sc)
-        Story([Pause(2), Event('goto s2'), Pause(3)]).tell(interpreter)
-        story = teststory_from_trace(interpreter.trace)
-        expected = Story([Event('started'),
-                          Event('step'),
-                          Event('entered', state='root'),
-                          Event('entered', state='s1'),
-                          Pause(2),
-                          Event('step'),
-                          Event('consumed', event=Event('goto s2')),
-                          Event('exited', state='s1'),
-                          Event('processed', source='s1', target='s2', event=Event('goto s2')),
-                          Event('entered', state='s2'),
-                          Event('step'),
-                          Event('exited', state='s2'),
-                          Event('processed', source='s2', target='s3', event=None),
-                          Event('entered', state='s3'),
-                          Event('stopped')])
+
+        trace = Story([Pause(2), Event('goto s2'), Pause(3)]).tell(interpreter)
+        story = teststory_from_trace(trace)
+
+        expected = Story([
+            Event('started'),
+            Pause(2),
+            Event('step'),
+            Event('entered', state='root'),
+            Event('entered', state='s1'),
+            Event('step'),
+            Event('consumed', event=Event('goto s2')),
+            Event('exited', state='s1'),
+            Event('processed', source='s1', target='s2', event=Event('goto s2')),
+            Event('entered', state='s2'),
+            Event('step'),
+            Event('exited', state='s2'),
+            Event('processed', source='s2', target='s3', event=None),
+            Event('entered', state='s3'),
+            Event('stopped')
+        ])
         for a, b in zip(story, expected):
             self.assertEqual(a, b)
             if isinstance(a, Event):
@@ -43,23 +47,25 @@ class ElevatorStoryTests(unittest.TestCase):
 
     def test_7th_floor_never_reached(self):
         story = Story([Event('floorSelected', floor=8)])
-        trace = story.tell(self.tested).trace
+        trace = story.tell(self.tested)
 
         test_story = teststory_from_trace(trace)
 
         with open('docs/examples/tester_elevator_7th_floor_never_reached.yaml') as f:
             tester = Interpreter(io.import_from_yaml(f))
-        self.assertTrue(test_story.tell(tester).final)
+        test_story.tell(tester)
+        self.assertTrue(tester.final)
 
     def test_7th_floor_never_reached_fails(self):
         story = Story([Event('floorSelected', floor=4), Pause(2), Event('floorSelected', floor=7)])
-        trace = story.tell(self.tested).trace
+        trace = story.tell(self.tested)
 
         test_story = teststory_from_trace(trace)
 
         with open('docs/examples/tester_elevator_7th_floor_never_reached.yaml') as f:
             tester = Interpreter(io.import_from_yaml(f))
-        self.assertFalse(test_story.tell(tester).final)
+        test_story.tell(tester)
+        self.assertFalse(tester.final)
 
     def test_elevator_moves_after_10s(self):
         stories = [
@@ -78,9 +84,9 @@ class ElevatorStoryTests(unittest.TestCase):
                     sc = io.import_from_yaml(f)
                 tested = Interpreter(sc)
 
-                test_story = teststory_from_trace(story.tell(tested).trace)
+                test_story = teststory_from_trace(story.tell(tested))
 
                 with open('docs/examples/tester_elevator_moves_after_10s.yaml') as f:
                     tester = Interpreter(io.import_from_yaml(f))
-
-                self.assertTrue(test_story.tell(tester).final)
+                test_story.tell(tester)
+                self.assertTrue(tester.final)

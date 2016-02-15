@@ -204,7 +204,10 @@ Here is a full example of a transition specification:
 
 One type of transition, called an *internal transition*, does not require to declare a *target*.
 Instead, it **must** either define an event or define a guard to determine when it should become active
-(Otherwise, infinite loops would occur during simulation or execution).
+(otherwise, infinite loops would occur during simulation or execution).
+
+Notice that such a transition does not trigger the *on entry* and *on exit* of its state, and can thus be used
+to model an *internal action*.
 
 
 Statechart examples

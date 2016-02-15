@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.20.0 (unreleased)
+-------------------
+
+- (Changed) ``Interpreter.__init__`` does not anymore stabilize the statechart. Stabilization is done during the
+  first call of ``execute_once``.
+- (Changed) ``Story.tell`` returns a list of ``MacroStep`` (the *trace*) instead of an ``Interpreter`` instance.
+- (Removed) ``Interpreter.trace``, as it can be easily obtained from ``execute_once``.
+- (Removed) ``Interpreter.__init__`` does not accept an ``initial_time`` parameter.
+
+
 0.19.0 (2016-02-10)
 -------------------
 

@@ -19,32 +19,25 @@ class Interpreter:
         By default, the *PythonEvaluator* class will be used.
     :param initial_context: an optional initial context that will be provided to the evaluator.
         By default, an empty context is provided
-    :param initial_time: can be used to defined the initial value of the internal clock (see *time*).
     :param ignore_contract: set to True to ignore contract checking during the execution.
     """
 
     def __init__(self, statechart: model.Statechart, evaluator_klass=None,
-                 initial_context: dict=None, initial_time: int=0, ignore_contract: bool=False):
+                 initial_context: dict=None, ignore_contract: bool=False):
         # Internal variables
         self._ignore_contract = ignore_contract
-        self._initial_time = initial_time
         self._statechart = statechart
 
-        self._time = initial_time  # Internal clock
+        self._initialized = False
+        self._time = 0  # Internal clock
         self._memory = {}  # History states memory
         self._configuration = set()  # Set of active states
         self._events = deque()  # Events queue
-        self._trace = []  # A list of micro steps
         self._bound = []  # List of bound event callbacks
 
         # Evaluator
         self._evaluator = (evaluator_klass if evaluator_klass else PythonEvaluator)(self, initial_context)
         self._evaluator.execute_statechart(statechart)
-
-        # Initial step and stabilization
-        step = model.MicroStep(entered_states=[self._statechart.root])
-        self._execute_step(step)
-        self._trace.append(model.MacroStep(time=self.time, steps=[step] + self.__stabilize()))
 
     @property
     def time(self) -> int:
@@ -81,14 +74,7 @@ class Interpreter:
         """
         Boolean indicating whether this interpreter is in a final configuration.
         """
-        return len(self._configuration) == 0
-
-    @property
-    def trace(self):
-        """
-        The list of executed macro steps.
-        """
-        return self._trace
+        return self._initialized and len(self._configuration) == 0
 
     @property
     def statechart(self):
@@ -169,27 +155,35 @@ class Interpreter:
 
         :return: a macro step or *None* if nothing happened
         """
+
+        # Initial step and stabilization
+        if not self._initialized:
+            step = model.MicroStep(entered_states=[self._statechart.root])
+            self._execute_step(step)
+            self._initialized = True
+            return model.MacroStep(time=self.time, steps=[step] + self.__stabilize())
+
         # Eventless transitions first
-        event = None
         transitions = self._select_eventless_transitions()
 
         if len(transitions) == 0:
-            # Consumes event if any
             if len(self._events) > 0:
                 event = self._events.popleft()  # consumes event
                 transitions = self._select_transitions(event)
+
                 # If the event can not be processed, discard it
                 if len(transitions) == 0:
-                    macrostep = model.MacroStep(time=self.time, steps=[model.MicroStep(event=event)])
-                    # Update trace
-                    self._trace.append(macrostep)
-                    return macrostep
+                    return model.MacroStep(time=self.time, steps=[model.MicroStep(event=event)])
             else:
-                return None  # No step to do!
+                # No step and no event to consume, do nothing!
+                return None
+        else:
+            event = None  # Eventless transition
 
+        # We get a list of transitions to perform
         transitions = self._sort_transitions(transitions)
 
-        # Compute and execute the steps for the transitions
+        # Compute and execute the steps reuslting from the transitions
         returned_steps = []
         steps = self._compute_transitions_steps(event, transitions)
         for step in steps:
@@ -205,8 +199,6 @@ class Interpreter:
             state = self._statechart.state_for(name)
             self.__evaluate_contract_conditions(state, 'invariants', macro_step)
 
-        # Update trace
-        self._trace.append(macro_step)
         return macro_step
 
     def _select_eventless_transitions(self) -> list:

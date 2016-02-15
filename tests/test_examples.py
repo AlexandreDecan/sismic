@@ -9,6 +9,8 @@ class ElevatorTests(unittest.TestCase):
         with open('docs/examples/elevator.yaml') as f:
             self.sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(self.sc)
+        # Stabilization
+        self.interpreter.execute_once()
 
     def test_init(self):
         self.assertEqual(len(self.interpreter.configuration), 5)
@@ -35,6 +37,8 @@ class ElevatorContractTests(ElevatorTests):
         with open('docs/examples/elevator_contract.yaml') as f:
             self.sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(self.sc)
+        # Stabilization
+        self.interpreter.execute_once()
 
 
 class WriterExecutionTests(unittest.TestCase):

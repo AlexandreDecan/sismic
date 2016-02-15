@@ -23,6 +23,8 @@ class SimulatorSimpleTests(unittest.TestCase):
         with open('tests/yaml/simple.yaml') as f:
             sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(sc, DummyEvaluator)
+        # Stabilization
+        self.interpreter.execute_once()
 
     def test_init(self):
         self.assertEqual(self.interpreter.configuration, ['root', 's1'])
@@ -57,6 +59,8 @@ class InternalTests(unittest.TestCase):
         with open('tests/yaml/internal.yaml') as f:
             self.sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(self.sc)
+        # Stabilization
+        self.interpreter.execute_once()
 
     def testInternalSent(self):
         step = self.interpreter.execute_once()
@@ -84,6 +88,8 @@ class SimulatorNonDeterminismTests(unittest.TestCase):
         with open('tests/yaml/nondeterministic.yaml') as f:
             sc = io.import_from_yaml(f)
         interpreter = Interpreter(sc, DummyEvaluator)
+        # Stabilization
+        interpreter.execute_once()
 
         with self.assertRaises(exceptions.NonDeterminismError):
             interpreter.execute_once()
@@ -94,7 +100,8 @@ class SimulatorHistoryTests(unittest.TestCase):
         with open('tests/yaml/history.yaml') as f:
             sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(sc, DummyEvaluator)
-        self.assertTrue(True)
+        # Stabilization
+        self.interpreter.execute_once()
 
     def test_memory(self):
         self.interpreter.queue(Event('next')).execute_once()
@@ -129,6 +136,8 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
         with open('tests/yaml/deep_history.yaml') as f:
             sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(sc, DummyEvaluator)
+        # Stabilization
+        self.interpreter.execute_once()
 
     def test_deep_memory(self):
         self.interpreter.queue(Event('next1')).queue(Event('next2'))
@@ -182,6 +191,8 @@ class InfiniteExecutionTests(unittest.TestCase):
         with open('tests/yaml/infinite.yaml') as f:
             sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(sc)
+        # Stabilization
+        self.interpreter.execute_once()
 
     def test_three_steps(self):
         self.assertEqual(self.interpreter.configuration, ['root', 's1'])
@@ -211,6 +222,8 @@ class ParallelExecutionTests(unittest.TestCase):
         with open('tests/yaml/parallel.yaml') as f:
             sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(sc)
+        # Stabilization
+        self.interpreter.execute_once()
 
     def test_concurrent_transitions(self):
         step = self.interpreter.queue(Event('nextA')).execute_once()
@@ -259,6 +272,8 @@ class NestedParallelExecutionTests(unittest.TestCase):
         with open('tests/yaml/nested_parallel.yaml') as f:
             sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(sc)
+        # Stabilization
+        self.interpreter.execute_once()
         self.common_states = ['root', 's1', 'p1', 'p2', 'r1', 'r2', 'r3', 'r4']
 
     def test_initial(self):
@@ -339,6 +354,8 @@ class BindTests(unittest.TestCase):
         with open('tests/yaml/simple.yaml') as f:
             sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(sc)
+        # Stabilization
+        self.interpreter.execute_once()
 
     def test_bind(self):
         with open('tests/yaml/simple.yaml') as f:

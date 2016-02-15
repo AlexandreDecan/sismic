@@ -21,11 +21,11 @@ class StoryTests(unittest.TestCase):
             sc = io.import_from_yaml(f)
 
         interpreter = Interpreter(sc)
-        story.tell(interpreter)
+        trace = story.tell(interpreter)
 
         self.assertTrue(interpreter.final)
         self.assertEqual(interpreter.time, 5)
-        self.assertEqual(len(interpreter.trace), 4)
+        self.assertEqual(len(trace), 4)
 
     def test_tell_by_step(self):
         story = Story([Event('goto s2'), Pause(5), Event('goto final')])
@@ -42,7 +42,6 @@ class StoryTests(unittest.TestCase):
 
         self.assertTrue(interpreter.final)
         self.assertEqual(interpreter.time, 5)
-        self.assertEqual(len(interpreter.trace), 4)
 
 
 class RandomStoryTests(unittest.TestCase):

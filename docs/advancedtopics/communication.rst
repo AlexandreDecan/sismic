@@ -134,7 +134,7 @@ are automatically propagated to ``elevator``:
 
     print('Awaiting events in buttons:', list(buttons._events))  # External event
 
-    buttons.execute_once()  # Consume button_2_pushed
+    buttons.execute(max_steps=2)  # (1) initialize buttons, and (2) consume button_2_pushed
     print('Awaiting events in buttons:', list(buttons._events))  # Internal event
     print('Awaiting events in elevator:', list(elevator._events))  # External event
 
