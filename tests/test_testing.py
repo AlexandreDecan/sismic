@@ -48,7 +48,7 @@ class ElevatorStoryTests(unittest.TestCase):
 
     def test_7th_floor_never_reached(self):
         story = Story([Event('floorSelected', floor=8)])
-        trace = story.tell(self.tested)
+        trace = story.tell(self.tested)  # self.tested is an interpreter for our elevator
 
         test_story = teststory_from_trace(trace)
 
@@ -59,7 +59,7 @@ class ElevatorStoryTests(unittest.TestCase):
 
     def test_7th_floor_never_reached_fails(self):
         story = Story([Event('floorSelected', floor=4), Pause(2), Event('floorSelected', floor=7)])
-        trace = story.tell(self.tested)
+        trace = story.tell(self.tested)  # self.tested is an interpreter for our elevator
 
         test_story = teststory_from_trace(trace)
 

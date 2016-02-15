@@ -34,8 +34,9 @@ class ExecutionWatcher:
     (and a set of optional parameters that can be used to tune the interpreter that will be built upon this tester statechart)
     and returns the resulting *Interpreter* instance for this tester.
 
-    If started (using *start*), whenever something happens during the execution of the tested interpreter, events are automatically sent to every
-    associated tester statecharts. Their internal clock are synchronized and, the context of the tested statechart is
+    If started (using *start*), whenever something happens during the execution of the tested interpreter, events are
+    automatically sent to every associated tester statecharts.
+    Their internal clock are synchronized and, the context of the tested statechart is
     also exposed to the statechart testers, ie. if *x* is a variable in the context of a tested statechart, then
     *context.x* is dynamically exposed to every associated statechart tester.
 
@@ -70,7 +71,7 @@ class ExecutionWatcher:
 
         :param tester_statechart: a tester statechart (instance of *Statechart*)
         :param interpreter_klass: a callable that accepts a *Statechart* instance, an *initial_context* and any
-        additional (optional) parameters provided to this method.
+            additional (optional) parameters provided to this method.
         :return: the interpreter instance that wraps given tester statechart.
         """
         interpreter_klass = interpreter_klass if interpreter_klass else Interpreter
@@ -135,16 +136,6 @@ def teststory_from_trace(trace: list) -> Story:
     See documentation to see which are the events that are generated.
 
     Notice that this function adds a *pause* if there is any delay between pairs of consecutive steps.
-
-    The story does follow the interpretation order:
-
-    1. an event is possibly consumed
-    2. For each transition
-
-       a. states are exited
-       b. transition is processed
-       c. states are entered
-       d. statechart is stabilized (some states are exited and/or entered)
 
     :param trace: a list of *MacroStep* instances
     :return: A story
