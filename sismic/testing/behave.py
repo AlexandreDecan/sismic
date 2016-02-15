@@ -38,7 +38,7 @@ def transitions_coverage(transitions, processed):
 
 
 def after_scenario(context, scenario):
-    trace = context._interpreter.trace
+    trace = context._steps
     context._traces.append(trace)
 
     print()

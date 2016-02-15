@@ -38,7 +38,8 @@ def _execute_statechart(context, force_execution=False):
     if context._automatic_execution or force_execution:
         context._events = []
         steps = context._interpreter.execute()
-        context._steps.append(steps)
+        for step in steps:
+            context._steps.append(step)
 
 
 @given('I disable automatic execution')
@@ -66,15 +67,13 @@ def load_statechart(context, path):
 @given('I execute the statechart')
 @when('I execute the statechart')
 def execute_statechart(context):
-    steps = context._interpreter.execute()
-    context._steps.append(steps)
+     _execute_statechart(context, force_execution=True)
 
 
 @given('I execute once the statechart')
 @when('I execute once the statechart')
 def execute_once_statechart(context):
-    step = context._interpreter.execute_once()
-    context._steps.append([step])
+    _execute_statechart(context, force_execution=True)
 
 
 # #################### STATECHART
