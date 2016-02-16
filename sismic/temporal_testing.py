@@ -338,6 +338,80 @@ class Or(Condition):
                                              guard='active("{}") and active("{}")'.format(failure_a_id, failure_b_id)))
 
 
+class Xor(Condition):
+    """
+    A condition performing a logic Exclusive OR between two conditions, according the following table:
+
+    undetermined XOR undetermined   => undetermined
+    undetermined XOR true           => undetermined
+    undetermined XOR false          => undetermined
+
+    true         XOR undetermined   => undetermined
+    true         XOR true           => false
+    true         XOR false          => true
+
+    false        XOR undetermined   => undetermined
+    false        XOR true           => true
+    false        XOR false          => false
+    """
+
+    def __init__(self, a: Condition, b: Condition):
+        """
+        :param a: a condition to combine
+        :param b: an other condition to combine
+        """
+        Condition.__init__(self)
+        self.a = a
+        self.b = b
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str, failure_state_id: str):
+        parallel_state = OrthogonalState(id)
+        statechart.add_state(parallel_state, parent=parent_id)
+        a_id = Counter.random()
+        b_id = Counter.random()
+
+        composite_a_id = Counter.random()
+        composite_b_id = Counter.random()
+
+        success_a_id = Counter.random()
+        success_b_id = Counter.random()
+
+        failure_a_id = Counter.random()
+        failure_b_id = Counter.random()
+
+        composite_a = CompoundState(composite_a_id, initial=a_id)
+        statechart.add_state(composite_a, parent=id)
+
+        success_a = BasicState(success_a_id)
+        statechart.add_state(success_a, parent=composite_a_id)
+
+        failure_a = BasicState(failure_a_id)
+        statechart.add_state(failure_a, parent=composite_a_id)
+
+        self.a.add_to(statechart, a_id, composite_a_id, success_a_id, failure_a_id)
+
+        composite_b = CompoundState(composite_b_id, initial=b_id)
+        statechart.add_state(composite_b, parent=id)
+
+        success_b = BasicState(success_b_id)
+        statechart.add_state(success_b, parent=composite_b_id)
+
+        failure_b = BasicState(failure_b_id)
+        statechart.add_state(failure_b, parent=composite_b_id)
+
+        self.b.add_to(statechart, b_id, composite_b_id, success_b_id, failure_b_id)
+
+        success_xor = '(active("{}") and active("{}")) or (active("{}") and active("{}"))'.format(success_a_id, failure_b_id, failure_a_id, success_b_id)
+        statechart.add_transition(Transition(source=id,
+                                             target=success_state_id,
+                                             guard=success_xor))
+
+        failure_xor = '(active("{}") and active("{}")) or (active("{}") and active("{}"))'.format(success_a_id, success_b_id, failure_a_id, failure_b_id)
+        statechart.add_transition(Transition(source=id,
+                                             target=failure_state_id,
+                                             guard=failure_xor))
+
+
 class Not(Condition):
     """
     A condition performing a logic negation of an other condition, according the following table:
@@ -410,10 +484,9 @@ def prepare_first_time_expression(decision: bool, premise: Condition, consequenc
     For instance, prepare_first_time_expression(False, A, B) means that, after the first time A is verified,
     B must not be verified.
 
-    If the premise is never verified, the rule is reputed to be verified.
+    If the premise is never verified, the rule shall be deemed verified.
 
     The resulting statechart has a unique final state that is reached if the expression is satisfied.
-
 
     :param premise: a condition
     :param consequence: a condition being checked if premise is verified
@@ -439,7 +512,7 @@ def prepare_first_time_expression(decision: bool, premise: Condition, consequenc
 
     statechart.add_state(OrthogonalState(status_id), parallel_id)
     # Without this 'useless' basic state, an empty orthogonal state prevents the stachart to finish.
-    statechart.add_state(BasicState(Counter.random()), status_id)
+    #statechart.add_state(BasicState(Counter.random()), status_id)
     statechart.add_state(CompoundState(machine_id, initial=premise_id), parallel_id)
 
     final_state = FinalState(final_state_id)
@@ -469,6 +542,73 @@ def prepare_first_time_expression(decision: bool, premise: Condition, consequenc
     premise.add_to(statechart, premise_id, machine_id,
                    success_state_id=rule_satisfied_id, failure_state_id=rule_not_satisfied_id)
     statechart.add_transition(Transition(source=premise_id, target=rule_satisfied_id, event=CHECK_EVENT))
-
     return statechart
 
+
+def prepare_every_time_expression(decision: bool, premise: Condition, consequence: Condition, check_event: str):
+    """
+    Generate a statechart representing the expression of a rule. Each rule has the following structure:
+
+    decision premise consequence
+
+    Where:
+
+    - premise is a condition
+    - consequence is a condition that must be verified if the premise is verified
+    - decision determines if the rule verification is desired or not:
+    True if the rule must be verified, False if the rule must be not verified.
+
+    For instance, prepare_last_time_expression(False, A, B) means that, each time A is verified,
+    B must not be verified afterwards.
+
+    If the premise is never verified, the rule shall be deemed verified.
+
+    The resulting statemachine is such that, after the premise is verified, the next verification of this premise
+    only occurs after the condition is verified.
+
+    The resulting statechart has a unique final state that is reached if the expression is satisfied.
+
+    :param premise: a condition
+    :param consequence: a condition being checked if premise is verified
+    :return: A statechart representing the given expression
+    """
+
+    statechart = Statechart(Counter.random())
+
+    global_id = Counter.random()
+    parallel_id = Counter.random()
+    status_id = Counter.random()
+    machine_id = Counter.random()
+    premise_id = Counter.random()
+    consequence_id = Counter.random()
+    success_id = Counter.random()
+    failure_id = Counter.random()
+    rule_satisfied_id = Counter.random()
+    rule_not_satisfied_id = Counter.random()
+    final_state_id = Counter.random()
+
+    statechart.add_state(CompoundState(global_id, initial=parallel_id), None)
+    statechart.add_state(OrthogonalState(parallel_id), global_id)
+
+    statechart.add_state(OrthogonalState(status_id), parallel_id)
+    # Without this 'useless' basic state, an empty orthogonal state prevents the statechart to finish.
+    statechart.add_state(BasicState(Counter.random()), status_id)
+    statechart.add_state(CompoundState(machine_id, initial=premise_id), parallel_id)
+
+    final_state = FinalState(final_state_id)
+    statechart.add_state(final_state, global_id)
+
+    rule_satisfied = BasicState(rule_satisfied_id)
+    statechart.add_state(rule_satisfied, machine_id)
+    if decision:
+        statechart.add_transition(Transition(source=rule_satisfied_id, target=final_state_id))
+
+    rule_not_satisfied = BasicState(rule_not_satisfied_id)
+    statechart.add_state(rule_not_satisfied, machine_id)
+    if not decision:
+        statechart.add_transition(Transition(source=rule_not_satisfied_id, target=final_state_id))
+
+    consequence.add_to(statechart, consequence_id, machine_id, premise_id, rule_not_satisfied_id)
+    #statechart.add_transition(Transition(source=consequence_id, target=))
+
+    return statechart

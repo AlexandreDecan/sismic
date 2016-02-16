@@ -1,10 +1,11 @@
 import unittest
-from sismic.temporal_testing import Enter, Exit, And, Or, Not, Then
+from sismic.temporal_testing import Enter, Exit, And, Or, Not, Then, Xor
 from sismic.temporal_testing import Condition, FalseCondition, TrueCondition, UndeterminedCondition
 from sismic.interpreter import Interpreter
 from sismic.model import Event, Statechart, CompoundState, BasicState, Transition
 from sismic.testing import teststory_from_trace
-from sismic.io.text import export_to_tree
+from sismic.temporal_testing import prepare_first_time_expression
+
 
 class TemporalTests(unittest.TestCase):
     def setUp(self):
@@ -212,32 +213,62 @@ class TemporalTests(unittest.TestCase):
     def test_not_undetermined(self):
         self.generic_test(Not(UndeterminedCondition()), False, False)
 
-    def true_then_true(self):
+    def test_true_then_true(self):
         self.generic_test(Then(TrueCondition(), TrueCondition()), True, False)
 
-    def true_then_false(self):
+    def test_true_then_false(self):
         self.generic_test(Then(TrueCondition(), FalseCondition()), False, True)
 
-    def true_then_undetermined(self):
+    def test_true_then_undetermined(self):
         self.generic_test(Then(TrueCondition(), UndeterminedCondition()), False, False)
 
-    def false_then_true(self):
+    def test_false_then_true(self):
         self.generic_test(Then(FalseCondition(), TrueCondition()), False, True)
 
-    def false_then_false(self):
+    def test_false_then_false(self):
         self.generic_test(Then(FalseCondition(), FalseCondition()), False, True)
 
-    def false_then_undetermined(self):
-        self.generic_test(Then(FalseCondition(), UndeterminedCondition()), False, False)
+    def test_false_then_undetermined(self):
+        self.generic_test(Then(FalseCondition(), UndeterminedCondition()), False, True)
 
-    def undetermined_then_true(self):
+    def test_undetermined_then_true(self):
         self.generic_test(Then(UndeterminedCondition(), TrueCondition()), False, False)
 
-    def undetermined_then_false(self):
+    def test_undetermined_then_false(self):
         self.generic_test(Then(UndeterminedCondition(), FalseCondition()), False, False)
 
-    def undetermined_then_undetermined(self):
+    def test_undetermined_then_undetermined(self):
         self.generic_test(Then(UndeterminedCondition(), UndeterminedCondition()), False, False)
 
+    def test_true_xor_true(self):
+        self.generic_test(Xor(TrueCondition(), TrueCondition()), False, True)
+
+    def test_true_xor_false(self):
+        self.generic_test(Xor(TrueCondition(), FalseCondition()), True, False)
+
+    def test_true_xor_undetermined(self):
+        self.generic_test(Xor(TrueCondition(), UndeterminedCondition()), False, False)
+
+    def test_false_xor_true(self):
+        self.generic_test(Xor(FalseCondition(), TrueCondition()), True, False)
+
+    def test_false_xor_false(self):
+        self.generic_test(Xor(FalseCondition(), FalseCondition()), False, True)
+
+    def test_false_xor_undetermined(self):
+        self.generic_test(Xor(FalseCondition(), UndeterminedCondition()), False, False)
+
+    def test_undetermined_xor_true(self):
+        self.generic_test(Xor(UndeterminedCondition(), TrueCondition()), False, False)
+
+    def test_undetermined_xor_false(self):
+        self.generic_test(Xor(UndeterminedCondition(), FalseCondition()), False, False)
+
+    def test_undetermined_xor_undetermined(self):
+        self.generic_test(Xor(UndeterminedCondition(), UndeterminedCondition()), False, False)
+
+
+
+    
 
 
