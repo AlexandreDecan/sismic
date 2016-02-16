@@ -71,7 +71,7 @@ Using statechart to check properties on a trace
 
 The trace of an interpreter is the list of its executed macro steps. The trace can be built upon the values returned by
 each call to :py:meth:`~sismic.interpreter.Interpreter.execute` (or :py:meth:`~sismic.interpreter.Interpreter.execute_once`),
-or can be automatically built using :py:meth:`~sismic.interpreter.log` function.
+or can be automatically built using :py:meth:`~sismic.interpreter.log_trace` function.
 
 Function :py:func:`~sismic.testing.teststory_from_trace` provides an easy way to construct a story for *statechart testers*
 from the trace obtained by executing a *statechart under test*.

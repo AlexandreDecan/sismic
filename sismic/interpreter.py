@@ -5,8 +5,9 @@ from sismic import model
 from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
 from sismic.exceptions import InvariantError, PreconditionError, PostconditionError
 from sismic.code import PythonEvaluator
+from functools import wraps
 
-__all__ = ['Interpreter', 'log', 'run_in_background']
+__all__ = ['Interpreter', 'log_trace', 'run_in_background']
 
 
 class Interpreter:
@@ -472,7 +473,7 @@ class Interpreter:
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))
 
 
-def log(interpreter: Interpreter) -> list:
+def log_trace(interpreter: Interpreter) -> list:
     """
     Return a list that will be populated by each value returned by the *execute_once* method
     of given interpreter.
@@ -483,6 +484,7 @@ def log(interpreter: Interpreter) -> list:
     func = interpreter.execute_once
     trace = []
 
+    @wraps(func)
     def new_func(*args, **kwargs):
         step = func(*args, **kwargs)
         trace.append(step)

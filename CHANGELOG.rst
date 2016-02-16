@@ -4,7 +4,7 @@ Changelog
 0.20.0 (unreleased)
 -------------------
 
-- (Added) Module ``interpreter`` provides a ``log`` function that takes an interpreter instance and returns
+- (Added) Module ``interpreter`` provides a ``log_trace`` function that takes an interpreter instance and returns
   a (dynamic) list of executed macro steps.
 - (Added) Module ``testing`` exposes an ``ExecutionWatcher`` class that can be used to check statechart properties
   with tester statecharts at runtime.
@@ -13,7 +13,7 @@ Changelog
 - (Changed) ``Story.tell`` returns a list of ``MacroStep`` (the *trace*) instead of an ``Interpreter`` instance.
 - (Changed) The name of some attributes of an event in a tester story changes (e.g. *event* becomes *consumed_event*,
   *state* becomes *entered_state* or *exited_state* or *source_state* or *target_state*).
-- (Removed) ``Interpreter.trace``, as it can be easily obtained from ``execute_once`` or using ``log``.
+- (Removed) ``Interpreter.trace``, as it can be easily obtained from ``execute_once`` or using ``log_trace``.
 - (Removed) ``Interpreter.__init__`` does not accept an ``initial_time`` parameter.
 
 0.19.0 (2016-02-10)

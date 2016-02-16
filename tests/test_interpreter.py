@@ -1,6 +1,6 @@
 import unittest
 from sismic import io
-from sismic.interpreter import Interpreter, run_in_background, log
+from sismic.interpreter import Interpreter, run_in_background, log_trace
 from sismic import exceptions
 from sismic.code import DummyEvaluator
 from sismic.model import Event, InternalEvent
@@ -11,7 +11,7 @@ class LogTraceTests(unittest.TestCase):
         with open('docs/examples/elevator.yaml') as f:
             sc = io.import_from_yaml(f)
         self.tested = Interpreter(sc)
-        self.steps = log(self.tested)
+        self.steps = log_trace(self.tested)
 
     def test_empty_trace(self):
         self.assertEqual(self.steps, [])
