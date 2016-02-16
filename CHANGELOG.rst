@@ -15,6 +15,7 @@ Changelog
   *state* becomes *entered_state* or *exited_state* or *source_state* or *target_state*).
 - (Removed) ``Interpreter.trace``, as it can be easily obtained from ``execute_once`` or using ``log_trace``.
 - (Removed) ``Interpreter.__init__`` does not accept an ``initial_time`` parameter.
+- (Fixed) Parallel state without children does not any more result into an infinite loop.
 
 0.19.0 (2016-02-10)
 -------------------

@@ -184,7 +184,7 @@ class Interpreter:
         # We get a list of transitions to perform
         transitions = self._sort_transitions(transitions)
 
-        # Compute and execute the steps reuslting from the transitions
+        # Compute and execute the resulting steps
         returned_steps = []
         steps = self._compute_transitions_steps(event, transitions)
         for step in steps:
@@ -367,7 +367,7 @@ class Interpreter:
                 states_to_enter = self._memory.get(leaf.name, [leaf.memory])
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_for(x), x))
                 return model.MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
-            elif isinstance(leaf, model.OrthogonalState):
+            elif isinstance(leaf, model.OrthogonalState) and self._statechart.children_for(leaf.name):
                 return model.MicroStep(entered_states=sorted(self._statechart.children_for(leaf.name)))
             elif isinstance(leaf, model.CompoundState) and leaf.initial:
                 return model.MicroStep(entered_states=[leaf.initial])
