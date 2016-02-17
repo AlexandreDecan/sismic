@@ -47,6 +47,17 @@ class TemporalTests(unittest.TestCase):
         self.assertEqual(success_expected, 'success' in interpreter.configuration)
         self.assertEqual(failure_expected, 'failure' in interpreter.configuration)
 
+    def generic_temporal_test(self, statechart: Statechart, story: list, accept_before: bool, accept_after: bool):
+        interpreter = Interpreter(statechart)
+        self.assertEquals(accept_before, len(interpreter.configuration) == 0)
+        #story.tell(interpreter)
+        for event in story:
+            interpreter.queue(event)
+        print(interpreter.configuration)
+        interpreter.execute()
+        print(interpreter.configuration)
+        self.assertEquals(accept_after, len(interpreter.configuration) == 0)
+
     def test_enter(self):
         test_statechart = Statechart('test')
         test_initial_state = CompoundState('initial_state', initial='Enter')
@@ -267,8 +278,66 @@ class TemporalTests(unittest.TestCase):
     def test_undetermined_xor_undetermined(self):
         self.generic_test(Xor(UndeterminedCondition(), UndeterminedCondition()), False, False)
 
+    def test_first_time_required_true_true(self):
+        statechart = prepare_first_time_expression(True, TrueCondition(), TrueCondition())
+        statechart.validate()
+        interpreter = Interpreter(statechart)
+
+        self.assertFalse(len(interpreter.configuration) == 0)
+        interpreter.execute()
+        self.assertEquals(0, len(interpreter.configuration))
+
+    def test_first_time_required_true_false(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), FalseCondition()),
+                              [Event('CHECK')],
+                              False,
+                              False)
+
+    def test_first_time_required_true_undetermined(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), UndeterminedCondition()),
+                              [Event('CHECK')],
+                              False,
+                              False)
+
+    def test_first_time_required_false_true(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, FalseCondition(), TrueCondition()),
+                              [Event('CHECK')],
+                              False,
+                              False)
+
+    def test_first_time_required_false_false(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, FalseCondition(), FalseCondition()),
+                              [Event('CHECK')],
+                              False,
+                              False)
+
+    def test_first_time_required_false_undetermined(self):
+        #self.generic_temporal_test(prepare_first_time_expression(True, FalseCondition(), UndeterminedCondition()),
+        #                      [Event('CHECK')],
+        #                      False,
+        #                      False)
+        pass
+
+    def test_first_time_required_undetermined_true(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, UndeterminedCondition(), TrueCondition()),
+                              [Event('CHECK')],
+                              False,
+                              True)
+
+    def test_first_time_required_undetermined_false(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, UndeterminedCondition(), FalseCondition()),
+                              [Event('CHECK')],
+                              False,
+                              True)
+
+    def test_first_time_required_undetermined_undetermined(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, UndeterminedCondition(), UndeterminedCondition()),
+                              [Event('CHECK')],
+                              False,
+                              True)
 
 
-    
+
+
 
 
