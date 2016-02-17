@@ -5,7 +5,7 @@ statechart:
     It represents two concurrent processes that iterate over three states (si1, si2, si3 for i in 1..2) on `next`i event.
     The process can be interrupted with a `pause` event.
     When paused, the processes can either be continued (`continue` event) or stopped (`stop` event).
-  initial state:
+  root state:
     name: root
     initial: active
     states:

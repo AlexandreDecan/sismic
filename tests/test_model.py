@@ -33,7 +33,8 @@ class EventTests(unittest.TestCase):
 
 class TraversalTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+        with open('tests/yaml/composite.yaml') as f:
+            self.sc = io.import_from_yaml(f)
 
     def test_parent(self):
         self.assertEqual(self.sc.parent_for('s2'), 'root')
@@ -108,7 +109,8 @@ class TraversalTests(unittest.TestCase):
 class ValidateTests(unittest.TestCase):
     # REMARK: "Positive" tests are already done during io.import_from_yaml!
     def test_history_memory_not_child(self):
-        statechart = io.import_from_yaml(open('tests/yaml/history.yaml'))
+        with open('tests/yaml/history.yaml') as f:
+            statechart = io.import_from_yaml(f)
 
         statechart.state_for('loop.H').memory = 'pause'
         with self.assertRaises(exceptions.StatechartError) as cm:
@@ -117,7 +119,8 @@ class ValidateTests(unittest.TestCase):
         self.assertIn('must be a parent\'s child', str(cm.exception))
 
     def test_history_memory_unknown(self):
-        statechart = io.import_from_yaml(open('tests/yaml/history.yaml'))
+        with open('tests/yaml/history.yaml') as f:
+            statechart = io.import_from_yaml(f)
 
         statechart.state_for('loop.H').memory = 'unknown'
         with self.assertRaises(exceptions.StatechartError) as cm:
@@ -126,7 +129,8 @@ class ValidateTests(unittest.TestCase):
         self.assertIn('does not exist', str(cm.exception))
 
     def test_history_memory_self(self):
-        statechart = io.import_from_yaml(open('tests/yaml/history.yaml'))
+        with open('tests/yaml/history.yaml') as f:
+            statechart = io.import_from_yaml(f)
 
         statechart.state_for('loop.H').memory = 'loop.H'
         with self.assertRaises(exceptions.StatechartError) as cm:
@@ -135,7 +139,8 @@ class ValidateTests(unittest.TestCase):
         self.assertIn('cannot target itself', str(cm.exception))
 
     def test_compound_initial_unknown(self):
-        statechart = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+        with open('tests/yaml/composite.yaml') as f:
+            statechart = io.import_from_yaml(f)
 
         statechart.state_for('s1b').initial = 'unknown'
         with self.assertRaises(exceptions.StatechartError) as cm:
@@ -144,7 +149,8 @@ class ValidateTests(unittest.TestCase):
         self.assertIn('does not exist', str(cm.exception))
 
     def test_compound_initial_not_child(self):
-        statechart = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+        with open('tests/yaml/composite.yaml') as f:
+            statechart = io.import_from_yaml(f)
 
         statechart.state_for('s1b').initial = 's1'
         with self.assertRaises(exceptions.StatechartError) as cm:
@@ -155,7 +161,8 @@ class ValidateTests(unittest.TestCase):
 
 class TransitionsTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))
+        with open('tests/yaml/internal.yaml') as f:
+            self.sc = io.import_from_yaml(f)
 
     def test_transitions_from(self):
         self.assertEqual(self.sc.transitions_from('root'), [])
@@ -199,7 +206,8 @@ class TransitionsTests(unittest.TestCase):
 
 class TransitionRotationTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))
+        with open('tests/yaml/internal.yaml') as f:
+            self.sc = io.import_from_yaml(f)
 
     def test_rotate_source(self):
         tr = next(t for t in self.sc.transitions if t.source == 's1')
@@ -282,7 +290,8 @@ class TransitionRotationTests(unittest.TestCase):
 
 class RemoveTransitionsTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))
+        with open('tests/yaml/internal.yaml') as f:
+            self.sc = io.import_from_yaml(f)
 
     def test_remove_existing_transition(self):
         transitions = self.sc.transitions
@@ -307,7 +316,8 @@ class RemoveTransitionsTests(unittest.TestCase):
 
 class RemoveStatesTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))
+        with open('tests/yaml/internal.yaml') as f:
+            self.sc = io.import_from_yaml(f)
 
     def test_remove_existing_state(self):
         self.sc.remove_state('active')
@@ -347,12 +357,14 @@ class RemoveStatesTests(unittest.TestCase):
         self.sc.validate()
 
     def test_remove_nested_states(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+        with open('tests/yaml/composite.yaml') as f:
+            self.sc = io.import_from_yaml(f)
         self.sc.remove_state('s1')
         self.assertFalse('s1a' in self.sc.states)
         self.sc.validate()
 
-        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+        with open('tests/yaml/composite.yaml') as f:
+            self.sc = io.import_from_yaml(f)
         self.sc.remove_state('s1a')
         self.assertFalse('s1a' in self.sc.states)
         self.sc.validate()
@@ -360,7 +372,8 @@ class RemoveStatesTests(unittest.TestCase):
 
 class RenameStatesTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/internal.yaml'))
+        with open('tests/yaml/internal.yaml') as f:
+            self.sc = io.import_from_yaml(f)
 
     def test_rename_unexisting_state(self):
         with self.assertRaises(exceptions.StatechartError) as cm:
@@ -388,7 +401,8 @@ class RenameStatesTests(unittest.TestCase):
         self.sc.validate()
 
     def test_rename_old_disappears(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+        with open('tests/yaml/composite.yaml') as f:
+            self.sc = io.import_from_yaml(f)
         self.sc.rename_state('s1', 'new s1')
 
         self.assertFalse('s1' in self.sc.states)
@@ -413,14 +427,16 @@ class RenameStatesTests(unittest.TestCase):
         self.sc.validate()
 
     def test_rename_change_state_name(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+        with open('tests/yaml/composite.yaml') as f:
+            self.sc = io.import_from_yaml(f)
 
         state = self.sc.state_for('s1')
         self.sc.rename_state('s1', 'new s1')
         self.assertEqual(state.name, 'new s1')
 
     def test_rename_new_appears(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+        with open('tests/yaml/composite.yaml') as f:
+            self.sc = io.import_from_yaml(f)
         self.sc.rename_state('s1', 'new s1')
 
         self.assertTrue('new s1' in self.sc.states)
@@ -471,7 +487,8 @@ class RenameStatesTests(unittest.TestCase):
         self.sc.validate()
 
     def test_rename_change_memory(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/history.yaml'))
+        with open('tests/yaml/history.yaml') as f:
+            self.sc = io.import_from_yaml(f)
         self.sc.state_for('loop.H').memory = 's1'
         self.sc.rename_state('s1', 's4')
         self.assertEqual(self.sc.state_for('loop.H').memory, 's4')
@@ -480,7 +497,8 @@ class RenameStatesTests(unittest.TestCase):
 
 class MoveStateTest(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/composite.yaml'))
+        with open('tests/yaml/composite.yaml') as f:
+            self.sc = io.import_from_yaml(f)
 
     def test_move_simple(self):
         self.sc.move_state('s1b2', 's1b1')
@@ -533,7 +551,8 @@ class MoveStateTest(unittest.TestCase):
         self.sc.validate()
 
     def test_move_with_memory(self):
-        self.sc = io.import_from_yaml(open('tests/yaml/history.yaml'))
+        with open('tests/yaml/history.yaml') as f:
+            self.sc = io.import_from_yaml(f)
         self.sc.state_for('loop.H').memory = 's1'
         self.sc.move_state('s1', 's2')
         self.assertEqual(self.sc.state_for('loop.H').memory, None)

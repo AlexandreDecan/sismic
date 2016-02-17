@@ -4,39 +4,47 @@ from sismic.interpreter import Interpreter
 from sismic.model import Event
 
 
-class SimulatorElevatorTests(unittest.TestCase):
-    def test_init(self):
-        sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
-        interpreter = Interpreter(sc)
+class ElevatorTests(unittest.TestCase):
+    def setUp(self):
+        with open('docs/examples/elevator.yaml') as f:
+            self.sc = io.import_from_yaml(f)
+        self.interpreter = Interpreter(self.sc)
+        # Stabilization
+        self.interpreter.execute_once()
 
-        self.assertEqual(len(interpreter.configuration), 5)
+    def test_init(self):
+        self.assertEqual(len(self.interpreter.configuration), 5)
 
     def test_floor_selection(self):
-        sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
-        interpreter = Interpreter(sc)
-
-        interpreter.queue(Event('floorSelected', floor=4)).execute_once()
-        self.assertEqual(interpreter._evaluator.context['destination'], 4)
-        interpreter.execute_once()
-        self.assertEqual(sorted(interpreter.configuration), ['active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'])
+        self.interpreter.queue(Event('floorSelected', floor=4)).execute_once()
+        self.assertEqual(self.interpreter.context['destination'], 4)
+        self.interpreter.execute_once()
+        self.assertEqual(sorted(self.interpreter.configuration), ['active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'])
 
     def test_doorsOpen(self):
-        sc = io.import_from_yaml(open('docs/examples/elevator.yaml'))
-        interpreter = Interpreter(sc)
+        self.interpreter.queue(Event('floorSelected', floor=4))
+        self.interpreter.execute()
+        self.assertEqual(self.interpreter.context['current'], 4)
+        self.interpreter.time += 10
+        self.interpreter.execute()
 
-        interpreter.queue(Event('floorSelected', floor=4))
-        interpreter.execute()
-        self.assertEqual(interpreter._evaluator.context['current'], 4)
-        interpreter.time += 10
-        interpreter.execute()
+        self.assertTrue('doorsOpen' in self.interpreter.configuration)
+        self.assertEqual(self.interpreter.context['current'], 0)
 
-        self.assertTrue('doorsOpen' in interpreter.configuration)
-        self.assertEqual(interpreter._evaluator.context['current'], 0)
+
+class ElevatorContractTests(ElevatorTests):
+    def setUp(self):
+        with open('docs/examples/elevator_contract.yaml') as f:
+            self.sc = io.import_from_yaml(f)
+        self.interpreter = Interpreter(self.sc)
+        # Stabilization
+        self.interpreter.execute_once()
 
 
 class WriterExecutionTests(unittest.TestCase):
     def setUp(self):
-        self.sc = io.import_from_yaml(open('docs/examples/writer_options.yaml'))
+        with open('docs/examples/writer_options.yaml') as f:
+            self.sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(self.sc)
 
     def test_output(self):
@@ -61,8 +69,13 @@ class WriterExecutionTests(unittest.TestCase):
 
 class RemoteElevatorTests(unittest.TestCase):
     def setUp(self):
-        self.elevator = Interpreter(io.import_from_yaml(open('docs/examples/elevator.yaml')))
-        self.buttons = Interpreter(io.import_from_yaml(open('docs/examples/elevator_buttons.yaml')))
+        with open('docs/examples/elevator.yaml') as f:
+            elevator = io.import_from_yaml(f)
+        with open('docs/examples/elevator_buttons.yaml') as f:
+            buttons = io.import_from_yaml(f)
+
+        self.elevator = Interpreter(elevator)
+        self.buttons = Interpreter(buttons)
         self.buttons.bind(self.elevator)
 
     def test_button(self):

@@ -73,7 +73,7 @@ mapping:
         type: str
       "preamble":
         type: str
-      "initial state":
+      "root state":
         type: map
         required: yes
         include: state

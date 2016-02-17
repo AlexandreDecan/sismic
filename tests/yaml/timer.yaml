@@ -1,6 +1,6 @@
 statechart:
   name: Statechart with timer
-  initial state:
+  root state:
     name: root
     initial: s1
     states:

@@ -7,22 +7,24 @@ class ImportFromYamlTests(unittest.TestCase):
     def test_yaml_tests(self):
         files = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',
                  'nondeterministic', 'parallel', 'simple', 'timer']
-        for f in files:
-            with self.subTest(filename=f):
-                io.import_from_yaml(open(os.path.join('tests', 'yaml', f+'.yaml')))
+        for filename in files:
+            with self.subTest(filename=filename):
+                with open(os.path.join('tests', 'yaml', filename + '.yaml')) as f:
+                    io.import_from_yaml(f)
 
     def test_examples(self):
         files = ['elevator', 'elevator_contract', 'microwave', 'tester_elevator_7th_floor_never_reached',
                  'tester_elevator_moves_after_10s', 'writer_options']
-        for f in files:
-            with self.subTest(filename=f):
-                io.import_from_yaml(open(os.path.join('docs', 'examples', f+'.yaml')))
+        for filename in files:
+            with self.subTest(filename=filename):
+                with open(os.path.join('docs', 'examples', filename + '.yaml')) as f:
+                    io.import_from_yaml(f)
 
     def test_transitions_to_unknown_state(self):
         yaml = """
         statechart:
           name: test
-          initial state:
+          root state:
             name: root
             initial: s1
             states:
@@ -38,7 +40,7 @@ class ImportFromYamlTests(unittest.TestCase):
         yaml = """
         statechart:
           name: test
-          initial state:
+          root state:
             name: root
             initial: s1
             states:
@@ -55,7 +57,7 @@ class ImportFromYamlTests(unittest.TestCase):
         yaml = """
         statechart:
           name: test
-          initial state:
+          root state:
             name: root
             initial: s1
             states:
@@ -132,7 +134,7 @@ class ExportToTreeTests(unittest.TestCase):
 
         for (filename, statechart), r in zip(self.files, results):
             with self.subTest(filename=filename):
-                self.assertEquals(io.text.export_to_tree(statechart), r)
+                self.assertEqual(io.text.export_to_tree(statechart), r)
 
     def test_all_states_are_exported(self):
         for filename, statechart in self.files:
@@ -150,5 +152,5 @@ class ExportToTreeTests(unittest.TestCase):
                     name = r.lstrip()
                     depth = statechart.depth_for(name)
                     spaces = len(r) - len(name)
-                    self.assertEquals(depth - 1, spaces)
+                    self.assertEqual(depth - 1, spaces)
 

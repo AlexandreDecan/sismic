@@ -9,8 +9,8 @@ Sismic for Python
     :target: https://www.codacy.com/app/alexandre-decan/sismic
 .. image:: https://badge.fury.io/py/sismic.svg
     :target: https://pypi.python.org/pypi/sismic
-.. image:: https://readthedocs.org/projects/sismic/badge/?version=stable
-    :target: https://sismic.readthedocs.org/stable
+.. image:: https://readthedocs.org/projects/sismic/badge/?version=master
+    :target: https://sismic.readthedocs.org/
 
 Sismic Interactive State Machine Interpreter and Checker
 --------------------------------------------------------
@@ -24,7 +24,7 @@ More specifically, Sismic provides:
 - Synchronous and asynchronous simulation, in real time or simulated time
 - Support for communication between statecharts and co-simulation
 - Built-in support for expressing actions and guards using regular Python code
-- A design-by-contract approach for statecharts
+- Design-by-contract and behavior-driven development approaches for statecharts
 - A unit testing framework for statecharts, including generation of test scenarios
 
 
@@ -35,7 +35,7 @@ Sismic can be installed using ``pip`` as usual: ``pip install sismic``.
 This will install the latest stable version.
 
 You can also install Sismic from this repository by cloning it.
-The development occurs in the *master* branch, the latest stable distributed version is in the *stable* branch.
+The development occurs in the *devel* branch, the latest stable distributed version is in the *master* branch.
 
 Sismic requires Python >=3.4
 
@@ -52,8 +52,8 @@ The documentation can also be directly built from the `docs <https://github.com/
 Changelog
 ---------
 
-See documentation's `changelog <http://sismic.readthedocs.org/en/stable/changelog.html>`_.
-Unreleased changes are visible `here <CHANGELOG.rst>`_.
+See documentation's `changelog <http://sismic.readthedocs.org/en/master/changelog.html>`_.
+Unreleased changes are visible `here <https://github.com/AlexandreDecan/sismic/tree/devel/CHANGELOG.rst>`_.
 
 Credits
 -------

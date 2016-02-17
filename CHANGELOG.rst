@@ -1,12 +1,42 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.20.0 (2016-02-17)
+-------------------
+
+- (Added) Module ``interpreter`` provides a ``log_trace`` function that takes an interpreter instance and returns
+  a (dynamic) list of executed macro steps.
+- (Added) Module ``testing`` exposes an ``ExecutionWatcher`` class that can be used to check statechart properties
+  with tester statecharts at runtime.
+- (Changed) ``Interpreter.__init__`` does not anymore stabilize the statechart. Stabilization is done during the
+  first call of ``execute_once``.
+- (Changed) ``Story.tell`` returns a list of ``MacroStep`` (the *trace*) instead of an ``Interpreter`` instance.
+- (Changed) The name of some attributes of an event in a tester story changes (e.g. *event* becomes *consumed_event*,
+  *state* becomes *entered_state* or *exited_state* or *source_state* or *target_state*).
+- (Removed) ``Interpreter.trace``, as it can be easily obtained from ``execute_once`` or using ``log_trace``.
+- (Removed) ``Interpreter.__init__`` does not accept an ``initial_time`` parameter.
+- (Fixed) Parallel state without children does not any more result into an infinite loop.
+
+0.19.0 (2016-02-10)
+-------------------
+
+- (Added) BDD can now output coverage data using ``--coverage`` command-line argument.
+- (Changed) The YAML definition of a statechart must use *root state:* instead of *initial state:*.
+- (Changed) When a contract is evaluated by a ``PythonEvaluator``, ``__old__.x`` raises an ``AttributeError`` instead
+  of a ``KeyError`` if ``x`` does not exist.
+- (Changed) Behave is now called from Python instead of using a subprocess and thus allows debugging.
+
+0.18.1 (2016-02-03)
+-------------------
+
+- (Added) Support for behavior-driven-development using Behave.
+
+0.17.3 (2016-01-29)
+-------------------
 
 - (Added) An ``io.text.export_to_tree`` that returns a textual representation of the states.
 - (Changed) ``Statechart.rename_to`` does not anymore raise ``KeyError`` but ``exceptions.StatechartError``.
-
+- (Changed) Wheel build should work on Windows
 
 0.17.1 (2016-01-25)
 -------------------

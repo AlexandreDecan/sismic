@@ -1,6 +1,6 @@
 statechart:
   name: Statechart to test parallel transitions
-  initial state:
+  root state:
     name: root
     initial: s1
     states:

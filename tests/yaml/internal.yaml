@@ -1,6 +1,6 @@
 statechart:
   name: Test internal events
-  initial state:
+  root state:
     name: root
     initial: active
     states:

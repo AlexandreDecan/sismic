@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
@@ -62,8 +62,7 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=['sismic'],
-    #packages=find_packages(exclude=['docs', 'examples', 'tests']),
+    packages=find_packages(exclude=['docs', 'venv', 'tests']),
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:
@@ -73,7 +72,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['pyyaml>=3.11', 'pykwalify>=1.5.0'],
+    install_requires=['pyyaml>=3.11', 'pykwalify>=1.5.0', 'behave>=1.2.5'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -85,15 +84,15 @@ setup(
     },
 
     package_data={
-        'sismic': ['schema.yaml']
+        'sismic.io': ['schema.yaml']
     },
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
-        #'console_scripts': [
-        #    'sismic=sismic:_parse_args',
-        #],
+        'console_scripts': [
+            'sismic-behave=sismic.testing.behave:main',
+        ],
     },
 )

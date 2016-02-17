@@ -1,7 +1,7 @@
 statechart:
   name: Test that the elevator goes to ground floor after 10 seconds (timeout set to 12 seconds)
   preamble: floor = 0
-  initial state:
+  root state:
     name: root
     initial: active
     states:
@@ -13,10 +13,10 @@ statechart:
           - name: guess floor
             transitions:
               - event: entered
-                guard: event.state == 'movingUp'
+                guard: event.entered_state == 'movingUp'
                 action: floor += 1
               - event: entered
-                guard: event.state == 'movingDown'
+                guard: event.entered_state == 'movingDown'
                 action: floor -= 1
           - name: check timeout
             initial: standing
@@ -24,14 +24,14 @@ statechart:
               - name: standing
                 transitions:
                   - event: entered
-                    guard: event.state == 'moving'
+                    guard: event.entered_state == 'moving'
                     target: moving
                   - guard: after(12) and floor != 0
                     target: timeout
               - name: moving
                 transitions:
                   - event: exited
-                    guard: event.state == 'moving'
+                    guard: event.exited_state == 'moving'
                     target: standing
               - name: timeout
                 transitions:

@@ -3,19 +3,8 @@ statechart:
   preamble: |
     current = 0
     destination = 0
-
-    class Doors:
-      def __init__(self):
-        self.opened = True
-
-      def open(self):
-        self.opened = True
-
-      def close(self):
-        self.opened = False
-
-    doors = Doors()
-  initial state:
+    doors_open = True
+  root state:
     name: active
     contract:
       - before: current == 0
@@ -29,15 +18,15 @@ statechart:
             transitions:
               - target: doorsClosed
                 guard: destination != current
-                action: doors.close()
+                action: doors_open = False
               - target: doorsClosed
                 guard: after(10) and current > 0
                 action: |
                   destination = 0
-                  doors.close()
+                  doors_open = False
                 contract:
                   - before: current > 0
-                  - after: destination = 0
+                  - after: destination == 0
           - name: doorsClosed
             transitions:
               - target: movingUp
@@ -46,17 +35,17 @@ statechart:
                 guard: destination < current and destination >= 0
           - name: moving
             contract:
-              - always: not doors.opened  # Keep doors closed while moving
+              - always: not doors_open  # Keep doors closed while moving
               - before: destination != current  # Move only if destination is not reached
               - after: destination == current  # Destination should be reached
-              - after: current != __old__.current  # Current changed (redundant)
+              - after: current != __old__.current  # Current changed (redundant given the two last conditions)
             transitions:
               - target: doorsOpen
                 guard: destination == current
-                action: doors.open()
+                action: doors_open = True
                 contract:
-                  - before: not doors.opened  # Doors are closed
-                  - after: doors.opened  # Doors are opened
+                  - before: not doors_open  # Doors are closed
+                  - after: doors_open  # Doors are opened
             states:
               - name: movingUp
                 on entry: current = current + 1

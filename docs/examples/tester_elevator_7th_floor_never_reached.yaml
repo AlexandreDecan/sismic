@@ -1,14 +1,14 @@
 statechart:
   name: Test that the elevator never reachs 7th floor
   preamble: floor = 0
-  initial state:
+  root state:
     name: root
     initial: standing
     states:
       - name: standing
         transitions:
           - event: entered
-            guard: event.state == 'moving'
+            guard: event.entered_state == 'moving'
             target: moving
           - guard: floor == 7
             target: fail
@@ -17,13 +17,13 @@ statechart:
       - name: moving
         transitions:
           - event: entered
-            guard: event.state == 'movingUp'
+            guard: event.entered_state == 'movingUp'
             action: floor += 1
           - event: entered
-            guard: event.state == 'movingDown'
+            guard: event.entered_state == 'movingDown'
             action: floor -= 1
           - event: exited
-            guard: event.state == 'moving'
+            guard: event.exited_state == 'moving'
             target: standing
           - event: stopped
             target: success

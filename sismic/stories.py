@@ -39,15 +39,18 @@ class Story(list):
         :param interpreter: an interpreter instance
         :param args: additional positional arguments that are passed to *interpreter.execute*.
         :param kwargs: additional keywords arguments that are passed to *interpreter.execute*.
-        :return: the interpreter, to chain calls
+        :return: the resulting trace of execution (a list of *MacroStep*)
         """
+        trace = []
         for item in self:
             if isinstance(item, Event):
                 interpreter.queue(item)
             elif isinstance(item, Pause):
                 interpreter.time += item.duration
-            interpreter.execute(*args, **kwargs)
-        return interpreter
+            step = interpreter.execute(*args, **kwargs)
+            if step:
+                trace.extend(step)
+        return trace
 
     def tell_by_step(self, interpreter, *args, **kwargs):
         """

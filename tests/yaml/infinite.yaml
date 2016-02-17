@@ -1,7 +1,7 @@
 statechart:
   name: infinite statechart
   preamble: x = 0
-  initial state:
+  root state:
     name: root
     initial: s1
     states:

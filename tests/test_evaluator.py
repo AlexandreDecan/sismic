@@ -67,3 +67,11 @@ class PythonEvaluatorTests(unittest.TestCase):
     def test_send(self):
         self.evaluator._execute_code('send("hello")')
         self.interpreter.queue.assert_called_with(InternalEvent('hello'))
+
+    def test_add_variable_in_context(self):
+        self.evaluator._execute_code('a = 1\nassert a == 1')
+        self.assertTrue(self.evaluator._evaluate_code('a == 1'))
+
+    @unittest.skip('http://stackoverflow.com/questions/32894942/listcomp-unable-to-access-locals-defined-in-code-called-by-exec-if-nested-in-fun')
+    def test_access_outer_scope(self):
+        self.evaluator._execute_code('a = 1\nd = [x for x in range(10) if x!=a]')
