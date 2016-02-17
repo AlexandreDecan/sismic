@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.20.0 (unreleased)
+0.20.0 (2016-02-17)
 -------------------
 
 - (Added) Module ``interpreter`` provides a ``log_trace`` function that takes an interpreter instance and returns
