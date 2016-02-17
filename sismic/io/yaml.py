@@ -19,7 +19,7 @@ def import_from_yaml(statechart: str, ignore_schema: bool = False, ignore_valida
     :param statechart: string or any equivalent object
     :param ignore_schema: set to *True* to disable yaml validation.
     :param ignore_validation: set to *True* to disable statechart validation.
-    :return: a *StateChart* instance
+    :return: a *Statechart* instance
     """
     data = yaml.load(statechart)
     if not ignore_schema:
@@ -34,7 +34,7 @@ def import_from_yaml(statechart: str, ignore_schema: bool = False, ignore_valida
 
 def export_to_yaml(statechart: Statechart) -> str:
     """
-    Export given StateChart instance to YAML
+    Export given *Statechart* instance to YAML
 
     :param statechart:
     :return: A textual YAML representation
