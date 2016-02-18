@@ -272,24 +272,22 @@ class OperatorsTest(unittest.TestCase):
 class TemporalTests(unittest.TestCase):
 
     def generic_temporal_test(self, statechart: Statechart, story: list, accept_before: bool, accept_after: bool):
+        # Todo: convert the story list into a 'real' story that can be told to an interpreter
+
         interpreter = Interpreter(statechart)
         self.assertEquals(accept_before, len(interpreter.configuration) == 0)
-        #story.tell(interpreter)
         for event in story:
             interpreter.queue(event)
-        print(interpreter.configuration)
+
         interpreter.execute()
         print(interpreter.configuration)
         self.assertEquals(accept_after, len(interpreter.configuration) == 0)
 
     def test_first_time_required_true_true(self):
-        statechart = prepare_first_time_expression(True, TrueCondition(), TrueCondition())
-        statechart.validate()
-        interpreter = Interpreter(statechart)
-
-        self.assertFalse(len(interpreter.configuration) == 0)
-        interpreter.execute()
-        self.assertEquals(0, len(interpreter.configuration))
+        self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), TrueCondition()),
+                              [Event('stopped')],
+                              False,
+                              True)
 
     def test_first_time_required_true_false(self):
         self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), FalseCondition()),
