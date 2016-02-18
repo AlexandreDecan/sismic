@@ -8,6 +8,18 @@ from sismic.temporal_testing import prepare_first_time_expression
 
 
 class PropertiesTests(unittest.TestCase):
+    def setUp(self):
+        self.sequential_statechart = Statechart("sequential")
+        initial_state = CompoundState('initial_state', initial='a_state')
+        a_state = BasicState('a_state')
+        b_state = BasicState('b_state')
+        self.sequential_statechart.add_state(initial_state, None)
+        self.sequential_statechart.add_state(a_state, 'initial_state')
+        self.sequential_statechart.add_state(b_state, 'initial_state')
+        self.sequential_statechart.add_transition(Transition(source='a_state', target='b_state', event='event'))
+        self.sequential_interpreter = Interpreter(self.sequential_statechart)
+        self.sequential_interpreter.queue(Event('event'))
+
     def test_enter(self):
         test_statechart = Statechart('test')
         test_initial_state = CompoundState('initial_state', initial='Enter')
