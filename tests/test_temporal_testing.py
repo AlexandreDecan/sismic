@@ -1,5 +1,5 @@
 import unittest
-from sismic.temporal_testing import Enter, Exit, And, Or, Not, Then, Xor
+from sismic.temporal_testing import Enter, Exit, And, Or, Not, Then, Xor, Before
 from sismic.temporal_testing import Condition, FalseCondition, TrueCondition, UndeterminedCondition
 from sismic.interpreter import Interpreter
 from sismic.model import Event, Statechart, CompoundState, BasicState, Transition
@@ -188,6 +188,33 @@ class OperatorsTest(unittest.TestCase):
 
     def test_undetermined_xor_undetermined(self):
         self.generic_test(Xor(UndeterminedCondition(), UndeterminedCondition()), False, False)
+
+    def test_true_before_true(self):
+        self.generic_test(Before(TrueCondition(), TrueCondition()), False, True)
+
+    def test_true_before_false(self):
+        self.generic_test(Before(TrueCondition(), FalseCondition()), True, False)
+
+    def test_true_before_undetermined(self):
+        self.generic_test(Before(TrueCondition(), UndeterminedCondition()), True, False)
+
+    def test_false_before_true(self):
+        self.generic_test(Before(FalseCondition(), TrueCondition()), False, True)
+
+    def test_false_before_false(self):
+        self.generic_test(Before(FalseCondition(), FalseCondition()), False, True)
+
+    def test_false_before_undetermined(self):
+        self.generic_test(Before(FalseCondition(), UndeterminedCondition()), False, True)
+
+    def test_undetermined_before_true(self):
+        self.generic_test(Before(UndeterminedCondition(), TrueCondition()), False, True)
+
+    def test_undetermined_before_false(self):
+        self.generic_test(Before(UndeterminedCondition(), FalseCondition()), False, False)
+
+    def test_undetermined_before_undetermined(self):
+        self.generic_test(Before(UndeterminedCondition(), UndeterminedCondition()), False, False)
 
 
 class TemporalTests(unittest.TestCase):
