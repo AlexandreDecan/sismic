@@ -1,6 +1,6 @@
 import unittest
-from sismic.temporal_testing import Enter, Exit, And, Or, Not, Then, Xor, Before
-from sismic.temporal_testing import Condition, FalseCondition, TrueCondition, UndeterminedCondition
+from sismic.temporal_testing import *
+from sismic.temporal_testing import *
 from sismic.interpreter import Interpreter
 from sismic.model import Event, Statechart, CompoundState, BasicState, Transition
 from sismic.testing import teststory_from_trace
@@ -60,7 +60,8 @@ class PropertiesTests(unittest.TestCase):
 
 
 class OperatorsTest(unittest.TestCase):
-    def generic_test(self, condition: Condition, success_expected: bool, failure_expected: bool):
+    def generic_test(self, condition: Condition, success_expected: bool, failure_expected: bool, delay: int = 0):
+
         statechart = Statechart('test')
         initial_state = CompoundState('initial_state', initial='Cond')
         statechart.add_state(initial_state, None)
@@ -79,6 +80,7 @@ class OperatorsTest(unittest.TestCase):
         self.assertFalse('success' in interpreter.configuration)
         self.assertFalse('failure' in interpreter.configuration)
 
+        interpreter.time += delay
         interpreter.execute()
 
         self.assertEqual(success_expected, 'success' in interpreter.configuration)
@@ -228,6 +230,44 @@ class OperatorsTest(unittest.TestCase):
     def test_undetermined_before_undetermined(self):
         self.generic_test(Before(UndeterminedCondition(), UndeterminedCondition()), False, False)
 
+    def test_intime_true_instant(self):
+        self.generic_test(InTime(TrueCondition(), 0, 10), True, False)
+
+    def test_intime_true_delay(self):
+        self.generic_test(InTime(TrueCondition(), 5, 10), False, True)
+
+    def test_intime_false_instant(self):
+        self.generic_test(InTime(FalseCondition(), 0, 10), False, True)
+
+    def test_intime_false_delay(self):
+        self.generic_test(InTime(FalseCondition(), 5, 10), False, True)
+
+    def test_intime_undetermined_instant(self):
+        self.generic_test(InTime(UndeterminedCondition(), 0, 10), False, False)
+
+    def test_intime_undetermined_delay(self):
+        self.generic_test(InTime(UndeterminedCondition(), 5, 10), False, False)
+
+    def test_intime_delayed_true_instant(self):
+        self.generic_test(InTime(DelayedTrueCondition(2), 0, 10), True, False, 3)
+
+    def test_intime_delayed_true_delay(self):
+        self.generic_test(InTime(DelayedTrueCondition(7), 5, 10), True, False, 10)
+
+    def test_intime_delayed_false_instant(self):
+        self.generic_test(InTime(DelayedFalseCondition(2), 0, 10), False, True, 3)
+
+    def test_intime_delayed_false_delay(self):
+        self.generic_test(InTime(DelayedFalseCondition(7), 5, 10), False, True, 10)
+
+    def test_delayed_true(self):
+        self.generic_test(DelayedTrueCondition(2), False, False, 0)
+        self.generic_test(DelayedTrueCondition(2), True, False, 5)
+
+    def test_delayed_true(self):
+        self.generic_test(DelayedFalseCondition(2), False, False, 0)
+        self.generic_test(DelayedFalseCondition(2), False, True, 5)
+
 
 class TemporalTests(unittest.TestCase):
 
@@ -253,50 +293,49 @@ class TemporalTests(unittest.TestCase):
 
     def test_first_time_required_true_false(self):
         self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), FalseCondition()),
-                              [Event('CHECK')],
+                              [Event('stopped')],
                               False,
                               False)
 
     def test_first_time_required_true_undetermined(self):
         self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), UndeterminedCondition()),
-                              [Event('CHECK')],
+                              [Event('stopped')],
                               False,
                               False)
 
-    def test_first_time_required_false_true(self):
+    def test_first_time_required_false_true(self): # TODO
         self.generic_temporal_test(prepare_first_time_expression(True, FalseCondition(), TrueCondition()),
-                              [Event('CHECK')],
+                              [Event('stopped')],
                               False,
                               False)
 
-    def test_first_time_required_false_false(self):
+    def test_first_time_required_false_false(self): # TODO
         self.generic_temporal_test(prepare_first_time_expression(True, FalseCondition(), FalseCondition()),
-                              [Event('CHECK')],
+                              [Event('stopped')],
                               False,
                               False)
 
-    def test_first_time_required_false_undetermined(self):
-        #self.generic_temporal_test(prepare_first_time_expression(True, FalseCondition(), UndeterminedCondition()),
-        #                      [Event('CHECK')],
-        #                      False,
-        #                      False)
-        pass
+    def test_first_time_required_false_undetermined(self): # TODO
+        self.generic_temporal_test(prepare_first_time_expression(True, FalseCondition(), UndeterminedCondition()),
+                              [Event('stopped')],
+                              False,
+                              False)
 
     def test_first_time_required_undetermined_true(self):
         self.generic_temporal_test(prepare_first_time_expression(True, UndeterminedCondition(), TrueCondition()),
-                              [Event('CHECK')],
+                              [Event('stopped')],
                               False,
                               True)
 
     def test_first_time_required_undetermined_false(self):
         self.generic_temporal_test(prepare_first_time_expression(True, UndeterminedCondition(), FalseCondition()),
-                              [Event('CHECK')],
+                              [Event('stopped')],
                               False,
                               True)
 
     def test_first_time_required_undetermined_undetermined(self):
         self.generic_temporal_test(prepare_first_time_expression(True, UndeterminedCondition(), UndeterminedCondition()),
-                              [Event('CHECK')],
+                              [Event('stopped')],
                               False,
                               True)
 
