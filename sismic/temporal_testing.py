@@ -553,6 +553,119 @@ class Before(Condition):
                                _before_payload)
 
 
+class InTime(Condition):
+    """
+    This condition is verified iff an other condition is verified during a specified time interval.
+    The time interval is specified as a pair of positive integers (start, length), so that the condition
+    must be verified in the [start, start+length] interval.
+
+    The time is expressed in the unit than in the rest of Sismic. The interval limits are relative to
+    the moment at which the InTime condition begins to be checked.
+    """
+
+    def __init__(self, cond: Condition, start: int, lenght: int):
+        """
+        :param cond: the condition to check. This condition will be verified if cond is verified after
+        start and before start+length
+        :param start: the begining of the time interval during which a verification of cond leads
+        to the verification of this condition. Must be positive or null. If start equals 0, the checked
+        condition can be instantly verified.
+        :param lenght: the lenght of the time interval during which a verification of cond leads
+        to the verification of this condition. Must be positive or null.
+        """
+        self.cond = cond
+        self.start = start
+        self.length = lenght
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str,
+               success_state_id: str, failure_state_id: str):
+
+        parallel_id = id
+        condition_id = Counter.random()
+        cond_block_id = Counter.random()
+        time_block_id = Counter.random()
+        too_early_id = Counter.random()
+        valid_id = Counter.random()
+        success_a_id = Counter.random()
+        failure_a_id = Counter.random()
+        success_event_id = Counter.random()
+        failure_event_id = Counter.random()
+
+        parallel = OrthogonalState(id)
+        statechart.add_state(parallel, parent_id)
+
+        cond_block = CompoundState(cond_block_id, initial=condition_id)
+        statechart.add_state(cond_block, parallel_id)
+
+        success_a = BasicState(success_a_id, on_entry='send("{}")'.format(success_event_id))
+        statechart.add_state(success_a, cond_block_id)
+
+        failure_a = BasicState(failure_a_id, on_entry='send("{}")'.format(failure_event_id))
+        statechart.add_state(failure_a, cond_block_id)
+
+        self.cond.add_to(statechart, condition_id, cond_block_id, success_a_id, failure_a_id)
+
+        time_block = CompoundState(time_block_id, initial=too_early_id)
+        statechart.add_state(time_block, parallel_id)
+        statechart.add_state(BasicState(too_early_id), time_block_id)
+        statechart.add_state(BasicState(valid_id), time_block_id)
+
+        statechart.add_transition(Transition(source=too_early_id,
+                                             target=valid_id,
+                                             guard='after({})'.format(self.start)))
+        statechart.add_transition(Transition(source=too_early_id,
+                                             target=failure_state_id,
+                                             event=success_event_id))
+        statechart.add_transition(Transition(source=too_early_id,
+                                             target=failure_state_id,
+                                             event=failure_event_id))
+
+        statechart.add_transition(Transition(source=valid_id,
+                                             target=success_state_id,
+                                             event=success_event_id))
+        statechart.add_transition(Transition(source=valid_id,
+                                             target=failure_state_id,
+                                             event=failure_event_id))
+        statechart.add_transition(Transition(source=valid_id,
+                                             target=failure_state_id,
+                                             guard='after({})'.format(self.length)))
+
+
+class DelayedTrueCondition(Condition):
+    """
+    This condition becomes true after a given delay.
+    """
+
+    def __init__(self, delay: int):
+        """
+        :param delay: A positive or null value representing the time
+        to wait before the condition becomes verified.
+        """
+        Condition.__init__(self)
+        self.delay = delay
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str,
+               success_state_id: str, failure_state_id: str):
+
+        waiting = CompoundState(id)
+        statechart.add_state(waiting, parent_id)
+        statechart.add_transition(Transition(source=id, target=success_state_id, guard='after({})'.format(self.delay)))
+
+
+class DelayedFalseCondition(Condition):
+    """
+    This condition becomes false after a given delay.
+    """
+
+    def __init__(self, delay: int):
+        Condition.__init__(self)
+        self.delay = delay
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str,
+               success_state_id: str, failure_state_id: str):
+        Not(DelayedTrueCondition(self.delay)).add_to(statechart, id, parent_id, success_state_id, failure_state_id)
+
+
 def add_parallel_condition(statechart: Statechart, id: str, parent_id: str, success_state_id: str,
                            failure_state_id: str,
                            condition_a: Condition, condition_b: Condition, payload_function):
