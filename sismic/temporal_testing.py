@@ -226,6 +226,35 @@ def and_payload(statechart: Statechart, id: str, parent_state_id: str,
     statechart.add_transition(Transition(source=partial_id, target=success_state_id, event=success_a))
     statechart.add_transition(Transition(source=partial_id, target=success_state_id, event=success_b))
 
+def or_payload(statechart: Statechart, id: str, parent_state_id: str,
+               success_a: str, failure_a: str,
+               success_b: str, failure_b: str,
+               success_state_id: str, failure_state_id: str):
+
+    waiting_id = Counter.random()
+    partial_id = Counter.random()
+
+    # This composite state is only created so that the payload
+    # is entirely included in a state, and has no "floating"
+    # states
+    composite = CompoundState(id, initial=waiting_id)
+    statechart.add_state(composite, parent_state_id)
+
+    waiting = BasicState(waiting_id)
+    statechart.add_state(waiting, id)
+
+    partial = BasicState(partial_id)
+    statechart.add_state(partial, id)
+
+    statechart.add_transition(Transition(source=waiting_id, target=partial_id, event=failure_a))
+    statechart.add_transition(Transition(source=waiting_id, target=partial_id, event=failure_b))
+
+    statechart.add_transition(Transition(source=partial_id, target=failure_state_id, event=failure_a))
+    statechart.add_transition(Transition(source=partial_id, target=failure_state_id, event=failure_b))
+
+    statechart.add_transition(Transition(source=id, target=success_state_id, event=success_a))
+    statechart.add_transition(Transition(source=id, target=success_state_id, event=success_b))
+
 
 class And(Condition):
     """
