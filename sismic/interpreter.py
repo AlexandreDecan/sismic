@@ -497,7 +497,7 @@ def log_trace(interpreter: Interpreter) -> list:
 def run_in_background(interpreter: Interpreter, delay: float=0.05, callback=None):
     """
     Run given interpreter in background. The time is updated according to
-    *time.time() - starttime*. The interpreter is ran until it reachs a final configuration.
+    *time.time() - starttime*. The interpreter is ran until it reaches a final configuration.
     You can manually stop the thread using the added *stop* of the returned Thread object.
     This is for convenience only and should be avoided, because a call to *stop* puts the interpreter in
     an empty (and thus final) configuration, without properly leaving the active states.

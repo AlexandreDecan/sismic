@@ -97,25 +97,29 @@ class PythonEvaluator(Evaluator):
     def __active(self, name: str):
         """
         Return True if given state name is active.
+
         :param name: name of a state
+        :return: True if given state name is active.
         """
         return name in self._interpreter.configuration
 
     def __after(self, name: str, seconds: float):
         """
         Return True if given state was entered more than *seconds* ago.
-        :param name:
-        :param seconds:
-        :return:
+
+        :param name: name of a state
+        :param seconds: elapsed time
+        :return: True if given state was entered more than *seconds* ago.
         """
         return self._interpreter.time - seconds >= self._entry_time[name]
 
     def __idle(self, name: str, seconds: float):
         """
         Return True if given state was the target of a transition more than *seconds* ago.
-        :param name:
-        :param seconds:
-        :return:
+
+        :param name: name of a state
+        :param seconds: elapsed time
+        :return: True if given state was the target of a transition more than *seconds* ago.
         """
         return self._interpreter.time - seconds >= self._idle_time[name]
 
