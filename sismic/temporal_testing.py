@@ -10,10 +10,11 @@ class Condition:
     The failure transition will be followed if the property is false.
     While the property remains undetermined, none of these transitions are followed.
     """
+
     def add_to(self, statechart: Statechart, id: str, parent_state_id: str,
                success_state_id: str, failure_state_id: str):
         """
-        Place states and transitions into an existing statechart in order to represent the transition.
+        Places states and transitions into an existing statechart in order to represent the transition.
         :param statechart: the statechart in which the states and transitions must be placed.
         :param id: the id of the state that represents the condition.
         :param parent_state_id: the id of the parent in which the representative state must be placed.
@@ -21,7 +22,6 @@ class Condition:
         :param failure_state_id: the id of the (preexisting) state the failure transition must point to.
         :return:
         """
-
         pass
 
 
@@ -83,8 +83,8 @@ class UndeterminedCondition(Condition):
         statechart.add_state(waiting_state, parent_state_id)
 
         # These transitions are not followable, but are added so that success and failure transitions exist.
-        statechart.add_transition(Transition(source=id, target = success_state_id, guard='False'))
-        statechart.add_transition(Transition(source=id, target = failure_state_id, guard='False'))
+        statechart.add_transition(Transition(source=id, target=success_state_id, guard='False'))
+        statechart.add_transition(Transition(source=id, target=failure_state_id, guard='False'))
 
 
 class Counter(object):
@@ -195,6 +195,38 @@ class BeInactive(Condition):
     pass
 
 
+def and_payload(statechart: Statechart, id: str, parent_state_id: str,
+                success_a: str, failure_a: str,
+                success_b: str, failure_b: str,
+                success_state_id: str, failure_state_id: str):
+    waiting_id = Counter.random()
+    partial_id = Counter.random()
+
+    # This composite state is only created so that the payload
+    # is entirely included in a state, and has no "floating"
+    # states
+    composite = CompoundState(id, initial=waiting_id)
+    statechart.add_state(composite, parent_state_id)
+
+    waiting = BasicState(waiting_id)
+    statechart.add_state(waiting, id)
+
+    partial = BasicState(partial_id)
+    statechart.add_state(partial, id)
+
+    statechart.add_transition(Transition(source=waiting_id, target=partial_id, event=success_a))
+    statechart.add_transition(Transition(source=waiting_id, target=partial_id, event=success_b))
+
+    statechart.add_transition(Transition(source=waiting_id, target=failure_state_id, event=failure_a))
+    statechart.add_transition(Transition(source=waiting_id, target=failure_state_id, event=failure_b))
+
+    statechart.add_transition(Transition(source=partial_id, target=failure_state_id, event=failure_a))
+    statechart.add_transition(Transition(source=partial_id, target=failure_state_id, event=failure_b))
+
+    statechart.add_transition(Transition(source=partial_id, target=success_state_id, event=success_a))
+    statechart.add_transition(Transition(source=partial_id, target=success_state_id, event=success_b))
+
+
 class And(Condition):
     """
     A condition performing a logic AND between two conditions, according the following table:
@@ -220,51 +252,8 @@ class And(Condition):
         self.b = b
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str, failure_state_id: str):
-        parallel_state = OrthogonalState(id)
-        statechart.add_state(parallel_state, parent=parent_id)
-        a_id = Counter.random()
-        b_id = Counter.random()
-
-        composite_a_id = Counter.random()
-        composite_b_id = Counter.random()
-
-        success_a_id = Counter.random()
-        success_b_id = Counter.random()
-
-        # These sentry states are required because one can not have two transitions leaving two states in different
-        # parallel regions for reaching a third state being out of these regions.
-        failure_a_id = Counter.random()
-        failure_b_id = Counter.random()
-
-        composite_a = CompoundState(composite_a_id, initial=a_id)
-        statechart.add_state(composite_a, parent=id)
-
-        success_a = BasicState(success_a_id)
-        statechart.add_state(success_a, parent=composite_a_id)
-
-        failure_a = BasicState(failure_a_id)
-        statechart.add_state(failure_a, parent=composite_a_id)
-
-        self.a.add_to(statechart, a_id, composite_a_id, success_a_id, failure_a_id)
-
-        composite_b = CompoundState(composite_b_id, initial=b_id)
-        statechart.add_state(composite_b, parent=id)
-
-        success_b = BasicState(success_b_id)
-        statechart.add_state(success_b, parent=composite_b_id)
-
-        failure_b = BasicState(failure_b_id)
-        statechart.add_state(failure_b, parent=composite_b_id)
-
-        self.b.add_to(statechart, b_id, composite_b_id, success_b_id, failure_b_id)
-
-        statechart.add_transition(Transition(source=id,
-                                             target=success_state_id,
-                                             guard='active("{}") and active("{}")'.format(success_a_id, success_b_id)))
-
-        statechart.add_transition(Transition(source=id,
-                                             target=failure_state_id,
-                                             guard='active("{}") or active("{}")'.format(failure_a_id, failure_b_id)))
+        add_parallel_condition(statechart, id, parent_id, success_state_id, failure_state_id, self.a, self.b,
+                               and_payload)
 
 
 class Or(Condition):
@@ -281,6 +270,7 @@ class Or(Condition):
     undetermined OR false           => undetermined
     undetermined OR undetermined    => undetermined
     """
+
     def __init__(self, a: Condition, b: Condition):
         """
         :param a: a condition to combine
@@ -401,12 +391,18 @@ class Xor(Condition):
 
         self.b.add_to(statechart, b_id, composite_b_id, success_b_id, failure_b_id)
 
-        success_xor = '(active("{}") and active("{}")) or (active("{}") and active("{}"))'.format(success_a_id, failure_b_id, failure_a_id, success_b_id)
+        success_xor = '(active("{}") and active("{}")) or (active("{}") and active("{}"))'.format(success_a_id,
+                                                                                                  failure_b_id,
+                                                                                                  failure_a_id,
+                                                                                                  success_b_id)
         statechart.add_transition(Transition(source=id,
                                              target=success_state_id,
                                              guard=success_xor))
 
-        failure_xor = '(active("{}") and active("{}")) or (active("{}") and active("{}"))'.format(success_a_id, success_b_id, failure_a_id, failure_b_id)
+        failure_xor = '(active("{}") and active("{}")) or (active("{}") and active("{}"))'.format(success_a_id,
+                                                                                                  success_b_id,
+                                                                                                  failure_a_id,
+                                                                                                  failure_b_id)
         statechart.add_transition(Transition(source=id,
                                              target=failure_state_id,
                                              guard=failure_xor))
@@ -420,6 +416,7 @@ class Not(Condition):
     Not(false)          => true
     Not(undetermined)   => undetermined
     """
+
     def __init__(self, cond: Condition):
         """
         :param cond: the condition to reverse
@@ -478,37 +475,69 @@ class Before(Condition):
     - if a is not verified, the condition is not verified.
     - if b is not verified, the verification of the condition is equivalent to the verification of a.
     """
+
     def __init__(self, a: Condition, b: Condition):
         self.a = a
         self.b = b
 
     def add_to(self, statechart: Statechart, id: str, parent_state_id: str,
                success_state_id: str, failure_state_id: str):
-        parallel_id = Counter.random()
-        a_composite_id = Counter.random()
-        b_composite_id = Counter.random()
-        a_id = Counter.random()
-        b_id = Counter.random()
-        success_a_id = Counter.random()
-        success_b_id = Counter.random()
-        failure_b_id = Counter.random()
-
-        parallel = OrthogonalState(parallel_id)
-        statechart.add_state(parallel, parent_state_id)
-
-        a_composite = CompoundState(a_composite_id, initial=a_id)
-        statechart.add_state(a_composite, parallel_id)
-
-        self.a.add_to(statechart, a_id, a_composite, success_state_id=success_a_id, failure_state_id=failure_state_id)
-        success_a = BasicState(success_a_id)
-        statechart.add_state(success_a, a_composite_id)
-        statechart.add_transition(Transition(source=success_a_id, target=success_state_id))
+        pass
 
 
-        b_composite = CompoundState(b_composite_id, initial=b_id)
-        statechart.add_state(b_composite, parallel_id)
+def add_parallel_condition(statechart: Statechart, id: str, parent_id: str, success_state_id: str,
+                           failure_state_id: str,
+                           condition_a: Condition, condition_b: Condition, payload_function):
+    """
+    Adds to a statechart an orthogonal state with 3 parallel composite states:
+    1 - a composite state containing the composite state checking condition A, plus success and failure states for A
+    2 - a composite state containing the composite state checking condition B, plus success and failure states for B
+    3 - a 'condition' combining conditions A and B, based on received events revealing success or failure of A and B.
 
+    :param statechart: the statechart in which the parallel condition must be added.
+    :param parent_id: the id of the state in which the parallel condition must be added.
+    :param success_state_id: the id of the state that must be reached if the condition succeeds.
+    :param failure_state_id: the id of the state that must be reached if the condition fails.
+    :param condition_a: a condition.
+    :param condition_b: an other condition.
+    :param condition_payload: The way to combine conditions using sent events
+    """
 
+    compound_a_id = Counter.random()
+    compound_b_id = Counter.random()
+    success_a_id = Counter.random()
+    failure_a_id = Counter.random()
+    success_b_id = Counter.random()
+    failure_b_id = Counter.random()
+    a_id = Counter.random()
+    b_id = Counter.random()
+    payload_id = Counter.random()
+
+    a_true = Counter.random()
+    a_false = Counter.random()
+    b_true = Counter.random()
+    b_false = Counter.random()
+
+    parallel_state = OrthogonalState(id)
+    statechart.add_state(parallel_state, parent_id)
+
+    compound_a = CompoundState(compound_a_id, initial=a_id)
+    statechart.add_state(compound_a, id)
+    success_a = BasicState(success_a_id, on_entry='send("{}")'.format(a_true))
+    statechart.add_state(success_a, compound_a_id)
+    failure_a = BasicState(failure_a_id, on_entry='send("{}")'.format(a_false))
+    statechart.add_state(failure_a, compound_a_id)
+    condition_a.add_to(statechart, a_id, compound_a_id, success_state_id=success_a_id, failure_state_id=failure_a_id)
+
+    compound_b = CompoundState(compound_b_id, initial=b_id)
+    statechart.add_state(compound_b, id)
+    success_b = BasicState(success_b_id, on_entry='send("{}")'.format(b_true))
+    statechart.add_state(success_b, compound_b_id)
+    failure_b = BasicState(failure_b_id, on_entry='send("{}")'.format(b_false))
+    statechart.add_state(failure_b, compound_b_id)
+    condition_b.add_to(statechart, b_id, compound_b_id, success_state_id=success_b_id, failure_state_id=failure_b_id)
+
+    payload_function(statechart, payload_id, id, a_true, a_false, b_true, b_false, success_state_id, failure_state_id)
 
 
 def prepare_first_time_expression(decision: bool, premise: Condition, consequence: Condition):
@@ -695,11 +724,11 @@ def prepare_last_time_expression(decision: bool, premise: Condition, consequence
 
     statechart = Statechart(Counter.random())
 
-    global_id = Counter.random()    # initial state
+    global_id = Counter.random()  # initial state
     parallel_id = Counter.random()  # main state
-    status_id = Counter.random()    # Parallel state for statuses
+    status_id = Counter.random()  # Parallel state for statuses
     premise_parallel_id = Counter.random()  # Parallel state for premise stuff
-    consequence_parallel_id = Counter.random() # Parallel state for consequence stuff
+    consequence_parallel_id = Counter.random()  # Parallel state for consequence stuff
     premise_id = Counter.random()
     premise_success_id = Counter.random()
     consequence_id = Counter.random()
@@ -739,7 +768,8 @@ def prepare_last_time_expression(decision: bool, premise: Condition, consequence
                    success_state_id=premise_success_id, failure_state_id=premise_id)
     premise_success = BasicState(premise_success_id)
     statechart.add_state(premise_success, premise_parallel_id)
-    statechart.add_transition(Transition(source=premise_success_id, target=premise_id, action='send(Event("{}"))'.format(RESET_EVENT)))
+    statechart.add_transition(
+        Transition(source=premise_success_id, target=premise_id, action='send(Event("{}"))'.format(RESET_EVENT)))
 
     # For the consequence
     statechart.add_state(CompoundState(consequence_parallel_id, initial=waiting_id), parallel_id)
@@ -759,7 +789,8 @@ def prepare_last_time_expression(decision: bool, premise: Condition, consequence
 
     consequence_failure = BasicState(consequence_failure_id)
     statechart.add_state(consequence_failure, consequence_comp_id)
-    statechart.add_transition(Transition(source=consequence_failure_id, target=rule_not_satisfied_id, event=CHECK_EVENT))
+    statechart.add_transition(
+        Transition(source=consequence_failure_id, target=rule_not_satisfied_id, event=CHECK_EVENT))
 
     consequence.add_to(statechart, consequence_id, consequence_comp_id,
                        success_state_id=consequence_success_id, failure_state_id=consequence_failure_id)
