@@ -16,21 +16,24 @@ class StoryFromTraceTests(unittest.TestCase):
         story = teststory_from_trace(trace)
 
         expected = Story([
-            Event('started'),
+            Event('execution started'),
             Pause(2),
-            Event('step'),
-            Event('entered', entered_state='root'),
-            Event('entered', entered_state='s1'),
-            Event('step'),
-            Event('consumed', consumed_event=Event('goto s2')),
-            Event('exited', exited_state='s1'),
-            Event('processed', source_state='s1', target_state='s2', consumed_event=Event('goto s2')),
-            Event('entered', entered_state='s2'),
-            Event('step'),
-            Event('exited', exited_state='s2'),
-            Event('processed', source_state='s2', target_state='s3', consumed_event=None),
-            Event('entered', entered_state='s3'),
-            Event('stopped')
+            Event('step started'),
+            Event('state entered', state='root'),
+            Event('state entered', state='s1'),
+            Event('step ended'),
+            Event('step started'),
+            Event('event consumed', event=Event('goto s2')),
+            Event('state exited', state='s1'),
+            Event('transition processed', source='s1', target='s2', event=Event('goto s2')),
+            Event('state entered', state='s2'),
+            Event('step ended'),
+            Event('step started'),
+            Event('state exited', state='s2'),
+            Event('transition processed', source='s2', target='s3', event=None),
+            Event('state entered', state='s3'),
+            Event('step ended'),
+            Event('execution stopped')
         ])
         for a, b in zip(story, expected):
             self.assertEqual(a, b)

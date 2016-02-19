@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.20.1 (2016-02-19)
+-------------------
+
+- (Added) A *step ended* event at the end of each step in a tester story.
+- (Changed) The name of the events and attributes that are exposed in a tester story has changed.
+  Consult the documentation for more information.
+
 0.20.0 (2016-02-17)
 -------------------
 

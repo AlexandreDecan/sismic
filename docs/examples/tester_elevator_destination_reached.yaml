@@ -8,22 +8,22 @@ statechart:
     states:
       - name: check
         transitions:
-          - event: stopped
+          - event: execution stopped
             guard: len(destinations) == 0
             target: success
-          - event: stopped
+          - event: execution stopped
             guard: len(destinations) > 0
             target: fail
         parallel states:
           - name: wait floor selection
             transitions:
-              - event: consumed
-                guard: event.consumed_event.name == 'floorSelected'
-                action: destinations.append(event.consumed_event.floor)
+              - event: event consumed
+                guard: event.event.name == 'floorSelected'
+                action: destinations.append(event.event.floor)
           - name: wait doors open
             transitions:
-              - event: entered
-                guard: event.entered_state == 'doorsOpen'
+              - event: state entered
+                guard: event.state == 'doorsOpen'
                 action: |
                   # Current floor, deduced from tested statechart's context
                   floor = context.current

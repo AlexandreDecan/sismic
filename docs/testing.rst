@@ -38,22 +38,23 @@ A run of a *tester statechart* must end in a final state, meaning the test did n
 The run of such a *tester statechart* is driven by a specific sequence of events and pauses, which represents
 what happens during the execution of a *statechart under test*.
 
-For example, such a sequence contains *consumed* events, *entered* events, *exited* events, ...
+For example, such a sequence contains *event consumed* events, *state entered* events, *state exited* events, ...
 In particular, the following events are generated:
 
-- A *started* event is sent at the beginning.
-- each time a step begins, a *step* event is created.
-- each time an event is consumed, a *consumed_event* event is created.
+- A *execution started* event is sent at the beginning.
+- each time a step begins, a *step started* event is created.
+- each time an event is consumed, a *event consumed* event is created.
   the consumed event is available through the *event* attribute.
-- each time a state is exited, an *exited* event is created.
-  the name of the state is available through the *exited_state* attribute.
-- each time a transition is processed, a *processed* event is created.
+- each time a state is exited, an *state exited* event is created.
+  the name of the state is available through the *state* attribute.
+- each time a transition is processed, a *transition processed* event is created.
   the source state name and the target state name (if any) are available respectively through
-  the *source_state* and *target_state* attributes.
-  The event processed by the transition is available through the *consumed_event* attribute.
-- each time a state is entered, an *entered* event is created.
-  the name of the state is available through the *entered_state* attribute.
-- A *stopped* event is sent at the end.
+  the *source* and *target* attributes.
+  The event processed by the transition is available through the *event* attribute.
+- each time a state is entered, an *state entered* event is created.
+  the name of the state is available through the *state* attribute.
+- each time a step ends, a *step ended* event is created.
+- A *execution stopped* event is sent at the end.
 
 The sequence does follow the interpretation order:
 

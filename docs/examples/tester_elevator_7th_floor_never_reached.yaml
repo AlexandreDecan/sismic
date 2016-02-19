@@ -7,25 +7,25 @@ statechart:
     states:
       - name: standing
         transitions:
-          - event: entered
-            guard: event.entered_state == 'moving'
+          - event: state entered
+            guard: event.state == 'moving'
             target: moving
           - guard: floor == 7
             target: fail
-          - event: stopped
+          - event: execution stopped
             target: success
       - name: moving
         transitions:
-          - event: entered
-            guard: event.entered_state == 'movingUp'
+          - event: state entered
+            guard: event.state == 'movingUp'
             action: floor += 1
-          - event: entered
-            guard: event.entered_state == 'movingDown'
+          - event: state entered
+            guard: event.state == 'movingDown'
             action: floor -= 1
-          - event: exited
-            guard: event.exited_state == 'moving'
+          - event: state exited
+            guard: event.state == 'moving'
             target: standing
-          - event: stopped
+          - event: execution stopped
             target: success
       - name: fail
       - name: success

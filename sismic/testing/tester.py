@@ -8,20 +8,22 @@ __all__ = ['ExecutionWatcher', 'teststory_from_trace']
 
 def _teststory_from_macrostep(macrostep: MacroStep):
     story = Story()
-    story.append(Event('step'))
+    story.append(Event('step started'))
 
     if macrostep.event:
-        story.append(Event('consumed', consumed_event=macrostep.event))
+        story.append(Event('event consumed', event=macrostep.event))
 
     for microstep in macrostep.steps:
         for state in microstep.exited_states:
-            story.append(Event('exited', exited_state=state))
+            story.append(Event('state exited', state=state))
         if microstep.transition:
-            story.append(Event('processed', source_state=microstep.transition.source,
-                               target_state=microstep.transition.target,
-                               consumed_event=macrostep.event))
+            story.append(Event('transition processed', source=microstep.transition.source,
+                               target=microstep.transition.target,
+                               event=macrostep.event))
         for state in microstep.entered_states:
-            story.append(Event('entered', entered_state=state))
+            story.append(Event('state entered', state=state))
+
+    story.append(Event('step ended'))
     return story
 
 
@@ -98,7 +100,7 @@ class ExecutionWatcher:
 
         for tester in self._testers:
             tester.time = self._tested.time
-            tester.queue(Event('started')).execute()
+            tester.queue(Event('execution started')).execute()
 
     def stop(self):
         """
@@ -110,7 +112,7 @@ class ExecutionWatcher:
 
         for tester in self._testers:
             tester.time = self._tested.time
-            tester.queue(Event('stopped')).execute()
+            tester.queue(Event('execution stopped')).execute()
 
         self._started = False
         self._tested.execute_once = self._tested_execute_once_function
@@ -141,7 +143,7 @@ def teststory_from_trace(trace: list) -> Story:
     :return: A story
     """
     story = Story()
-    story.append(Event('started'))
+    story.append(Event('execution started'))
     time = 0
 
     for macrostep in trace:
@@ -150,5 +152,5 @@ def teststory_from_trace(trace: list) -> Story:
         story.extend(_teststory_from_macrostep(macrostep))
         time = macrostep.time
 
-    story.append(Event('stopped'))
+    story.append(Event('execution stopped'))
     return story
