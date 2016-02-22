@@ -271,71 +271,106 @@ class OperatorsTest(unittest.TestCase):
 
 class TemporalTests(unittest.TestCase):
 
-    def generic_temporal_test(self, statechart: Statechart, story: list, accept_before: bool, accept_after: bool):
+    def generic_temporal_test(self, statechart: Statechart, story: list, accept_after: bool):
         # Todo: convert the story list into a 'real' story that can be told to an interpreter
 
         interpreter = Interpreter(statechart)
-        self.assertEquals(accept_before, len(interpreter.configuration) == 0)
+        self.assertFalse(len(interpreter.configuration) == 0)
         for event in story:
             interpreter.queue(event)
 
         interpreter.execute()
-        print(interpreter.configuration)
         self.assertEquals(accept_after, len(interpreter.configuration) == 0)
 
     def test_first_time_required_true_true(self):
         self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), TrueCondition()),
                               [Event('stopped')],
-                              False,
                               True)
 
     def test_first_time_required_true_false(self):
         self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), FalseCondition()),
                               [Event('stopped')],
-                              False,
                               False)
 
     def test_first_time_required_true_undetermined(self):
         self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), UndeterminedCondition()),
                               [Event('stopped')],
-                              False,
                               False)
 
-    def test_first_time_required_false_true(self): # TODO
+    def test_first_time_required_false_true(self):
         self.generic_temporal_test(prepare_first_time_expression(True, FalseCondition(), TrueCondition()),
                               [Event('stopped')],
-                              False,
-                              False)
+                              True)
 
-    def test_first_time_required_false_false(self): # TODO
+    def test_first_time_required_false_false(self):
         self.generic_temporal_test(prepare_first_time_expression(True, FalseCondition(), FalseCondition()),
                               [Event('stopped')],
-                              False,
-                              False)
+                              True)
 
-    def test_first_time_required_false_undetermined(self): # TODO
+    def test_first_time_required_false_undetermined(self):
         self.generic_temporal_test(prepare_first_time_expression(True, FalseCondition(), UndeterminedCondition()),
                               [Event('stopped')],
-                              False,
-                              False)
+                              True)
 
     def test_first_time_required_undetermined_true(self):
         self.generic_temporal_test(prepare_first_time_expression(True, UndeterminedCondition(), TrueCondition()),
                               [Event('stopped')],
-                              False,
                               True)
 
     def test_first_time_required_undetermined_false(self):
         self.generic_temporal_test(prepare_first_time_expression(True, UndeterminedCondition(), FalseCondition()),
                               [Event('stopped')],
-                              False,
                               True)
 
     def test_first_time_required_undetermined_undetermined(self):
         self.generic_temporal_test(prepare_first_time_expression(True, UndeterminedCondition(), UndeterminedCondition()),
                               [Event('stopped')],
-                              False,
                               True)
+
+    def test_first_time_forbidden_true_true(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, TrueCondition(), TrueCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_first_time_forbidden_true_false(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, TrueCondition(), FalseCondition()),
+                              [Event('stopped')],
+                              True)
+
+    def test_first_time_forbidden_true_undetermined(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, TrueCondition(), UndeterminedCondition()),
+                              [Event('stopped')],
+                              True)
+
+    def test_first_time_forbidden_false_true(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, FalseCondition(), TrueCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_first_time_forbidden_false_false(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, FalseCondition(), FalseCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_first_time_forbidden_false_undetermined(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, FalseCondition(), UndeterminedCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_first_time_forbidden_undetermined_true(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, UndeterminedCondition(), TrueCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_first_time_forbidden_undetermined_false(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, UndeterminedCondition(), FalseCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_first_time_forbidden_undetermined_undetermined(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, UndeterminedCondition(), UndeterminedCondition()),
+                              [Event('stopped')],
+                              False)
 
 
 
