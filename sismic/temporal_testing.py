@@ -667,6 +667,40 @@ class InTime(Condition):
         return self.__class__.__name__ + "({}, {}, {})".format(self.cond, self.start, self.length)
 
 
+class IfElse(Condition):
+    """
+    This condition is equivalent to an other condition, depending of the value of a third condition.
+    """
+    def __init__(self, condition: Condition, a: Condition, b: Condition):
+        """
+        :param condition: a test condition that determines the condition that will be equivalent to the IfElse condition.
+        The IfElse condition may remain undetermined while the test condition remains undetermined.
+        If the test condition is determined, condition a or condition b is chosen based on the value of the condition :
+
+        if(condition) a else b
+
+        Due to the fail-fast mechanism, the IfElse condition may be determined even if the test condition is not (yet)
+        determined. For instance, the following condition is determined:
+
+        IfElse(UndeterminedCondition(), FalseCondition(), FalseCondition())
+
+        :param a: the condition that is equivalent to the changing condition before a given condition is verified.
+        :param b: the condition that is equivalent to the changing condition after the given condition is verified.
+        """
+        Condition.__init__(self)
+        self.a = a
+        self.b = b
+        self.condition = condition
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str,
+               success_state_id: str, failure_state_id: str):
+        Or(And(self.condition, self.a),
+           And(Not(self.condition), self.b)).add_to(statechart, id, parent_id, success_state_id, failure_state_id)
+
+    def __repr__(self):
+        return self.__class__.__name__ + "({}, {}, {})".format(self.condition, self.a, self.b)
+
+
 class DelayedTrueCondition(Condition):
     """
     This condition becomes true after a given delay.
