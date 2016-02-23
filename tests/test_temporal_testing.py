@@ -6,6 +6,26 @@ from sismic.testing import teststory_from_trace
 from sismic.temporal_testing import prepare_first_time_expression
 
 
+class UniqueIdProviderTest(unittest.TestCase):
+    def test_same_provider_same_element(self):
+        provider = UniqueIdProvider()
+        self.assertEqual(provider('foo'), provider('foo'))
+
+    def test_same_provider_different_elements(self):
+        provider = UniqueIdProvider()
+        self.assertNotEqual(provider('foo'), provider('bar'))
+
+    def test_different_providers_same_element(self):
+        provider_a = UniqueIdProvider()
+        provider_b = UniqueIdProvider()
+        self.assertNotEqual(provider_a('foo'), provider_b('foo'))
+
+    def test_different_providers_different_elements(self):
+        provider_a = UniqueIdProvider()
+        provider_b = UniqueIdProvider()
+        self.assertNotEqual(provider_a('foo'), provider_b('bar'))
+
+
 class PropertiesTests(unittest.TestCase):
     def setUp(self):
         self.sequential_statechart = Statechart('sequential')
