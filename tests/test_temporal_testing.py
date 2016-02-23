@@ -1,6 +1,5 @@
 import unittest
 from sismic.temporal_testing import *
-from sismic.temporal_testing import *
 from sismic.interpreter import Interpreter
 from sismic.model import Event, Statechart, CompoundState, BasicState, Transition
 from sismic.testing import teststory_from_trace
@@ -268,6 +267,79 @@ class OperatorsTest(unittest.TestCase):
         self.generic_test(DelayedFalseCondition(2), False, False, 0)
         self.generic_test(DelayedFalseCondition(2), False, True, 5)
 
+    def test_if_true_then_true_else_true(self):
+        self.generic_test(IfElse(TrueCondition(), TrueCondition(), TrueCondition()), True, False)
+
+    def test_if_true_then_true_else_false(self):
+        self.generic_test(IfElse(TrueCondition(), TrueCondition(), FalseCondition()), True, False)
+
+    def test_if_true_then_true_else_undetermined(self):
+        self.generic_test(IfElse(TrueCondition(), TrueCondition(), UndeterminedCondition()), True, False)
+
+    def test_if_true_then_false_else_true(self):
+        self.generic_test(IfElse(TrueCondition(), FalseCondition(), TrueCondition()), False, True)
+
+    def test_if_true_then_false_else_false(self):
+        self.generic_test(IfElse(TrueCondition(), FalseCondition(), FalseCondition()), False, True)
+
+    def test_if_true_then_false_else_undetermined(self):
+        self.generic_test(IfElse(TrueCondition(), FalseCondition(), UndeterminedCondition()), False, True)
+
+    def test_if_true_then_undetermined_else_true(self):
+        self.generic_test(IfElse(TrueCondition(), UndeterminedCondition(), TrueCondition()), False, False)
+
+    def test_if_true_then_undetermined_else_false(self):
+        self.generic_test(IfElse(TrueCondition(), UndeterminedCondition(), FalseCondition()), False, False)
+
+    def test_if_true_then_undetermined_else_undetermined(self):
+        self.generic_test(IfElse(TrueCondition(), UndeterminedCondition(), UndeterminedCondition()), False, False)
+
+    def test_if_false_then_true_else_true(self):
+        self.generic_test(IfElse(FalseCondition(), TrueCondition(), TrueCondition()), True, False)
+
+    def test_if_false_then_true_else_false(self):
+        self.generic_test(IfElse(FalseCondition(), TrueCondition(), FalseCondition()), False, True)
+
+    def test_if_false_then_true_else_undetermined(self):
+        self.generic_test(IfElse(FalseCondition(), TrueCondition(), UndeterminedCondition()), False, False)
+
+    def test_if_false_then_false_else_true(self):
+        self.generic_test(IfElse(FalseCondition(), FalseCondition(), TrueCondition()), True, False)
+
+    def test_if_false_then_false_else_false(self):
+        self.generic_test(IfElse(FalseCondition(), FalseCondition(), FalseCondition()), False, True)
+
+    def test_if_false_then_false_else_undetermined(self):
+        self.generic_test(IfElse(FalseCondition(), FalseCondition(), UndeterminedCondition()), False, False)
+
+    def test_if_undetermined_then_true_else_true(self):
+        self.generic_test(IfElse(UndeterminedCondition(), TrueCondition(), TrueCondition()), False, False)
+
+    def test_if_undetermined_then_true_else_false(self):
+        self.generic_test(IfElse(UndeterminedCondition(), TrueCondition(), FalseCondition()), False, False)
+
+    def test_if_undetermined_then_true_else_undetermined(self):
+        self.generic_test(IfElse(UndeterminedCondition(), TrueCondition(), UndeterminedCondition()), False, False)
+
+    def test_if_undetermined_then_false_else_true(self):
+        self.generic_test(IfElse(UndeterminedCondition(), FalseCondition(), TrueCondition()), False, False)
+
+    def test_if_undetermined_then_false_else_false(self):
+        self.generic_test(IfElse(UndeterminedCondition(), FalseCondition(), FalseCondition()), False, True)
+        # Fail-fast
+
+    def test_if_undetermined_then_false_else_undetermined(self):
+        self.generic_test(IfElse(UndeterminedCondition(), TrueCondition(), UndeterminedCondition()), False, False)
+
+    def test_if_undetermined_then_undetermined_else_true(self):
+        self.generic_test(IfElse(UndeterminedCondition(), UndeterminedCondition(), TrueCondition()), False, False)
+
+    def test_if_undetermined_then_undetermined_else_false(self):
+        self.generic_test(IfElse(UndeterminedCondition(), UndeterminedCondition(), FalseCondition()), False, False)
+
+    def test_if_undetermined_then_undetermined_else_undetermined(self):
+        self.generic_test(IfElse(UndeterminedCondition(), UndeterminedCondition(), UndeterminedCondition()), False, False)
+
 
 class OperatorsReprTests(unittest.TestCase):
     def test_true_repr(self):
@@ -308,7 +380,9 @@ class OperatorsReprTests(unittest.TestCase):
     def test_delayed_false_repr(self):
         self.assertEqual(DelayedFalseCondition(42).__repr__(), 'DelayedFalseCondition(42)')
 
-
+    def test_if_else_repr(self):
+        self.assertEqual(IfElse(TrueCondition(), TrueCondition(), FalseCondition()).__repr__(),
+                         'IfElse(TrueCondition(), TrueCondition(), FalseCondition())')
 
 
 class TemporalTests(unittest.TestCase):
