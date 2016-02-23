@@ -282,10 +282,13 @@ class TemporalTests(unittest.TestCase):
         interpreter.execute()
         self.assertEquals(accept_after, len(interpreter.configuration) == 0)
 
-    def test_first_time_required_true_true(self):
-        self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), TrueCondition()),
-                              [Event('stopped')],
-                              True)
+    def higher_order_temporal_test(self, required, premise: Condition, condition: Condition,
+                                   events: list, expected_results):
+        for preparator in [prepare_first_time_expression, prepare_last_time_expression, prepare_every_time_expression]:
+            self.generic_temporal_test(preparator(required, premise, condition), events, expected_results)
+
+    def test_required_true_true(self):
+        self.higher_order_temporal_test(True, TrueCondition(), TrueCondition(), [Event('stopped')], True)
 
     def test_first_time_required_true_false(self):
         self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), FalseCondition()),
@@ -371,6 +374,98 @@ class TemporalTests(unittest.TestCase):
         self.generic_temporal_test(prepare_first_time_expression(False, UndeterminedCondition(), UndeterminedCondition()),
                               [Event('stopped')],
                               False)
+
+    def test_last_time_required_true_true(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), TrueCondition()),
+                              [Event('stopped')],
+                              True)
+
+    def test_last_time_required_true_false(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), FalseCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_last_time_required_true_undetermined(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, TrueCondition(), UndeterminedCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_last_time_required_false_true(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, FalseCondition(), TrueCondition()),
+                              [Event('stopped')],
+                              True)
+
+    def test_last_time_required_false_false(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, FalseCondition(), FalseCondition()),
+                              [Event('stopped')],
+                              True)
+
+    def test_last_time_required_false_undetermined(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, FalseCondition(), UndeterminedCondition()),
+                              [Event('stopped')],
+                              True)
+
+    def test_last_time_required_undetermined_true(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, UndeterminedCondition(), TrueCondition()),
+                              [Event('stopped')],
+                              True)
+
+    def test_last_time_required_undetermined_false(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, UndeterminedCondition(), FalseCondition()),
+                              [Event('stopped')],
+                              True)
+
+    def test_last_time_required_undetermined_undetermined(self):
+        self.generic_temporal_test(prepare_first_time_expression(True, UndeterminedCondition(), UndeterminedCondition()),
+                              [Event('stopped')],
+                              True)
+
+    def test_last_time_forbidden_true_true(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, TrueCondition(), TrueCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_last_time_forbidden_true_false(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, TrueCondition(), FalseCondition()),
+                              [Event('stopped')],
+                              True)
+
+    def test_last_time_forbidden_true_undetermined(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, TrueCondition(), UndeterminedCondition()),
+                              [Event('stopped')],
+                              True)
+
+    def test_last_time_forbidden_false_true(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, FalseCondition(), TrueCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_last_time_forbidden_false_false(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, FalseCondition(), FalseCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_last_time_forbidden_false_undetermined(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, FalseCondition(), UndeterminedCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_last_time_forbidden_undetermined_true(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, UndeterminedCondition(), TrueCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_last_time_forbidden_undetermined_false(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, UndeterminedCondition(), FalseCondition()),
+                              [Event('stopped')],
+                              False)
+
+    def test_last_time_forbidden_undetermined_undetermined(self):
+        self.generic_temporal_test(prepare_first_time_expression(False, UndeterminedCondition(), UndeterminedCondition()),
+                              [Event('stopped')],
+                              False)
+
+
 
 
 

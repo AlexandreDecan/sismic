@@ -862,6 +862,8 @@ def prepare_every_time_expression(decision: bool, premise: Condition, consequenc
     ENDSTEP_EVENT = 'endstep'
 
     premise_id = Counter.random()
+    premise_wrapper_id = Counter.random()
+    consequence_wrapper_id = Counter.random()
     consequence_id = Counter.random()
     status_id = Counter.random()
     machine_id = Counter.random()
@@ -870,21 +872,26 @@ def prepare_every_time_expression(decision: bool, premise: Condition, consequenc
     premise_failure_id = Counter.random()
 
     statechart = _prepare_statechart(decision, status_id, machine_id,
-                                     rule_satisfied_id, rule_not_satisfied_id, premise_id)
+                                     rule_satisfied_id, rule_not_satisfied_id, premise_wrapper_id)
 
-    consequence.add_to(statechart, consequence_id, machine_id, premise_id, rule_not_satisfied_id)
+    # Premise and consequence are wrapped into composite states for
+    # 1 - Avoiding a cyclic dependency during their injection in the statechart
+    # 2 - Provide a better isolation, so that a "hot" replacement of the premise or the consequence
+    # would be easier.
+    statechart.add_state(CompoundState(premise_wrapper_id, initial=premise_id), machine_id)
+    statechart.add_state(CompoundState(consequence_wrapper_id, initial=consequence_id), machine_id)
+
+    consequence.add_to(statechart, consequence_id, consequence_wrapper_id, premise_wrapper_id, rule_not_satisfied_id)
     statechart.add_transition(Transition(source=consequence_id, target=rule_not_satisfied_id, event=CHECK_EVENT))
 
     # This state avoids infinite loops if the premise is "always" false
-    statechart.add_state(BasicState(premise_failure_id), machine_id)
-    statechart.add_transition(Transition(source=premise_failure_id, target=premise_id, event=ENDSTEP_EVENT))
-    statechart.add_transition(Transition(source=premise_failure_id, target=rule_satisfied_id, event=CHECK_EVENT))
+    statechart.add_state(BasicState(premise_failure_id), premise_wrapper_id)
 
-    premise.add_to(statechart, premise_id, machine_id, consequence_id, premise_failure_id)
+    premise.add_to(statechart, premise_id, premise_wrapper_id, consequence_wrapper_id, premise_failure_id)
     statechart.add_transition(Transition(source=premise_id, target=rule_satisfied_id, event=CHECK_EVENT))
 
-    consequence.add_to(statechart, consequence_id, machine_id, premise_id, rule_not_satisfied_id)
-    statechart.add_transition(Transition(source=consequence_id, target=rule_not_satisfied_id, event=CHECK_EVENT))
+    statechart.add_transition(Transition(source=premise_failure_id, target=premise_id, event=ENDSTEP_EVENT))
+    statechart.add_transition(Transition(source=premise_failure_id, target=rule_satisfied_id, event=CHECK_EVENT))
 
     return statechart
 
@@ -946,25 +953,27 @@ def prepare_last_time_expression(decision: bool, premise: Condition, consequence
 
     # For the premise
     statechart.add_state(CompoundState(premise_parallel_id, initial=premise_id), parallel_id)
-    premise.add_to(statechart, premise_id, premise_parallel_id, premise_success_id, premise_failure_id)
-
-    statechart.add_state(BasicState(premise_success_id, on_entry='send(Event("{}"))'.format(RESET_EVENT)),
+    statechart.add_state(BasicState(premise_success_id, on_entry='send("{}")'.format(RESET_EVENT)),
                          premise_parallel_id)
-    statechart.add_transition(Transition(source=premise_success_id, target=premise_id, event=ENDSTEP_EVENT))
 
     statechart.add_state(BasicState(premise_failure_id), premise_parallel_id)
+
+    premise.add_to(statechart, premise_id, premise_parallel_id, premise_success_id, premise_failure_id)
+
+    statechart.add_transition(Transition(source=premise_success_id, target=premise_id, event=ENDSTEP_EVENT))
     statechart.add_transition(Transition(source=premise_failure_id, target=premise_id, event=ENDSTEP_EVENT))
 
     # For the consequence
     statechart.add_state(CompoundState(consequence_parallel_id, initial=waiting_id), parallel_id)
 
     statechart.add_state(BasicState(waiting_id), consequence_parallel_id)
-    statechart.add_transition(Transition(source=waiting_id, target=rule_satisfied_id, event=CHECK_EVENT))
-    statechart.add_transition(Transition(source=waiting_id, target=consequence_comp_id, event=RESET_EVENT))
 
     consequence_comp = CompoundState(consequence_comp_id, initial=consequence_id)
     statechart.add_state(consequence_comp, consequence_parallel_id)
     statechart.add_transition(Transition(source=consequence_comp_id, target=consequence_comp_id, event=RESET_EVENT))
+
+    statechart.add_transition(Transition(source=waiting_id, target=rule_satisfied_id, event=CHECK_EVENT))
+    statechart.add_transition(Transition(source=waiting_id, target=consequence_comp_id, event=RESET_EVENT))
 
     consequence_success = BasicState(consequence_success_id)
     statechart.add_state(consequence_success, consequence_comp_id)
