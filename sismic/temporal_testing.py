@@ -701,6 +701,41 @@ class IfElse(Condition):
         return self.__class__.__name__ + "({}, {}, {})".format(self.condition, self.a, self.b)
 
 
+class DelayedCondition(Condition):
+    """
+    This condition adopts a defined behaviour after a given delay.
+    """
+
+    def __init__(self, condition: Condition, delay: int):
+        """
+        :param condition: a condition the behaviour of which this DelayedCondition adopts after the given
+        delay expires.
+        :param delay: a positive or null value representing the time
+        to wait before the DelayedCondition adopts the given condition.
+        """
+        Condition.__init__(self)
+        self.condition = condition
+        self.delay = delay
+
+    def add_to(self,
+               statechart: Statechart,
+               id: str,
+               parent_id: str,
+               success_state_id: str,
+               failure_state_id: str):
+
+        condition_id = Counter.random()
+
+        waiting = CompoundState(id)
+        statechart.add_state(waiting, parent_id)
+
+        self.condition.add_to(statechart, condition_id, parent_id, success_state_id, failure_state_id)
+        statechart.add_transition(Transition(source=id, target=condition_id, guard='after({})'.format(self.delay)))
+
+    def __repr__(self):
+        return self.__class__.__name__ + "({}, {})".format(self.condition, self.delay)
+
+
 class DelayedTrueCondition(Condition):
     """
     This condition becomes true after a given delay.
@@ -716,10 +751,7 @@ class DelayedTrueCondition(Condition):
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str,
                success_state_id: str, failure_state_id: str):
-
-        waiting = CompoundState(id)
-        statechart.add_state(waiting, parent_id)
-        statechart.add_transition(Transition(source=id, target=success_state_id, guard='after({})'.format(self.delay)))
+        DelayedCondition(TrueCondition(), self.delay).add_to(statechart, id, parent_id, success_state_id, failure_state_id)
 
     def __repr__(self):
         return self.__class__.__name__ + "({})".format(self.delay)
@@ -736,7 +768,8 @@ class DelayedFalseCondition(Condition):
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str,
                success_state_id: str, failure_state_id: str):
-        Not(DelayedTrueCondition(self.delay)).add_to(statechart, id, parent_id, success_state_id, failure_state_id)
+        DelayedCondition(FalseCondition(), self.delay).add_to(statechart, id, parent_id, success_state_id, failure_state_id)
+
 
     def __repr__(self):
         return self.__class__.__name__ + "({})".format(self.delay)

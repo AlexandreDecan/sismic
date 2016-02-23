@@ -384,6 +384,10 @@ class OperatorsReprTests(unittest.TestCase):
         self.assertEqual(IfElse(TrueCondition(), TrueCondition(), FalseCondition()).__repr__(),
                          'IfElse(TrueCondition(), TrueCondition(), FalseCondition())')
 
+    def test_delayed_condition_repr(self):
+        self.assertEqual(DelayedCondition(TrueCondition(), 42).__repr__(),
+                         'DelayedCondition(TrueCondition(), 42)')
+
 
 class TemporalTests(unittest.TestCase):
 
