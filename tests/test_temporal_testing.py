@@ -9,7 +9,7 @@ from sismic.temporal_testing import prepare_first_time_expression
 
 class PropertiesTests(unittest.TestCase):
     def setUp(self):
-        self.sequential_statechart = Statechart("sequential")
+        self.sequential_statechart = Statechart('sequential')
         initial_state = CompoundState('initial_state', initial='a_state')
         a_state = BasicState('a_state')
         b_state = BasicState('b_state')
@@ -271,31 +271,42 @@ class OperatorsTest(unittest.TestCase):
 
 class OperatorsReprTests(unittest.TestCase):
     def test_true_repr(self):
-        self.assertEqual(TrueCondition().__repr__(), "TrueCondition()")
+        self.assertEqual(TrueCondition().__repr__(), 'TrueCondition()')
 
     def test_false_repr(self):
-        self.assertEqual(FalseCondition().__repr__(), "FalseCondition()")
+        self.assertEqual(FalseCondition().__repr__(), 'FalseCondition()')
 
     def test_undetermined_repr(self):
-        self.assertEqual(UndeterminedCondition().__repr__(), "UndeterminedCondition()")
+        self.assertEqual(UndeterminedCondition().__repr__(), 'UndeterminedCondition()')
 
     def test_and_repr(self):
-        self.assertEqual(And(TrueCondition(), FalseCondition()).__repr__(), "And(TrueCondition(), FalseCondition())")
+        self.assertEqual(And(TrueCondition(), FalseCondition()).__repr__(), 'And(TrueCondition(), FalseCondition())')
 
     def test_or_repr(self):
-        self.assertEqual(Or(TrueCondition(), FalseCondition()).__repr__(), "Or(TrueCondition(), FalseCondition())")
+        self.assertEqual(Or(TrueCondition(), FalseCondition()).__repr__(), 'Or(TrueCondition(), FalseCondition())')
 
     def test_not_repr(self):
-        self.assertEqual(Not(TrueCondition()).__repr__(), "Not(TrueCondition())")
+        self.assertEqual(Not(TrueCondition()).__repr__(), 'Not(TrueCondition())')
 
     def test_xor_repr(self):
-        self.assertEqual(Xor(TrueCondition(), FalseCondition()).__repr__(), "Xor(TrueCondition(), FalseCondition())")
+        self.assertEqual(Xor(TrueCondition(), FalseCondition()).__repr__(), 'Xor(TrueCondition(), FalseCondition())')
 
     def test_before_repr(self):
-        self.assertEqual(Before(TrueCondition(), FalseCondition()).__repr__(), "Before(TrueCondition(), FalseCondition())")
+        self.assertEqual(Before(TrueCondition(), FalseCondition()).__repr__(), 
+                         'Before(TrueCondition(), FalseCondition())')
 
     def test_then_repr(self):
-        self.assertEqual(Then(TrueCondition(), FalseCondition()).__repr__(), "Then(TrueCondition(), FalseCondition())")
+        self.assertEqual(Then(TrueCondition(), FalseCondition()).__repr__(), 'Then(TrueCondition(), FalseCondition())')
+    
+    def test_intime_repr(self):
+        self.assertEqual(InTime(TrueCondition(), FalseCondition(), 42).__repr__(),
+                         'InTime(TrueCondition(), FalseCondition(), 42)')
+    
+    def test_delayed_true_repr(self):
+        self.assertEqual(DelayedTrueCondition(42).__repr__(), 'DelayedTrueCondition(42)')
+
+    def test_delayed_false_repr(self):
+        self.assertEqual(DelayedFalseCondition(42).__repr__(), 'DelayedFalseCondition(42)')
 
 
 
