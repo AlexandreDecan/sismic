@@ -703,12 +703,12 @@ class IfElse(Condition):
 
 class DelayedCondition(Condition):
     """
-    This condition adopts a defined behaviour after a given delay.
+    This condition adopts a defined behavior after a given delay.
     """
 
     def __init__(self, condition: Condition, delay: int):
         """
-        :param condition: a condition the behaviour of which this DelayedCondition adopts after the given
+        :param condition: a condition the behavior of which this DelayedCondition adopts after the given
         delay expires.
         :param delay: a positive or null value representing the time
         to wait before the DelayedCondition adopts the given condition.
