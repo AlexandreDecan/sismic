@@ -431,7 +431,7 @@ class TemporalTests(unittest.TestCase):
         for preparator in [prepare_first_time_expression, prepare_last_time_expression, prepare_every_time_expression]:
             self.generic_temporal_test(preparator(required, premise, condition), events, expected_results)
 
-    def test_required_true_true(self):
+    def test_required_true_true(self): # Todo
         self.higher_order_temporal_test(True, TrueCondition(), TrueCondition(), [Event('stopped')], True)
 
     def test_first_time_required_true_false(self):
