@@ -1028,8 +1028,6 @@ def prepare_every_time_expression(decision: bool, premise: Condition, consequenc
     ENDSTEP_EVENT = 'endstep'
 
     premise_id = Counter.random()
-    premise_wrapper_id = Counter.random()
-    consequence_wrapper_id = Counter.random()
     consequence_id = Counter.random()
     status_id = Counter.random()
     machine_id = Counter.random()
@@ -1037,27 +1035,21 @@ def prepare_every_time_expression(decision: bool, premise: Condition, consequenc
     rule_not_satisfied_id = Counter.random()
     premise_failure_id = Counter.random()
 
-    statechart = _prepare_statechart(decision,
-                                     status_id,
-                                     machine_id,
-                                     rule_satisfied_id,
-                                     rule_not_satisfied_id,
-                                     premise_wrapper_id)
+    statechart = _prepare_statechart(decision=decision,
+                                     status_id=status_id,
+                                     machine_id=machine_id,
+                                     rule_satisfied_id=rule_satisfied_id,
+                                     rule_not_satisfied_id=rule_not_satisfied_id,
+                                     initial_id=premise_id)
 
-    # Premise and consequence are wrapped into composite states for
-    # 1 - Avoiding a cyclic dependency during their injection in the statechart
-    # 2 - Provide a better isolation, so that a "hot" replacement of the premise or the consequence
-    # would be easier.
-    statechart.add_state(CompoundState(premise_wrapper_id, initial=premise_id), machine_id)
-    statechart.add_state(CompoundState(consequence_wrapper_id, initial=consequence_id), machine_id)
+    # This state avoids infinite loops if the premise is "always" false,
+    # or when premise and consequence are "always" true
+    statechart.add_state(BasicState(premise_failure_id), machine_id)
 
-    consequence.add_to(statechart, consequence_id, consequence_wrapper_id, premise_wrapper_id, rule_not_satisfied_id)
+    consequence.add_to(statechart, id=consequence_id, parent_id=machine_id, success_id=premise_failure_id, failure_id=rule_not_satisfied_id)
     statechart.add_transition(Transition(source=consequence_id, target=rule_not_satisfied_id, event=CHECK_EVENT))
 
-    # This state avoids infinite loops if the premise is "always" false
-    statechart.add_state(BasicState(premise_failure_id), premise_wrapper_id)
-
-    premise.add_to(statechart, premise_id, premise_wrapper_id, consequence_wrapper_id, premise_failure_id)
+    premise.add_to(statechart, id=premise_id, parent_id=machine_id, success_id=consequence_id, failure_id=premise_failure_id)
     statechart.add_transition(Transition(source=premise_id, target=rule_satisfied_id, event=CHECK_EVENT))
 
     statechart.add_transition(Transition(source=premise_failure_id, target=premise_id, event=ENDSTEP_EVENT))
