@@ -1,5 +1,36 @@
 from sismic.model import Statechart, BasicState, FinalState, Transition, CompoundState, OrthogonalState
+from collections import defaultdict
+from uuid import uuid4
 
+
+class UniqueIdProvider(object):
+    """
+    This class provides unique id of elements included in a spacename.
+    If the id of an element is requested for the first time, a unique id is provided.
+    After that initialisation, the id associated to a specific remains the same.
+    """
+
+    def __init__(self):
+        """
+        Creates an id provider.
+        """
+        self.d = defaultdict(uuid4)
+
+    def __call__(self, element):
+        """
+        Provides the id associated to a given element, according to the following rules:
+
+        - Two calls to the same instance of UniqueIdProvider, with the same parameter, will result in the same id.
+        - Two calls to different instances of UniqueIdProvider, with the same parameter, will result in different ids.
+        - Two calls to any instances of UniqueIdProvider, with different parameters, will result in different ids.
+
+        In other words, the retrieved ids are unique for a given instance of UniqueIdProvider and for a given parameter.
+
+        :param element: the element whose the id must be returned.
+        :return: the unique id associated to element in this provider.
+        """
+
+        return str(self.d[element])
 
 class Condition:
     """
@@ -78,15 +109,13 @@ class TrueCondition(Condition):
         Condition.__init__(self)
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
-        waiting_id = Counter.random()
+        ip = UniqueIdProvider()
 
-        composite = CompoundState(id, initial=waiting_id)
+        composite = CompoundState(id, initial=ip('waiting'))
         statechart.add_state(composite, parent_id)
 
-        waiting = BasicState(waiting_id)
-        statechart.add_state(waiting, id)
-
-        statechart.add_transition(Transition(source=waiting_id, target=success_id))
+        statechart.add_state(BasicState(ip('waiting')), id)
+        statechart.add_transition(Transition(source=ip('waiting'), target=success_id))
 
     def __repr__(self):
         return self.__class__.__name__ + "()"
@@ -102,14 +131,13 @@ class FalseCondition(Condition):
         Condition.__init__(self)
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
-        waiting_id = Counter.random()
+        ip = UniqueIdProvider()
 
-        composite = CompoundState(id, initial=waiting_id)
+        composite = CompoundState(id, initial=ip('waiting'))
         statechart.add_state(composite, parent_id)
 
-        waiting = BasicState(waiting_id)
-        statechart.add_state(waiting, id)
-        statechart.add_transition(Transition(source=waiting_id, target=failure_id))
+        statechart.add_state(BasicState(ip('waiting')), id)
+        statechart.add_transition(Transition(source=ip('waiting'), target=failure_id))
 
     def __repr__(self):
         return self.__class__.__name__ + "()"
@@ -136,20 +164,6 @@ class UndeterminedCondition(Condition):
         return self.__class__.__name__ + "()"
 
 
-class Counter(object):
-    next = 1
-
-    @classmethod
-    def random(cls):
-        ret = cls.next
-        cls.next = cls.compute_next(ret)
-        return str(ret)
-
-    @classmethod
-    def compute_next(cls, previous):
-        return previous + 1
-
-
 class Enter(Condition):
     """
     A condition based on the fact that a given state has been entered at least one time.
@@ -163,24 +177,23 @@ class Enter(Condition):
         self.state_id = state_id
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
-        waiting_id = Counter.random()
-        exit_id = Counter.random()
+        ip = UniqueIdProvider()
+        
+        waiting = BasicState(ip('waiting'))
+        exit_state = BasicState(ip('exit'))
 
-        waiting = BasicState(waiting_id)
-        exit_state = BasicState(exit_id)
-
-        composite_state = CompoundState(name=id, initial=waiting_id)
+        composite_state = CompoundState(name=id, initial=ip('waiting'))
 
         statechart.add_state(composite_state, parent_id)
         statechart.add_state(waiting, id)
         statechart.add_state(exit_state, id)
 
-        statechart.add_transition(Transition(source=waiting_id,
-                                             target=exit_id,
+        statechart.add_transition(Transition(source=ip('waiting'),
+                                             target=ip('exit'),
                                              event='entered',
                                              guard='event.state == "{}"'.format(self.state_id)))
 
-        statechart.add_transition(Transition(source=id, target=success_id, guard='active("{}")'.format(exit_id)))
+        statechart.add_transition(Transition(source=id, target=success_id, guard='active("{}")'.format(ip('exit'))))
 
     def __repr__(self):
         return self.__class__.__name__ + "({})".format(self.state_id)
@@ -199,24 +212,20 @@ class Exit(Condition):
         self.state_id = state_id
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
-        waiting_id = Counter.random()
-        exit_id = Counter.random()
+        ip = UniqueIdProvider()
 
-        waiting = BasicState(waiting_id)
-        exit = BasicState(exit_id)
-
-        composite_state = CompoundState(name=id, initial=waiting_id)
+        composite_state = CompoundState(name=id, initial=ip('waiting'))
 
         statechart.add_state(composite_state, parent_id)
-        statechart.add_state(waiting, id)
-        statechart.add_state(exit, id)
+        statechart.add_state(BasicState(ip('waiting')), id)
+        statechart.add_state(BasicState(ip('waiting')), id)
 
-        statechart.add_transition(Transition(source=waiting_id,
-                                             target=exit_id,
+        statechart.add_transition(Transition(source=ip('waiting'),
+                                             target=ip('exit'),
                                              event='exited',
                                              guard=('event.state == "{}"'.format(self.state_id))))
 
-        statechart.add_transition(Transition(source=id, target=success_id, guard='active("{}")'.format(exit_id)))
+        statechart.add_transition(Transition(source=id, target=success_id, guard='active("{}")'.format(ip('exit'))))
 
     def __repr__(self):
         return self.__class__.__name__ + "({})".format(self.state_id)
@@ -252,7 +261,7 @@ class BeInactive(Condition):
 
 def _and_payload(statechart: Statechart,
                  id: str,
-                 parent_state_id: str,
+                 parent_id: str,
                  success_a: str,
                  failure_a: str,
                  success_b: str,
@@ -274,32 +283,31 @@ def _and_payload(statechart: Statechart,
     :param failure_id: the id of the state a transition must point to if the AND operator fails.
     """
 
-    waiting_id = Counter.random()
-    partial_id = Counter.random()
+    ip = UniqueIdProvider()
 
     # This composite state is only created so that the payload
     # is entirely included in a state, and has no "floating"
     # states
-    composite = CompoundState(id, initial=waiting_id)
-    statechart.add_state(composite, parent_state_id)
+    composite = CompoundState(id, initial=ip('waiting'))
+    statechart.add_state(composite, parent_id)
 
-    waiting = BasicState(waiting_id)
+    waiting = BasicState(ip('waiting'))
     statechart.add_state(waiting, id)
 
-    partial = BasicState(partial_id)
+    partial = BasicState(ip('partial'))
     statechart.add_state(partial, id)
 
-    statechart.add_transition(Transition(source=waiting_id, target=partial_id, event=success_a))
-    statechart.add_transition(Transition(source=waiting_id, target=partial_id, event=success_b))
+    statechart.add_transition(Transition(source=ip('waiting'), target=ip('partial'), event=success_a))
+    statechart.add_transition(Transition(source=ip('waiting'), target=ip('partial'), event=success_b))
 
-    statechart.add_transition(Transition(source=waiting_id, target=failure_id, event=failure_a))
-    statechart.add_transition(Transition(source=waiting_id, target=failure_id, event=failure_b))
+    statechart.add_transition(Transition(source=ip('waiting'), target=failure_id, event=failure_a))
+    statechart.add_transition(Transition(source=ip('waiting'), target=failure_id, event=failure_b))
 
-    statechart.add_transition(Transition(source=partial_id, target=failure_id, event=failure_a))
-    statechart.add_transition(Transition(source=partial_id, target=failure_id, event=failure_b))
+    statechart.add_transition(Transition(source=ip('partial'), target=failure_id, event=failure_a))
+    statechart.add_transition(Transition(source=ip('partial'), target=failure_id, event=failure_b))
 
-    statechart.add_transition(Transition(source=partial_id, target=success_id, event=success_a))
-    statechart.add_transition(Transition(source=partial_id, target=success_id, event=success_b))
+    statechart.add_transition(Transition(source=ip('partial'), target=success_id, event=success_a))
+    statechart.add_transition(Transition(source=ip('partial'), target=success_id, event=success_b))
 
 
 def _or_payload(statechart: Statechart,
@@ -326,26 +334,22 @@ def _or_payload(statechart: Statechart,
     :param failure_id: the id of the state a transition must point to if the OR operator fails.
     """
 
-    waiting_id = Counter.random()
-    partial_id = Counter.random()
+    ip = UniqueIdProvider()
 
     # This composite state is only created so that the payload
     # is entirely included in a state, and has no "floating"
     # states
-    composite = CompoundState(id, initial=waiting_id)
+    composite = CompoundState(id, initial=ip('waiting'))
     statechart.add_state(composite, parent_id)
 
-    waiting = BasicState(waiting_id)
-    statechart.add_state(waiting, id)
+    statechart.add_state(BasicState(ip('waiting')), id)
+    statechart.add_state(BasicState(ip('partial')), id)
 
-    partial = BasicState(partial_id)
-    statechart.add_state(partial, id)
+    statechart.add_transition(Transition(source=ip('waiting'), target=ip('partial'), event=failure_a))
+    statechart.add_transition(Transition(source=ip('waiting'), target=ip('partial'), event=failure_b))
 
-    statechart.add_transition(Transition(source=waiting_id, target=partial_id, event=failure_a))
-    statechart.add_transition(Transition(source=waiting_id, target=partial_id, event=failure_b))
-
-    statechart.add_transition(Transition(source=partial_id, target=failure_id, event=failure_a))
-    statechart.add_transition(Transition(source=partial_id, target=failure_id, event=failure_b))
+    statechart.add_transition(Transition(source=ip('partial'), target=failure_id, event=failure_a))
+    statechart.add_transition(Transition(source=ip('partial'), target=failure_id, event=failure_b))
 
     statechart.add_transition(Transition(source=id, target=success_id, event=success_a))
     statechart.add_transition(Transition(source=id, target=success_id, event=success_b))
@@ -374,52 +378,48 @@ def _xor_payload(statechart: Statechart,
     :param success_id: the id of the state a transition must point to if the XOR operator succeeds.
     :param failure_id: the id of the state a transition must point to if the XOR operator fails.
     """
-
-    waiting_id = Counter.random()
-    a_success_id = Counter.random()
-    a_failure_id = Counter.random()
-    b_success_id = Counter.random()
-    b_failure_id = Counter.random()
+    
+    ip = UniqueIdProvider()
 
     # This composite state is only created so that the payload
     # is entirely included in a state, and has no "floating"
     # states
-    composite = CompoundState(id, initial=waiting_id)
+    composite = CompoundState(id, initial=ip('waiting'))
     statechart.add_state(composite, parent_id)
 
-    waiting = BasicState(waiting_id)
+    waiting = BasicState(ip('waiting'))
     statechart.add_state(waiting, id)
 
-    a_success = BasicState(a_success_id)
+    a_success = BasicState(ip('a_success'))
     statechart.add_state(a_success, id)
 
-    a_failure = BasicState(a_failure_id)
+    a_failure = BasicState(ip('a_failure'))
     statechart.add_state(a_failure, id)
 
-    b_success = BasicState(b_success_id)
+    b_success = BasicState(ip('b_success'))
     statechart.add_state(b_success, id)
 
-    b_failure = BasicState(b_failure_id)
+    b_failure = BasicState(ip('b_failure'))
     statechart.add_state(b_failure, id)
 
     # First property
-    statechart.add_transition(Transition(source=waiting_id, target=a_success_id, event=success_a))
-    statechart.add_transition(Transition(source=waiting_id, target=a_failure_id, event=failure_a))
-    statechart.add_transition(Transition(source=waiting_id, target=b_success_id, event=success_b))
-    statechart.add_transition(Transition(source=waiting_id, target=b_failure_id, event=failure_b))
+    statechart.add_transition(Transition(source=ip('waiting'), target=ip('a_success'), event=success_a))
+    statechart.add_transition(Transition(source=ip('waiting'), target=ip('a_failure'), event=failure_a))
+    statechart.add_transition(Transition(source=ip('waiting'), target=ip('b_success'), event=success_b))
+    statechart.add_transition(Transition(source=ip('waiting'), target=ip('b_failure'), event=failure_b))
 
     # Second property
-    statechart.add_transition(Transition(source=a_success_id, target=success_id, event=failure_b))
-    statechart.add_transition(Transition(source=a_success_id, target=failure_id, event=success_b))
+    statechart.add_transition(Transition(source=ip('a_success'), target=success_id, event=failure_b))
+    statechart.add_transition(Transition(source=ip('a_success'), target=failure_id, event=success_b))
 
-    statechart.add_transition(Transition(source=a_failure_id, target=success_id, event=success_b))
-    statechart.add_transition(Transition(source=a_failure_id, target=failure_id, event=failure_b))
+    statechart.add_transition(Transition(source=ip('a_failure'), target=success_id, event=success_b))
+    statechart.add_transition(Transition(source=ip('a_failure'), target=failure_id, event=failure_b))
 
-    statechart.add_transition(Transition(source=b_success_id, target=success_id, event=failure_a))
-    statechart.add_transition(Transition(source=b_success_id, target=failure_id, event=success_a))
+    statechart.add_transition(Transition(source=ip('b_success'), target=success_id, event=failure_a))
+    statechart.add_transition(Transition(source=ip('b_success'), target=failure_id, event=success_a))
 
-    statechart.add_transition(Transition(source=b_failure_id, target=success_id, event=success_a))
-    statechart.add_transition(Transition(source=b_failure_id, target=failure_id, event=failure_a))
+    statechart.add_transition(Transition(source=ip('b_failure'), target=success_id, event=success_a))
+    statechart.add_transition(Transition(source=ip('b_failure'), target=failure_id, event=failure_a))
 
 
 def _before_payload(statechart: Statechart,
@@ -446,20 +446,22 @@ def _before_payload(statechart: Statechart,
     :param success_id: the id of the state a transition must point to if the Before operator succeeds.
     :param failure_id: the id of the state a transition must point to if the Before operator fails.
     """
-
-    waiting_id = Counter.random()
-
+    
+    ip = UniqueIdProvider()
+    
     # This composite state is only created so that the payload
     # is entirely included in a state, and has no "floating" states
-    composite = CompoundState(id, initial=waiting_id)
-    statechart.add_state(composite, parent_id)
+    composite = CompoundState(id, initial=ip('waiting_comp'))
+    statechart.add_state(composite, parent=parent_id)
 
-    waiting = BasicState(waiting_id)
-    statechart.add_state(waiting, id)
+    waiting_comp = CompoundState(ip('waiting_comp'), initial=ip('waiting'))
+    statechart.add_state(waiting_comp, parent=id)
 
-    statechart.add_transition(Transition(source=waiting_id, target=success_id, event=success_a))
-    statechart.add_transition(Transition(source=waiting_id, target=failure_id, event=success_b))
-    statechart.add_transition(Transition(source=waiting_id, target=failure_id, event=failure_a))
+    statechart.add_state(BasicState(ip('waiting')), parent=ip('waiting_comp'))
+
+    statechart.add_transition(Transition(source=ip('waiting_comp'), target=success_id, event=success_a))
+    statechart.add_transition(Transition(source=ip('waiting'), target=failure_id, event=success_b))
+    statechart.add_transition(Transition(source=ip('waiting'), target=failure_id, event=failure_a))
 
 
 class And(Condition):
@@ -574,11 +576,11 @@ class Not(Condition):
         self.condition = cond
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
-        condition_id = Counter.random()
-        composite = CompoundState(id, initial=condition_id)
+        ip = UniqueIdProvider()
+        composite = CompoundState(id, initial=ip('condition'))
         statechart.add_state(composite, parent_id)
 
-        self.condition.add_to(statechart, id=condition_id, parent_id=id, success_id=failure_id, failure_id=success_id)
+        self.condition.add_to(statechart, id=ip('condition'), parent_id=id, success_id=failure_id, failure_id=success_id)
 
     def __repr__(self):
         return self.__class__.__name__ + "({})".format(self.condition)
@@ -604,14 +606,13 @@ class Then(Condition):
         self.b = b
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
-        a_id = Counter.random()
-        b_id = Counter.random()
+        ip = UniqueIdProvider()
 
-        composite = CompoundState(id, initial=a_id)
+        composite = CompoundState(id, initial=ip('a'))
         statechart.add_state(composite, parent_id)
 
-        self.b.add_to(statechart, id=b_id, parent_id=id, success_id=success_id, failure_id=failure_id)
-        self.a.add_to(statechart, id=a_id, parent_id=id, success_id=b_id, failure_id=failure_id)
+        self.b.add_to(statechart, id=ip('b'), parent_id=id, success_id=success_id, failure_id=failure_id)
+        self.a.add_to(statechart, id=ip('a'), parent_id=id, success_id=ip('b'), failure_id=failure_id)
 
     def __repr__(self):
         return self.__class__.__name__ + "({}, {})".format(self.a, self.b)
@@ -668,52 +669,44 @@ class InTime(Condition):
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
 
         parallel_id = id
-        condition_id = Counter.random()
-        cond_block_id = Counter.random()
-        time_block_id = Counter.random()
-        too_early_id = Counter.random()
-        valid_id = Counter.random()
-        success_a_id = Counter.random()
-        failure_a_id = Counter.random()
-        success_event_id = Counter.random()
-        failure_event_id = Counter.random()
+        ip = UniqueIdProvider()
 
         parallel = OrthogonalState(id)
         statechart.add_state(parallel, parent_id)
 
-        cond_block = CompoundState(cond_block_id, initial=condition_id)
+        cond_block = CompoundState(ip('cond_block'), initial=ip('condition'))
         statechart.add_state(cond_block, parallel_id)
 
-        success_a = BasicState(success_a_id, on_entry='send("{}")'.format(success_event_id))
-        statechart.add_state(success_a, cond_block_id)
+        success_a = BasicState(ip('success_a'), on_entry='send("{}")'.format(ip('success_event')))
+        statechart.add_state(success_a, ip('cond_block'))
 
-        failure_a = BasicState(failure_a_id, on_entry='send("{}")'.format(failure_event_id))
-        statechart.add_state(failure_a, cond_block_id)
+        failure_a = BasicState(ip('failure_a'), on_entry='send("{}")'.format(ip('failure_event')))
+        statechart.add_state(failure_a, ip('cond_block'))
 
-        self.cond.add_to(statechart, condition_id, cond_block_id, success_a_id, failure_a_id)
+        self.cond.add_to(statechart, ip('condition'), ip('cond_block'), ip('success_a'), ip('failure_a'))
 
-        time_block = CompoundState(time_block_id, initial=too_early_id)
+        time_block = CompoundState(ip('time_block'), initial=ip('too_early'))
         statechart.add_state(time_block, parallel_id)
-        statechart.add_state(BasicState(too_early_id), time_block_id)
-        statechart.add_state(BasicState(valid_id), time_block_id)
+        statechart.add_state(BasicState(ip('too_early')), ip('time_block'))
+        statechart.add_state(BasicState(ip('valid')), ip('time_block'))
 
-        statechart.add_transition(Transition(source=too_early_id,
-                                             target=valid_id,
+        statechart.add_transition(Transition(source=ip('too_early'),
+                                             target=ip('valid'),
                                              guard='after({})'.format(self.start)))
-        statechart.add_transition(Transition(source=too_early_id,
+        statechart.add_transition(Transition(source=ip('too_early'),
                                              target=failure_id,
-                                             event=success_event_id))
-        statechart.add_transition(Transition(source=too_early_id,
+                                             event=ip('success_event')))
+        statechart.add_transition(Transition(source=ip('too_early'),
                                              target=failure_id,
-                                             event=failure_event_id))
+                                             event=ip('failure_event')))
 
-        statechart.add_transition(Transition(source=valid_id,
+        statechart.add_transition(Transition(source=ip('valid'),
                                              target=success_id,
-                                             event=success_event_id))
-        statechart.add_transition(Transition(source=valid_id,
+                                             event=ip('success_event')))
+        statechart.add_transition(Transition(source=ip('valid'),
                                              target=failure_id,
-                                             event=failure_event_id))
-        statechart.add_transition(Transition(source=valid_id,
+                                             event=ip('failure_event')))
+        statechart.add_transition(Transition(source=ip('valid'),
                                              target=failure_id,
                                              guard='after({})'.format(self.length)))
 
@@ -777,13 +770,13 @@ class DelayedCondition(Condition):
                success_id: str,
                failure_id: str):
 
-        condition_id = Counter.random()
+        ip = UniqueIdProvider()
 
         waiting = CompoundState(id)
         statechart.add_state(waiting, parent_id)
 
-        self.condition.add_to(statechart, condition_id, parent_id, success_id, failure_id)
-        statechart.add_transition(Transition(source=id, target=condition_id, guard='after({})'.format(self.delay)))
+        self.condition.add_to(statechart, ip('condition'), parent_id, success_id, failure_id)
+        statechart.add_transition(Transition(source=id, target=ip('condition'), guard='after({})'.format(self.delay)))
 
     def __repr__(self):
         return self.__class__.__name__ + "({}, {})".format(self.condition, self.delay)
@@ -849,41 +842,36 @@ def _add_parallel_condition(statechart: Statechart,
     :param condition_payload: The way to combine conditions using sent events
     """
 
-    compound_a_id = Counter.random()
-    compound_b_id = Counter.random()
-    success_a_id = Counter.random()
-    failure_a_id = Counter.random()
-    success_b_id = Counter.random()
-    failure_b_id = Counter.random()
-    a_id = Counter.random()
-    b_id = Counter.random()
-    payload_id = Counter.random()
-
-    a_true = Counter.random()
-    a_false = Counter.random()
-    b_true = Counter.random()
-    b_false = Counter.random()
+    ip = UniqueIdProvider()
 
     parallel_state = OrthogonalState(id)
     statechart.add_state(parallel_state, parent_id)
 
-    compound_a = CompoundState(compound_a_id, initial=a_id)
+    compound_a = CompoundState(ip('compound_a'), initial=ip('a'))
     statechart.add_state(compound_a, id)
-    success_a = BasicState(success_a_id, on_entry='send("{}")'.format(a_true))
-    statechart.add_state(success_a, compound_a_id)
-    failure_a = BasicState(failure_a_id, on_entry='send("{}")'.format(a_false))
-    statechart.add_state(failure_a, compound_a_id)
-    condition_a.add_to(statechart, a_id, compound_a_id, success_id=success_a_id, failure_id=failure_a_id)
+    success_a = BasicState(ip('success_a'), on_entry='send("{}")'.format(ip('a_true')))
+    statechart.add_state(success_a, ip('compound_a'))
+    failure_a = BasicState(ip('failure_a'), on_entry='send("{}")'.format(ip('a_false')))
+    statechart.add_state(failure_a, ip('compound_a'))
+    condition_a.add_to(statechart, ip('a'), ip('compound_a'), success_id=ip('success_a'), failure_id=ip('failure_a'))
 
-    compound_b = CompoundState(compound_b_id, initial=b_id)
+    compound_b = CompoundState(ip('compound_b'), initial=ip('b'))
     statechart.add_state(compound_b, id)
-    success_b = BasicState(success_b_id, on_entry='send("{}")'.format(b_true))
-    statechart.add_state(success_b, compound_b_id)
-    failure_b = BasicState(failure_b_id, on_entry='send("{}")'.format(b_false))
-    statechart.add_state(failure_b, compound_b_id)
-    condition_b.add_to(statechart, b_id, compound_b_id, success_id=success_b_id, failure_id=failure_b_id)
+    success_b = BasicState(ip('success_b'), on_entry='send("{}")'.format(ip('b_true')))
+    statechart.add_state(success_b, ip('compound_b'))
+    failure_b = BasicState(ip('failure_b'), on_entry='send("{}")'.format(ip('b_false')))
+    statechart.add_state(failure_b, ip('compound_b'))
+    condition_b.add_to(statechart, ip('b'), ip('compound_b'), success_id=ip('success_b'), failure_id=ip('failure_b'))
 
-    payload_function(statechart, payload_id, id, a_true, a_false, b_true, b_false, success_id, failure_id)
+    payload_function(statechart, 
+                     id=ip('payload_id'), 
+                     parent_id=id, 
+                     success_a=ip('a_true'), 
+                     failure_a=ip('a_false'), 
+                     success_b=ip('b_true'), 
+                     failure_b=ip('b_false'), 
+                     success_id=success_id, 
+                     failure_id=failure_id)
 
 
 def _prepare_statechart(decision: bool, status_id: str, machine_id: str, rule_satisfied_id: str, rule_not_satisfied_id: str, initial_id: str):
@@ -898,33 +886,30 @@ def _prepare_statechart(decision: bool, status_id: str, machine_id: str, rule_sa
     :param initial_id: the id of the initial state.
     :return: a prepared statechart
     """
+    ip = UniqueIdProvider()
+    
+    statechart = Statechart(ip('statechart'))
 
-    statechart = Statechart(Counter.random())
+    statechart.add_state(CompoundState(ip('global_id'), initial=ip('parallel_id')), None)
+    statechart.add_state(OrthogonalState(ip('parallel_id')), ip('global_id'))
 
-    global_id = Counter.random()
-    parallel_id = Counter.random()
-    final_state_id = Counter.random()
-
-    statechart.add_state(CompoundState(global_id, initial=parallel_id), None)
-    statechart.add_state(OrthogonalState(parallel_id), global_id)
-
-    statechart.add_state(OrthogonalState(status_id), parallel_id)
+    statechart.add_state(OrthogonalState(status_id), ip('parallel_id'))
     # Without this 'useless' basic state, an empty orthogonal state prevents the stachart to finish.
-    statechart.add_state(BasicState(Counter.random()), status_id)
-    statechart.add_state(CompoundState(machine_id, initial=initial_id), parallel_id)
+    statechart.add_state(BasicState(ip('useless_state')), status_id)
+    statechart.add_state(CompoundState(machine_id, initial=initial_id), ip('parallel_id'))
 
-    final_state = FinalState(final_state_id)
-    statechart.add_state(final_state, global_id)
+    final_state = FinalState(ip('final_state'))
+    statechart.add_state(final_state, ip('global_id'))
 
     rule_satisfied = BasicState(rule_satisfied_id)
     statechart.add_state(rule_satisfied, machine_id)
     if decision:
-        statechart.add_transition(Transition(source=rule_satisfied_id, target=final_state_id))
+        statechart.add_transition(Transition(source=rule_satisfied_id, target=ip('final_state')))
 
     rule_not_satisfied = BasicState(rule_not_satisfied_id)
     statechart.add_state(rule_not_satisfied, machine_id)
     if not decision:
-        statechart.add_transition(Transition(source=rule_not_satisfied_id, target=final_state_id))
+        statechart.add_transition(Transition(source=rule_not_satisfied_id, target=ip('final_state')))
 
     return statechart
 
@@ -960,36 +945,30 @@ def prepare_first_time_expression(decision: bool, premise: Condition, consequenc
     CHECK_EVENT = 'stopped'
     ENDSTEP_EVENT = 'endstep'
 
-    status_id = Counter.random()
-    machine_id = Counter.random()
-    consequence_id = Counter.random()
-    rule_satisfied_id = Counter.random()
-    rule_not_satisfied_id = Counter.random()
-    premise_failure_id = Counter.random()
-    premise_id = Counter.random()
+    ip = UniqueIdProvider()
 
-    statechart = _prepare_statechart(decision, status_id, machine_id,
-                                     rule_satisfied_id, rule_not_satisfied_id, premise_id)
+    statechart = _prepare_statechart(decision, ip('status'), ip('machine'),
+                                     ip('rule_satisfied'), ip('rule_not_satisfied'), ip('premise'))
 
     consequence.add_to(statechart,
-                       id=consequence_id,
-                       parent_id=machine_id,
-                       success_id=rule_satisfied_id,
-                       failure_id=rule_not_satisfied_id)
-    statechart.add_transition(Transition(source=consequence_id, target=rule_not_satisfied_id, event=CHECK_EVENT))
+                       id=ip('consequence'),
+                       parent_id=ip('machine'),
+                       success_id=ip('rule_satisfied'),
+                       failure_id=ip('rule_not_satisfied'))
+    statechart.add_transition(Transition(source=ip('consequence'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
 
     # This state avoids infinite loops if the premise is "always" false
-    statechart.add_state(BasicState(premise_failure_id), machine_id)
+    statechart.add_state(BasicState(ip('premise_failure')), ip('machine'))
 
     premise.add_to(statechart,
-                   id=premise_id,
-                   parent_id=machine_id,
-                   success_id=consequence_id,
-                   failure_id=premise_failure_id)
+                   id=ip('premise'),
+                   parent_id=ip('machine'),
+                   success_id=ip('consequence'),
+                   failure_id=ip('premise_failure'))
 
-    statechart.add_transition(Transition(source=premise_failure_id, target=premise_id, event=ENDSTEP_EVENT))
-    statechart.add_transition(Transition(source=premise_failure_id, target=rule_satisfied_id, event=CHECK_EVENT))
-    statechart.add_transition(Transition(source=premise_id, target=rule_satisfied_id, event=CHECK_EVENT))
+    statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('premise'), event=ENDSTEP_EVENT))
+    statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+    statechart.add_transition(Transition(source=ip('premise'), target=ip('rule_satisfied'), event=CHECK_EVENT))
 
     return statechart
 
@@ -1026,34 +1005,36 @@ def prepare_every_time_expression(decision: bool, premise: Condition, consequenc
     """
     CHECK_EVENT = 'stopped'
     ENDSTEP_EVENT = 'endstep'
-
-    premise_id = Counter.random()
-    consequence_id = Counter.random()
-    status_id = Counter.random()
-    machine_id = Counter.random()
-    rule_satisfied_id = Counter.random()
-    rule_not_satisfied_id = Counter.random()
-    premise_failure_id = Counter.random()
+    
+    ip = UniqueIdProvider()
 
     statechart = _prepare_statechart(decision=decision,
-                                     status_id=status_id,
-                                     machine_id=machine_id,
-                                     rule_satisfied_id=rule_satisfied_id,
-                                     rule_not_satisfied_id=rule_not_satisfied_id,
-                                     initial_id=premise_id)
+                                     status_id=ip('status'),
+                                     machine_id=ip('machine'),
+                                     rule_satisfied_id=ip('rule_satisfied'),
+                                     rule_not_satisfied_id=ip('rule_not_satisfied'),
+                                     initial_id=ip('premise'))
 
     # This state avoids infinite loops if the premise is "always" false,
     # or when premise and consequence are "always" true
-    statechart.add_state(BasicState(premise_failure_id), machine_id)
+    statechart.add_state(BasicState(ip('premise_failure')), ip('machine'))
 
-    consequence.add_to(statechart, id=consequence_id, parent_id=machine_id, success_id=premise_failure_id, failure_id=rule_not_satisfied_id)
-    statechart.add_transition(Transition(source=consequence_id, target=rule_not_satisfied_id, event=CHECK_EVENT))
+    consequence.add_to(statechart, 
+                       id=ip('consequence'), 
+                       parent_id=ip('machine'), 
+                       success_id=ip('premise_failure'), 
+                       failure_id=ip('rule_not_satisfied'))
+    statechart.add_transition(Transition(source=ip('consequence'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
 
-    premise.add_to(statechart, id=premise_id, parent_id=machine_id, success_id=consequence_id, failure_id=premise_failure_id)
-    statechart.add_transition(Transition(source=premise_id, target=rule_satisfied_id, event=CHECK_EVENT))
+    premise.add_to(statechart, 
+                   id=ip('premise'), 
+                   parent_id=ip('machine'), 
+                   success_id=ip('consequence'), 
+                   failure_id=ip('premise_failure'))
+    statechart.add_transition(Transition(source=ip('premise'), target=ip('rule_satisfied'), event=CHECK_EVENT))
 
-    statechart.add_transition(Transition(source=premise_failure_id, target=premise_id, event=ENDSTEP_EVENT))
-    statechart.add_transition(Transition(source=premise_failure_id, target=rule_satisfied_id, event=CHECK_EVENT))
+    statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('premise'), event=ENDSTEP_EVENT))
+    statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('rule_satisfied'), event=CHECK_EVENT))
 
     return statechart
 
@@ -1093,67 +1074,53 @@ def prepare_last_time_expression(decision: bool, premise: Condition, consequence
     RESET_EVENT = 'reset'
     ENDSTEP_EVENT = 'endstep'
 
-    premise_parallel_id = Counter.random()  # Parallel state for consequence stuff
-    consequence_parallel_id = Counter.random()  # Parallel state for consequence stuff
-    premise_id = Counter.random()
-    premise_success_id = Counter.random()
-    premise_failure_id = Counter.random()
-    status_id = Counter.random()
-    machine_id = Counter.random()
-    parallel_id = Counter.random()
-    consequence_id = Counter.random()
-    consequence_comp_id = Counter.random()
-    consequence_success_id = Counter.random()
-    consequence_failure_id = Counter.random()
-    waiting_id = Counter.random()
-    rule_satisfied_id = Counter.random()
-    rule_not_satisfied_id = Counter.random()
+    ip = UniqueIdProvider()
 
-    statechart = _prepare_statechart(decision,
-                                     status_id,
-                                     machine_id,
-                                     rule_satisfied_id,
-                                     rule_not_satisfied_id,
-                                     parallel_id)
-    statechart.add_state(OrthogonalState(parallel_id), machine_id)
+    statechart = _prepare_statechart(decision=decision,
+                                     status_id=ip('status'),
+                                     machine_id=ip('machine'),
+                                     rule_satisfied_id=ip('rule_satisfied'),
+                                     rule_not_satisfied_id=ip('rule_not_satisfied'),
+                                     initial_id=ip('parallel'))
+    statechart.add_state(OrthogonalState(ip('parallel')), parent=ip('machine'))
 
     # For the premise
-    statechart.add_state(CompoundState(premise_parallel_id, initial=premise_id), parallel_id)
-    statechart.add_state(BasicState(premise_success_id, on_entry='send("{}")'.format(RESET_EVENT)), premise_parallel_id)
+    statechart.add_state(CompoundState(ip('premise_parallel'), initial=ip('premise')), ip('parallel'))
+    statechart.add_state(BasicState(ip('premise_success'), on_entry='send("{}")'.format(RESET_EVENT)), ip('premise_parallel'))
 
-    statechart.add_state(BasicState(premise_failure_id), premise_parallel_id)
+    statechart.add_state(BasicState(ip('premise_failure')), ip('premise_parallel'))
 
-    premise.add_to(statechart, premise_id, premise_parallel_id, premise_success_id, premise_failure_id)
+    premise.add_to(statechart, ip('premise'), ip('premise_parallel'), ip('premise_success'), ip('premise_failure'))
 
-    statechart.add_transition(Transition(source=premise_success_id, target=premise_id, event=ENDSTEP_EVENT))
-    statechart.add_transition(Transition(source=premise_failure_id, target=premise_id, event=ENDSTEP_EVENT))
+    statechart.add_transition(Transition(source=ip('premise_success'), target=ip('premise'), event=ENDSTEP_EVENT))
+    statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('premise'), event=ENDSTEP_EVENT))
 
     # For the consequence
-    statechart.add_state(CompoundState(consequence_parallel_id, initial=waiting_id), parallel_id)
+    statechart.add_state(CompoundState(ip('consequence_par'), initial=ip('waiting')), parent=ip('parallel'))
 
-    statechart.add_state(BasicState(waiting_id), consequence_parallel_id)
+    statechart.add_state(BasicState(ip('waiting')), ip('consequence_par'))
 
-    consequence_comp = CompoundState(consequence_comp_id, initial=consequence_id)
-    statechart.add_state(consequence_comp, consequence_parallel_id)
-    statechart.add_transition(Transition(source=consequence_comp_id, target=consequence_comp_id, event=RESET_EVENT))
+    consequence_comp = CompoundState(ip('consequence_comp'), initial=ip('consequence'))
+    statechart.add_state(consequence_comp, ip('consequence_par'))
+    statechart.add_transition(Transition(source=ip('consequence_comp'), target=ip('consequence_comp'), event=RESET_EVENT))
 
-    statechart.add_transition(Transition(source=waiting_id, target=rule_satisfied_id, event=CHECK_EVENT))
-    statechart.add_transition(Transition(source=waiting_id, target=consequence_comp_id, event=RESET_EVENT))
+    statechart.add_transition(Transition(source=ip('waiting'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+    statechart.add_transition(Transition(source=ip('waiting'), target=ip('consequence_comp'), event=RESET_EVENT))
 
-    consequence_success = BasicState(consequence_success_id)
-    statechart.add_state(consequence_success, consequence_comp_id)
-    statechart.add_transition(Transition(source=consequence_success_id, target=rule_satisfied_id, event=CHECK_EVENT))
+    consequence_success = BasicState(ip('consequence_success'))
+    statechart.add_state(consequence_success, ip('consequence_comp'))
+    statechart.add_transition(Transition(source=ip('consequence_success'), target=ip('rule_satisfied'), event=CHECK_EVENT))
 
-    consequence_failure = BasicState(consequence_failure_id)
-    statechart.add_state(consequence_failure, consequence_comp_id)
+    consequence_failure = BasicState(ip('consequence_failure'))
+    statechart.add_state(consequence_failure, ip('consequence_comp'))
     statechart.add_transition(
-        Transition(source=consequence_failure_id, target=rule_not_satisfied_id, event=CHECK_EVENT))
+        Transition(source=ip('consequence_failure'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
 
     consequence.add_to(statechart,
-                       consequence_id,
-                       consequence_comp_id,
-                       success_id=consequence_success_id,
-                       failure_id=consequence_failure_id)
-    statechart.add_transition(Transition(source=consequence_id, target=rule_not_satisfied_id, event=CHECK_EVENT))
+                       ip('consequence'),
+                       ip('consequence_comp'),
+                       success_id=ip('consequence_success'),
+                       failure_id=ip('consequence_failure'))
+    statechart.add_transition(Transition(source=ip('consequence'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
 
     return statechart
