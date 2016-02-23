@@ -11,8 +11,7 @@ class Condition:
     While the property remains undetermined, none of these transitions are followed.
     """
 
-    def add_to(self, statechart: Statechart, id: str, parent_id: str,
-               success_id: str, failure_id: str):
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
         """
         Places states and transitions into an existing statechart in order to represent the transition.
         :param statechart: the statechart in which the states and transitions must be placed.
@@ -23,6 +22,50 @@ class Condition:
         :return:
         """
         pass
+
+    def __invert__(self):
+        """
+        Inverts this condition.
+
+        :return: the negation of this condition.
+        """
+        return Not(self)
+
+    def __and__(self, other):
+        """
+        Combines this condition and an other one by a logic AND.
+
+        :param other: an other condition.
+        :return: (self AND other)
+        """
+        return And(self, other)
+
+    def __or__(self, other):
+        """
+        Combines this condition and an other one by a logic OR.
+
+        :param other: an other condition.
+        :return: (self OR other)
+        """
+        return Or(self, other)
+
+    def __xor__(self, other):
+        """
+        Combines this condition and an other one by a logic XOR.
+
+        :param other: an other condition.
+        :return: (self XOR other)
+        """
+        return Xor(self, other)
+
+    def then(self, other):
+        """
+        Combines this condition and an other one by a temporal dependency.
+
+        :param other: an other condition.
+        :return: (self THEN other)
+        """
+        return Then(self, other)
 
 
 class TrueCondition(Condition):

@@ -345,6 +345,27 @@ class OperatorsTest(unittest.TestCase):
                           False)
 
 
+class ConditionOperatorTests(unittest.TestCase):
+    def test_invert(self):
+        self.assertEqual((~ TrueCondition()).__repr__(), Not(TrueCondition()).__repr__())
+
+    def test_and(self):
+        self.assertEqual((TrueCondition() & FalseCondition()).__repr__(),
+                         And(TrueCondition(), FalseCondition()).__repr__())
+
+    def test_or(self):
+        self.assertEqual((TrueCondition() | FalseCondition()).__repr__(),
+                         Or(TrueCondition(), FalseCondition()).__repr__())
+
+    def test_xor(self):
+        self.assertEqual((TrueCondition() ^ FalseCondition()).__repr__(),
+                         Xor(TrueCondition(), FalseCondition()).__repr__())
+
+    def test_then(self):
+        self.assertEqual((TrueCondition().then(FalseCondition())).__repr__(),
+                         Then(TrueCondition(), FalseCondition()).__repr__())
+
+
 class OperatorsReprTests(unittest.TestCase):
     def test_true_repr(self):
         self.assertEqual(TrueCondition().__repr__(), 'TrueCondition()')
