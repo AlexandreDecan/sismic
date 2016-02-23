@@ -269,6 +269,37 @@ class OperatorsTest(unittest.TestCase):
         self.generic_test(DelayedFalseCondition(2), False, True, 5)
 
 
+class OperatorsReprTests(unittest.TestCase):
+    def test_true_repr(self):
+        self.assertEqual(TrueCondition().__repr__(), "TrueCondition()")
+
+    def test_false_repr(self):
+        self.assertEqual(FalseCondition().__repr__(), "FalseCondition()")
+
+    def test_undetermined_repr(self):
+        self.assertEqual(UndeterminedCondition().__repr__(), "UndeterminedCondition()")
+
+    def test_and_repr(self):
+        self.assertEqual(And(TrueCondition(), FalseCondition()).__repr__(), "And(TrueCondition(), FalseCondition())")
+
+    def test_or_repr(self):
+        self.assertEqual(Or(TrueCondition(), FalseCondition()).__repr__(), "Or(TrueCondition(), FalseCondition())")
+
+    def test_not_repr(self):
+        self.assertEqual(Not(TrueCondition()).__repr__(), "Not(TrueCondition())")
+
+    def test_xor_repr(self):
+        self.assertEqual(Xor(TrueCondition(), FalseCondition()).__repr__(), "Xor(TrueCondition(), FalseCondition())")
+
+    def test_before_repr(self):
+        self.assertEqual(Before(TrueCondition(), FalseCondition()).__repr__(), "Before(TrueCondition(), FalseCondition())")
+
+    def test_then_repr(self):
+        self.assertEqual(Then(TrueCondition(), FalseCondition()).__repr__(), "Then(TrueCondition(), FalseCondition())")
+
+
+
+
 class TemporalTests(unittest.TestCase):
 
     def generic_temporal_test(self, statechart: Statechart, story: list, accept_after: bool):

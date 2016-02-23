@@ -46,6 +46,9 @@ class TrueCondition(Condition):
 
         statechart.add_transition(Transition(source=waiting_id, target=success_state_id))
 
+    def __repr__(self):
+        return self.__class__.__name__ + "()"
+
 
 class FalseCondition(Condition):
     """
@@ -67,6 +70,9 @@ class FalseCondition(Condition):
         statechart.add_state(waiting, id)
         statechart.add_transition(Transition(source=waiting_id, target=failure_state_id))
 
+    def __repr__(self):
+        return self.__class__.__name__ + "()"
+
 
 class UndeterminedCondition(Condition):
     """
@@ -85,6 +91,9 @@ class UndeterminedCondition(Condition):
         # These transitions are not followable, but are added so that success and failure transitions exist.
         statechart.add_transition(Transition(source=id, target=success_state_id, guard='False'))
         statechart.add_transition(Transition(source=id, target=failure_state_id, guard='False'))
+
+    def __repr__(self):
+        return self.__class__.__name__ + "()"
 
 
 class Counter(object):
@@ -133,6 +142,9 @@ class Enter(Condition):
 
         statechart.add_transition(Transition(source=id, target=success_state_id, guard='active("{}")'.format(exit_id)))
 
+    def __repr__(self):
+        return self.__class__.__name__ + "({})".format(self.state_id)
+
 
 class Exit(Condition):
     """
@@ -165,6 +177,9 @@ class Exit(Condition):
                                              guard=('event.state == "{}"'.format(self.state_id))))
 
         statechart.add_transition(Transition(source=id, target=success_state_id, guard='active("{}")'.format(exit_id)))
+
+    def __repr__(self):
+        return self.__class__.__name__ + "({})".format(self.state_id)
 
 
 class Consume(Condition):
@@ -411,8 +426,11 @@ class And(Condition):
         self.b = b
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str, failure_state_id: str):
-        add_parallel_condition(statechart, id, parent_id, success_state_id, failure_state_id, self.a, self.b,
-                               _and_payload)
+        _add_parallel_condition(statechart, id, parent_id, success_state_id, failure_state_id, self.a, self.b,
+                                _and_payload)
+
+    def __repr__(self):
+        return self.__class__.__name__ + "({}, {})".format(self.a, self.b)
 
 
 class Or(Condition):
@@ -440,8 +458,11 @@ class Or(Condition):
         self.b = b
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str, failure_state_id: str):
-        add_parallel_condition(statechart, id, parent_id, success_state_id, failure_state_id, self.a, self.b,
-                               _or_payload)
+        _add_parallel_condition(statechart, id, parent_id, success_state_id, failure_state_id, self.a, self.b,
+                                _or_payload)
+
+    def __repr__(self):
+        return self.__class__.__name__ + "({}, {})".format(self.a, self.b)
 
 
 class Xor(Condition):
@@ -471,8 +492,11 @@ class Xor(Condition):
         self.b = b
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_state_id: str, failure_state_id: str):
-        add_parallel_condition(statechart, id, parent_id, success_state_id, failure_state_id, self.a, self.b,
-                               _xor_payload)
+        _add_parallel_condition(statechart, id, parent_id, success_state_id, failure_state_id, self.a, self.b,
+                                _xor_payload)
+
+    def __repr__(self):
+        return self.__class__.__name__ + "({}, {})".format(self.a, self.b)
 
 
 class Not(Condition):
@@ -498,6 +522,9 @@ class Not(Condition):
 
         self.condition.add_to(statechart, condition_id, id,
                               success_state_id=failure_state_id, failure_state_id=success_state_id)
+
+    def __repr__(self):
+        return self.__class__.__name__ + "({})".format(self.condition)
 
 
 class Then(Condition):
@@ -529,6 +556,9 @@ class Then(Condition):
         self.b.add_to(statechart, b_id, id, success_state_id=success_state_id, failure_state_id=failure_state_id)
         self.a.add_to(statechart, a_id, id, success_state_id=b_id, failure_state_id=failure_state_id)
 
+    def __repr__(self):
+        return self.__class__.__name__ + "({}, {})".format(self.a, self.b)
+
 
 class Before(Condition):
     """
@@ -549,8 +579,11 @@ class Before(Condition):
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str,
                success_state_id: str, failure_state_id: str):
-        add_parallel_condition(statechart, id, parent_id, success_state_id, failure_state_id, self.a, self.b,
-                               _before_payload)
+        _add_parallel_condition(statechart, id, parent_id, success_state_id, failure_state_id, self.a, self.b,
+                                _before_payload)
+
+    def __repr__(self):
+        return self.__class__.__name__ + "({}, {})".format(self.a, self.b)
 
 
 class InTime(Condition):
@@ -630,6 +663,9 @@ class InTime(Condition):
                                              target=failure_state_id,
                                              guard='after({})'.format(self.length)))
 
+    def __repr__(self):
+        return self.__class__.__name__ + "({}, {}, {})".format(self.cond, self.start, self.length)
+
 
 class DelayedTrueCondition(Condition):
     """
@@ -651,6 +687,9 @@ class DelayedTrueCondition(Condition):
         statechart.add_state(waiting, parent_id)
         statechart.add_transition(Transition(source=id, target=success_state_id, guard='after({})'.format(self.delay)))
 
+    def __repr__(self):
+        return self.__class__.__name__ + "({})".format(self.delay)
+
 
 class DelayedFalseCondition(Condition):
     """
@@ -665,10 +704,13 @@ class DelayedFalseCondition(Condition):
                success_state_id: str, failure_state_id: str):
         Not(DelayedTrueCondition(self.delay)).add_to(statechart, id, parent_id, success_state_id, failure_state_id)
 
+    def __repr__(self):
+        return self.__class__.__name__ + "({})".format(self.delay)
 
-def add_parallel_condition(statechart: Statechart, id: str, parent_id: str, success_state_id: str,
-                           failure_state_id: str,
-                           condition_a: Condition, condition_b: Condition, payload_function):
+
+def _add_parallel_condition(statechart: Statechart, id: str, parent_id: str, success_state_id: str,
+                            failure_state_id: str,
+                            condition_a: Condition, condition_b: Condition, payload_function):
     """
     Adds to a statechart an orthogonal state with 3 parallel composite states:
     1 - a composite state containing the composite state checking condition A, plus success and failure states for A
