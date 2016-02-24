@@ -5,8 +5,9 @@ from sismic import model
 from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
 from sismic.exceptions import InvariantError, PreconditionError, PostconditionError
 from sismic.code import PythonEvaluator
+from functools import wraps
 
-__all__ = ['Interpreter', 'run_in_background']
+__all__ = ['Interpreter', 'log_trace', 'run_in_background']
 
 
 class Interpreter:
@@ -19,32 +20,25 @@ class Interpreter:
         By default, the *PythonEvaluator* class will be used.
     :param initial_context: an optional initial context that will be provided to the evaluator.
         By default, an empty context is provided
-    :param initial_time: can be used to defined the initial value of the internal clock (see *time*).
     :param ignore_contract: set to True to ignore contract checking during the execution.
     """
 
     def __init__(self, statechart: model.Statechart, evaluator_klass=None,
-                 initial_context: dict=None, initial_time: int=0, ignore_contract: bool=False):
+                 initial_context: dict=None, ignore_contract: bool=False):
         # Internal variables
         self._ignore_contract = ignore_contract
-        self._initial_time = initial_time
         self._statechart = statechart
 
-        self._time = initial_time  # Internal clock
+        self._initialized = False
+        self._time = 0  # Internal clock
         self._memory = {}  # History states memory
         self._configuration = set()  # Set of active states
         self._events = deque()  # Events queue
-        self._trace = []  # A list of micro steps
         self._bound = []  # List of bound event callbacks
 
         # Evaluator
-        self._evaluator = evaluator_klass(self, initial_context) if evaluator_klass else PythonEvaluator(self, initial_context)
+        self._evaluator = (evaluator_klass if evaluator_klass else PythonEvaluator)(self, initial_context)
         self._evaluator.execute_statechart(statechart)
-
-        # Initial step and stabilization
-        step = model.MicroStep(entered_states=[self._statechart.root])
-        self._execute_step(step)
-        self._trace.append(model.MacroStep(time=self.time, steps=[step] + self.__stabilize()))
 
     @property
     def time(self) -> int:
@@ -81,14 +75,7 @@ class Interpreter:
         """
         Boolean indicating whether this interpreter is in a final configuration.
         """
-        return len(self._configuration) == 0
-
-    @property
-    def trace(self):
-        """
-        The list of executed macro steps.
-        """
-        return self._trace
+        return self._initialized and len(self._configuration) == 0
 
     @property
     def statechart(self):
@@ -169,27 +156,35 @@ class Interpreter:
 
         :return: a macro step or *None* if nothing happened
         """
+
+        # Initial step and stabilization
+        if not self._initialized:
+            step = model.MicroStep(entered_states=[self._statechart.root])
+            self._execute_step(step)
+            self._initialized = True
+            return model.MacroStep(time=self.time, steps=[step] + self.__stabilize())
+
         # Eventless transitions first
-        event = None
         transitions = self._select_eventless_transitions()
 
         if len(transitions) == 0:
-            # Consumes event if any
             if len(self._events) > 0:
                 event = self._events.popleft()  # consumes event
                 transitions = self._select_transitions(event)
+
                 # If the event can not be processed, discard it
                 if len(transitions) == 0:
-                    macrostep = model.MacroStep(time=self.time, steps=[model.MicroStep(event=event)])
-                    # Update trace
-                    self._trace.append(macrostep)
-                    return macrostep
+                    return model.MacroStep(time=self.time, steps=[model.MicroStep(event=event)])
             else:
-                return None  # No step to do!
+                # No step and no event to consume, do nothing!
+                return None
+        else:
+            event = None  # Eventless transition
 
+        # We get a list of transitions to perform
         transitions = self._sort_transitions(transitions)
 
-        # Compute and execute the steps for the transitions
+        # Compute and execute the resulting steps
         returned_steps = []
         steps = self._compute_transitions_steps(event, transitions)
         for step in steps:
@@ -205,8 +200,6 @@ class Interpreter:
             state = self._statechart.state_for(name)
             self.__evaluate_contract_conditions(state, 'invariants', macro_step)
 
-        # Update trace
-        self._trace.append(macro_step)
         return macro_step
 
     def _select_eventless_transitions(self) -> list:
@@ -264,9 +257,11 @@ class Interpreter:
 
                 # Their LCA must be an orthogonal state!
                 if not isinstance(lca_state, model.OrthogonalState):
-                    raise NonDeterminismError('Non-determinist choice between transitions {t1} and {t2}'
-                                  '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
-                                  .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
+                    raise NonDeterminismError(
+                        'Non-determinist choice between transitions {t1} and {t2}'
+                        '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
+                        .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2)
+                    )
 
                 # Check (2)
                 # This check must be done wrt. to LCA, as the combination of from_states could
@@ -280,10 +275,12 @@ class Interpreter:
                     # Target must be a descendant (or self) of this state
                     if (transition.target and
                             (transition.target not in
-                                     [last_before_lca] + self._statechart.descendants_for(last_before_lca))):
-                        raise ConflictingTransitionsError('Conflicting transitions: {t1} and {t2}'
-                                      '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
-                                      .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2))
+                             [last_before_lca] + self._statechart.descendants_for(last_before_lca))):
+                        raise ConflictingTransitionsError(
+                            'Conflicting transitions: {t1} and {t2}'
+                            '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
+                            .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2)
+                        )
 
             # Define an arbitrary order based on the depth and the name of source states.
             transitions = sorted(transitions, key=lambda t: (-self._statechart.depth_for(t.source), t.source))
@@ -355,7 +352,7 @@ class Interpreter:
         """
         # Check if we are in a set of "stable" states
         leaves_names = self._statechart.leaf_for(list(self._configuration))
-        leaves = list(map(lambda s: self._statechart.state_for(s), leaves_names))
+        leaves = map(self._statechart.state_for, leaves_names)
         leaves = sorted(leaves, key=lambda s: (-self._statechart.depth_for(s.name), s.name))
 
         # Final states?
@@ -370,7 +367,7 @@ class Interpreter:
                 states_to_enter = self._memory.get(leaf.name, [leaf.memory])
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_for(x), x))
                 return model.MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
-            elif isinstance(leaf, model.OrthogonalState):
+            elif isinstance(leaf, model.OrthogonalState) and self._statechart.children_for(leaf.name):
                 return model.MicroStep(entered_states=sorted(self._statechart.children_for(leaf.name)))
             elif isinstance(leaf, model.CompoundState) and leaf.initial:
                 return model.MicroStep(entered_states=[leaf.initial])
@@ -381,8 +378,8 @@ class Interpreter:
 
         :param step: *MicroStep* instance
         """
-        entered_states = list(map(lambda s: self._statechart.state_for(s), step.entered_states))
-        exited_states = list(map(lambda s: self._statechart.state_for(s), step.exited_states))
+        entered_states = list(map(self._statechart.state_for, step.entered_states))
+        exited_states = list(map(self._statechart.state_for, step.exited_states))
 
         # Exit states
         for state in exited_states:
@@ -476,10 +473,31 @@ class Interpreter:
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))
 
 
+def log_trace(interpreter: Interpreter) -> list:
+    """
+    Return a list that will be populated by each value returned by the *execute_once* method
+    of given interpreter.
+
+    :param interpreter: an *Interpreter* instance
+    :return: a list of *MacroStep*
+    """
+    func = interpreter.execute_once
+    trace = []
+
+    @wraps(func)
+    def new_func(*args, **kwargs):
+        step = func(*args, **kwargs)
+        trace.append(step)
+        return step
+
+    interpreter.execute_once = new_func
+    return trace
+
+
 def run_in_background(interpreter: Interpreter, delay: float=0.05, callback=None):
     """
     Run given interpreter in background. The time is updated according to
-    *time.time() - starttime*. The interpreter is ran until it reachs a final configuration.
+    *time.time() - starttime*. The interpreter is ran until it reaches a final configuration.
     You can manually stop the thread using the added *stop* of the returned Thread object.
     This is for convenience only and should be avoided, because a call to *stop* puts the interpreter in
     an empty (and thus final) configuration, without properly leaving the active states.
@@ -492,7 +510,7 @@ def run_in_background(interpreter: Interpreter, delay: float=0.05, callback=None
     import time
     import threading
 
-    def _task(interpreter, delay):
+    def _task():
         starttime = time.time()
         while not interpreter.final:
             interpreter.time = time.time() - starttime
@@ -500,9 +518,11 @@ def run_in_background(interpreter: Interpreter, delay: float=0.05, callback=None
             if callback:
                 callback(steps)
             time.sleep(delay)
-    thread = threading.Thread(target=_task, args=(interpreter, delay))
+    thread = threading.Thread(target=_task)
 
-    def stop_thread(): interpreter._configuration = []
+    def stop_thread():
+        interpreter._configuration = []
+
     thread.stop = stop_thread
 
     thread.start()

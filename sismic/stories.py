@@ -39,15 +39,18 @@ class Story(list):
         :param interpreter: an interpreter instance
         :param args: additional positional arguments that are passed to *interpreter.execute*.
         :param kwargs: additional keywords arguments that are passed to *interpreter.execute*.
-        :return: the interpreter, to chain calls
+        :return: the resulting trace of execution (a list of *MacroStep*)
         """
+        trace = []
         for item in self:
             if isinstance(item, Event):
                 interpreter.queue(item)
             elif isinstance(item, Pause):
                 interpreter.time += item.duration
-            interpreter.execute(*args, **kwargs)
-        return interpreter
+            step = interpreter.execute(*args, **kwargs)
+            if step:
+                trace.extend(step)
+        return trace
 
     def tell_by_step(self, interpreter, *args, **kwargs):
         """
@@ -85,7 +88,7 @@ def random_stories_generator(items, length: int=None, number: int=None):
     number = number if number else -1
     while number != 0:
         story = Story()
-        for i in range(length):
+        for _ in range(length):
             story.append(random.choice(items))  # Not random.sample, replacements needed
         yield story
         number -= 1

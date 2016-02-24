@@ -1,0 +1,38 @@
+statechart:
+  name: Test that destinations are reached
+  preamble: |
+    destinations = []  # List of destinations
+  root state:
+    name: root
+    initial: check
+    states:
+      - name: check
+        transitions:
+          - event: execution stopped
+            guard: len(destinations) == 0
+            target: success
+          - event: execution stopped
+            guard: len(destinations) > 0
+            target: fail
+        parallel states:
+          - name: wait floor selection
+            transitions:
+              - event: event consumed
+                guard: event.event.name == 'floorSelected'
+                action: destinations.append(event.event.floor)
+          - name: wait doors open
+            transitions:
+              - event: state entered
+                guard: event.state == 'doorsOpen'
+                action: |
+                  # Current floor, deduced from tested statechart's context
+                  floor = context.current
+
+                  # Remove floor from destination if it exists
+                  try:
+                    destinations.remove(floor)
+                  except ValueError:
+                    pass
+      - name: success
+        type: final
+      - name: fail

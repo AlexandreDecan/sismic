@@ -20,8 +20,7 @@ Of course, one could also use a hybrid approach, combining ideas from the three 
 Running example
 ---------------
 
-In this document, we will present the main differences between the second and the third approach (see
-:ref:`code_evaluation` for the first approach), on the basis of a simple example of a Graphical User Interface (GUI)
+In this document, we will present the main differences between the two approaches, on the basis of a simple example of a Graphical User Interface (GUI)
 whose behaviour is defined by a statechart. All the source code and YAML files  for this example, discussed in more
 detail below, is available in the *docs/examples* directory of Sismic’s repository.
 
@@ -30,6 +29,7 @@ split time feature and a display of the elapsed time. A button-controlled GUI of
 (inactive buttons are greyed out):
 
 .. image:: /images/stopwatch_gui.png
+    :align: center
 
 Essentially, the stopwatch simply displays a value, representing the elapsed time (expressed in seconds), which is
 initially 0. By clicking on the *start* button the stopwatch starts running. When clicking on *stop*, the stopwatch stops running.
@@ -40,7 +40,7 @@ The idea is that the buttons will trigger state changes and actions carried out 
 Taking abstraction of the concrete implementation, the statechart would essentially look as follows, with one main *active* state containing two parallel substates *timer* and *display*.
 
 .. image:: /images/stopwatch_overview.png
-
+    :align: center
 
 Controlling a statechart from within the environment
 ----------------------------------------------------
@@ -52,6 +52,7 @@ Conversely, the statechart itself can send events back to the source code to upd
 This statechart looks as follows:
 
 .. image:: /images/stopwatch_with_logic.png
+    :align: center
 
 Here is the YAML file containing the  textual description of this statechart:
 
@@ -97,6 +98,7 @@ The statechart is simpler than in the previous example: one parallel region hand
 running status of the stopwatch, and a second one handles its split features.
 
 .. image:: /images/stopwatch_with_object.png
+    :align: center
 
 .. literalinclude:: /examples/stopwatch_external.yaml
     :language: yaml

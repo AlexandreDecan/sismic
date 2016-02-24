@@ -3,7 +3,7 @@ statechart:
   preamble: |
     x = 1
     y = 2
-  initial state:
+  root state:
     name: root
     initial: s1
 

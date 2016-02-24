@@ -6,7 +6,7 @@ statechart:
 
     The stopwatch expects a "stopwatch" object in its initial context.
     This object should support the following methods: "start", "stop", "split", "reset", and "unsplit".
-  initial state:
+  root state:
     name: active
     parallel states:
       - name: timer

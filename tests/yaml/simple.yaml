@@ -1,6 +1,6 @@
 statechart:
   name: simple statechart
-  initial state:
+  root state:
     name: root
     initial: s1
 

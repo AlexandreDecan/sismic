@@ -79,8 +79,7 @@ Using *Interpreter*
 An :py:class:`~sismic.interpreter.Interpreter` instance is constructed upon a :py:class:`~sismic.model.Statechart`
 instance and an optional callable that returns an :py:class:`~sismic.code.Evaluator`.
 This callable must accept an interpreter and an initial execution context as input (see :ref:`code_evaluation`).
-If no evaluator is specified, the :py:class:`~sismic.code.PythonEvaluator` class will be used with an empty
-initial context.
+If no evaluator is specified, the :py:class:`~sismic.code.PythonEvaluator` class will be used.
 This default evaluator can parse and interpret Python code in statecharts.
 
 Consider the following example.
@@ -97,14 +96,32 @@ Consider the following example.
 
     interpreter = Interpreter(my_statechart)
 
-    # We are now in a stable initial state
-
-    interpreter.queue(Event('click'))  # Send event to the interpreter
-    interpreter.execute_once()  # Will process the event if no eventless transitions are found at first
-
 The method :py:meth:`~sismic.interpreter.Interpreter.execute_once` returns information about what happened
 during the execution, including the transitions that were processed, the event that was consumed and the
 sequences of entered and exited states (see :ref:`steps`).
+
+The first call to :py:meth:`~sismic.interpreter.Interpreter.execute_once` puts the statechart in its initial
+configuration:
+
+.. testcode:: interpreter
+
+    print('Before:', interpreter.configuration)
+
+    step = interpreter.execute_once()
+
+    print('After:', interpreter.configuration)
+
+.. testoutput:: interpreter
+
+    Before: []
+    After: ['active', 'floorListener', 'movingElevator', 'doorsOpen', 'floorSelecting']
+
+One can send events to the statechart using its :py:meth:`sismic.interpreter.Interpreter.queue` methods.
+
+.. testcode:: interpreter
+
+    interpreter.queue(Event('click'))
+    interpreter.execute_once()  # Process the event
 
 For convenience, :py:meth:`~sismic.interpreter.Interpreter.queue` returns ``self`` and thus can be chained.
 We will see later that Sismic also provides a way to express scenarios, in order to avoid repeated calls to ``queue``.
@@ -200,8 +217,6 @@ This way, a complete *run* of a statechart can be summarized as an ordered list 
 :py:class:`~sismic.model.MacroStep` instances,
 and details of such a run can be obtained using the :py:class:`~sismic.model.MicroStep` list of a
 :py:class:`~sismic.model.MacroStep`.
-For convenience, an interpreter has a :py:attr:`~sismic.model.trace` attribute that returns the list
-of executed macro steps (including the initial stabilization step).
 
 
 Observing the execution
@@ -212,7 +227,8 @@ that can be used to see what happens. In particular:
 
  - The :py:meth:`~sismic.interpreter.Interpreter.execute_once` (resp. :py:meth:`~sismic.interpreter.Interpreter.execute`)
    method returns an instance of (resp. a list of) :py:class:`sismic.model.MacroStep`.
- - The list of all executed macro steps is available using :py:attr:`~sismic.interpreter.Interpreter.trace`.
+ - The :py:func:`~sismic.interpreter.log_trace` function can be used to log all the steps that were processed during the
+   execution of an interpreter. This methods takes an interpreter and returns a (dynamic) list of macro steps.
  - The list of active states can be retrieved using :py:attr:`~sismic.interpreter.Interpreter.configuration`.
  - The context of the execution is available using :py:attr:`~sismic.interpreter.Interpreter.context`
    (see :ref:`code_evaluation`).

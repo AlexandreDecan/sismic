@@ -145,8 +145,7 @@ The internal clock value is still 0.
     Current time: 0
 
 We should inform our interpreter of the new current time.
-Of course, as our interpreter follows a discrete simulation,
-nothing really happens until we call
+Of course, as our interpreter follows a discrete simulation, nothing really happens until we call
 :py:meth:`~sismic.interpreter.Interpreter.execute` or :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
 
 .. testcode:: realclock
@@ -209,7 +208,7 @@ and the executiong needs to be interrupted manually.
 Asynchronous execution
 ----------------------
 
-Notice from previous example that using a loop, it is not possible to send events to the interpreter.
+Notice from previous example that using a loop makes it impossible to send events to the interpreter.
 For convenience, sismic provides a :py:func:`~sismic.interpreter.run_in_background`
 function that run an interpreter in a thread, and does the job of synchronizing the clock for you.
 
@@ -256,7 +255,6 @@ function that run an interpreter in a thread, and does the job of synchronizing 
     Toggledoor: ['root', 'plugged', 'door', 'heating', 'lamp', 'turntable', 'door.close', 'heating.off', 'lamp.off', 'turntable.off']
     Final: []
 
-Notice that an optional argument ``callback`` can be passed to :py:func:`~sismic.interpreter.run_in_background`.
-It must be a callable that accepts an :py:class:`~sismic.interpreter.Interpreter` instance and a (possibly empty) list
-of :py:class:`~sismic.model.MacroStep`. This callable will be called each time the interpreter's ``execute`` method
-is called.
+.. note:: An optional argument ``callback`` can be passed to :py:func:`~sismic.interpreter.run_in_background`.
+    It must be a callable that accepts the (possibly empty) list of :py:class:`~sismic.model.MacroStep` returned by 
+    the underlying call to :py:meth:`~sismic.interpreter.Interpreter.execute`. 

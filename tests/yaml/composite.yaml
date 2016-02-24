@@ -1,6 +1,6 @@
 statechart:
   name: statechart with composite states
-  initial state:
+  root state:
     name: root
     initial: s1
     states:

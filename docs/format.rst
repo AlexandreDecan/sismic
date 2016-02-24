@@ -23,8 +23,8 @@ without requiring the implementation of a visual notation, statecharts are expre
 notation (the alternative of using something like SCXML was discarded because its notation is too verbose and not
 really "human-readable".)
 
-This section explains how the elements that compose a valid statechart in Sismic can be defined using YAML.
-If you are not familiar with YAML, have a look at `YAML official documentation <http://yaml.org/spec/1.1/>`__.
+.. seealso:: This section explains how the elements that compose a valid statechart in Sismic can be defined using YAML.
+    If you are not familiar with YAML, have a look at `YAML official documentation <http://yaml.org/spec/1.1/>`__.
 
 Statechart
 **********
@@ -36,12 +36,12 @@ The root of the YAML file **must** declare a statechart:
     statechart:
       name: Name of the statechart
       description: Description of the statechart
-      initial state:
+      root state:
         [...]
 
 
-The *name* and the *initial state* are mandatory, the *description* is optional.
-The *initial state* key contains a state definition (see below).
+The *name* and the *root state* keys are mandatory, the *description* is optional.
+The *root state* key contains a state definition (see below).
 If specific code needs to be executed during initialization of the statechart, this can be specified
 using *preamble*. In this example, the code is written in Python.
 
@@ -64,14 +64,14 @@ Code can be written on multiple lines as follows:
 States
 ******
 
-A statechart must declare an initial state.
+A statechart must declare a root state.
 Each state consist of at least a mandatory *name*. Depending on the state type, other optional fields can be declared.
 
 .. code:: yaml
 
-    statemachine:
+    statechart:
       name: with state
-      initial state:
+      root state:
         name: root
 
 
@@ -88,6 +88,7 @@ For each declared state, the optional *on entry* and *on exit* fields can be use
         x -= 1
         y = 2
 
+
 Final states
 ************
 
@@ -98,14 +99,14 @@ A *final state* can be declared by specifying *type: final*:
     - name: s1
       type: final
 
+
 Shallow and deep history states
 *******************************
 
 *History states* can be declared as follows:
 
-*type: shallow history* property declares a *shallow history* state;
-*type: deep history* property declares a *deep history* state.
-We refer to the semantics of UML and SCXML for the difference between both types of histories.
+- *type: shallow history* to declare a *shallow history* state;
+- *type: deep history* to declare a *deep history* state.
 
 .. code:: yaml
 
@@ -120,6 +121,8 @@ Importantly, the *memory* value **must** refer to a parent's substate.
   - name: history state
     type: deep history
     memory: s1
+
+.. seealso:: We refer to the semantics of UML for the difference between both types of histories.
 
 
 Composite states
@@ -151,11 +154,8 @@ A composite state can define its initial state using *initial*.
           - name: nested state 2a
 
 
-Regions
-*******
-
-A region is essentially a logical set of nested states. Unlike UML, but similarly to SCXML, Sismic does
-not explicitly represent the concept of *region*, as it is implicitly defined by its composite state.
+.. note:: Unlike UML, but similarly to SCXML, Sismic does not explicitly represent the concept of *region*.
+    A region is essentially a logical set of nested states, and thus can be viewed as a specialization of a composite state.
 
 
 Orthogonal states
@@ -173,6 +173,7 @@ They must declare their nested states using *parallel states* instead of *states
       parallel states:
         - name: process 1
         - name: process 2
+
 
 Transitions
 ***********
@@ -203,7 +204,10 @@ Here is a full example of a transition specification:
 
 One type of transition, called an *internal transition*, does not require to declare a *target*.
 Instead, it **must** either define an event or define a guard to determine when it should become active
-(Otherwise, infinite loops would occur during simulation or execution).
+(otherwise, infinite loops would occur during simulation or execution).
+
+Notice that such a transition does not trigger the *on entry* and *on exit* of its state, and can thus be used
+to model an *internal action*.
 
 
 Statechart examples
@@ -217,6 +221,7 @@ Elevator
 The Elevator statechart is one of the running examples in this documentation. Its visual description (currently not supported by Sismic) could look as follows:
 
 .. image:: /images/elevator.png
+    :align: center
 
 The corresponding YAML description is given below. To make the statechart self-contained, a Python class ``Doors``
 is included containing two methods ``open()`` and ``close()`` and a boolean variable ``opened``. Upon entering in the *active* state, a ``doors`` object of this class will be created and initialised by setting the value of ``opened`` to ``True``.
@@ -241,7 +246,7 @@ Importing and validating statecharts
 The :py:class:`~sismic.model.Statechart` class provides several methods to construct, to query and to manipulate a statechart.
 A YAML definition of a statechart can be easily imported to a :py:class:`~sismic.model.Statechart` instance.
 The module :py:mod:`sismic.io` provides a convenient loader :py:func:`~sismic.io.import_from_yaml`
-which takes a textual YAML definition of a statechart and returns a :py:class:~sismic.model.Statechart` instance.
+which takes a textual YAML definition of a statechart and returns a :py:class:`~sismic.model.Statechart` instance.
 
 .. automodule:: sismic.io
     :members: import_from_yaml
@@ -258,7 +263,8 @@ For example:
         assert isinstance(statechart, model.Statechart)
 
 The parser performs an automatic validation against the YAML schema of the next subsection.
-It also does several other checks using :py:class:`~sismic.model.Statechart.validate` method.
+It also does several other checks using its :py:class:`~sismic.model.Statechart.validate` method.
+
 
 YAML validation schema
 **********************

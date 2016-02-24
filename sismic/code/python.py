@@ -18,7 +18,10 @@ class FrozenContext:
         self.__frozencontext = {k: copy.copy(v) for k, v in context.items()}
 
     def __getattr__(self, item):
-        return self.__frozencontext[item]
+        try:
+            return self.__frozencontext[item]
+        except KeyError:
+            raise AttributeError('{} has no attribute {}'.format(self, item))
 
 
 class PythonEvaluator(Evaluator):
@@ -33,7 +36,8 @@ class PythonEvaluator(Evaluator):
           if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
           that makes use of this evaluator.
     - On code execution:
-        - A *send(name, **kwargs)* function that takes an event name and additional keyword parameters and fires an internal event with.
+        - A *send(name, **kwargs)* function that takes an event name and additional keyword parameters and fires
+          an internal event with.
         - If the code is related to a transition, the *event* that fires the transition is exposed.
     - On code evaluation:
         - If the code is related to a transition, the *event* that fires the transition is exposed.
@@ -79,7 +83,7 @@ class PythonEvaluator(Evaluator):
         :param obj: *StateMixin* or *Transition*
         :return: an instance of *FrozenContext*
         """
-        return self._memory.get(id(obj), None)
+        return self._memory.get(id(obj), {})
 
     def __send(self, name: str, **kwargs):
         """
@@ -93,25 +97,29 @@ class PythonEvaluator(Evaluator):
     def __active(self, name: str):
         """
         Return True if given state name is active.
+
         :param name: name of a state
+        :return: True if given state name is active.
         """
         return name in self._interpreter.configuration
 
     def __after(self, name: str, seconds: float):
         """
         Return True if given state was entered more than *seconds* ago.
-        :param name:
-        :param seconds:
-        :return:
+
+        :param name: name of a state
+        :param seconds: elapsed time
+        :return: True if given state was entered more than *seconds* ago.
         """
         return self._interpreter.time - seconds >= self._entry_time[name]
 
     def __idle(self, name: str, seconds: float):
         """
         Return True if given state was the target of a transition more than *seconds* ago.
-        :param name:
-        :param seconds:
-        :return:
+
+        :param name: name of a state
+        :param seconds: elapsed time
+        :return: True if given state was the target of a transition more than *seconds* ago.
         """
         return self._interpreter.time - seconds >= self._idle_time[name]
 

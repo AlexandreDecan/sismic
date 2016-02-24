@@ -6,3 +6,4 @@ Module *exceptions*
     :member-order: bysource
     :show-inheritance:
     :inherited-members:
+    :imported-members:

@@ -82,7 +82,6 @@ class Evaluator(metaclass=abc.ABCMeta):
 
         :param transition: the considered transition
         :param event: instance of *Event* if any
-        :return: truth value of *code*
         """
         if transition.action:
             return self._execute_code(transition.action, {'event': event})

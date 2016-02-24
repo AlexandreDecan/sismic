@@ -33,7 +33,7 @@ As an example, consider the following partial statechart definition.
       preamble: |
         x = 1
         y = 0
-      initial state:
+      root state:
         name: s1
         on entry: x += 1
 
@@ -53,9 +53,9 @@ When a :py:class:`~sismic.code.PythonEvaluator` instance is initialized, a prepo
 For convenience, the initial context can be directly provided to an :py:class:`~sismic.interpreter.Interpreter`
 constructor.
 
-Notice that the initial context is evaluated *before* any code contained in the statechart.
-As a consequence, this implies that if a same variable name is used both in the initial context and
-in the YAML, the value set in the initial context will be overridden by the value set in the YAML definition.
+.. note:: The initial context is evaluated *before* any code contained in the statechart.
+    As a consequence, this implies that if a same variable name is used both in the initial context and
+    in the YAML, the value set in the initial context will be overridden by the value set in the YAML definition.
 
 .. testsetup:: variable_override
 
@@ -68,7 +68,7 @@ in the YAML, the value set in the initial context will be overridden by the valu
       name: example
       preamble:
         x = 1
-      initial state:
+      root state:
         name: s
     """
 
@@ -101,6 +101,13 @@ or equivalently,
     x = locals().get('x', 1)
 
 
+.. warning::
+
+    Under the hood, a Python evaluator makes use of ``eval()`` and ``exec()`` with a local context.
+    This can lead to some *weird* issues with variable scope (as in list comprehensions or lambda's).
+    See `this question on Stackoverflow <http://stackoverflow.com/questions/32894942/listcomp-unable-to-access-locals-defined-in-code-called-by-exec-if-nested-in-fun>`__ for more information.
+
+
 Features of the built-in Python evaluator
 -----------------------------------------
 
@@ -111,11 +118,12 @@ entries. These entries are covered in the docstring of a :py:class:`~sismic.code
 .. autoclass:: sismic.code.PythonEvaluator
     :noindex:
 
+.. note:: The documentation below explains how an evaluator is organized and what does the default built-in Python evaluator.
+    Readers that are not interested in tuning existing evaluators or creating new ones can skip this part of the documentation.
+
+
 Anatomy of a code evaluator
 ---------------------------
-
-The documentation below explains how an evaluator is organized and what does the default built-in Python evaluator.
-Readers that are not interested in tuning existing evaluators or creating new ones can skip this part of the documentation.
 
 An :py:class:`~sismic.code.Evaluator` must provide two main methods and an attribute:
 
@@ -128,9 +136,8 @@ An :py:class:`~sismic.code.Evaluator` must provide two main methods and an attri
 .. autoattribute:: sismic.code.Evaluator.context
     :noindex:
 
-Notice that none of the two methods is actually called by the interpreter during the execution of a
-statechart. These methods are fallback methods, meaning they are implicitly called when one of the
-following methods is not defined in a concrete evaluator instance:
+None of the two methods is actually called by the interpreter during the execution of a statechart.
+These methods are fallback methods, meaning they are implicitly called when one of the following methods is not defined in a concrete evaluator instance:
 
 .. autoclass:: sismic.code.Evaluator
     :members:
