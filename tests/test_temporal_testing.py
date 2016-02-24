@@ -77,6 +77,14 @@ class PropertiesTests(unittest.TestCase):
         self.assertTrue('out' in test_interpreter.configuration)
 
 
+class ConditionReprTest(unittest.TestCase):
+    def test_enter_repr(self):
+        self.assertEqual(Enter('foo').__repr__(), 'Enter("foo")')
+
+    def test_exit_repr(self):
+        self.assertEqual(Exit('foo').__repr__(), 'Exit("foo")')
+
+
 class OperatorsTest(unittest.TestCase):
     def generic_test(self, condition: Condition, success_expected: bool, failure_expected: bool, delay: int = 0):
         statechart = Statechart('test')
