@@ -20,6 +20,11 @@ class LogTraceTests(unittest.TestCase):
         self.tested.queue(Event('floorSelected', floor=4)).execute()
         self.assertTrue(len(self.steps) > 0)
 
+    def test_log_content(self):
+        self.tested.queue(Event('floorSelected', floor=4))
+        steps = self.tested.execute()
+        self.assertSequenceEqual(self.steps, steps)
+
 
 class RunInBackgroundTests(unittest.TestCase):
     def test_run_in_background(self):

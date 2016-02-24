@@ -489,7 +489,8 @@ def log_trace(interpreter: Interpreter) -> list:
     @wraps(func)
     def new_func(*args, **kwargs):
         step = func(*args, **kwargs)
-        trace.append(step)
+        if step:
+            trace.append(step)
         return step
 
     interpreter.execute_once = new_func
