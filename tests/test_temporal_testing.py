@@ -76,13 +76,72 @@ class PropertiesTests(unittest.TestCase):
 
         self.assertTrue('out' in test_interpreter.configuration)
 
+    def test_check_guard_success(self):
+        statechart = Statechart('statechart')
+        initial_state = CompoundState('initial_state', initial='condition')
+        statechart.add_state(initial_state, parent=None)
+        statechart.add_state(BasicState('success'), parent='initial_state')
+        statechart.add_state(BasicState('failure'), parent='initial_state')
 
-class ConditionReprTest(unittest.TestCase):
+        CheckGuard('x == 1').add_to(statechart=statechart,
+                                    id='condition',
+                                    parent_id='initial_state',
+                                    success_id='success',
+                                    failure_id='failure')
+
+        interpreter = Interpreter(statechart)
+        self.assertFalse('success' in interpreter.configuration)
+        self.assertFalse('failure' in interpreter.configuration)
+
+        interpreter.execute()
+        self.assertFalse('success' in interpreter.configuration)
+        self.assertFalse('failure' in interpreter.configuration)
+
+        interpreter.context['x'] = 1
+        interpreter.queue(Event('endstep'))
+
+        interpreter.execute()
+        self.assertTrue('success' in interpreter.configuration)
+        self.assertFalse('failure' in interpreter.configuration)
+
+    def test_check_guard_failure(self):
+        statechart = Statechart('statechart')
+        initial_state = CompoundState('initial_state', initial='condition')
+        statechart.add_state(initial_state, parent=None)
+        statechart.add_state(BasicState('success'), parent='initial_state')
+        statechart.add_state(BasicState('failure'), parent='initial_state')
+
+        CheckGuard('x == 1').add_to(statechart=statechart,
+                                    id='condition',
+                                    parent_id='initial_state',
+                                    success_id='success',
+                                    failure_id='failure')
+
+        interpreter = Interpreter(statechart)
+        self.assertFalse('success' in interpreter.configuration)
+        self.assertFalse('failure' in interpreter.configuration)
+
+        interpreter.execute()
+        self.assertFalse('success' in interpreter.configuration)
+        self.assertFalse('failure' in interpreter.configuration)
+
+        interpreter.context['x'] = 42
+        interpreter.queue(Event('endstep'))
+
+        interpreter.execute()
+        self.assertFalse('success' in interpreter.configuration)
+        self.assertTrue('failure' in interpreter.configuration)
+
+
+class PropertyReprTest(unittest.TestCase):
     def test_enter_repr(self):
         self.assertEqual(Enter('foo').__repr__(), 'Enter("foo")')
 
     def test_exit_repr(self):
         self.assertEqual(Exit('foo').__repr__(), 'Exit("foo")')
+
+    def test_check_guard_repr(self):
+        self.assertEqual(CheckGuard('foo').__repr__(), 'CheckGuard("foo")')
 
 
 class OperatorsTest(unittest.TestCase):
