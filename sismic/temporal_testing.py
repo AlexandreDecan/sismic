@@ -269,23 +269,44 @@ class CheckGuard(Condition):
 
 
 class Consume(Condition):
+    """
+    A property consisting in the consumption of a given event.
+    This property is undetermined until the considered event is consumed.
+    """
+
     def __init__(self, event):
+        """
+        :param event: the event that must be consumed for making this property verified.
+        """
+        Condition.__init__(self)
         self.event = event
+
+    def __repr__(self):
+        return self.__class__.__name__ + '("{}")'.format(self.event)
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
+        statechart.add_state(BasicState(id), parent=parent_id)
+        statechart.add_transition(Transition(source=id, target=success_id,
+                                             event=self.CONSUMED_EVENT,
+                                             guard="event.event.name == 'floorSelected'"))
 
 
 class Process(Condition):
     def __init__(self, step):
+        Condition.__init__(self)
         self.step = step
 
 
 class Wait(Condition):
     def __init__(self, time):
+        Condition.__init__(self)
         self.time = time
 
 
 class FinishStep(Condition):
     def __init__(self):
-        pass
+        Condition.__init__(self)
+
 
 
 class BeActive(Condition):

@@ -143,6 +143,9 @@ class PropertyReprTest(unittest.TestCase):
     def test_check_guard_repr(self):
         self.assertEqual(CheckGuard('foo').__repr__(), 'CheckGuard("foo")')
 
+    def test_consume_repr(self):
+        self.assertEqual(Consume('foo').__repr__(), 'Consume("foo")')
+
 
 class OperatorsTest(unittest.TestCase):
     def generic_test(self, condition: Condition, success_expected: bool, failure_expected: bool, delay: int = 0):
