@@ -196,7 +196,7 @@ class Enter(Condition):
         statechart.add_transition(Transition(source=id, target=success_id, guard='active("{}")'.format(ip('exit'))))
 
     def __repr__(self):
-        return self.__class__.__name__ + "({})".format(self.state_id)
+        return self.__class__.__name__ + '("{}")'.format(self.state_id)
 
 
 class Exit(Condition):
@@ -228,7 +228,42 @@ class Exit(Condition):
         statechart.add_transition(Transition(source=id, target=success_id, guard='active("{}")'.format(ip('exit'))))
 
     def __repr__(self):
-        return self.__class__.__name__ + "({})".format(self.state_id)
+        return self.__class__.__name__ + '("{}")'.format(self.state_id)
+
+
+class CheckGuard(Condition):
+    """
+    A condition based on the verification of a guard.
+
+    In order to keep it synchronous, this condition is only evaluated after a 'endstep' event is
+    submitted to the generated statechart representing the condition.
+
+    variables.
+    """
+
+    def __init__(self, guard: str):
+        """
+        :param guard: an arbitrary condition that must be verified to make the condition verified.
+        """
+        Condition.__init__(self)
+        self.guard = guard
+    
+    def __repr__(self):
+        return self.__class__.__name__ + '("{}")'.format(self.guard)
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
+        # TODO: One probably want to use the context of the tested statechart to determine the value of existing
+        ENDSTEP_EVENT = 'endstep'
+        ip = UniqueIdProvider()
+
+        statechart.add_state(BasicState(id), parent_id)
+        statechart.add_state(CompoundState(ip('composite'), initial=ip('test')), parent_id)
+        statechart.add_state(BasicState(ip('test')), ip('composite'))
+
+        statechart.add_transition(Transition(source=id, target=ip('composite'), event=ENDSTEP_EVENT))
+        statechart.add_transition(Transition(source=ip('test'), target=success_id, guard=self.guard))
+        statechart.add_transition(Transition(source=ip('composite'), target=failure_id))
+
 
 
 class Consume(Condition):
@@ -583,7 +618,7 @@ class Not(Condition):
         self.condition.add_to(statechart, id=ip('condition'), parent_id=id, success_id=failure_id, failure_id=success_id)
 
     def __repr__(self):
-        return self.__class__.__name__ + "({})".format(self.condition)
+        return self.__class__.__name__ + '({})'.format(self.condition)
 
 
 class Then(Condition):
@@ -799,7 +834,7 @@ class DelayedTrueCondition(Condition):
         DelayedCondition(TrueCondition(), self.delay).add_to(statechart, id, parent_id, success_id, failure_id)
 
     def __repr__(self):
-        return self.__class__.__name__ + "({})".format(self.delay)
+        return self.__class__.__name__ + '({})'.format(self.delay)
 
 
 class DelayedFalseCondition(Condition):
@@ -816,7 +851,7 @@ class DelayedFalseCondition(Condition):
 
 
     def __repr__(self):
-        return self.__class__.__name__ + "({})".format(self.delay)
+        return self.__class__.__name__ + '({})'.format(self.delay)
 
 
 def _add_parallel_condition(statechart: Statechart,
