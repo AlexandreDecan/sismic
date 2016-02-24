@@ -120,7 +120,7 @@ class TrueCondition(Condition):
         statechart.add_state(composite, parent_id)
 
         statechart.add_state(BasicState(ip('waiting')), id)
-        statechart.add_transition(Transition(source=ip('waiting'), target=success_id))
+        statechart.add_transition(Transition(source=ip('waiting'), target=success_id, event=self.ENDSTEP_EVENT))
 
     def __repr__(self):
         return self.__class__.__name__ + "()"
@@ -142,7 +142,7 @@ class FalseCondition(Condition):
         statechart.add_state(composite, parent_id)
 
         statechart.add_state(BasicState(ip('waiting')), id)
-        statechart.add_transition(Transition(source=ip('waiting'), target=failure_id))
+        statechart.add_transition(Transition(source=ip('waiting'), target=failure_id, event=self.ENDSTEP_EVENT))
 
     def __repr__(self):
         return self.__class__.__name__ + "()"

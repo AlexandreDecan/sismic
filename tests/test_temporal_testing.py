@@ -39,21 +39,26 @@ class PropertiesTests(unittest.TestCase):
         self.sequential_interpreter.queue(Event('event'))
 
     def test_enter(self):
-        test_statechart = Statechart('test')
+        from sismic.interpreter import log_trace
+
+        tester = Statechart('test')
         test_initial_state = CompoundState('initial_state', initial='Enter')
         enter_state = Enter('b_state')
         out_state = BasicState('out')
-        test_statechart.add_state(test_initial_state, None)
-        test_statechart.add_state(out_state, 'initial_state')
-        enter_state.add_to(test_statechart, 'Enter', 'initial_state', 'out', None)
-        test_interpreter = Interpreter(test_statechart)
+        tester.add_state(test_initial_state, None)
+        tester.add_state(out_state, 'initial_state')
+        enter_state.add_to(tester, 'Enter', 'initial_state', 'out', None)
+        test_interpreter = Interpreter(tester)
 
         self.assertFalse('out' in test_interpreter.configuration)
 
+        trace = log_trace(self.sequential_interpreter)
         self.sequential_interpreter.execute()
-        trace = self.sequential_interpreter.trace
+        print(trace)
+
         story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
+        print(story)
+        story.tell(tester)
 
         self.assertTrue('out' in test_interpreter.configuration)
 
@@ -173,6 +178,8 @@ class OperatorsTest(unittest.TestCase):
         interpreter.execute()
 
         interpreter.time += delay
+        interpreter.queue(Event('step ended'))
+        interpreter.queue(Event('step ended'))
         interpreter.execute()
 
         self.assertEqual(success_expected, 'success' in interpreter.configuration)
@@ -520,6 +527,9 @@ class TemporalExpressionReprTest(unittest.TestCase):
 
 
 class TemporalTests(unittest.TestCase):
+    def setUp(self):
+        self.story = [Event('step ended'), Event('step ended'), Event('execution stopped')]
+
     def generic_temporal_test(self, statechart: Statechart, story: list, accept_after: bool):
         # Todo: convert the story list into a 'real' story that can be told to an interpreter
 
@@ -533,272 +543,272 @@ class TemporalTests(unittest.TestCase):
 
     def test_first_time_required_true_true(self):
         self.generic_temporal_test(FirstTime(True, TrueCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_first_time_required_true_false(self):
         self.generic_temporal_test(FirstTime(True, TrueCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_first_time_required_true_undetermined(self):
         self.generic_temporal_test(FirstTime(True, TrueCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_first_time_required_false_true(self):
         self.generic_temporal_test(FirstTime(True, FalseCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_first_time_required_false_false(self):
         self.generic_temporal_test(FirstTime(True, FalseCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_first_time_required_false_undetermined(self):
         self.generic_temporal_test(FirstTime(True, FalseCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_first_time_required_undetermined_true(self):
         self.generic_temporal_test(FirstTime(True, UndeterminedCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_first_time_required_undetermined_false(self):
         self.generic_temporal_test(FirstTime(True, UndeterminedCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_first_time_required_undetermined_undetermined(self):
         self.generic_temporal_test(FirstTime(True, UndeterminedCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_first_time_forbidden_true_true(self):
         self.generic_temporal_test(FirstTime(False, TrueCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_first_time_forbidden_true_false(self):
         self.generic_temporal_test(FirstTime(False, TrueCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_first_time_forbidden_true_undetermined(self):
         self.generic_temporal_test(FirstTime(False, TrueCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_first_time_forbidden_false_true(self):
         self.generic_temporal_test(FirstTime(False, FalseCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_first_time_forbidden_false_false(self):
         self.generic_temporal_test(FirstTime(False, FalseCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_first_time_forbidden_false_undetermined(self):
         self.generic_temporal_test(FirstTime(False, FalseCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_first_time_forbidden_undetermined_true(self):
         self.generic_temporal_test(FirstTime(False, UndeterminedCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_first_time_forbidden_undetermined_false(self):
         self.generic_temporal_test(FirstTime(False, UndeterminedCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_first_time_forbidden_undetermined_undetermined(self):
         self.generic_temporal_test(FirstTime(False, UndeterminedCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
     
     def test_last_time_required_true_true(self):
         self.generic_temporal_test(LastTime(True, TrueCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_last_time_required_true_false(self):
         self.generic_temporal_test(LastTime(True, TrueCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_last_time_required_true_undetermined(self):
         self.generic_temporal_test(LastTime(True, TrueCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_last_time_required_false_true(self):
         self.generic_temporal_test(LastTime(True, FalseCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_last_time_required_false_false(self):
         self.generic_temporal_test(LastTime(True, FalseCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   [Event('step ended'), Event('execution stopped')],
                                    True)
 
     def test_last_time_required_false_undetermined(self):
         self.generic_temporal_test(LastTime(True, FalseCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_last_time_required_undetermined_true(self):
         self.generic_temporal_test(LastTime(True, UndeterminedCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_last_time_required_undetermined_false(self):
         self.generic_temporal_test(LastTime(True, UndeterminedCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_last_time_required_undetermined_undetermined(self):
         self.generic_temporal_test(LastTime(True, UndeterminedCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_last_time_forbidden_true_true(self):
         self.generic_temporal_test(LastTime(False, TrueCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_last_time_forbidden_true_false(self):
         self.generic_temporal_test(LastTime(False, TrueCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_last_time_forbidden_true_undetermined(self):
         self.generic_temporal_test(LastTime(False, TrueCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_last_time_forbidden_false_true(self):
         self.generic_temporal_test(LastTime(False, FalseCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_last_time_forbidden_false_false(self):
         self.generic_temporal_test(LastTime(False, FalseCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_last_time_forbidden_false_undetermined(self):
         self.generic_temporal_test(LastTime(False, FalseCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_last_time_forbidden_undetermined_true(self):
         self.generic_temporal_test(LastTime(False, UndeterminedCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_last_time_forbidden_undetermined_false(self):
         self.generic_temporal_test(LastTime(False, UndeterminedCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_last_time_forbidden_undetermined_undetermined(self):
         self.generic_temporal_test(LastTime(False, UndeterminedCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
     
     def test_every_time_required_true_true(self):
         self.generic_temporal_test(LastTime(True, TrueCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_every_time_required_true_false(self):
         self.generic_temporal_test(LastTime(True, TrueCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_every_time_required_true_undetermined(self):
         self.generic_temporal_test(LastTime(True, TrueCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_every_time_required_false_true(self):
         self.generic_temporal_test(LastTime(True, FalseCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_every_time_required_false_false(self):
         self.generic_temporal_test(LastTime(True, FalseCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_every_time_required_false_undetermined(self):
         self.generic_temporal_test(LastTime(True, FalseCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_every_time_required_undetermined_true(self):
         self.generic_temporal_test(LastTime(True, UndeterminedCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_every_time_required_undetermined_false(self):
         self.generic_temporal_test(LastTime(True, UndeterminedCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_every_time_required_undetermined_undetermined(self):
         self.generic_temporal_test(LastTime(True, UndeterminedCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_every_time_forbidden_true_true(self):
         self.generic_temporal_test(LastTime(False, TrueCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_every_time_forbidden_true_false(self):
         self.generic_temporal_test(LastTime(False, TrueCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_every_time_forbidden_true_undetermined(self):
         self.generic_temporal_test(LastTime(False, TrueCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    True)
 
     def test_every_time_forbidden_false_true(self):
         self.generic_temporal_test(LastTime(False, FalseCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_every_time_forbidden_false_false(self):
         self.generic_temporal_test(LastTime(False, FalseCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_every_time_forbidden_false_undetermined(self):
         self.generic_temporal_test(LastTime(False, FalseCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_every_time_forbidden_undetermined_true(self):
         self.generic_temporal_test(LastTime(False, UndeterminedCondition(), TrueCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_every_time_forbidden_undetermined_false(self):
         self.generic_temporal_test(LastTime(False, UndeterminedCondition(), FalseCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     def test_every_time_forbidden_undetermined_undetermined(self):
         self.generic_temporal_test(LastTime(False, UndeterminedCondition(), UndeterminedCondition()).generate_statechart(),
-                                   [Event('execution stopped')],
+                                   self.story,
                                    False)
 
     
