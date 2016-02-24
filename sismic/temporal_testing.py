@@ -42,6 +42,10 @@ class Condition:
     While the property remains undetermined, none of these transitions are followed.
     """
 
+    def __init__(self):
+        self.ENDSTEP_EVENT = 'endstep'
+        self.STOPPED_EVENT = 'stopped'
+
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
         """
         Places states and transitions into an existing statechart in order to represent the transition.
@@ -253,17 +257,15 @@ class CheckGuard(Condition):
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
         # TODO: One probably want to use the context of the tested statechart to determine the value of existing
-        ENDSTEP_EVENT = 'endstep'
         ip = UniqueIdProvider()
 
         statechart.add_state(BasicState(id), parent_id)
         statechart.add_state(CompoundState(ip('composite'), initial=ip('test')), parent_id)
         statechart.add_state(BasicState(ip('test')), ip('composite'))
 
-        statechart.add_transition(Transition(source=id, target=ip('composite'), event=ENDSTEP_EVENT))
+        statechart.add_transition(Transition(source=id, target=ip('composite'), event=self.ENDSTEP_EVENT))
         statechart.add_transition(Transition(source=ip('test'), target=success_id, guard=self.guard))
         statechart.add_transition(Transition(source=ip('composite'), target=failure_id))
-
 
 
 class Consume(Condition):
@@ -915,6 +917,9 @@ class TemporalExpression:
         self.premise = premise
         self.consequence = consequence
 
+        self.ENDSTEP_EVENT = 'endstep'
+        self.STOPPED_EVENT = 'stopped'
+
     def _prepare_statechart(self,
                             status_id: str,
                             machine_id: str,
@@ -999,9 +1004,6 @@ class FirstTime(TemporalExpression):
         :return: a statechart representing this expression.
         """
 
-        CHECK_EVENT = 'stopped'
-        ENDSTEP_EVENT = 'endstep'
-
         ip = UniqueIdProvider()
 
         statechart = self._prepare_statechart(status_id=ip('status'),
@@ -1015,7 +1017,9 @@ class FirstTime(TemporalExpression):
                                 parent_id=ip('machine'),
                                 success_id=ip('rule_satisfied'),
                                 failure_id=ip('rule_not_satisfied'))
-        statechart.add_transition(Transition(source=ip('consequence'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
+        statechart.add_transition(Transition(source=ip('consequence'),
+                                             target=ip('rule_not_satisfied'),
+                                             event=self.STOPPED_EVENT))
 
         # This state avoids infinite loops if the premise is "always" false
         statechart.add_state(BasicState(ip('premise_failure')), ip('machine'))
@@ -1026,9 +1030,15 @@ class FirstTime(TemporalExpression):
                             success_id=ip('consequence'),
                             failure_id=ip('premise_failure'))
 
-        statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('premise'), event=ENDSTEP_EVENT))
-        statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('rule_satisfied'), event=CHECK_EVENT))
-        statechart.add_transition(Transition(source=ip('premise'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+        statechart.add_transition(Transition(source=ip('premise_failure'),
+                                             target=ip('premise'),
+                                             event=self.ENDSTEP_EVENT))
+        statechart.add_transition(Transition(source=ip('premise_failure'),
+                                             target=ip('rule_satisfied'),
+                                             event=self.STOPPED_EVENT))
+        statechart.add_transition(Transition(source=ip('premise'),
+                                             target=ip('rule_satisfied'),
+                                             event=self.STOPPED_EVENT))
 
         return statechart
 
@@ -1066,8 +1076,6 @@ class EveryTime(TemporalExpression):
 
         :return: a statechart representing this expression.
         """
-        CHECK_EVENT = 'stopped'
-        ENDSTEP_EVENT = 'endstep'
 
         ip = UniqueIdProvider()
 
@@ -1086,17 +1094,25 @@ class EveryTime(TemporalExpression):
                                 parent_id=ip('machine'),
                                 success_id=ip('premise_failure'),
                                 failure_id=ip('rule_not_satisfied'))
-        statechart.add_transition(Transition(source=ip('consequence'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
+        statechart.add_transition(Transition(source=ip('consequence'),
+                                             target=ip('rule_not_satisfied'),
+                                             event=self.STOPPED_EVENT))
 
         self.premise.add_to(statechart,
                             id=ip('premise'),
                             parent_id=ip('machine'),
                             success_id=ip('consequence'),
                             failure_id=ip('premise_failure'))
-        statechart.add_transition(Transition(source=ip('premise'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+        statechart.add_transition(Transition(source=ip('premise'),
+                                             target=ip('rule_satisfied'),
+                                             event=self.STOPPED_EVENT))
 
-        statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('premise'), event=ENDSTEP_EVENT))
-        statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+        statechart.add_transition(Transition(source=ip('premise_failure'),
+                                             target=ip('premise'),
+                                             event=self.ENDSTEP_EVENT))
+        statechart.add_transition(Transition(source=ip('premise_failure'),
+                                             target=ip('rule_satisfied'),
+                                             event=self.CHECK_EVENT))
 
         return statechart
 
@@ -1135,9 +1151,7 @@ class LastTime(TemporalExpression):
         :return: a statechart representing this expression.
         """
 
-        CHECK_EVENT = 'stopped'
         RESET_EVENT = 'reset'
-        ENDSTEP_EVENT = 'endstep'
 
         ip = UniqueIdProvider()
 
@@ -1149,8 +1163,10 @@ class LastTime(TemporalExpression):
         statechart.add_state(OrthogonalState(ip('parallel')), parent=ip('machine'))
 
         # For the premise
-        statechart.add_state(CompoundState(ip('premise_parallel'), initial=ip('premise')), ip('parallel'))
-        statechart.add_state(BasicState(ip('premise_success'), on_entry='send("{}")'.format(RESET_EVENT)), ip('premise_parallel'))
+        statechart.add_state(CompoundState(ip('premise_parallel'), initial=ip('premise')),
+                             parent=ip('parallel'))
+        statechart.add_state(BasicState(ip('premise_success'), on_entry='send("{}")'.format(RESET_EVENT)),
+                             parent=ip('premise_parallel'))
 
         statechart.add_state(BasicState(ip('premise_failure')), ip('premise_parallel'))
 
@@ -1160,8 +1176,12 @@ class LastTime(TemporalExpression):
                             success_id=ip('premise_success'),
                             failure_id=ip('premise_failure'))
 
-        statechart.add_transition(Transition(source=ip('premise_success'), target=ip('premise'), event=ENDSTEP_EVENT))
-        statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('premise'), event=ENDSTEP_EVENT))
+        statechart.add_transition(Transition(source=ip('premise_success'),
+                                             target=ip('premise'),
+                                             event=self.ENDSTEP_EVENT))
+        statechart.add_transition(Transition(source=ip('premise_failure'),
+                                             target=ip('premise'),
+                                             event=self.ENDSTEP_EVENT))
 
         # For the consequence
         statechart.add_state(CompoundState(ip('consequence_par'), initial=ip('waiting')), parent=ip('parallel'))
@@ -1170,19 +1190,29 @@ class LastTime(TemporalExpression):
 
         consequence_comp = CompoundState(ip('consequence_comp'), initial=ip('consequence'))
         statechart.add_state(consequence_comp, ip('consequence_par'))
-        statechart.add_transition(Transition(source=ip('consequence_comp'), target=ip('consequence_comp'), event=RESET_EVENT))
+        statechart.add_transition(Transition(source=ip('consequence_comp'),
+                                             target=ip('consequence_comp'),
+                                             event=RESET_EVENT))
 
-        statechart.add_transition(Transition(source=ip('waiting'), target=ip('rule_satisfied'), event=CHECK_EVENT))
-        statechart.add_transition(Transition(source=ip('waiting'), target=ip('consequence_comp'), event=RESET_EVENT))
+        statechart.add_transition(Transition(source=ip('waiting'),
+                                             target=ip('rule_satisfied'),
+                                             event=self.STOPPED_EVENT))
+        statechart.add_transition(Transition(source=ip('waiting'),
+                                             target=ip('consequence_comp'),
+                                             event=RESET_EVENT))
 
         consequence_success = BasicState(ip('consequence_success'))
         statechart.add_state(consequence_success, ip('consequence_comp'))
-        statechart.add_transition(Transition(source=ip('consequence_success'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+        statechart.add_transition(Transition(source=ip('consequence_success'),
+                                             target=ip('rule_satisfied'),
+                                             event=self.STOPPED_EVENT))
 
         consequence_failure = BasicState(ip('consequence_failure'))
         statechart.add_state(consequence_failure, ip('consequence_comp'))
         statechart.add_transition(
-            Transition(source=ip('consequence_failure'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
+            Transition(source=ip('consequence_failure'),
+                       target=ip('rule_not_satisfied'),
+                       event=self.STOPPED_EVENT))
 
         self.consequence.add_to(statechart,
                                 id=ip('consequence'),
@@ -1190,6 +1220,8 @@ class LastTime(TemporalExpression):
                                 success_id=ip('consequence_success'),
                                 failure_id=ip('consequence_failure'))
 
-        statechart.add_transition(Transition(source=ip('consequence'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
+        statechart.add_transition(Transition(source=ip('consequence'),
+                                             target=ip('rule_not_satisfied'),
+                                             event=self.STOPPED_EVENT))
 
         return statechart
