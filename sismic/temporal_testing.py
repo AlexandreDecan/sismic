@@ -43,8 +43,9 @@ class Condition:
     """
 
     def __init__(self):
-        self.ENDSTEP_EVENT = 'endstep'
-        self.STOPPED_EVENT = 'stopped'
+        self.ENDSTEP_EVENT = 'step ended'
+        self.STOPPED_EVENT = 'execution stopped'
+        self.CONSUME_EVENT = 'event consumed'
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
         """
@@ -274,7 +275,7 @@ class Consume(Condition):
     This property is undetermined until the considered event is consumed.
     """
 
-    def __init__(self, event):
+    def __init__(self, event: str):
         """
         :param event: the event that must be consumed for making this property verified.
         """
@@ -288,7 +289,7 @@ class Consume(Condition):
         statechart.add_state(BasicState(id), parent=parent_id)
         statechart.add_transition(Transition(source=id, target=success_id,
                                              event=self.CONSUMED_EVENT,
-                                             guard="event.event.name == 'floorSelected'"))
+                                             guard="event.event.name == '{}'".format(self.event)))
 
 
 class Process(Condition):
@@ -830,8 +831,7 @@ class DelayedCondition(Condition):
 
         ip = UniqueIdProvider()
 
-        waiting = CompoundState(id)
-        statechart.add_state(waiting, parent_id)
+        statechart.add_state(CompoundState(id), parent_id)
 
         self.condition.add_to(statechart, ip('condition'), parent_id, success_id, failure_id)
         statechart.add_transition(Transition(source=id, target=ip('condition'), guard='after({})'.format(self.delay)))
@@ -938,8 +938,9 @@ class TemporalExpression:
         self.premise = premise
         self.consequence = consequence
 
-        self.ENDSTEP_EVENT = 'endstep'
-        self.STOPPED_EVENT = 'stopped'
+        self.ENDSTEP_EVENT = 'step ended'
+        self.STOPPED_EVENT = 'execution stopped'
+        self.CONSUME_EVENT = 'event consumed'
 
     def _prepare_statechart(self,
                             status_id: str,
