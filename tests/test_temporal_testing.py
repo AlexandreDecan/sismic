@@ -3,7 +3,6 @@ from sismic.temporal_testing import *
 from sismic.interpreter import Interpreter
 from sismic.model import Event, Statechart, CompoundState, BasicState, Transition
 from sismic.testing import teststory_from_trace
-from sismic.temporal_testing import prepare_first_time_expression
 
 
 class UniqueIdProviderTest(unittest.TestCase):
@@ -432,6 +431,20 @@ class OperatorsReprTests(unittest.TestCase):
     def test_delayed_condition_repr(self):
         self.assertEqual(DelayedCondition(TrueCondition(), 42).__repr__(),
                          'DelayedCondition(TrueCondition(), 42)')
+
+
+class TemporalExpressionReprTest(unittest.TestCase):
+    def test_first_time(self):
+        self.assertEqual(FirstTime(True, TrueCondition(), FalseCondition()).__repr__(),
+                         'FirstTime(True, TrueCondition(), FalseCondition())')
+
+    def test_last_time(self):
+        self.assertEqual(LastTime(True, TrueCondition(), FalseCondition()).__repr__(),
+                         'LastTime(True, TrueCondition(), FalseCondition())')
+
+    def test_every_time(self):
+        self.assertEqual(EveryTime(True, TrueCondition(), FalseCondition()).__repr__(),
+                         'EveryTime(True, TrueCondition(), FalseCondition())')
 
 
 class TemporalTests(unittest.TestCase):

@@ -874,253 +874,287 @@ def _add_parallel_condition(statechart: Statechart,
                      failure_id=failure_id)
 
 
-def _prepare_statechart(decision: bool, status_id: str, machine_id: str, rule_satisfied_id: str, rule_not_satisfied_id: str, initial_id: str):
+class TemporalExpression:
+    def __init__(self, decision: bool, premise: Condition, consequence: Condition):
+        self.decision = decision
+        self.premise = premise
+        self.consequence = consequence
+
+    def _prepare_statechart(self,
+                            status_id: str,
+                            machine_id: str,
+                            rule_satisfied_id: str,
+                            rule_not_satisfied_id: str,
+                            initial_id: str):
+        """
+        Generates a partial statechart for representing the expression of a rule.
+
+        :param status_id: the id of the parallel state containing the status of the tested statechart.
+        :param machine_id: the id of the parallel state containing the states and transitions representing the rule.
+        :param rule_satisfied_id: the id of the state representing the fact that the rule is satisfied.
+        :param rule_not_satisfied_id: the id of the state representing the fact that the rule is not satisfied.
+        :param initial_id: the id of the initial state.
+        :return: a prepared statechart
+        """
+        ip = UniqueIdProvider()
+
+        statechart = Statechart(ip('statechart'))
+
+        statechart.add_state(CompoundState(ip('global_id'), initial=ip('parallel_id')), None)
+        statechart.add_state(OrthogonalState(ip('parallel_id')), ip('global_id'))
+
+        statechart.add_state(OrthogonalState(status_id), ip('parallel_id'))
+        # Without this 'useless' basic state, an empty orthogonal state prevents the stachart to finish.
+        statechart.add_state(BasicState(ip('useless_state')), status_id)
+        statechart.add_state(CompoundState(machine_id, initial=initial_id), ip('parallel_id'))
+
+        final_state = FinalState(ip('final_state'))
+        statechart.add_state(final_state, ip('global_id'))
+
+        rule_satisfied = BasicState(rule_satisfied_id)
+        statechart.add_state(rule_satisfied, machine_id)
+        if self.decision:
+            statechart.add_transition(Transition(source=rule_satisfied_id, target=ip('final_state')))
+
+        rule_not_satisfied = BasicState(rule_not_satisfied_id)
+        statechart.add_state(rule_not_satisfied, machine_id)
+        if not self.decision:
+            statechart.add_transition(Transition(source=rule_not_satisfied_id, target=ip('final_state')))
+
+        return statechart
+
+    def __repr__(self):
+        return self.__class__.__name__ + "({}, {}, {})".format(self.decision,
+                                                               self.premise.__repr__(),
+                                                               self.consequence.__repr__())
+
+
+class FirstTime(TemporalExpression):
     """
-    Generates a partial statechart for representing the expression of a rule.
-
-    :param decision: True if the rule must be verified, False if the rule is forbidden.
-    :param status_id: the id of the parallel state containing the status of the tested statechart.
-    :param machine_id: the id of the parallel state containing the states and transitions representing the rule.
-    :param rule_satisfied_id: the id of the state representing the fact that the rule is satisfied.
-    :param rule_not_satisfied_id: the id of the state representing the fact that the rule is not satisfied.
-    :param initial_id: the id of the initial state.
-    :return: a prepared statechart
-    """
-    ip = UniqueIdProvider()
-    
-    statechart = Statechart(ip('statechart'))
-
-    statechart.add_state(CompoundState(ip('global_id'), initial=ip('parallel_id')), None)
-    statechart.add_state(OrthogonalState(ip('parallel_id')), ip('global_id'))
-
-    statechart.add_state(OrthogonalState(status_id), ip('parallel_id'))
-    # Without this 'useless' basic state, an empty orthogonal state prevents the stachart to finish.
-    statechart.add_state(BasicState(ip('useless_state')), status_id)
-    statechart.add_state(CompoundState(machine_id, initial=initial_id), ip('parallel_id'))
-
-    final_state = FinalState(ip('final_state'))
-    statechart.add_state(final_state, ip('global_id'))
-
-    rule_satisfied = BasicState(rule_satisfied_id)
-    statechart.add_state(rule_satisfied, machine_id)
-    if decision:
-        statechart.add_transition(Transition(source=rule_satisfied_id, target=ip('final_state')))
-
-    rule_not_satisfied = BasicState(rule_not_satisfied_id)
-    statechart.add_state(rule_not_satisfied, machine_id)
-    if not decision:
-        statechart.add_transition(Transition(source=rule_not_satisfied_id, target=ip('final_state')))
-
-    return statechart
-
-
-def prepare_first_time_expression(decision: bool, premise: Condition, consequence: Condition):
-    """
-    Generate a statechart representing the expression of a rule. Each rule has the following structure:
-
-    decision premise consequence
-
-    Where:
-
-    - premise is a condition
-    - consequence is a condition that must be verified if the premise is verified
-    - decision determines if the rule verification is desired or not:
-    True if the rule must be verified, False if the rule must be not verified.
-
-    The rule is checked after the premise has been verified for the first time.
+    An expression that checks if a consequence is verified the first time an associated premise is verified.
 
     For instance, prepare_first_time_expression(False, A, B) means that, after the first time A is verified,
     B must not be verified.
 
     If the premise is never verified, the rule shall be deemed verified.
-
-    The resulting statechart has a unique final state that is reached if the rule is satisfied.
-
-    :param decision: True if the rule must be verified: False if the rule must not be verified.
-    :param premise: a condition
-    :param consequence: a condition being checked if premise is verified
-    :return: A statechart representing the given expression
     """
+    def __init__(self, decision: bool, premise: Condition, consequence: Condition):
+        """
+        :param decision: determine the behaviour to adopt when a rule made of a premise and an associated consequence
+        are verified (or not):
+        - True means the rule is required, and the consequence must be verified each time the premise is verified.
+        - False means the rule is forbidden, and the consequence must be not verified each time the premise is verified.
+        :param premise: a condition that can be verified.
+        :param consequence: the consequence that must be verified each time the premise is verified.
+        """
+        TemporalExpression.__init__(self, decision, premise, consequence)
 
-    CHECK_EVENT = 'stopped'
-    ENDSTEP_EVENT = 'endstep'
+    def generate_statechart(self):
+        """
+        Generates a statechart that represents this expression. The generated statechart can be considered as a tester
+        of an other statechart.
+        - If the generated statechart ends in a final pseudo-state, that means the execution of the tested statechart
+        led to the validation of this expression.
+        - If the generated statechart ends in a state which is not a final pseudo-state, that means the exection of the
+        tested statechart led to the invalidation of this expression.
 
-    ip = UniqueIdProvider()
+        The resulting statemachine is such that, after the premise is verified, the next verification of this premise
+        only occurs after the condition is verified.
 
-    statechart = _prepare_statechart(decision, ip('status'), ip('machine'),
-                                     ip('rule_satisfied'), ip('rule_not_satisfied'), ip('premise'))
+        :return: a statechart representing this expression.
+        """
 
-    consequence.add_to(statechart,
-                       id=ip('consequence'),
-                       parent_id=ip('machine'),
-                       success_id=ip('rule_satisfied'),
-                       failure_id=ip('rule_not_satisfied'))
-    statechart.add_transition(Transition(source=ip('consequence'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
+        CHECK_EVENT = 'stopped'
+        ENDSTEP_EVENT = 'endstep'
 
-    # This state avoids infinite loops if the premise is "always" false
-    statechart.add_state(BasicState(ip('premise_failure')), ip('machine'))
+        ip = UniqueIdProvider()
 
-    premise.add_to(statechart,
-                   id=ip('premise'),
-                   parent_id=ip('machine'),
-                   success_id=ip('consequence'),
-                   failure_id=ip('premise_failure'))
+        statechart = self._prepare_statechart(status_id=ip('status'),
+                                              machine_id=ip('machine'),
+                                              rule_satisfied_id=ip('rule_satisfied'),
+                                              rule_not_satisfied_id=ip('rule_not_satisfied'),
+                                              initial_id=ip('premise'))
 
-    statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('premise'), event=ENDSTEP_EVENT))
-    statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('rule_satisfied'), event=CHECK_EVENT))
-    statechart.add_transition(Transition(source=ip('premise'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+        self.consequence.add_to(statechart,
+                                id=ip('consequence'),
+                                parent_id=ip('machine'),
+                                success_id=ip('rule_satisfied'),
+                                failure_id=ip('rule_not_satisfied'))
+        statechart.add_transition(Transition(source=ip('consequence'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
 
-    return statechart
+        # This state avoids infinite loops if the premise is "always" false
+        statechart.add_state(BasicState(ip('premise_failure')), ip('machine'))
+
+        self.premise.add_to(statechart,
+                            id=ip('premise'),
+                            parent_id=ip('machine'),
+                            success_id=ip('consequence'),
+                            failure_id=ip('premise_failure'))
+
+        statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('premise'), event=ENDSTEP_EVENT))
+        statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+        statechart.add_transition(Transition(source=ip('premise'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+
+        return statechart
 
 
-def prepare_every_time_expression(decision: bool, premise: Condition, consequence: Condition):
+class EveryTime(TemporalExpression):
     """
-    Generate a statechart representing the expression of a rule. Each rule has the following structure:
+    An expression that checks if a consequence is verified each time an associated premise is verified.
 
-    decision premise consequence
-
-    Where:
-
-    - premise is a condition
-    - consequence is a condition that must be verified if the premise is verified
-    - decision determines if the rule verification is desired or not:
-    True if the rule must be verified, False if the rule must be not verified.
-
-    The rule is checked every time the premise is verified.
-
-    For instance, prepare_every_time_expression(False, A, B) means that, each time A is verified,
-    B must not be verified afterwards.
+    For instance, EveryTime(False, A, B) means that, each time A is verified, B must be not verified afterwards.
 
     If the premise is never verified, the rule shall be deemed verified.
-
-    The resulting statemachine is such that, after the premise is verified, the next verification of this premise
-    only occurs after the condition is verified.
-
-    The resulting statechart has a unique final state that is reached if the rule is satisfied.
-
-    :param decision: True if the rule must be verified: False if the rule must not be verified.
-    :param premise: a condition
-    :param consequence: a condition being checked if premise is verified
-    :return: A statechart representing the given expression
     """
-    CHECK_EVENT = 'stopped'
-    ENDSTEP_EVENT = 'endstep'
-    
-    ip = UniqueIdProvider()
+    def __init__(self, decision: bool, premise: Condition, consequence: Condition):
+        """
+        :param decision: determine the behaviour to adopt when a rule made of a premise and an associated consequence
+        are verified (or not):
+        - True means the rule is required, and the consequence must be verified each time the premise is verified.
+        - False means the rule is forbidden, and the consequence must be not verified each time the premise is verified.
+        :param premise: a condition that can be verified.
+        :param consequence: the consequence that must be verified each time the premise is verified.
+        """
+        TemporalExpression.__init__(self, decision, premise, consequence)
 
-    statechart = _prepare_statechart(decision=decision,
-                                     status_id=ip('status'),
-                                     machine_id=ip('machine'),
-                                     rule_satisfied_id=ip('rule_satisfied'),
-                                     rule_not_satisfied_id=ip('rule_not_satisfied'),
-                                     initial_id=ip('premise'))
+    def generate_statechart(self):
+        """
+        Generates a statechart that represents this expression. The generated statechart can be considered as a tester
+        of an other statechart.
+        - If the generated statechart ends in a final pseudo-state, that means the execution of the tested statechart
+        led to the validation of this expression.
+        - If the generated statechart ends in a state which is not a final pseudo-state, that means the exection of the
+        tested statechart led to the invalidation of this expression.
 
-    # This state avoids infinite loops if the premise is "always" false,
-    # or when premise and consequence are "always" true
-    statechart.add_state(BasicState(ip('premise_failure')), ip('machine'))
+        The resulting statemachine is such that, after the premise is verified, the next verification of this premise
+        only occurs after the condition is verified.
 
-    consequence.add_to(statechart, 
-                       id=ip('consequence'), 
-                       parent_id=ip('machine'), 
-                       success_id=ip('premise_failure'), 
-                       failure_id=ip('rule_not_satisfied'))
-    statechart.add_transition(Transition(source=ip('consequence'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
+        :return: a statechart representing this expression.
+        """
+        CHECK_EVENT = 'stopped'
+        ENDSTEP_EVENT = 'endstep'
 
-    premise.add_to(statechart, 
-                   id=ip('premise'), 
-                   parent_id=ip('machine'), 
-                   success_id=ip('consequence'), 
-                   failure_id=ip('premise_failure'))
-    statechart.add_transition(Transition(source=ip('premise'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+        ip = UniqueIdProvider()
 
-    statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('premise'), event=ENDSTEP_EVENT))
-    statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+        statechart = self._prepare_statechart(status_id=ip('status'),
+                                              machine_id=ip('machine'),
+                                              rule_satisfied_id=ip('rule_satisfied'),
+                                              rule_not_satisfied_id=ip('rule_not_satisfied'),
+                                              initial_id=ip('premise'))
 
-    return statechart
+        # This state avoids infinite loops if the premise is "always" false,
+        # or when premise and consequence are "always" true
+        statechart.add_state(BasicState(ip('premise_failure')), ip('machine'))
+
+        self.consequence.add_to(statechart,
+                                id=ip('consequence'),
+                                parent_id=ip('machine'),
+                                success_id=ip('premise_failure'),
+                                failure_id=ip('rule_not_satisfied'))
+        statechart.add_transition(Transition(source=ip('consequence'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
+
+        self.premise.add_to(statechart,
+                            id=ip('premise'),
+                            parent_id=ip('machine'),
+                            success_id=ip('consequence'),
+                            failure_id=ip('premise_failure'))
+        statechart.add_transition(Transition(source=ip('premise'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+
+        statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('premise'), event=ENDSTEP_EVENT))
+        statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+
+        return statechart
 
 
-def prepare_last_time_expression(decision: bool, premise: Condition, consequence: Condition):
+class LastTime(TemporalExpression):
     """
-    Generate a statechart representing the expression of a rule. Each rule has the following structure:
+    An expression that checks if a consequence is verified after the last time an associated premise is verified.
 
-    decision premise consequence
-
-    Where:
-
-    - premise is a condition
-    - consequence is a condition that must be verified if the premise is verified
-    - decision determines if the rule verification is desired or not:
-    True if the rule must be verified, False if the rule must be not verified.
-
-    The rule is checked after the premise is verified for the last time.
-
-    For instance, prepare_last_time_expression(False, A, B) means that, the last time A is verified,
-    B must not be verified afterwards.
+    For instance, LastTime(False, A, B) means that, the last time A is verified, B must not be verified afterwards.
 
     If the premise is never verified, the rule shall be deemed verified.
-
-    The resulting statemachine is such that, after the premise is verified, the next verification of this premise
-    only occurs after the condition is verified.
-
-    The resulting statechart has a unique final state that is reached if the rule is satisfied.
-
-    :param decision:
-    :param premise:
-    :param consequence:
-    :return:
     """
+    def __init__(self, decision: bool, premise: Condition, consequence: Condition):
+        """
+        :param decision: determine the behaviour to adopt when a rule made of a premise and an associated consequence
+        are verified (or not):
+        - True means the rule is required, and the consequence must be verified each time the premise is verified.
+        - False means the rule is forbidden, and the consequence must be not verified each time the premise is verified.
+        :param premise: a condition that can be verified.
+        :param consequence: the consequence that must be verified each time the premise is verified.
+        """
+        TemporalExpression.__init__(self, decision, premise, consequence)
 
-    CHECK_EVENT = 'stopped'
-    RESET_EVENT = 'reset'
-    ENDSTEP_EVENT = 'endstep'
+    def generate_statechart(self):
+        """
+        Generates a statechart that represents this expression. The generated statechart can be considered as a tester
+        of an other statechart.
+        - If the generated statechart ends in a final pseudo-state, that means the execution of the tested statechart
+        led to the validation of this expression.
+        - If the generated statechart ends in a state which is not a final pseudo-state, that means the exection of the
+        tested statechart led to the invalidation of this expression.
 
-    ip = UniqueIdProvider()
+        The resulting statemachine is such that, after the premise is verified, the next verification of this premise
+        only occurs after the condition is verified.
 
-    statechart = _prepare_statechart(decision=decision,
-                                     status_id=ip('status'),
-                                     machine_id=ip('machine'),
-                                     rule_satisfied_id=ip('rule_satisfied'),
-                                     rule_not_satisfied_id=ip('rule_not_satisfied'),
-                                     initial_id=ip('parallel'))
-    statechart.add_state(OrthogonalState(ip('parallel')), parent=ip('machine'))
+        :return: a statechart representing this expression.
+        """
 
-    # For the premise
-    statechart.add_state(CompoundState(ip('premise_parallel'), initial=ip('premise')), ip('parallel'))
-    statechart.add_state(BasicState(ip('premise_success'), on_entry='send("{}")'.format(RESET_EVENT)), ip('premise_parallel'))
+        CHECK_EVENT = 'stopped'
+        RESET_EVENT = 'reset'
+        ENDSTEP_EVENT = 'endstep'
 
-    statechart.add_state(BasicState(ip('premise_failure')), ip('premise_parallel'))
+        ip = UniqueIdProvider()
 
-    premise.add_to(statechart, ip('premise'), ip('premise_parallel'), ip('premise_success'), ip('premise_failure'))
+        statechart = self._prepare_statechart(status_id=ip('status'),
+                                              machine_id=ip('machine'),
+                                              rule_satisfied_id=ip('rule_satisfied'),
+                                              rule_not_satisfied_id=ip('rule_not_satisfied'),
+                                              initial_id=ip('parallel'))
+        statechart.add_state(OrthogonalState(ip('parallel')), parent=ip('machine'))
 
-    statechart.add_transition(Transition(source=ip('premise_success'), target=ip('premise'), event=ENDSTEP_EVENT))
-    statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('premise'), event=ENDSTEP_EVENT))
+        # For the premise
+        statechart.add_state(CompoundState(ip('premise_parallel'), initial=ip('premise')), ip('parallel'))
+        statechart.add_state(BasicState(ip('premise_success'), on_entry='send("{}")'.format(RESET_EVENT)), ip('premise_parallel'))
 
-    # For the consequence
-    statechart.add_state(CompoundState(ip('consequence_par'), initial=ip('waiting')), parent=ip('parallel'))
+        statechart.add_state(BasicState(ip('premise_failure')), ip('premise_parallel'))
 
-    statechart.add_state(BasicState(ip('waiting')), ip('consequence_par'))
+        self.premise.add_to(statechart,
+                            id=ip('premise'),
+                            parent_id=ip('premise_parallel'),
+                            success_id=ip('premise_success'),
+                            failure_id=ip('premise_failure'))
 
-    consequence_comp = CompoundState(ip('consequence_comp'), initial=ip('consequence'))
-    statechart.add_state(consequence_comp, ip('consequence_par'))
-    statechart.add_transition(Transition(source=ip('consequence_comp'), target=ip('consequence_comp'), event=RESET_EVENT))
+        statechart.add_transition(Transition(source=ip('premise_success'), target=ip('premise'), event=ENDSTEP_EVENT))
+        statechart.add_transition(Transition(source=ip('premise_failure'), target=ip('premise'), event=ENDSTEP_EVENT))
 
-    statechart.add_transition(Transition(source=ip('waiting'), target=ip('rule_satisfied'), event=CHECK_EVENT))
-    statechart.add_transition(Transition(source=ip('waiting'), target=ip('consequence_comp'), event=RESET_EVENT))
+        # For the consequence
+        statechart.add_state(CompoundState(ip('consequence_par'), initial=ip('waiting')), parent=ip('parallel'))
 
-    consequence_success = BasicState(ip('consequence_success'))
-    statechart.add_state(consequence_success, ip('consequence_comp'))
-    statechart.add_transition(Transition(source=ip('consequence_success'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+        statechart.add_state(BasicState(ip('waiting')), ip('consequence_par'))
 
-    consequence_failure = BasicState(ip('consequence_failure'))
-    statechart.add_state(consequence_failure, ip('consequence_comp'))
-    statechart.add_transition(
-        Transition(source=ip('consequence_failure'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
+        consequence_comp = CompoundState(ip('consequence_comp'), initial=ip('consequence'))
+        statechart.add_state(consequence_comp, ip('consequence_par'))
+        statechart.add_transition(Transition(source=ip('consequence_comp'), target=ip('consequence_comp'), event=RESET_EVENT))
 
-    consequence.add_to(statechart,
-                       ip('consequence'),
-                       ip('consequence_comp'),
-                       success_id=ip('consequence_success'),
-                       failure_id=ip('consequence_failure'))
-    statechart.add_transition(Transition(source=ip('consequence'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
+        statechart.add_transition(Transition(source=ip('waiting'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+        statechart.add_transition(Transition(source=ip('waiting'), target=ip('consequence_comp'), event=RESET_EVENT))
 
-    return statechart
+        consequence_success = BasicState(ip('consequence_success'))
+        statechart.add_state(consequence_success, ip('consequence_comp'))
+        statechart.add_transition(Transition(source=ip('consequence_success'), target=ip('rule_satisfied'), event=CHECK_EVENT))
+
+        consequence_failure = BasicState(ip('consequence_failure'))
+        statechart.add_state(consequence_failure, ip('consequence_comp'))
+        statechart.add_transition(
+            Transition(source=ip('consequence_failure'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
+
+        self.consequence.add_to(statechart,
+                                id=ip('consequence'),
+                                parent_id=ip('consequence_comp'),
+                                success_id=ip('consequence_success'),
+                                failure_id=ip('consequence_failure'))
+
+        statechart.add_transition(Transition(source=ip('consequence'), target=ip('rule_not_satisfied'), event=CHECK_EVENT))
+
+        return statechart
