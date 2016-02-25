@@ -48,6 +48,7 @@ class Condition:
     CONSUME_EVENT = 'event consumed'
     STATE_ENTERED_EVENT = 'state entered'
     STATE_EXITED_EVENT = 'state exited'
+    EXECUTION_STARTED_EVENT = 'execution started'
 
     def __init__(self):
         pass
@@ -276,6 +277,24 @@ class ConsumeEvent(Condition):
         statechart.add_transition(Transition(source=id, target=success_id,
                                              event=Condition.CONSUME_EVENT,
                                              guard="event.event.name == '{}'".format(self.event)))
+
+
+class ExecutionStart(Condition):
+    """
+    A property consisting in the fact that the execution of the tested statechart starts.
+    """
+
+    def __init__(self):
+        Condition.__init__(self)
+
+    def __repr__(self):
+        return self.__class__.__name__ + '()'
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
+        statechart.add_state(BasicState(id), parent=parent_id)
+        statechart.add_transition(Transition(source=id, target=success_id,
+                                             event=Condition.EXECUTION_STARTED_EVENT))
+
 
 
 class ConsumeAnyEvent(Condition):
@@ -874,7 +893,6 @@ class DelayedFalseCondition(Condition):
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
         DelayedCondition(FalseCondition(), self.delay).add_to(statechart, id, parent_id, success_id, failure_id)
-
 
     def __repr__(self):
         return self.__class__.__name__ + '({})'.format(self.delay)
