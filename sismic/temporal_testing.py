@@ -704,7 +704,7 @@ class Before(Condition):
         return self.__class__.__name__ + "({}, {})".format(self.a, self.b)
 
 
-class InTime(Condition):
+class During(Condition):
     """
     This condition is verified iff an other condition is verified during a specified time interval.
     The time interval is specified as a pair of positive integers (start, length), so that the condition

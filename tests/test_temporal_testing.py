@@ -234,7 +234,7 @@ class PropertyReprTest(unittest.TestCase):
         self.assertEqual(CheckGuard('foo').__repr__(), 'CheckGuard("foo")')
 
     def test_consume_repr(self):
-        self.assertEqual(ConsumeEvent('foo').__repr__(), 'Consume("foo")')
+        self.assertEqual(ConsumeEvent('foo').__repr__(), 'ConsumeEvent("foo")')
 
     def est_consume_any_repr(self):
         self.assertEqual(ConsumeAnyEvent().__repr__(), 'ConsumeAnyEvent()')
@@ -418,34 +418,34 @@ class OperatorsTest(unittest.TestCase):
         self.generic_test(Before(UndeterminedCondition(), UndeterminedCondition()), False, False)
 
     def test_intime_true_instant(self):
-        self.generic_test(InTime(TrueCondition(), 0, 10), True, False)
+        self.generic_test(During(TrueCondition(), 0, 10), True, False)
 
     def test_intime_true_delay(self):
-        self.generic_test(InTime(TrueCondition(), 5, 10), False, True)
+        self.generic_test(During(TrueCondition(), 5, 10), False, True)
 
     def test_intime_false_instant(self):
-        self.generic_test(InTime(FalseCondition(), 0, 10), False, True)
+        self.generic_test(During(FalseCondition(), 0, 10), False, True)
 
     def test_intime_false_delay(self):
-        self.generic_test(InTime(FalseCondition(), 5, 10), False, True)
+        self.generic_test(During(FalseCondition(), 5, 10), False, True)
 
     def test_intime_undetermined_instant(self):
-        self.generic_test(InTime(UndeterminedCondition(), 0, 10), False, False)
+        self.generic_test(During(UndeterminedCondition(), 0, 10), False, False)
 
     def test_intime_undetermined_delay(self):
-        self.generic_test(InTime(UndeterminedCondition(), 5, 10), False, False)
+        self.generic_test(During(UndeterminedCondition(), 5, 10), False, False)
 
     def test_intime_delayed_true_instant(self):
-        self.generic_test(InTime(DelayedTrueCondition(2), 0, 10), True, False, 3)
+        self.generic_test(During(DelayedTrueCondition(2), 0, 10), True, False, 3)
 
     def test_intime_delayed_true_delay(self):
-        self.generic_test(InTime(DelayedTrueCondition(7), 5, 10), True, False, 10)
+        self.generic_test(During(DelayedTrueCondition(7), 5, 10), True, False, 10)
 
     def test_intime_delayed_false_instant(self):
-        self.generic_test(InTime(DelayedFalseCondition(2), 0, 10), False, True, 3)
+        self.generic_test(During(DelayedFalseCondition(2), 0, 10), False, True, 3)
 
     def test_intime_delayed_false_delay(self):
-        self.generic_test(InTime(DelayedFalseCondition(7), 5, 10), False, True, 10)
+        self.generic_test(During(DelayedFalseCondition(7), 5, 10), False, True, 10)
 
     def test_delayed_true(self):
         self.generic_test(DelayedTrueCondition(2), False, False, 0)
@@ -581,9 +581,9 @@ class OperatorsReprTests(unittest.TestCase):
     def test_then_repr(self):
         self.assertEqual(Then(TrueCondition(), FalseCondition()).__repr__(), 'Then(TrueCondition(), FalseCondition())')
 
-    def test_intime_repr(self):
-        self.assertEqual(InTime(TrueCondition(), 10, 42).__repr__(),
-                         'InTime(TrueCondition(), 10, 42)')
+    def test_during_repr(self):
+        self.assertEqual(During(TrueCondition(), 10, 42).__repr__(),
+                         'During(TrueCondition(), 10, 42)')
 
     def test_delayed_true_repr(self):
         self.assertEqual(DelayedTrueCondition(42).__repr__(), 'DelayedTrueCondition(42)')
