@@ -255,7 +255,7 @@ class CheckGuard(Condition):
         statechart.add_transition(Transition(source=ip('composite'), target=failure_id))
 
 
-class Consume(Condition):
+class ConsumeEvent(Condition):
     """
     A property consisting in the consumption of a given event.
     This property remains undetermined until the considered event is consumed.

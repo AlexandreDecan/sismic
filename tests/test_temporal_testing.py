@@ -141,6 +141,60 @@ class PropertiesTests(unittest.TestCase):
         self.assertFalse('success' in interpreter.configuration)
         self.assertTrue('failure' in interpreter.configuration)
 
+    def test_consume_event_success(self):
+        from sismic.interpreter import log_trace
+
+        tester = Statechart('test')
+        test_initial_state = CompoundState('initial_state', initial='condition')
+        success_state = BasicState('success')
+        tester.add_state(test_initial_state, None)
+        tester.add_state(success_state, 'initial_state')
+        ConsumeEvent('foo').add_to(statechart=tester,
+                                 id='condition',
+                                 parent_id='initial_state',
+                                 success_id='success',
+                                 failure_id=None)
+        test_interpreter = Interpreter(tester)
+
+        self.assertFalse('success' in test_interpreter.configuration)
+
+        trace = log_trace(self.sequential_interpreter)
+
+        self.sequential_interpreter.queue(Event('foo'))
+        self.sequential_interpreter.execute()
+
+        story = teststory_from_trace(trace)
+        story.tell(test_interpreter)
+
+        self.assertTrue('success' in test_interpreter.configuration)
+
+    def test_consume_event_bar(self):
+        from sismic.interpreter import log_trace
+
+        tester = Statechart('test')
+        test_initial_state = CompoundState('initial_state', initial='condition')
+        success_state = BasicState('success')
+        tester.add_state(test_initial_state, None)
+        tester.add_state(success_state, 'initial_state')
+        ConsumeEvent('foo').add_to(statechart=tester,
+                                 id='condition',
+                                 parent_id='initial_state',
+                                 success_id='success',
+                                 failure_id=None)
+        test_interpreter = Interpreter(tester)
+
+        self.assertFalse('success' in test_interpreter.configuration)
+
+        trace = log_trace(self.sequential_interpreter)
+
+        self.sequential_interpreter.queue(Event('bar'))
+        self.sequential_interpreter.execute()
+
+        story = teststory_from_trace(trace)
+        story.tell(test_interpreter)
+
+        self.assertFalse('success' in test_interpreter.configuration)
+
     def test_consume_any_event(self):
         from sismic.interpreter import log_trace
 
@@ -149,7 +203,11 @@ class PropertiesTests(unittest.TestCase):
         success_state = BasicState('success')
         tester.add_state(test_initial_state, None)
         tester.add_state(success_state, 'initial_state')
-        ConsumeAnyEvent().add_to(statechart=tester, id='condition', parent_id='initial_state', success_id='success', failure_id=None)
+        ConsumeAnyEvent().add_to(statechart=tester,
+                                 id='condition',
+                                 parent_id='initial_state',
+                                 success_id='success',
+                                 failure_id=None)
         test_interpreter = Interpreter(tester)
 
         self.assertFalse('success' in test_interpreter.configuration)
@@ -176,7 +234,7 @@ class PropertyReprTest(unittest.TestCase):
         self.assertEqual(CheckGuard('foo').__repr__(), 'CheckGuard("foo")')
 
     def test_consume_repr(self):
-        self.assertEqual(Consume('foo').__repr__(), 'Consume("foo")')
+        self.assertEqual(ConsumeEvent('foo').__repr__(), 'Consume("foo")')
 
     def est_consume_any_repr(self):
         self.assertEqual(ConsumeAnyEvent().__repr__(), 'ConsumeAnyEvent()')
