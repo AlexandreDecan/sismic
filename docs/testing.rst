@@ -87,7 +87,7 @@ To summarize, if you want to test the **trace** of a *statechart under test* ``t
     1. construct a *tester statechart* ``tester`` that expresses the property you want to test.
     2. execute ``tested`` (using a story or directly by sending events) and log its trace.
     3. generate a new story from this trace with :py:func:`~sismic.testing.teststory_from_trace`.
-    4. tell this story to the *tester statechart* ``tester``.
+    4. tell this story to an interpreter of the *tester statechart* ``tester``.
 
 If ``tester`` ends in a final configuration, ie. ``tester.final`` holds, then the test is **considered** successful.
 
