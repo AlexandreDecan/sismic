@@ -338,10 +338,10 @@ class PropertiesTests(unittest.TestCase):
         tester.add_state(test_initial_state, None)
         tester.add_state(success_state, 'initial_state')
         TransitionProcess().add_to(statechart=tester,
-                           id='condition',
-                           parent_id='initial_state',
-                           success_id='success',
-                           failure_id=None)
+                                   id='condition',
+                                   parent_id='initial_state',
+                                   success_id='success',
+                                   failure_id=None)
         test_interpreter = Interpreter(tester)
 
         self.assertFalse('success' in test_interpreter.configuration)
@@ -549,6 +549,34 @@ class PropertiesTests(unittest.TestCase):
 
         self.assertTrue('success' in test_interpreter.configuration)
 
+    def test_execution_stop(self):
+        from sismic.interpreter import log_trace
+
+        tester = Statechart('test')
+        test_initial_state = CompoundState('initial_state', initial='condition')
+        success_state = BasicState('success')
+        tester.add_state(test_initial_state, None)
+        tester.add_state(success_state, 'initial_state')
+        ExecutionStop().add_to(statechart=tester,
+                               id='condition',
+                               parent_id='initial_state',
+                               success_id='success',
+                               failure_id=None)
+        test_interpreter = Interpreter(tester)
+
+        self.assertFalse('success' in test_interpreter.configuration)
+
+        trace = log_trace(self.sequential_interpreter)
+
+        self.sequential_interpreter.queue(Event('event'))
+        self.sequential_interpreter.execute()
+
+        story = teststory_from_trace(trace)
+        print(story)
+        story.tell(test_interpreter)
+
+        self.assertTrue('success' in test_interpreter.configuration)
+
 
 class PropertyReprTest(unittest.TestCase):
     def test_enter_repr(self):
@@ -568,6 +596,9 @@ class PropertyReprTest(unittest.TestCase):
 
     def test_execution_start_repr(self):
         self.assertEqual('ExecutionStart()', ExecutionStart().__repr__())
+
+    def test_execution_stop_repr(self):
+        self.assertEqual('ExecutionStop()', ExecutionStop().__repr__())
 
     def test_step_start_repr(self):
         self.assertEqual('StartStep()', StartStep().__repr__())
