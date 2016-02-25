@@ -49,6 +49,7 @@ class Condition:
     STATE_ENTERED_EVENT = 'state entered'
     STATE_EXITED_EVENT = 'state exited'
     EXECUTION_STARTED_EVENT = 'execution started'
+    EXECUTION_STOPPED_EVENT = 'execution stopped'
     START_STEP_EVENT = 'step started'
     TRANSITION_PROCESS_EVENT = 'transition processed'
 
@@ -295,6 +296,22 @@ class ExecutionStart(Condition):
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
         statechart.add_state(BasicState(id), parent=parent_id)
         statechart.add_transition(Transition(source=id, target=success_id, event=Condition.EXECUTION_STARTED_EVENT))
+
+
+class ExecutionStop(Condition):
+    """
+    A property consisting in the fact that the execution of the tested statechart stops.
+    """
+
+    def __init__(self):
+        Condition.__init__(self)
+
+    def __repr__(self):
+        return self.__class__.__name__ + '()'
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
+        statechart.add_state(BasicState(id), parent=parent_id)
+        statechart.add_transition(Transition(source=id, target=success_id, event=Condition.EXECUTION_STOPPED_EVENT))
 
 
 class StartStep(Condition):
