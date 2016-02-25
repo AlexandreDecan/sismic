@@ -1115,6 +1115,13 @@ class TemporalExpression:
 
         return statechart
 
+    def generate_statechart(self):
+        """
+        Generates a statechart representing the expression.
+        :return: a tester statechart representing the expression.
+        """
+        pass
+
     def __repr__(self):
         return self.__class__.__name__ + "({}, {}, {})".format(self.decision,
                                                                self.premise.__repr__(),
@@ -1354,5 +1361,91 @@ class LastTime(TemporalExpression):
         statechart.add_transition(Transition(source=ip('consequence'),
                                              target=ip('rule_not_satisfied'),
                                              event=Condition.STOPPED_EVENT))
+
+        return statechart
+
+
+class AtLeastOnce(TemporalExpression):
+    """
+    An expression that checks if a consequence is verified at least one time after an associated premise
+    has been verified.
+
+    For instance, AtLeastOnce(False, A, B) means that, after has been verified at least one time, B must never be verified.
+
+    If the premise is never verified, the rule shall be deemed verified, and consequently, if the rule was required, the
+    expression is also verified; if the rule was forbidden, the expression is not verified.
+    """
+
+    def __init__(self, decision: bool, premise: Condition, consequence: Condition):
+        """
+        :param decision: determine the behaviour to adopt when a rule made of a premise and an associated consequence
+        are verified (or not):
+        - True means the rule is required, and the consequence must be verified each time the premise is verified.
+        - False means the rule is forbidden, and the consequence must be not verified each time the premise is verified.
+        :param premise: a condition that can be verified.
+        :param consequence: the consequence that must be verified each time the premise is verified.
+        """
+        TemporalExpression.__init__(self, decision, premise, consequence)
+
+    def generate_statechart(self):
+        """
+        Generates a statechart that represents this expression. The generated statechart can be considered as a tester
+        of an other statechart.
+        - If the generated statechart ends in a final pseudo-state, that means the execution of the tested statechart
+        led to the validation of this expression.
+        - If the generated statechart ends in a state which is not a final pseudo-state, that means the exection of the
+        tested statechart led to the invalidation of this expression.
+
+        The resulting statemachine is such that, after the premise is verified, the next verification of this premise
+        only occurs after the condition is verified.
+
+        :return: a statechart representing this expression.
+        """
+
+        ip = UniqueIdProvider()
+
+        statechart = self._prepare_statechart(status_id=ip('status'),
+                                              machine_id=ip('machine'),
+                                              rule_satisfied_id=ip('rule_satisfied'),
+                                              rule_not_satisfied_id=ip('rule_not_satisfied'),
+                                              initial_id=ip('parallel'))
+        statechart.add_state(OrthogonalState(ip('parallel')), parent=ip('machine'))
+
+        # For the premise and the consequence
+        statechart.add_state(CompoundState(ip('premise_consequence'), initial=ip('premise')), parent=ip('parallel'))
+
+        statechart.add_state(BasicState(ip('premise_success')), parent=ip('premise_consequence'))
+
+        self.premise.add_to(statechart,
+                            id=ip('premise'),
+                            parent_id=ip('premise_consequence'),
+                            success_id=ip('premise_success'),
+                            failure_id=ip('premise'))
+
+        self.consequence.add_to(statechart=statechart,
+                                id=ip('consequence'),
+                                parent_id=ip('premise_consequence'),
+                                success_id=ip('rule_satisfied'),
+                                failure_id=ip('premise'))
+
+        statechart.add_transition(Transition(source=ip('premise_success'),
+                                             target=ip('consequence'),
+                                             action='send("{}")'.format(ip('checked_event'))))
+
+        # For the fact that the premise has been checked at least one time
+        statechart.add_state(CompoundState(ip('checked_parallel'), initial=ip('never')), parent=ip('parallel'))
+
+        statechart.add_state(BasicState(ip('never')), parent=ip('checked_parallel'))
+        statechart.add_state(BasicState(ip('checked')), parent=ip('checked_parallel'))
+
+        statechart.add_transition(Transition(source=ip('never'), target=ip('checked'), event=ip('checked_event')))
+
+        statechart.add_transition(Transition(source=ip('never'),
+                                             target=ip('rule_satisfied'),
+                                             event=Condition.EXECUTION_STOPPED_EVENT))
+
+        statechart.add_transition(Transition(source=ip('checked'),
+                                             target=ip('rule_not_satisfied'),
+                                             event=Condition.EXECUTION_STOPPED_EVENT))
 
         return statechart
