@@ -46,6 +46,8 @@ class Condition:
         self.ENDSTEP_EVENT = 'step ended'
         self.STOPPED_EVENT = 'execution stopped'
         self.CONSUME_EVENT = 'event consumed'
+        self.STATE_ENTERED_EVENT = 'state entered'
+        self.STATE_EXITED_EVENT = 'state exited'
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
         """
@@ -182,23 +184,12 @@ class Enter(Condition):
         self.state_id = state_id
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
-        ip = UniqueIdProvider()
-        
-        waiting = BasicState(ip('waiting'))
-        exit_state = BasicState(ip('exit'))
-
-        composite_state = CompoundState(name=id, initial=ip('waiting'))
-
-        statechart.add_state(composite_state, parent_id)
-        statechart.add_state(waiting, id)
-        statechart.add_state(exit_state, id)
-
-        statechart.add_transition(Transition(source=ip('waiting'),
-                                             target=ip('exit'),
-                                             event='entered',
+        waiting = BasicState(id)
+        statechart.add_state(waiting, parent_id)
+        statechart.add_transition(Transition(source=id,
+                                             target=success_id,
+                                             event=self.STATE_ENTERED_EVENT,
                                              guard='event.state == "{}"'.format(self.state_id)))
-
-        statechart.add_transition(Transition(source=id, target=success_id, guard='active("{}")'.format(ip('exit'))))
 
     def __repr__(self):
         return self.__class__.__name__ + '("{}")'.format(self.state_id)
@@ -217,20 +208,12 @@ class Exit(Condition):
         self.state_id = state_id
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
-        ip = UniqueIdProvider()
-
-        composite_state = CompoundState(name=id, initial=ip('waiting'))
-
-        statechart.add_state(composite_state, parent_id)
-        statechart.add_state(BasicState(ip('waiting')), id)
-        statechart.add_state(BasicState(ip('waiting')), id)
-
-        statechart.add_transition(Transition(source=ip('waiting'),
-                                             target=ip('exit'),
-                                             event='exited',
-                                             guard=('event.state == "{}"'.format(self.state_id))))
-
-        statechart.add_transition(Transition(source=id, target=success_id, guard='active("{}")'.format(ip('exit'))))
+        waiting = BasicState(id)
+        statechart.add_state(waiting, parent_id)
+        statechart.add_transition(Transition(source=id,
+                                             target=success_id,
+                                             event=self.STATE_EXITED_EVENT,
+                                             guard='event.state == "{}"'.format(self.state_id)))
 
     def __repr__(self):
         return self.__class__.__name__ + '("{}")'.format(self.state_id)

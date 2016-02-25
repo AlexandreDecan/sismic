@@ -54,28 +54,29 @@ class PropertiesTests(unittest.TestCase):
 
         trace = log_trace(self.sequential_interpreter)
         self.sequential_interpreter.execute()
-        print(trace)
 
         story = teststory_from_trace(trace)
-        print(story)
-        story.tell(tester)
+        story.tell(test_interpreter)
 
         self.assertTrue('out' in test_interpreter.configuration)
 
     def test_exit(self):
-        test_statechart = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='Enter')
-        enter_state = Enter('b_state')
+        from sismic.interpreter import log_trace
+
+        tester = Statechart('test')
+        test_initial_state = CompoundState('initial_state', initial='Exit')
+        exit_state = Exit('a_state')
         out_state = BasicState('out')
-        test_statechart.add_state(test_initial_state, None)
-        test_statechart.add_state(out_state, 'initial_state')
-        enter_state.add_to(test_statechart, 'Enter', 'initial_state', 'out', None)
-        test_interpreter = Interpreter(test_statechart)
+        tester.add_state(test_initial_state, None)
+        tester.add_state(out_state, 'initial_state')
+        exit_state.add_to(tester, 'Exit', 'initial_state', 'out', None)
+        test_interpreter = Interpreter(tester)
 
         self.assertFalse('out' in test_interpreter.configuration)
 
+        trace = log_trace(self.sequential_interpreter)
         self.sequential_interpreter.execute()
-        trace = self.sequential_interpreter.trace
+
         story = teststory_from_trace(trace)
         story.tell(test_interpreter)
 
@@ -538,7 +539,6 @@ class TemporalTests(unittest.TestCase):
             interpreter.queue(event)
 
         interpreter.execute()
-        print(interpreter.configuration)
         self.assertEquals(accept_after, len(interpreter.configuration) == 0)
 
     def test_first_time_required_true_true(self):
