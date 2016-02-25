@@ -1042,289 +1042,383 @@ class TemporalExpressionReprTest(unittest.TestCase):
         self.assertEqual(EveryTime(True, TrueCondition(), FalseCondition()).__repr__(),
                          'EveryTime(True, TrueCondition(), FalseCondition())')
 
+    def test_at_least_once(self):
+        self.assertEqual(AtLeastOnce(True, TrueCondition(), FalseCondition()).__repr__(),
+                         'AtLeastOnce(True, TrueCondition(), FalseCondition())')
+
 
 class TemporalTests(unittest.TestCase):
     def setUp(self):
         self.story = [Event('step ended'), Event('step ended'), Event('execution stopped')]
 
-    def generic_temporal_test(self, statechart: Statechart, story: list, accept_after: bool):
+    def generic_temporal_test(self, expression: TemporalExpression, story: list, accept_after: bool):
         # Todo: convert the story list into a 'real' story that can be told to an interpreter
-
+        statechart = expression.generate_statechart()
         interpreter = Interpreter(statechart)
+
         for event in story:
             interpreter.queue(event)
 
         interpreter.execute()
-        self.assertEquals(accept_after, len(interpreter.configuration) == 0)
-
+        self.assertEqual(len(interpreter.configuration) == 0, accept_after)
+    
     def test_first_time_required_true_true(self):
-        self.generic_temporal_test(FirstTime(True, TrueCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(True, TrueCondition(), TrueCondition()),
                                    self.story,
                                    True)
 
     def test_first_time_required_true_false(self):
-        self.generic_temporal_test(FirstTime(True, TrueCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(True, TrueCondition(), FalseCondition()),
                                    self.story,
                                    False)
 
     def test_first_time_required_true_undetermined(self):
-        self.generic_temporal_test(FirstTime(True, TrueCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(True, TrueCondition(), UndeterminedCondition()),
                                    self.story,
                                    False)
 
     def test_first_time_required_false_true(self):
-        self.generic_temporal_test(FirstTime(True, FalseCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(True, FalseCondition(), TrueCondition()),
                                    self.story,
                                    True)
 
     def test_first_time_required_false_false(self):
-        self.generic_temporal_test(FirstTime(True, FalseCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(True, FalseCondition(), FalseCondition()),
                                    self.story,
                                    True)
 
     def test_first_time_required_false_undetermined(self):
-        self.generic_temporal_test(FirstTime(True, FalseCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(True, FalseCondition(), UndeterminedCondition()),
                                    self.story,
                                    True)
 
     def test_first_time_required_undetermined_true(self):
-        self.generic_temporal_test(FirstTime(True, UndeterminedCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(True, UndeterminedCondition(), TrueCondition()),
                                    self.story,
                                    True)
 
     def test_first_time_required_undetermined_false(self):
-        self.generic_temporal_test(FirstTime(True, UndeterminedCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(True, UndeterminedCondition(), FalseCondition()),
                                    self.story,
                                    True)
 
     def test_first_time_required_undetermined_undetermined(self):
-        self.generic_temporal_test(FirstTime(True, UndeterminedCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(True, UndeterminedCondition(), UndeterminedCondition()),
                                    self.story,
                                    True)
 
     def test_first_time_forbidden_true_true(self):
-        self.generic_temporal_test(FirstTime(False, TrueCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(False, TrueCondition(), TrueCondition()),
                                    self.story,
                                    False)
 
     def test_first_time_forbidden_true_false(self):
-        self.generic_temporal_test(FirstTime(False, TrueCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(False, TrueCondition(), FalseCondition()),
                                    self.story,
                                    True)
 
     def test_first_time_forbidden_true_undetermined(self):
-        self.generic_temporal_test(FirstTime(False, TrueCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(False, TrueCondition(), UndeterminedCondition()),
                                    self.story,
                                    True)
 
     def test_first_time_forbidden_false_true(self):
-        self.generic_temporal_test(FirstTime(False, FalseCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(False, FalseCondition(), TrueCondition()),
                                    self.story,
                                    False)
 
     def test_first_time_forbidden_false_false(self):
-        self.generic_temporal_test(FirstTime(False, FalseCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(False, FalseCondition(), FalseCondition()),
                                    self.story,
                                    False)
 
     def test_first_time_forbidden_false_undetermined(self):
-        self.generic_temporal_test(FirstTime(False, FalseCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(False, FalseCondition(), UndeterminedCondition()),
                                    self.story,
                                    False)
 
     def test_first_time_forbidden_undetermined_true(self):
-        self.generic_temporal_test(FirstTime(False, UndeterminedCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(False, UndeterminedCondition(), TrueCondition()),
                                    self.story,
                                    False)
 
     def test_first_time_forbidden_undetermined_false(self):
-        self.generic_temporal_test(FirstTime(False, UndeterminedCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(False, UndeterminedCondition(), FalseCondition()),
                                    self.story,
                                    False)
 
     def test_first_time_forbidden_undetermined_undetermined(self):
-        self.generic_temporal_test(FirstTime(False, UndeterminedCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(FirstTime(False, UndeterminedCondition(), UndeterminedCondition()),
                                    self.story,
                                    False)
     
     def test_last_time_required_true_true(self):
-        self.generic_temporal_test(LastTime(True, TrueCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(True, TrueCondition(), TrueCondition()),
                                    self.story,
                                    True)
 
     def test_last_time_required_true_false(self):
-        self.generic_temporal_test(LastTime(True, TrueCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(True, TrueCondition(), FalseCondition()),
                                    self.story,
                                    False)
 
     def test_last_time_required_true_undetermined(self):
-        self.generic_temporal_test(LastTime(True, TrueCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(True, TrueCondition(), UndeterminedCondition()),
                                    self.story,
                                    False)
 
     def test_last_time_required_false_true(self):
-        self.generic_temporal_test(LastTime(True, FalseCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(True, FalseCondition(), TrueCondition()),
                                    self.story,
                                    True)
 
     def test_last_time_required_false_false(self):
-        self.generic_temporal_test(LastTime(True, FalseCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(True, FalseCondition(), FalseCondition()),
                                    [Event('step ended'), Event('execution stopped')],
                                    True)
 
     def test_last_time_required_false_undetermined(self):
-        self.generic_temporal_test(LastTime(True, FalseCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(True, FalseCondition(), UndeterminedCondition()),
                                    self.story,
                                    True)
 
     def test_last_time_required_undetermined_true(self):
-        self.generic_temporal_test(LastTime(True, UndeterminedCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(True, UndeterminedCondition(), TrueCondition()),
                                    self.story,
                                    True)
 
     def test_last_time_required_undetermined_false(self):
-        self.generic_temporal_test(LastTime(True, UndeterminedCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(True, UndeterminedCondition(), FalseCondition()),
                                    self.story,
                                    True)
 
     def test_last_time_required_undetermined_undetermined(self):
-        self.generic_temporal_test(LastTime(True, UndeterminedCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(True, UndeterminedCondition(), UndeterminedCondition()),
                                    self.story,
                                    True)
 
     def test_last_time_forbidden_true_true(self):
-        self.generic_temporal_test(LastTime(False, TrueCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(False, TrueCondition(), TrueCondition()),
                                    self.story,
                                    False)
 
     def test_last_time_forbidden_true_false(self):
-        self.generic_temporal_test(LastTime(False, TrueCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(False, TrueCondition(), FalseCondition()),
                                    self.story,
                                    True)
 
     def test_last_time_forbidden_true_undetermined(self):
-        self.generic_temporal_test(LastTime(False, TrueCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(False, TrueCondition(), UndeterminedCondition()),
                                    self.story,
                                    True)
 
     def test_last_time_forbidden_false_true(self):
-        self.generic_temporal_test(LastTime(False, FalseCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(False, FalseCondition(), TrueCondition()),
                                    self.story,
                                    False)
 
     def test_last_time_forbidden_false_false(self):
-        self.generic_temporal_test(LastTime(False, FalseCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(False, FalseCondition(), FalseCondition()),
                                    self.story,
                                    False)
 
     def test_last_time_forbidden_false_undetermined(self):
-        self.generic_temporal_test(LastTime(False, FalseCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(False, FalseCondition(), UndeterminedCondition()),
                                    self.story,
                                    False)
 
     def test_last_time_forbidden_undetermined_true(self):
-        self.generic_temporal_test(LastTime(False, UndeterminedCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(False, UndeterminedCondition(), TrueCondition()),
                                    self.story,
                                    False)
 
     def test_last_time_forbidden_undetermined_false(self):
-        self.generic_temporal_test(LastTime(False, UndeterminedCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(False, UndeterminedCondition(), FalseCondition()),
                                    self.story,
                                    False)
 
     def test_last_time_forbidden_undetermined_undetermined(self):
-        self.generic_temporal_test(LastTime(False, UndeterminedCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(LastTime(False, UndeterminedCondition(), UndeterminedCondition()),
                                    self.story,
                                    False)
     
     def test_every_time_required_true_true(self):
-        self.generic_temporal_test(EveryTime(True, TrueCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(True, TrueCondition(), TrueCondition()),
                                    self.story,
                                    True)
 
     def test_every_time_required_true_false(self):
-        self.generic_temporal_test(EveryTime(True, TrueCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(True, TrueCondition(), FalseCondition()),
                                    self.story,
                                    False)
 
     def test_every_time_required_true_undetermined(self):
-        self.generic_temporal_test(EveryTime(True, TrueCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(True, TrueCondition(), UndeterminedCondition()),
                                    self.story,
                                    False)
 
     def test_every_time_required_false_true(self):
-        self.generic_temporal_test(EveryTime(True, FalseCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(True, FalseCondition(), TrueCondition()),
                                    self.story,
                                    True)
 
     def test_every_time_required_false_false(self):
-        self.generic_temporal_test(EveryTime(True, FalseCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(True, FalseCondition(), FalseCondition()),
                                    self.story,
                                    True)
 
     def test_every_time_required_false_undetermined(self):
-        self.generic_temporal_test(EveryTime(True, FalseCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(True, FalseCondition(), UndeterminedCondition()),
                                    self.story,
                                    True)
 
     def test_every_time_required_undetermined_true(self):
-        self.generic_temporal_test(EveryTime(True, UndeterminedCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(True, UndeterminedCondition(), TrueCondition()),
                                    self.story,
                                    True)
 
     def test_every_time_required_undetermined_false(self):
-        self.generic_temporal_test(EveryTime(True, UndeterminedCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(True, UndeterminedCondition(), FalseCondition()),
                                    self.story,
                                    True)
 
     def test_every_time_required_undetermined_undetermined(self):
-        self.generic_temporal_test(EveryTime(True, UndeterminedCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(True, UndeterminedCondition(), UndeterminedCondition()),
                                    self.story,
                                    True)
 
     def test_every_time_forbidden_true_true(self):
-        self.generic_temporal_test(EveryTime(False, TrueCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(False, TrueCondition(), TrueCondition()),
                                    self.story,
                                    False)
 
     def test_every_time_forbidden_true_false(self):
-        self.generic_temporal_test(EveryTime(False, TrueCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(False, TrueCondition(), FalseCondition()),
                                    self.story,
                                    True)
 
     def test_every_time_forbidden_true_undetermined(self):
-        self.generic_temporal_test(EveryTime(False, TrueCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(False, TrueCondition(), UndeterminedCondition()),
                                    self.story,
                                    True)
 
     def test_every_time_forbidden_false_true(self):
-        self.generic_temporal_test(EveryTime(False, FalseCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(False, FalseCondition(), TrueCondition()),
                                    self.story,
                                    False)
 
     def test_every_time_forbidden_false_false(self):
-        self.generic_temporal_test(EveryTime(False, FalseCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(False, FalseCondition(), FalseCondition()),
                                    self.story,
                                    False)
 
     def test_every_time_forbidden_false_undetermined(self):
-        self.generic_temporal_test(EveryTime(False, FalseCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(False, FalseCondition(), UndeterminedCondition()),
                                    self.story,
                                    False)
 
     def test_every_time_forbidden_undetermined_true(self):
-        self.generic_temporal_test(EveryTime(False, UndeterminedCondition(), TrueCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(False, UndeterminedCondition(), TrueCondition()),
                                    self.story,
                                    False)
 
     def test_every_time_forbidden_undetermined_false(self):
-        self.generic_temporal_test(EveryTime(False, UndeterminedCondition(), FalseCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(False, UndeterminedCondition(), FalseCondition()),
                                    self.story,
                                    False)
 
     def test_every_time_forbidden_undetermined_undetermined(self):
-        self.generic_temporal_test(EveryTime(False, UndeterminedCondition(), UndeterminedCondition()).generate_statechart(),
+        self.generic_temporal_test(EveryTime(False, UndeterminedCondition(), UndeterminedCondition()),
                                    self.story,
                                    False)
 
-    
+    def test_at_least_once_required_true_true(self):
+        self.generic_temporal_test(AtLeastOnce(True, TrueCondition(), TrueCondition()),
+                                   self.story,
+                                   True)
+
+    def test_at_least_once_required_true_false(self):
+        self.generic_temporal_test(AtLeastOnce(True, TrueCondition(), FalseCondition()),
+                                   self.story,
+                                   False)
+
+    def test_at_least_once_required_true_undetermined(self):
+        self.generic_temporal_test(AtLeastOnce(True, TrueCondition(), UndeterminedCondition()),
+                                   self.story,
+                                   False)
+
+    def test_at_least_once_required_false_true(self):
+        self.generic_temporal_test(AtLeastOnce(True, FalseCondition(), TrueCondition()),
+                                   self.story,
+                                   True)
+
+    def test_at_least_once_required_false_false(self):
+        self.generic_temporal_test(AtLeastOnce(True, FalseCondition(), FalseCondition()),
+                                   self.story,
+                                   True)
+
+    def test_at_least_once_required_false_undetermined(self):
+        self.generic_temporal_test(AtLeastOnce(True, FalseCondition(), UndeterminedCondition()),
+                                   self.story,
+                                   True)
+
+    def test_at_least_once_required_undetermined_true(self):
+        self.generic_temporal_test(AtLeastOnce(True, UndeterminedCondition(), TrueCondition()),
+                                   self.story,
+                                   True)
+
+    def test_at_least_once_required_undetermined_false(self):
+        self.generic_temporal_test(AtLeastOnce(True, UndeterminedCondition(), FalseCondition()),
+                                   self.story,
+                                   True)
+
+    def test_at_least_once_required_undetermined_undetermined(self):
+        self.generic_temporal_test(AtLeastOnce(True, UndeterminedCondition(), UndeterminedCondition()),
+                                   self.story,
+                                   True)
+
+    def test_at_least_once_forbidden_true_true(self):
+        self.generic_temporal_test(AtLeastOnce(False, TrueCondition(), TrueCondition()),
+                                   self.story,
+                                   False)
+
+    def test_at_least_once_forbidden_true_false(self):
+        self.generic_temporal_test(AtLeastOnce(False, TrueCondition(), FalseCondition()),
+                                   self.story,
+                                   True)
+
+    def test_at_least_once_forbidden_true_undetermined(self):
+        self.generic_temporal_test(AtLeastOnce(False, TrueCondition(), UndeterminedCondition()),
+                                   self.story,
+                                   True)
+
+    def test_at_least_once_forbidden_false_true(self):
+        self.generic_temporal_test(AtLeastOnce(False, FalseCondition(), TrueCondition()),
+                                   self.story,
+                                   False)
+
+    def test_at_least_once_forbidden_false_false(self):
+        self.generic_temporal_test(AtLeastOnce(False, FalseCondition(), FalseCondition()),
+                                   self.story,
+                                   False)
+
+    def test_at_least_once_forbidden_false_undetermined(self):
+        self.generic_temporal_test(AtLeastOnce(False, FalseCondition(), UndeterminedCondition()),
+                                   self.story,
+                                   False)
+
+    def test_at_least_once_forbidden_undetermined_true(self):
+        self.generic_temporal_test(AtLeastOnce(False, UndeterminedCondition(), TrueCondition()),
+                                   self.story,
+                                   False)
+
+    def test_at_least_once_forbidden_undetermined_false(self):
+        self.generic_temporal_test(AtLeastOnce(False, UndeterminedCondition(), FalseCondition()),
+                                   self.story,
+                                   False)
+
+    def test_at_least_once_forbidden_undetermined_undetermined(self):
+        self.generic_temporal_test(AtLeastOnce(False, UndeterminedCondition(), UndeterminedCondition()),
+                                   self.story,
+                                   False)
+
