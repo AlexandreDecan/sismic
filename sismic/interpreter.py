@@ -51,6 +51,7 @@ class Interpreter:
     def time(self, value):
         """
         Set the time of the internal clock
+
         :param value: time value (in seconds)
         """
         self._time = value
@@ -215,6 +216,7 @@ class Interpreter:
         Return a list of transitions that can be triggered according to the given event, or eventless
         transition if *event* is None.
         Transitions are kept according to a inner-first/source-state semantic.
+
         :param event: event to consider
         :return: a list of *Transition* instances
         """
@@ -310,7 +312,7 @@ class Interpreter:
             # Exited states
             exited_states = []
 
-            # last_before_lca is the "highest" ancestor or from_state that is a child of LCA
+            # last_before_lca is the "highest" ancestor of from_state that is a child of LCA
             last_before_lca = transition.source
             for state in from_ancestors:
                 if state == lca:
@@ -487,7 +489,8 @@ def log_trace(interpreter: Interpreter) -> list:
     @wraps(func)
     def new_func(*args, **kwargs):
         step = func(*args, **kwargs)
-        trace.append(step)
+        if step:
+            trace.append(step)
         return step
 
     interpreter.execute_once = new_func

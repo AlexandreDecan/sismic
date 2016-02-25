@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.20.2 (2016-02-24)
+-------------------
+- (Fixed) ``interpreter.log_trace`` does not anymore log empty macro step.
+
 0.20.1 (2016-02-19)
 -------------------
 
