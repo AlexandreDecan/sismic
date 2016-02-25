@@ -37,12 +37,12 @@ class PropertiesTests(unittest.TestCase):
         self.sequential_statechart.add_transition(Transition(source='a_state', target='b_state', event='event'))
         self.sequential_interpreter = Interpreter(self.sequential_statechart)
 
-    def test_enter(self):
+    def test_enter_state(self):
         from sismic.interpreter import log_trace
 
         tester = Statechart('test')
         test_initial_state = CompoundState('initial_state', initial='Enter')
-        enter_state = Enter('b_state')
+        enter_state = EnterState('b_state')
         out_state = BasicState('out')
         tester.add_state(test_initial_state, None)
         tester.add_state(out_state, 'initial_state')
@@ -61,16 +61,62 @@ class PropertiesTests(unittest.TestCase):
 
         self.assertTrue('out' in test_interpreter.configuration)
 
-    def test_exit(self):
+    def test_enter_any_state(self):
+        from sismic.interpreter import log_trace
+
+        tester = Statechart('test')
+        test_initial_state = CompoundState('initial_state', initial='Enter')
+        out_state = BasicState('out')
+        tester.add_state(test_initial_state, None)
+        tester.add_state(out_state, 'initial_state')
+        EnterAnyState().add_to(tester, 'Enter', 'initial_state', 'out', None)
+        test_interpreter = Interpreter(tester)
+
+        self.assertFalse('out' in test_interpreter.configuration)
+
+        trace = log_trace(self.sequential_interpreter)
+
+        self.sequential_interpreter.queue(Event('event'))
+        self.sequential_interpreter.execute()
+
+        story = teststory_from_trace(trace)
+        story.tell(test_interpreter)
+
+        self.assertTrue('out' in test_interpreter.configuration)
+
+    def test_exit_state(self):
         from sismic.interpreter import log_trace
 
         tester = Statechart('test')
         test_initial_state = CompoundState('initial_state', initial='Exit')
-        exit_state = Exit('a_state')
+        exit_state = ExitState('a_state')
         out_state = BasicState('out')
         tester.add_state(test_initial_state, None)
         tester.add_state(out_state, 'initial_state')
         exit_state.add_to(tester, 'Exit', 'initial_state', 'out', None)
+        test_interpreter = Interpreter(tester)
+
+        self.assertFalse('out' in test_interpreter.configuration)
+
+        trace = log_trace(self.sequential_interpreter)
+
+        self.sequential_interpreter.queue(Event('event'))
+        self.sequential_interpreter.execute()
+
+        story = teststory_from_trace(trace)
+        story.tell(test_interpreter)
+
+        self.assertTrue('out' in test_interpreter.configuration)
+
+    def test_exit_any_state(self):
+        from sismic.interpreter import log_trace
+
+        tester = Statechart('test')
+        test_initial_state = CompoundState('initial_state', initial='Exit')
+        out_state = BasicState('out')
+        tester.add_state(test_initial_state, None)
+        tester.add_state(out_state, 'initial_state')
+        ExitAnyState().add_to(tester, 'Exit', 'initial_state', 'out', None)
         test_interpreter = Interpreter(tester)
 
         self.assertFalse('out' in test_interpreter.configuration)
@@ -571,18 +617,23 @@ class PropertiesTests(unittest.TestCase):
         self.sequential_interpreter.execute()
 
         story = teststory_from_trace(trace)
-        print(story)
         story.tell(test_interpreter)
 
         self.assertTrue('success' in test_interpreter.configuration)
 
 
 class PropertyReprTest(unittest.TestCase):
-    def test_enter_repr(self):
-        self.assertEqual('Enter("foo")', Enter('foo').__repr__())
+    def test_enter_state_repr(self):
+        self.assertEqual('EnterState("foo")', EnterState('foo').__repr__())
 
-    def test_exit_repr(self):
-        self.assertEqual('Exit("foo")', Exit('foo').__repr__())
+    def test_enter_any_state_repr(self):
+        self.assertEqual('EnterAnyState()', EnterAnyState().__repr__())
+
+    def test_exit_state_repr(self):
+        self.assertEqual('ExitState("foo")', ExitState('foo').__repr__())
+
+    def test_exit_any_state_repr(self):
+        self.assertEqual('ExitAnyState()', ExitAnyState().__repr__())
 
     def test_check_guard_repr(self):
         self.assertEqual('CheckGuard("foo")', CheckGuard('foo').__repr__())

@@ -178,9 +178,28 @@ class UndeterminedCondition(Condition):
         return self.__class__.__name__ + "()"
 
 
-class Enter(Condition):
+class EnterAnyState(Condition):
     """
-    A condition based on the fact that a given state has been entered at least one time.
+    A condition based on the fact that any state has been entered.
+    """
+
+    def __init__(self):
+        Condition.__init__(self)
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
+        waiting = BasicState(id)
+        statechart.add_state(waiting, parent_id)
+        statechart.add_transition(Transition(source=id,
+                                             target=success_id,
+                                             event=Condition.STATE_ENTERED_EVENT))
+
+    def __repr__(self):
+        return self.__class__.__name__ + '()'
+
+
+class EnterState(Condition):
+    """
+    A condition based on the fact that a given state has been entered.
     """
 
     def __init__(self, state_id: str):
@@ -202,9 +221,9 @@ class Enter(Condition):
         return self.__class__.__name__ + '("{}")'.format(self.state_id)
 
 
-class Exit(Condition):
+class ExitState(Condition):
     """
-    A condition based on the fact that a given state has been exited at least one time.
+    A condition based on the fact that a given state has been exited.
     """
 
     def __init__(self, state_id: str):
@@ -224,6 +243,25 @@ class Exit(Condition):
 
     def __repr__(self):
         return self.__class__.__name__ + '("{}")'.format(self.state_id)
+
+
+class ExitAnyState(Condition):
+    """
+    A condition based on the fact that any state has been exited.
+    """
+
+    def __init__(self):
+        Condition.__init__(self)
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
+        waiting = BasicState(id)
+        statechart.add_state(waiting, parent_id)
+        statechart.add_transition(Transition(source=id,
+                                             target=success_id,
+                                             event=Condition.STATE_EXITED_EVENT))
+
+    def __repr__(self):
+        return self.__class__.__name__ + '()'
 
 
 class CheckGuard(Condition):
