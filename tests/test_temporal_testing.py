@@ -248,6 +248,33 @@ class PropertiesTests(unittest.TestCase):
 
         self.assertTrue('success' in test_interpreter.configuration)
 
+    def test_step_start_started(self):
+        from sismic.interpreter import log_trace
+
+        tester = Statechart('test')
+        test_initial_state = CompoundState('initial_state', initial='condition')
+        success_state = BasicState('success')
+        tester.add_state(test_initial_state, None)
+        tester.add_state(success_state, 'initial_state')
+        StepStart().add_to(statechart=tester,
+                           id='condition',
+                           parent_id='initial_state',
+                           success_id='success',
+                           failure_id=None)
+        test_interpreter = Interpreter(tester)
+
+        self.assertFalse('success' in test_interpreter.configuration)
+
+        trace = log_trace(self.sequential_interpreter)
+
+        self.sequential_interpreter.queue(Event('foo'))
+        self.sequential_interpreter.execute()
+
+        story = teststory_from_trace(trace)
+        story.tell(test_interpreter)
+
+        self.assertTrue('success' in test_interpreter.configuration)
+
 
 class PropertyReprTest(unittest.TestCase):
     def test_enter_repr(self):
@@ -267,6 +294,9 @@ class PropertyReprTest(unittest.TestCase):
 
     def test_execution_start_repr(self):
         self.assertEqual(ExecutionStart().__repr__(), 'ExecutionStart()')
+
+    def test_step_start_repr(self):
+        self.assertEqual(StepStart().__repr__(), 'StepStart()')
 
 
 class OperatorsTest(unittest.TestCase):
