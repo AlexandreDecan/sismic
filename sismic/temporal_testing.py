@@ -296,7 +296,7 @@ class ExecutionStart(Condition):
         statechart.add_transition(Transition(source=id, target=success_id, event=Condition.EXECUTION_STARTED_EVENT))
 
 
-class StepStart(Condition):
+class StartStep(Condition):
     """
     A property consisting in the fact that a micro step starts.
     """
@@ -310,6 +310,22 @@ class StepStart(Condition):
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
         statechart.add_state(BasicState(id), parent=parent_id)
         statechart.add_transition(Transition(source=id, target=success_id, event=Condition.START_STEP_EVENT))
+
+
+class EndStep(Condition):
+    """
+    A property consisting in the fact that a micro step ends.
+    """
+
+    def __init__(self):
+        Condition.__init__(self)
+
+    def __repr__(self):
+        return self.__class__.__name__ + '()'
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
+        statechart.add_state(BasicState(id), parent=parent_id)
+        statechart.add_transition(Transition(source=id, target=success_id, event=Condition.END_STEP_EVENT))
 
 
 class ConsumeAnyEvent(Condition):
