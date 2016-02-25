@@ -32,6 +32,7 @@ class UniqueIdProvider(object):
 
         return str(self.d[element])
 
+
 class Condition:
     """
     A condition is a property being true, false, or undetermined.
@@ -275,6 +276,23 @@ class Consume(Condition):
         statechart.add_transition(Transition(source=id, target=success_id,
                                              event=Condition.CONSUME_EVENT,
                                              guard="event.event.name == '{}'".format(self.event)))
+
+
+class ConsumeAnyEvent(Condition):
+    """
+    A property consisting in the consumption of an event.
+    This property remains undetermined until the considered event is consumed.
+    """
+
+    def __init__(self):
+        Condition.__init__(self)
+
+    def __repr__(self):
+        return self.__class__.__name__ + '()'
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
+        statechart.add_state(BasicState(id), parent=parent_id)
+        statechart.add_transition(Transition(source=id, target=success_id, event=Condition.CONSUME_EVENT))
 
 
 class Process(Condition):
