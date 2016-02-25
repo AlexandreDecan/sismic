@@ -50,6 +50,7 @@ class Condition:
     STATE_EXITED_EVENT = 'state exited'
     EXECUTION_STARTED_EVENT = 'execution started'
     START_STEP_EVENT = 'step started'
+    TRANSITION_PROCESS_EVENT = 'transition processed'
 
     def __init__(self):
         pass
@@ -345,22 +346,48 @@ class ConsumeAnyEvent(Condition):
         statechart.add_transition(Transition(source=id, target=success_id, event=Condition.CONSUME_EVENT))
 
 
-class Process(Condition):
-    def __init__(self, step):
+class TransitionProcess(Condition):
+    """
+    A property consisting in the process of a transition.
+    One can restrict the nature of the processed transition based on its source, its target, or its event.
+    """
+    def __init__(self, source=None, target=None, event=None):
+        """
+        :param source: the name of the source the transition must come from in order to be accepted. A None value means
+        that any source is acceptable.
+        :param target: the name of the target the transition must point to in order to be accepted. A None value means
+        that any target is acceptable.
+        :param event: the name of the target the transition must depend on in order to be accepted. A None value means
+        that any event (or the lack of event) is acceptable. An empty value means that the considered transition must
+        be eventless.
+        """
+
         Condition.__init__(self)
-        self.step = step
+        self.source = source
+        self.target = target
+        self.event = event
 
+    def __repr__(self):
+        source_repr = '"{}"'.format(self.source) if self.source is not None else 'None'
+        target_repr = '"{}"'.format(self.target) if self.target is not None else 'None'
+        event_repr = '"{}"'.format(self.event) if self.event is not None else 'None'
 
-class Wait(Condition):
-    def __init__(self, time):
-        Condition.__init__(self)
-        self.time = time
+        return self.__class__.__name__ + '({}, {}, {})'.format(source_repr, target_repr, event_repr)
 
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
+        condition_source = '(event.source == "{}")'.format(self.source) if self.source is not None else 'True'
+        condition_target = '(event.target == "{}")'.format(self.target) if self.target is not None else 'True'
 
-class FinishStep(Condition):
-    def __init__(self):
-        Condition.__init__(self)
+        if self.event is None:
+            condition_event = 'True'
+        elif self.event == '':
+            condition_event = '(event.event is None)'
+        else:
+            condition_event = '(event.event.name == "{}")'.format(self.event)
 
+        statechart.add_state(BasicState(id), parent=parent_id)
+        statechart.add_transition(Transition(source=id, target=success_id, event=Condition.TRANSITION_PROCESS_EVENT,
+                                             guard=condition_source + ' and ' + condition_target + ' and ' + condition_event))
 
 
 class BeActive(Condition):
