@@ -348,7 +348,7 @@ class PropertiesTests(unittest.TestCase):
 
         trace = log_trace(self.sequential_interpreter)
 
-        self.sequential_interpreter.queue(Event('foo'))
+        self.sequential_interpreter.queue(Event('event'))
         self.sequential_interpreter.execute()
 
         story = teststory_from_trace(trace)
@@ -544,7 +544,6 @@ class PropertiesTests(unittest.TestCase):
         self.sequential_interpreter.execute()
 
         story = teststory_from_trace(trace)
-        print(story)
         story.tell(test_interpreter)
 
         self.assertTrue('success' in test_interpreter.configuration)
