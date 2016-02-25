@@ -42,12 +42,14 @@ class Condition:
     While the property remains undetermined, none of these transitions are followed.
     """
 
+    ENDSTEP_EVENT = 'step ended'
+    STOPPED_EVENT = 'execution stopped'
+    CONSUME_EVENT = 'event consumed'
+    STATE_ENTERED_EVENT = 'state entered'
+    STATE_EXITED_EVENT = 'state exited'
+
     def __init__(self):
-        self.ENDSTEP_EVENT = 'step ended'
-        self.STOPPED_EVENT = 'execution stopped'
-        self.CONSUME_EVENT = 'event consumed'
-        self.STATE_ENTERED_EVENT = 'state entered'
-        self.STATE_EXITED_EVENT = 'state exited'
+        pass
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
         """
@@ -122,7 +124,7 @@ class TrueCondition(Condition):
         statechart.add_state(composite, parent_id)
 
         statechart.add_state(BasicState(ip('waiting')), id)
-        statechart.add_transition(Transition(source=ip('waiting'), target=success_id, event=self.ENDSTEP_EVENT))
+        statechart.add_transition(Transition(source=ip('waiting'), target=success_id, event=Condition.ENDSTEP_EVENT))
 
     def __repr__(self):
         return self.__class__.__name__ + "()"
@@ -144,7 +146,7 @@ class FalseCondition(Condition):
         statechart.add_state(composite, parent_id)
 
         statechart.add_state(BasicState(ip('waiting')), id)
-        statechart.add_transition(Transition(source=ip('waiting'), target=failure_id, event=self.ENDSTEP_EVENT))
+        statechart.add_transition(Transition(source=ip('waiting'), target=failure_id, event=Condition.ENDSTEP_EVENT))
 
     def __repr__(self):
         return self.__class__.__name__ + "()"
@@ -188,7 +190,7 @@ class Enter(Condition):
         statechart.add_state(waiting, parent_id)
         statechart.add_transition(Transition(source=id,
                                              target=success_id,
-                                             event=self.STATE_ENTERED_EVENT,
+                                             event=Condition.STATE_ENTERED_EVENT,
                                              guard='event.state == "{}"'.format(self.state_id)))
 
     def __repr__(self):
@@ -212,7 +214,7 @@ class Exit(Condition):
         statechart.add_state(waiting, parent_id)
         statechart.add_transition(Transition(source=id,
                                              target=success_id,
-                                             event=self.STATE_EXITED_EVENT,
+                                             event=Condition.STATE_EXITED_EVENT,
                                              guard='event.state == "{}"'.format(self.state_id)))
 
     def __repr__(self):
@@ -247,7 +249,7 @@ class CheckGuard(Condition):
         statechart.add_state(CompoundState(ip('composite'), initial=ip('test')), parent_id)
         statechart.add_state(BasicState(ip('test')), ip('composite'))
 
-        statechart.add_transition(Transition(source=id, target=ip('composite'), event=self.ENDSTEP_EVENT))
+        statechart.add_transition(Transition(source=id, target=ip('composite'), event=Condition.ENDSTEP_EVENT))
         statechart.add_transition(Transition(source=ip('test'), target=success_id, guard=self.guard))
         statechart.add_transition(Transition(source=ip('composite'), target=failure_id))
 
@@ -255,7 +257,7 @@ class CheckGuard(Condition):
 class Consume(Condition):
     """
     A property consisting in the consumption of a given event.
-    This property is undetermined until the considered event is consumed.
+    This property remains undetermined until the considered event is consumed.
     """
 
     def __init__(self, event: str):
@@ -271,7 +273,7 @@ class Consume(Condition):
     def add_to(self, statechart: Statechart, id: str, parent_id: str, success_id: str, failure_id: str):
         statechart.add_state(BasicState(id), parent=parent_id)
         statechart.add_transition(Transition(source=id, target=success_id,
-                                             event=self.CONSUMED_EVENT,
+                                             event=Condition.CONSUME_EVENT,
                                              guard="event.event.name == '{}'".format(self.event)))
 
 
@@ -921,10 +923,6 @@ class TemporalExpression:
         self.premise = premise
         self.consequence = consequence
 
-        self.ENDSTEP_EVENT = 'step ended'
-        self.STOPPED_EVENT = 'execution stopped'
-        self.CONSUME_EVENT = 'event consumed'
-
     def _prepare_statechart(self,
                             status_id: str,
                             machine_id: str,
@@ -1024,7 +1022,7 @@ class FirstTime(TemporalExpression):
                                 failure_id=ip('rule_not_satisfied'))
         statechart.add_transition(Transition(source=ip('consequence'),
                                              target=ip('rule_not_satisfied'),
-                                             event=self.STOPPED_EVENT))
+                                             event=Condition.STOPPED_EVENT))
 
         # This state avoids infinite loops if the premise is "always" false
         statechart.add_state(BasicState(ip('premise_failure')), ip('machine'))
@@ -1037,13 +1035,13 @@ class FirstTime(TemporalExpression):
 
         statechart.add_transition(Transition(source=ip('premise_failure'),
                                              target=ip('premise'),
-                                             event=self.ENDSTEP_EVENT))
+                                             event=Condition.ENDSTEP_EVENT))
         statechart.add_transition(Transition(source=ip('premise_failure'),
                                              target=ip('rule_satisfied'),
-                                             event=self.STOPPED_EVENT))
+                                             event=Condition.STOPPED_EVENT))
         statechart.add_transition(Transition(source=ip('premise'),
                                              target=ip('rule_satisfied'),
-                                             event=self.STOPPED_EVENT))
+                                             event=Condition.STOPPED_EVENT))
 
         return statechart
 
@@ -1101,7 +1099,7 @@ class EveryTime(TemporalExpression):
                                 failure_id=ip('rule_not_satisfied'))
         statechart.add_transition(Transition(source=ip('consequence'),
                                              target=ip('rule_not_satisfied'),
-                                             event=self.STOPPED_EVENT))
+                                             event=Condition.STOPPED_EVENT))
 
         self.premise.add_to(statechart,
                             id=ip('premise'),
@@ -1110,14 +1108,14 @@ class EveryTime(TemporalExpression):
                             failure_id=ip('premise_failure'))
         statechart.add_transition(Transition(source=ip('premise'),
                                              target=ip('rule_satisfied'),
-                                             event=self.STOPPED_EVENT))
+                                             event=Condition.STOPPED_EVENT))
 
         statechart.add_transition(Transition(source=ip('premise_failure'),
                                              target=ip('premise'),
-                                             event=self.ENDSTEP_EVENT))
+                                             event=Condition.ENDSTEP_EVENT))
         statechart.add_transition(Transition(source=ip('premise_failure'),
                                              target=ip('rule_satisfied'),
-                                             event=self.CHECK_EVENT))
+                                             event=Condition.CHECK_EVENT))
 
         return statechart
 
@@ -1183,10 +1181,10 @@ class LastTime(TemporalExpression):
 
         statechart.add_transition(Transition(source=ip('premise_success'),
                                              target=ip('premise'),
-                                             event=self.ENDSTEP_EVENT))
+                                             event=Condition.ENDSTEP_EVENT))
         statechart.add_transition(Transition(source=ip('premise_failure'),
                                              target=ip('premise'),
-                                             event=self.ENDSTEP_EVENT))
+                                             event=Condition.ENDSTEP_EVENT))
 
         # For the consequence
         statechart.add_state(CompoundState(ip('consequence_par'), initial=ip('waiting')), parent=ip('parallel'))
@@ -1201,7 +1199,7 @@ class LastTime(TemporalExpression):
 
         statechart.add_transition(Transition(source=ip('waiting'),
                                              target=ip('rule_satisfied'),
-                                             event=self.STOPPED_EVENT))
+                                             event=Condition.STOPPED_EVENT))
         statechart.add_transition(Transition(source=ip('waiting'),
                                              target=ip('consequence_comp'),
                                              event=RESET_EVENT))
@@ -1210,14 +1208,14 @@ class LastTime(TemporalExpression):
         statechart.add_state(consequence_success, ip('consequence_comp'))
         statechart.add_transition(Transition(source=ip('consequence_success'),
                                              target=ip('rule_satisfied'),
-                                             event=self.STOPPED_EVENT))
+                                             event=Condition.STOPPED_EVENT))
 
         consequence_failure = BasicState(ip('consequence_failure'))
         statechart.add_state(consequence_failure, ip('consequence_comp'))
         statechart.add_transition(
             Transition(source=ip('consequence_failure'),
                        target=ip('rule_not_satisfied'),
-                       event=self.STOPPED_EVENT))
+                       event=Condition.STOPPED_EVENT))
 
         self.consequence.add_to(statechart,
                                 id=ip('consequence'),
@@ -1227,6 +1225,6 @@ class LastTime(TemporalExpression):
 
         statechart.add_transition(Transition(source=ip('consequence'),
                                              target=ip('rule_not_satisfied'),
-                                             event=self.STOPPED_EVENT))
+                                             event=Condition.STOPPED_EVENT))
 
         return statechart
