@@ -720,7 +720,6 @@ class TemporalTests(unittest.TestCase):
         for event in story:
             interpreter.queue(event)
 
-        interpreter.execute()
         self.assertEqual(len(interpreter.configuration) == 0, accept_after)
     
     def test_first_time_required_true_true(self):
@@ -815,7 +814,7 @@ class TemporalTests(unittest.TestCase):
     
     def test_last_time_required_true_true(self):
         self.generic_temporal_test(LastTime(True, TrueCondition(), TrueCondition()),
-                                   self.story,
+                                   [Event(Condition.END_STEP_EVENT), Event(Condition.END_STEP_EVENT)],
                                    True)
 
     def test_last_time_required_true_false(self):

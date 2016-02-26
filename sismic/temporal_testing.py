@@ -1216,43 +1216,31 @@ class TemporalExpression:
         self.consequence = consequence
 
     def _prepare_statechart(self,
-                            status_id: str,
-                            machine_id: str,
+                            parallel_id: str,
                             rule_satisfied_id: str,
-                            rule_not_satisfied_id: str,
-                            initial_id: str):
+                            rule_not_satisfied_id: str):
         """
         Generates a partial statechart for representing the expression of a rule.
 
-        :param status_id: the id of the parallel state containing the status of the tested statechart.
-        :param machine_id: the id of the parallel state containing the states and transitions representing the rule.
+        :param parallel_id: id of the parallel state containing the machine and the other parallel states.
         :param rule_satisfied_id: the id of the state representing the fact that the rule is satisfied.
         :param rule_not_satisfied_id: the id of the state representing the fact that the rule is not satisfied.
-        :param initial_id: the id of the initial state.
         :return: a prepared statechart
         """
         ip = UniqueIdProvider()
 
         statechart = Statechart(ip('statechart'))
 
-        statechart.add_state(CompoundState(ip('global_id'), initial=ip('parallel_id')), None)
-        statechart.add_state(OrthogonalState(ip('parallel_id')), ip('global_id'))
+        statechart.add_state(CompoundState(ip('global_id'), initial=parallel_id), None)
+        statechart.add_state(OrthogonalState(parallel_id), parent=ip('global_id'))
 
-        statechart.add_state(OrthogonalState(status_id), ip('parallel_id'))
-        # Without this 'useless' basic state, an empty orthogonal state prevents the stachart to finish.
-        statechart.add_state(BasicState(ip('useless_state')), status_id)
-        statechart.add_state(CompoundState(machine_id, initial=initial_id), ip('parallel_id'))
+        statechart.add_state(FinalState(ip('final_state')), parent=ip('global_id'))
 
-        final_state = FinalState(ip('final_state'))
-        statechart.add_state(final_state, ip('global_id'))
-
-        rule_satisfied = BasicState(rule_satisfied_id)
-        statechart.add_state(rule_satisfied, machine_id)
+        statechart.add_state(BasicState(rule_satisfied_id), parent=ip('global_id'))
         if self.decision:
             statechart.add_transition(Transition(source=rule_satisfied_id, target=ip('final_state')))
 
-        rule_not_satisfied = BasicState(rule_not_satisfied_id)
-        statechart.add_state(rule_not_satisfied, machine_id)
+        statechart.add_state(BasicState(rule_not_satisfied_id), parent=ip('global_id'))
         if not self.decision:
             statechart.add_transition(Transition(source=rule_not_satisfied_id, target=ip('final_state')))
 
@@ -1308,15 +1296,16 @@ class FirstTime(TemporalExpression):
 
         ip = UniqueIdProvider()
 
-        statechart = self._prepare_statechart(status_id=ip('status'),
-                                              machine_id=ip('machine'),
+        statechart = self._prepare_statechart(parallel_id=ip('parallel'),
                                               rule_satisfied_id=ip('rule_satisfied'),
-                                              rule_not_satisfied_id=ip('rule_not_satisfied'),
-                                              initial_id=ip('premise'))
+                                              rule_not_satisfied_id=ip('rule_not_satisfied'))
+
+        statechart.add_state(CompoundState(ip('global'), initial=ip('premise')), parent=ip('parallel'))
 
         self.consequence.add_to(statechart,
                                 id=ip('consequence'),
-                                parent_id=ip('machine'),
+                                parent_id=ip('global'),
+                                status_id=ip('parallel'),
                                 success_id=ip('rule_satisfied'),
                                 failure_id=ip('rule_not_satisfied'))
         statechart.add_transition(Transition(source=ip('consequence'),
@@ -1325,7 +1314,8 @@ class FirstTime(TemporalExpression):
 
         self.premise.add_to(statechart,
                             id=ip('premise'),
-                            parent_id=ip('machine'),
+                            parent_id=ip('global'),
+                            status_id=ip('parallel'),
                             success_id=ip('consequence'),
                             failure_id=ip('premise'))
 
@@ -1372,23 +1362,25 @@ class EveryTime(TemporalExpression):
 
         ip = UniqueIdProvider()
 
-        statechart = self._prepare_statechart(status_id=ip('status'),
-                                              machine_id=ip('machine'),
+        statechart = self._prepare_statechart(parallel_id=ip('parallel'),
                                               rule_satisfied_id=ip('rule_satisfied'),
-                                              rule_not_satisfied_id=ip('rule_not_satisfied'),
-                                              initial_id=ip('premise'))
+                                              rule_not_satisfied_id=ip('rule_not_satisfied'))
 
-        statechart.add_state(CompoundState(ip('consequence_wrapper'), initial=ip('consequence')), parent=ip('machine'))
+        statechart.add_state(CompoundState(ip('global'), initial=ip('premise')), parent=ip('parallel'))
+
+        statechart.add_state(CompoundState(ip('consequence_wrapper'), initial=ip('consequence')), parent=ip('global'))
 
         self.premise.add_to(statechart,
                             id=ip('premise'),
-                            parent_id=ip('machine'),
+                            parent_id=ip('global'),
+                            status_id=ip('parallel'),
                             success_id=ip('consequence_wrapper'),
                             failure_id=ip('premise'))
 
         self.consequence.add_to(statechart,
                                 id=ip('consequence'),
                                 parent_id=ip('consequence_wrapper'),
+                                status_id=ip('parallel'),
                                 success_id=ip('premise'),
                                 failure_id=ip('rule_not_satisfied'))
 
@@ -1437,59 +1429,54 @@ class LastTime(TemporalExpression):
         :return: a statechart representing this expression.
         """
 
-        RESET_EVENT = 'reset'
-
         ip = UniqueIdProvider()
 
-        statechart = self._prepare_statechart(status_id=ip('status'),
-                                              machine_id=ip('machine'),
+        statechart = self._prepare_statechart(parallel_id=ip('parallel'),
                                               rule_satisfied_id=ip('rule_satisfied'),
-                                              rule_not_satisfied_id=ip('rule_not_satisfied'),
-                                              initial_id=ip('parallel'))
-        statechart.add_state(OrthogonalState(ip('parallel')), parent=ip('machine'))
+                                              rule_not_satisfied_id=ip('rule_not_satisfied'))
 
         # For the premise
-        statechart.add_state(CompoundState(ip('premise_parallel'), initial=ip('premise')),
-                             parent=ip('parallel'))
-        statechart.add_state(BasicState(ip('premise_success'), on_entry='send("{}")'.format(RESET_EVENT)),
+        statechart.add_state(CompoundState(ip('premise_parallel'), initial=ip('premise')), parent=ip('parallel'))
+        statechart.add_state(BasicState(ip('premise_success'), on_entry='send("{}")'.format(ip('reset_event'))),
                              parent=ip('premise_parallel'))
 
         self.premise.add_to(statechart,
                             id=ip('premise'),
                             parent_id=ip('premise_parallel'),
+                            status_id=ip('parallel'),
                             success_id=ip('premise_success'),
                             failure_id=ip('premise'))
 
         statechart.add_transition(Transition(source=ip('premise_success'),
-                                             target=ip('premise'),
-                                             event=Condition.END_STEP_EVENT))
+                                             target=ip('premise')))
 
         # For the consequence
-        statechart.add_state(CompoundState(ip('consequence_par'), initial=ip('waiting')), parent=ip('parallel'))
+        statechart.add_state(CompoundState(ip('consequence_parallel'), initial=ip('waiting')), parent=ip('parallel'))
 
-        statechart.add_state(BasicState(ip('waiting')), ip('consequence_par'))
+        statechart.add_state(BasicState(ip('waiting')), parent=ip('consequence_parallel'))
 
-        consequence_comp = CompoundState(ip('consequence_comp'), initial=ip('consequence'))
-        statechart.add_state(consequence_comp, ip('consequence_par'))
+        statechart.add_state(CompoundState(ip('consequence_comp'), initial=ip('consequence')),
+                             parent=ip('consequence_parallel'))
+
         statechart.add_transition(Transition(source=ip('consequence_comp'),
                                              target=ip('consequence_comp'),
-                                             event=RESET_EVENT))
+                                             event=(ip('reset_event'))))
 
         statechart.add_transition(Transition(source=ip('waiting'),
                                              target=ip('rule_satisfied'),
                                              event=Condition.STOPPED_EVENT))
         statechart.add_transition(Transition(source=ip('waiting'),
                                              target=ip('consequence_comp'),
-                                             event=RESET_EVENT))
+                                             event=(ip('reset_event'))))
 
         consequence_success = BasicState(ip('consequence_success'))
-        statechart.add_state(consequence_success, ip('consequence_comp'))
+        statechart.add_state(consequence_success, parent=ip('consequence_comp'))
         statechart.add_transition(Transition(source=ip('consequence_success'),
                                              target=ip('rule_satisfied'),
                                              event=Condition.STOPPED_EVENT))
 
         consequence_failure = BasicState(ip('consequence_failure'))
-        statechart.add_state(consequence_failure, ip('consequence_comp'))
+        statechart.add_state(consequence_failure, parent=ip('consequence_comp'))
         statechart.add_transition(
             Transition(source=ip('consequence_failure'),
                        target=ip('rule_not_satisfied'),
@@ -1498,6 +1485,7 @@ class LastTime(TemporalExpression):
         self.consequence.add_to(statechart,
                                 id=ip('consequence'),
                                 parent_id=ip('consequence_comp'),
+                                status_id=ip('parallel'),
                                 success_id=ip('consequence_success'),
                                 failure_id=ip('consequence_failure'))
 
@@ -1547,12 +1535,9 @@ class AtLeastOnce(TemporalExpression):
 
         ip = UniqueIdProvider()
 
-        statechart = self._prepare_statechart(status_id=ip('status'),
-                                              machine_id=ip('machine'),
+        statechart = self._prepare_statechart(parallel_id=ip('parallel'),
                                               rule_satisfied_id=ip('rule_satisfied'),
-                                              rule_not_satisfied_id=ip('rule_not_satisfied'),
-                                              initial_id=ip('parallel'))
-        statechart.add_state(OrthogonalState(ip('parallel')), parent=ip('machine'))
+                                              rule_not_satisfied_id=ip('rule_not_satisfied'))
 
         # For the premise and the consequence
         statechart.add_state(CompoundState(ip('premise_consequence'), initial=ip('premise')), parent=ip('parallel'))
@@ -1562,12 +1547,14 @@ class AtLeastOnce(TemporalExpression):
         self.premise.add_to(statechart,
                             id=ip('premise'),
                             parent_id=ip('premise_consequence'),
+                            status_id=ip('parallel'),
                             success_id=ip('premise_success'),
                             failure_id=ip('premise'))
 
         self.consequence.add_to(statechart=statechart,
                                 id=ip('consequence'),
                                 parent_id=ip('premise_consequence'),
+                                status_id=ip('parallel'),
                                 success_id=ip('rule_satisfied'),
                                 failure_id=ip('premise'))
 
