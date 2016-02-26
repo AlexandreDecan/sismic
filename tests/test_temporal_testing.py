@@ -27,7 +27,7 @@ class UniqueIdProviderTest(unittest.TestCase):
 
 class PropertiesTests(unittest.TestCase):
     def setUp(self):
-        self.sequential_statechart = Statechart('sequential')
+        self.sequential_statechart = Statechart('tested_statechart')
         initial_state = CompoundState('initial_state', initial='a_state')
         a_state = BasicState('a_state')
         b_state = BasicState('b_state')
@@ -37,110 +37,81 @@ class PropertiesTests(unittest.TestCase):
         self.sequential_statechart.add_transition(Transition(source='a_state', target='b_state', event='event'))
         self.sequential_interpreter = Interpreter(self.sequential_statechart)
 
-    def test_enter_state(self):
+    def generic_test(self,
+                     tested_statechart: Statechart,
+                     events: list,
+                     property: Condition,
+                     expected_success: bool,
+                     expected_failure: bool):
         from sismic.interpreter import log_trace
+        tester_statechart = Statechart('tester_statechart')
 
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='Enter')
-        enter_state = EnterState('b_state')
-        out_state = BasicState('out')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(out_state, 'initial_state')
-        enter_state.add_to(tester, 'Enter', 'initial_state', 'out', None)
-        test_interpreter = Interpreter(tester)
+        tester_statechart.add_state(OrthogonalState('parallel_state'), None)
+        tester_statechart.add_state(CompoundState('testing_area', initial='property'), parent='parallel_state')
+        tester_statechart.add_state(BasicState('success_state'), parent='testing_area')
+        tester_statechart.add_state(BasicState('failure_state'), parent='testing_area')
 
-        self.assertFalse('out' in test_interpreter.configuration)
+        property.add_to(tester_statechart,
+                        id='property',
+                        parent_id='testing_area',
+                        status_id='parallel_state',
+                        success_id='success_state',
+                        failure_id='failure_state')
 
-        trace = log_trace(self.sequential_interpreter)
+        tester_interpreter = Interpreter(tester_statechart)
 
-        self.sequential_interpreter.queue(Event('event'))
-        self.sequential_interpreter.execute()
+        self.assertFalse('success_state' in tester_interpreter.configuration)
+        self.assertFalse('failure_state' in tester_interpreter.configuration)
+
+        tested_interpreter = Interpreter(tested_statechart)
+        trace = log_trace(tested_interpreter)
+
+        for event in events:
+            tested_interpreter.queue(event)
+
+        tested_interpreter.execute()
 
         story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
+        story.tell(tester_interpreter)
 
-        self.assertTrue('out' in test_interpreter.configuration)
+        self.assertEqual(expected_success, 'success_state' in tester_interpreter.configuration)
+        self.assertEqual(expected_failure, 'failure_state' in tester_interpreter.configuration)
 
-    def test_enter_any_state(self):
-        from sismic.interpreter import log_trace
+    def test_enter_state_right(self):
+        self.generic_test(self.sequential_statechart, [Event('event')], EnterState('b_state'), True, False)
 
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='Enter')
-        out_state = BasicState('out')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(out_state, 'initial_state')
-        EnterAnyState().add_to(tester, 'Enter', 'initial_state', 'out', None)
-        test_interpreter = Interpreter(tester)
+    def test_enter_state_wrong(self):
+        self.generic_test(self.sequential_statechart, [Event('event')], EnterState('foo'), False, False)
 
-        self.assertFalse('out' in test_interpreter.configuration)
+    def test_enter_any_state_right(self):
+        self.generic_test(self.sequential_statechart, [Event('event')], EnterAnyState(), True, False)
 
-        trace = log_trace(self.sequential_interpreter)
+    def test_exit_state_right(self):
+        self.generic_test(self.sequential_statechart, [Event('event')], ExitState('a_state'), True, False)
 
-        self.sequential_interpreter.queue(Event('event'))
-        self.sequential_interpreter.execute()
+    def test_exit_state_wrong(self):
+        self.generic_test(self.sequential_statechart, [Event('event')], ExitState('b_state'), False, False)
 
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
+    def test_exit_any_state_right(self):
+        self.generic_test(self.sequential_statechart, [Event('event')], ExitAnyState(), True, False)
 
-        self.assertTrue('out' in test_interpreter.configuration)
-
-    def test_exit_state(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='Exit')
-        exit_state = ExitState('a_state')
-        out_state = BasicState('out')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(out_state, 'initial_state')
-        exit_state.add_to(tester, 'Exit', 'initial_state', 'out', None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('out' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('event'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertTrue('out' in test_interpreter.configuration)
-
-    def test_exit_any_state(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='Exit')
-        out_state = BasicState('out')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(out_state, 'initial_state')
-        ExitAnyState().add_to(tester, 'Exit', 'initial_state', 'out', None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('out' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('event'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertTrue('out' in test_interpreter.configuration)
+    def test_exit_any_state_wrong(self):
+        self.generic_test(self.sequential_statechart, [Event('foo')], ExitAnyState(), False, False)
 
     def test_check_guard_success(self):
         statechart = Statechart('statechart')
+        statechart.add_state(OrthogonalState('parallel_state'), parent=None)
+
         initial_state = CompoundState('initial_state', initial='condition')
-        statechart.add_state(initial_state, parent=None)
+        statechart.add_state(initial_state, parent='parallel_state')
+
         statechart.add_state(BasicState('success'), parent='initial_state')
         statechart.add_state(BasicState('failure'), parent='initial_state')
 
         CheckGuard('x == 1').add_to(statechart=statechart,
                                     id='condition',
                                     parent_id='initial_state',
+                                    status_id='parallel_state',
                                     success_id='success',
                                     failure_id='failure')
 
@@ -161,14 +132,17 @@ class PropertiesTests(unittest.TestCase):
 
     def test_check_guard_failure(self):
         statechart = Statechart('statechart')
+        statechart.add_state(OrthogonalState('parallel_state'), parent=None)
+
         initial_state = CompoundState('initial_state', initial='condition')
-        statechart.add_state(initial_state, parent=None)
+        statechart.add_state(initial_state, parent='parallel_state')
         statechart.add_state(BasicState('success'), parent='initial_state')
         statechart.add_state(BasicState('failure'), parent='initial_state')
 
         CheckGuard('x == 1').add_to(statechart=statechart,
                                     id='condition',
                                     parent_id='initial_state',
+                                    status_id='parallel_state',
                                     success_id='success',
                                     failure_id='failure')
 
@@ -188,438 +162,118 @@ class PropertiesTests(unittest.TestCase):
         self.assertTrue('failure' in interpreter.configuration)
 
     def test_consume_event_success(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        ConsumeEvent('foo').add_to(statechart=tester,
-                                 id='condition',
-                                 parent_id='initial_state',
-                                 success_id='success',
-                                 failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('foo'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertTrue('success' in test_interpreter.configuration)
+        self.generic_test(self.sequential_statechart, [Event('foo')], ConsumeEvent('foo'), True, False)
 
     def test_consume_event_failure(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        ConsumeEvent('foo').add_to(statechart=tester,
-                                 id='condition',
-                                 parent_id='initial_state',
-                                 success_id='success',
-                                 failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('bar'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertFalse('success' in test_interpreter.configuration)
+        self.generic_test(self.sequential_statechart, [Event('bar')], ConsumeEvent('foo'), False, False)
 
     def test_consume_any_event(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        ConsumeAnyEvent().add_to(statechart=tester,
-                                 id='condition',
-                                 parent_id='initial_state',
-                                 success_id='success',
-                                 failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('foo'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertTrue('success' in test_interpreter.configuration)
+        self.generic_test(self.sequential_statechart, [Event('foo')], ConsumeAnyEvent(), True, False)
 
     def test_execution_started(self):
-        from sismic.interpreter import log_trace
+        self.generic_test(self.sequential_statechart, [Event('foo')], ExecutionStart(), True, False)
 
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        ExecutionStart().add_to(statechart=tester,
-                                 id='condition',
-                                 parent_id='initial_state',
-                                 success_id='success',
-                                 failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertTrue('success' in test_interpreter.configuration)
+    def test_execution_stopped(self):
+        self.generic_test(self.sequential_statechart, [Event('foo')], ExecutionStop(), True, False)
 
     def test_start_step_started(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        StartStep().add_to(statechart=tester,
-                           id='condition',
-                           parent_id='initial_state',
-                           success_id='success',
-                           failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('foo'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertTrue('success' in test_interpreter.configuration)
+        self.generic_test(self.sequential_statechart, [Event('foo')], StartStep(), True, False)
 
     def test_step_end_started(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        EndStep().add_to(statechart=tester,
-                           id='condition',
-                           parent_id='initial_state',
-                           success_id='success',
-                           failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('foo'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertTrue('success' in test_interpreter.configuration)
+        self.generic_test(self.sequential_statechart, [Event('foo')], ExecutionStop(), True, False)
 
     def test_transition_process_failure_started(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        TransitionProcess().add_to(statechart=tester,
-                           id='condition',
-                           parent_id='initial_state',
-                           success_id='success',
-                           failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('foo'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertFalse('success' in test_interpreter.configuration)
+        self.generic_test(self.sequential_statechart, [Event('foo')], TransitionProcess(), False, False)
 
     def test_transition_process_any_started(self):
-        from sismic.interpreter import log_trace
+        self.generic_test(self.sequential_statechart, [Event('event')], TransitionProcess(), True, False)
 
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        TransitionProcess().add_to(statechart=tester,
-                                   id='condition',
-                                   parent_id='initial_state',
-                                   success_id='success',
-                                   failure_id=None)
-        test_interpreter = Interpreter(tester)
+    def test_transition_process_right_event(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          TransitionProcess(event='event'),
+                          True,
+                          False)
 
-        self.assertFalse('success' in test_interpreter.configuration)
+    def test_transition_processn_wrong_event(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          TransitionProcess(event='foo'),
+                          False,
+                          False)
 
-        trace = log_trace(self.sequential_interpreter)
+    def test_transition_process_right_source(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          TransitionProcess(source='a_state'),
+                          True,
+                          False)
 
-        self.sequential_interpreter.queue(Event('event'))
-        self.sequential_interpreter.execute()
+    def test_transition_process_wrong_source(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          TransitionProcess(source='foo'),
+                          False,
+                          False)
 
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
+    def test_transition_process_right_target(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          TransitionProcess(target='b_state'),
+                          True,
+                          False)
 
-        self.assertTrue('success' in test_interpreter.configuration)
+    def test_transition_process_wrong_target(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          TransitionProcess(target='foo'),
+                          False,
+                          False)
 
-    def test_transition_process_right_event_started(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        TransitionProcess(event='event').add_to(statechart=tester,
-                                              id='condition',
-                                              parent_id='initial_state',
-                                              success_id='success',
-                                              failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('event'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertTrue('success' in test_interpreter.configuration)
-
-    def test_transition_process_wrong_event_started(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        TransitionProcess(event='foo').add_to(statechart=tester,
-                                              id='condition',
-                                              parent_id='initial_state',
-                                              success_id='success',
-                                              failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('event'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-    def test_transition_process_right_source_started(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        TransitionProcess(source='a_state').add_to(statechart=tester,
-                                                   id='condition',
-                                                   parent_id='initial_state',
-                                                   success_id='success',
-                                                   failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('event'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertTrue('success' in test_interpreter.configuration)
-
-    def test_transition_process_wrong_source_started(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        TransitionProcess(source='foo').add_to(statechart=tester,
-                                               id='condition',
-                                               parent_id='initial_state',
-                                               success_id='success',
-                                               failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('event'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-    def test_transition_process_right_target_started(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        TransitionProcess(target='b_state').add_to(statechart=tester,
-                                                   id='condition',
-                                                   parent_id='initial_state',
-                                                   success_id='success',
-                                                   failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('event'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertTrue('success' in test_interpreter.configuration)
-
-    def test_transition_process_wrong_target_started(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        TransitionProcess(target='foo').add_to(statechart=tester,
-                                               id='condition',
-                                               parent_id='initial_state',
-                                               success_id='success',
-                                               failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('event'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-    def test_transition_process_eventless_started(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        TransitionProcess(event='').add_to(statechart=tester,
-                                           id='condition',
-                                           parent_id='initial_state',
-                                           success_id='success',
-                                           failure_id=None)
-        test_interpreter = Interpreter(tester)
-
+    def test_transition_process_right_eventless(self):
         self.sequential_statechart.remove_transition(Transition(source='a_state', target='b_state', event='event'))
         self.sequential_statechart.add_transition(Transition(source='a_state', target='b_state'))
 
-        self.assertFalse('success' in test_interpreter.configuration)
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          TransitionProcess(event=''),
+                          True,
+                          False)
 
-        trace = log_trace(self.sequential_interpreter)
+    def test_transition_process_wrong_eventless(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          TransitionProcess(event=''),
+                          False,
+                          False)
 
-        self.sequential_interpreter.queue(Event('event'))
-        self.sequential_interpreter.execute()
+    def test_active_state_right(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          ActiveState(state='a_state'),
+                          True,
+                          False)
 
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
+    def test_active_state_wrong(self):
+        self.generic_test(self.sequential_statechart,
+                          [],
+                          ActiveState(state='b_state'),
+                          False,
+                          True)
 
-        self.assertTrue('success' in test_interpreter.configuration)
+    def test_inactive_state_right(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          InactiveState(state='b_state'),
+                          True,
+                          False)
 
-    def test_execution_stop(self):
-        from sismic.interpreter import log_trace
-
-        tester = Statechart('test')
-        test_initial_state = CompoundState('initial_state', initial='condition')
-        success_state = BasicState('success')
-        tester.add_state(test_initial_state, None)
-        tester.add_state(success_state, 'initial_state')
-        ExecutionStop().add_to(statechart=tester,
-                               id='condition',
-                               parent_id='initial_state',
-                               success_id='success',
-                               failure_id=None)
-        test_interpreter = Interpreter(tester)
-
-        self.assertFalse('success' in test_interpreter.configuration)
-
-        trace = log_trace(self.sequential_interpreter)
-
-        self.sequential_interpreter.queue(Event('event'))
-        self.sequential_interpreter.execute()
-
-        story = teststory_from_trace(trace)
-        story.tell(test_interpreter)
-
-        self.assertTrue('success' in test_interpreter.configuration)
+    def test_inactive_state_wrong(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          InactiveState(state='a_state'),
+                          False,
+                          True)
 
 
 class PropertyReprTest(unittest.TestCase):
@@ -668,22 +322,29 @@ class PropertyReprTest(unittest.TestCase):
     def test_transition_process_event_repr(self):
         self.assertEqual('TransitionProcess(None, None, "foo")', TransitionProcess(event='foo').__repr__())
 
+    def test_active_state_repr(self):
+        self.assertEqual('ActiveState("foo")', ActiveState('foo').__repr__())
+
+    def test_inactive_state_repr(self):
+        self.assertEqual('InactiveState("foo")', InactiveState('foo').__repr__())
+
 
 class OperatorsTest(unittest.TestCase):
     def generic_test(self, condition: Condition, success_expected: bool, failure_expected: bool, delay: int = 0):
         statechart = Statechart('test')
+        parallel_state = OrthogonalState('parallel_state')
+        statechart.add_state(parallel_state, parent=None)
+
         initial_state = CompoundState('initial_state', initial='Cond')
-        statechart.add_state(initial_state, None)
+        statechart.add_state(initial_state, "parallel_state")
 
-        success_state = BasicState('success')
-        statechart.add_state(success_state, 'initial_state')
-
-        failure_state = BasicState('failure')
-        statechart.add_state(failure_state, 'initial_state')
+        statechart.add_state(BasicState('success'), 'initial_state')
+        statechart.add_state(BasicState('failure'), 'initial_state')
 
         condition.add_to(statechart=statechart,
                          id='Cond',
                          parent_id='initial_state',
+                         status_id=parallel_state,
                          success_id='success',
                          failure_id='failure')
 
