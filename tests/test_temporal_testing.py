@@ -72,7 +72,6 @@ class PropertiesTests(unittest.TestCase):
 
         story = teststory_from_trace(trace)
         story.tell(tester_interpreter)
-        print(story)
 
         self.assertEqual(expected_success, 'success_state' in tester_interpreter.configuration)
         self.assertEqual(expected_failure, 'failure_state' in tester_interpreter.configuration)
