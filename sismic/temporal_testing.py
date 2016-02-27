@@ -130,13 +130,8 @@ class TrueCondition(Condition):
         Condition.__init__(self)
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        ip = UniqueIdProvider()
-
-        composite = CompoundState(id, initial=ip('waiting'))
-        statechart.add_state(composite, parent_id)
-
-        statechart.add_state(BasicState(ip('waiting')), id)
-        statechart.add_transition(Transition(source=ip('waiting'), target=success_id, event=Condition.END_STEP_EVENT))
+        statechart.add_state(BasicState(id), parent=parent_id)
+        statechart.add_transition(Transition(source=id, target=success_id))
 
     def __repr__(self):
         return self.__class__.__name__ + "()"
@@ -152,13 +147,7 @@ class FalseCondition(Condition):
         Condition.__init__(self)
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        ip = UniqueIdProvider()
-
-        composite = CompoundState(id, initial=ip('waiting'))
-        statechart.add_state(composite, parent_id)
-
-        statechart.add_state(BasicState(ip('waiting')), id)
-        statechart.add_transition(Transition(source=ip('waiting'), target=failure_id, event=Condition.END_STEP_EVENT))
+        Not(TrueCondition()).add_to(statechart, id, parent_id, status_id, success_id, failure_id)
 
     def __repr__(self):
         return self.__class__.__name__ + "()"
@@ -1070,8 +1059,7 @@ class DelayedFalseCondition(Condition):
 class ActiveState(Condition):
     """
     This condition is verified if a given state is active when evaluated. Otherwise, the condition is not verified.
-    This condition is artificially made synchronous by waiting a 'end step' event to occur before
-    leaving its undetermined state.
+    This property is asynchronous and may therefore lead to an "infinite loop".
     """
 
     def __init__(self, state: str):
@@ -1085,28 +1073,28 @@ class ActiveState(Condition):
         ip = UniqueIdProvider()
 
         statechart.add_state(CompoundState(ip('composite'), initial=ip('inactive_state')), parent=status_id)
-        statechart.add_state(BasicState(ip('inactive_state')), parent=ip('composite'))
-        statechart.add_state(BasicState(ip('active_state')), parent=ip('composite'))
+        statechart.add_state(BasicState(ip('inactive_state'),
+                                        on_entry='print("enter inactive")',
+                                        on_exit='print("exit inactive")'), parent=ip('composite'))
+        statechart.add_state(BasicState(ip('active_state'),
+                                        on_entry='print("enter active")',
+                                        on_exit='print("exit active")'), parent=ip('composite'))
 
         statechart.add_transition(Transition(source=ip('inactive_state'),
                                              target=ip('active_state'),
                                              event=Condition.STATE_ENTERED_EVENT,
                                              guard='event.state == "{}"'.format(self.state)))
-        statechart.add_transition(Transition(source=ip('inactive_state'),
-                                             target=ip('active_state'),
+        statechart.add_transition(Transition(source=ip('active_state'),
+                                             target=ip('inactive_state'),
                                              event=Condition.STATE_EXITED_EVENT,
                                              guard='event.state == "{}"'.format(self.state)))
 
-        statechart.add_state(BasicState(id), parent_id)
-        statechart.add_state(BasicState(ip('triage')), parent_id)
+        statechart.add_state(BasicState(id, on_entry='print("entry waiting")', on_exit='print("exit waiting")'), parent_id)
 
         statechart.add_transition(Transition(source=id,
-                                             target=ip('triage'),
-                                             event=Condition.END_STEP_EVENT))
-        statechart.add_transition(Transition(source=ip('triage'),
                                              target=success_id,
                                              guard='active("{}")'.format(ip('active_state'))))
-        statechart.add_transition(Transition(source=ip('triage'),
+        statechart.add_transition(Transition(source=id,
                                              target=failure_id,
                                              guard='active("{}")'.format(ip('inactive_state'))))
 
@@ -1140,6 +1128,50 @@ class InactiveState(Condition):
 
     def __repr__(self):
         return self.__class__.__name__ + '("{}")'.format(self.state)
+
+
+class SynchronousCondition(Condition):
+    """
+    This condition forces an arbitrary condition to remain in an undetermined status
+    until a 'step ended' event occurs.
+    More precisely, the arbitrary condition is evaluated as usually, but transitions to
+    a success or a failure states are blocked until a 'step ended' event occurs.
+    """
+
+    def __init__(self, condition: Condition):
+        Condition.__init__(self)
+        self.condition = condition
+
+    def add_to(self,
+               statechart: Statechart,
+               id: str,
+               parent_id: str,
+               status_id: str,
+               success_id: str,
+               failure_id: str):
+        ip = UniqueIdProvider()
+
+        statechart.add_state(CompoundState(id, initial=ip('condition')), parent=parent_id)
+
+        statechart.add_state(BasicState(ip('waiting_success')), parent=id)
+        statechart.add_state(BasicState(ip('waiting_failure')), parent=id)
+
+        statechart.add_transition(Transition(source=ip('waiting_success'),
+                                             target=success_id,
+                                             event=Condition.END_STEP_EVENT))
+        statechart.add_transition(Transition(source=ip('waiting_failure'),
+                                             target=failure_id,
+                                             event=Condition.END_STEP_EVENT))
+
+        self.condition.add_to(statechart=statechart,
+                              id=ip('condition'),
+                              parent_id=id,
+                              status_id=status_id,
+                              success_id=ip('waiting_success'),
+                              failure_id=ip('waiting_failure'))
+
+    def __repr__(self):
+        return self.__class__.__name__ + '("{}")'.format(self.condition)
 
 
 def _add_parallel_condition(statechart: Statechart,
@@ -1308,16 +1340,17 @@ class FirstTime(TemporalExpression):
                                 status_id=ip('parallel'),
                                 success_id=ip('rule_satisfied'),
                                 failure_id=ip('rule_not_satisfied'))
+
         statechart.add_transition(Transition(source=ip('consequence'),
                                              target=ip('rule_not_satisfied'),
                                              event=Condition.STOPPED_EVENT))
 
-        self.premise.add_to(statechart,
-                            id=ip('premise'),
-                            parent_id=ip('global'),
-                            status_id=ip('parallel'),
-                            success_id=ip('consequence'),
-                            failure_id=ip('premise'))
+        SynchronousCondition(self.premise).add_to(statechart,
+                                                  id=ip('premise'),
+                                                  parent_id=ip('global'),
+                                                  status_id=ip('parallel'),
+                                                  success_id=ip('consequence'),
+                                                  failure_id=ip('premise'))
 
         statechart.add_transition(Transition(source=ip('premise'),
                                              target=ip('rule_satisfied'),
@@ -1370,12 +1403,12 @@ class EveryTime(TemporalExpression):
 
         statechart.add_state(CompoundState(ip('consequence_wrapper'), initial=ip('consequence')), parent=ip('global'))
 
-        self.premise.add_to(statechart,
-                            id=ip('premise'),
-                            parent_id=ip('global'),
-                            status_id=ip('parallel'),
-                            success_id=ip('consequence_wrapper'),
-                            failure_id=ip('premise'))
+        SynchronousCondition(self.premise).add_to(statechart,
+                                                  id=ip('premise'),
+                                                  parent_id=ip('global'),
+                                                  status_id=ip('parallel'),
+                                                  success_id=ip('consequence_wrapper'),
+                                                  failure_id=ip('premise'))
 
         self.consequence.add_to(statechart,
                                 id=ip('consequence'),
@@ -1440,12 +1473,12 @@ class LastTime(TemporalExpression):
         statechart.add_state(BasicState(ip('premise_success'), on_entry='send("{}")'.format(ip('reset_event'))),
                              parent=ip('premise_parallel'))
 
-        self.premise.add_to(statechart,
-                            id=ip('premise'),
-                            parent_id=ip('premise_parallel'),
-                            status_id=ip('parallel'),
-                            success_id=ip('premise_success'),
-                            failure_id=ip('premise'))
+        SynchronousCondition(self.premise).add_to(statechart,
+                                                  id=ip('premise'),
+                                                  parent_id=ip('premise_parallel'),
+                                                  status_id=ip('parallel'),
+                                                  success_id=ip('premise_success'),
+                                                  failure_id=ip('premise'))
 
         statechart.add_transition(Transition(source=ip('premise_success'),
                                              target=ip('premise')))
@@ -1544,12 +1577,12 @@ class AtLeastOnce(TemporalExpression):
 
         statechart.add_state(BasicState(ip('premise_success')), parent=ip('premise_consequence'))
 
-        self.premise.add_to(statechart,
-                            id=ip('premise'),
-                            parent_id=ip('premise_consequence'),
-                            status_id=ip('parallel'),
-                            success_id=ip('premise_success'),
-                            failure_id=ip('premise'))
+        SynchronousCondition(self.premise).add_to(statechart,
+                                                  id=ip('premise'),
+                                                  parent_id=ip('premise_consequence'),
+                                                  status_id=ip('parallel'),
+                                                  success_id=ip('premise_success'),
+                                                  failure_id=ip('premise'))
 
         self.consequence.add_to(statechart=statechart,
                                 id=ip('consequence'),
