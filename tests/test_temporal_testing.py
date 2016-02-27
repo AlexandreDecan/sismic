@@ -35,7 +35,6 @@ class PropertiesTests(unittest.TestCase):
         self.sequential_statechart.add_state(a_state, 'initial_state')
         self.sequential_statechart.add_state(b_state, 'initial_state')
         self.sequential_statechart.add_transition(Transition(source='a_state', target='b_state', event='event'))
-        self.sequential_interpreter = Interpreter(self.sequential_statechart)
 
     def generic_test(self,
                      tested_statechart: Statechart,
@@ -73,6 +72,7 @@ class PropertiesTests(unittest.TestCase):
 
         story = teststory_from_trace(trace)
         story.tell(tester_interpreter)
+        print(story)
 
         self.assertEqual(expected_success, 'success_state' in tester_interpreter.configuration)
         self.assertEqual(expected_failure, 'failure_state' in tester_interpreter.configuration)
@@ -248,30 +248,38 @@ class PropertiesTests(unittest.TestCase):
                           False)
 
     def test_active_state_right(self):
+        self.sequential_statechart.remove_transition(Transition(source='a_state', target='b_state', event='event'))
+
         self.generic_test(self.sequential_statechart,
                           [Event('event')],
-                          ActiveState(state='a_state'),
+                          Then(ConsumeEvent('event'), ActiveState(state='a_state')),
                           True,
                           False)
 
     def test_active_state_wrong(self):
+        self.sequential_statechart.remove_transition(Transition(source='a_state', target='b_state', event='event'))
+
         self.generic_test(self.sequential_statechart,
-                          [],
-                          ActiveState(state='b_state'),
+                          [Event('event')],
+                          Then(ConsumeEvent('event'), ActiveState(state='b_state')),
                           False,
                           True)
 
     def test_inactive_state_right(self):
+        self.sequential_statechart.remove_transition(Transition(source='a_state', target='b_state', event='event'))
+
         self.generic_test(self.sequential_statechart,
                           [Event('event')],
-                          InactiveState(state='b_state'),
+                          Then(ConsumeEvent('event'), InactiveState(state='b_state')),
                           True,
                           False)
 
     def test_inactive_state_wrong(self):
+        self.sequential_statechart.remove_transition(Transition(source='a_state', target='b_state', event='event'))
+
         self.generic_test(self.sequential_statechart,
                           [Event('event')],
-                          InactiveState(state='a_state'),
+                          Then(ConsumeEvent('event'), InactiveState(state='a_state')),
                           False,
                           True)
 
