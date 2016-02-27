@@ -399,8 +399,8 @@ class EndStep(Condition):
 
 class ConsumeAnyEvent(Condition):
     """
-    A property consisting in the consumption of an event.
-    This property remains undetermined until the considered event is consumed.
+    A property consisting in the consumption of any event.
+    This property remains undetermined until any event is consumed.
     """
 
     def __init__(self):
@@ -412,6 +412,37 @@ class ConsumeAnyEvent(Condition):
     def add_to(self, statechart: Statechart, id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
         statechart.add_state(BasicState(id), parent=parent_id)
         statechart.add_transition(Transition(source=id, target=success_id, event=Condition.CONSUME_EVENT))
+
+
+class ConsumeAnyEventBut(Condition):
+    """
+    A property consisting in the consumption of any event, except some specific ones.
+    This property remains undetermined until an event that doesn't belong to the forbidden event is consumed.
+    """
+
+    def __init__(self, *events: str):
+        """
+        :param events: the id of the forbidden events.
+        """
+        Condition.__init__(self)
+        self.events = events
+
+    def __repr__(self):
+        from functools import reduce
+        events_s = map(lambda x: "'{}'".format(x), self.events)
+        return self.__class__.__name__ + '({})'.format(reduce(lambda x, y: x + ', ' + y, events_s))
+
+    def add_to(self, statechart: Statechart, id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+        from functools import reduce
+
+        conditions = map(lambda x: "(not(event.event.name == '{}'))", self.events)
+        condition = reduce(lambda x, y: x + ' and ' + y, conditions)
+
+        statechart.add_state(BasicState(id), parent=parent_id)
+        statechart.add_transition(Transition(source=id,
+                                             target=success_id,
+                                             event=Condition.CONSUME_EVENT,
+                                             guard=condition))
 
 
 class TransitionProcess(Condition):

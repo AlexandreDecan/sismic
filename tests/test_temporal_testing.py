@@ -180,6 +180,15 @@ class PropertiesTests(unittest.TestCase):
     def test_consume_any_event(self):
         self.generic_test(self.sequential_statechart, [Event('foo')], ConsumeAnyEvent(), True, False)
 
+    def test_consume_any_event_but_right(self):
+        self.generic_test(self.sequential_statechart, [Event('foo')], ConsumeAnyEventBut('bar'), True, False)
+
+    def test_consume_any_event_but_multi_right(self):
+        self.generic_test(self.sequential_statechart, [Event('foo')], ConsumeAnyEventBut('bar', 'baz'), True, False)
+
+    def test_consume_any_event_but_wrong(self):
+        self.generic_test(self.sequential_statechart, [], ConsumeAnyEventBut('foo'), False, False)
+
     def test_execution_started(self):
         self.generic_test(self.sequential_statechart, [Event('foo')], ExecutionStart(), True, False)
 
@@ -366,6 +375,12 @@ class PropertyReprTest(unittest.TestCase):
 
     def test_consume_any_repr(self):
         self.assertEqual('ConsumeAnyEvent()', ConsumeAnyEvent().__repr__())
+
+    def test_consume_any_but_repr(self):
+        self.assertEqual("ConsumeAnyEventBut('foo')", ConsumeAnyEventBut('foo').__repr__())
+
+    def test_consume_any_but_many_repr(self):
+        self.assertEqual("ConsumeAnyEventBut('foo', 'bar')", ConsumeAnyEventBut('foo', 'bar').__repr__())
 
     def test_execution_start_repr(self):
         self.assertEqual('ExecutionStart()', ExecutionStart().__repr__())
