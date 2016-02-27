@@ -192,6 +192,7 @@ class EnterAnyState(Condition):
 class EnterState(Condition):
     """
     A condition based on the fact that a given state has been entered.
+    The condition remains undetermined until one of the considered states is entered.
     """
 
     def __init__(self, state: str, *states: str):
@@ -224,6 +225,7 @@ class EnterState(Condition):
 class ExitState(Condition):
     """
     A condition based on the fact that a given state has been exited.
+    The condition remains undetermined until one of the considered states is exited.
     """
 
     def __init__(self, state: str, *states: str):
@@ -305,7 +307,7 @@ class CheckGuard(Condition):
 class ConsumeEvent(Condition):
     """
     A property consisting in the consumption of a given event.
-    This property remains undetermined until the considered event is consumed.
+    This property remains undetermined until one of the considered events is consumed.
     """
 
     def __init__(self, event: str, *events: str):
