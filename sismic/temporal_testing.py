@@ -194,23 +194,30 @@ class EnterState(Condition):
     A condition based on the fact that a given state has been entered.
     """
 
-    def __init__(self, state_id: str):
+    def __init__(self, *states: str):
         """
-        :param state_id: the id of the state to observe.
+        :param states: the ids of the states to observe.
         """
         Condition.__init__(self)
-        self.state_id = state_id
+        self.states = states
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+        from functools import reduce
+
+        conditions = map(lambda x: '(event.state == "{}")'.format(x), self.states)
+        condition = reduce(lambda x, y: x + ' or ' + y, conditions)
+
         waiting = BasicState(id)
         statechart.add_state(waiting, parent_id)
         statechart.add_transition(Transition(source=id,
                                              target=success_id,
                                              event=Condition.STATE_ENTERED_EVENT,
-                                             guard='event.state == "{}"'.format(self.state_id)))
+                                             guard=condition))
 
     def __repr__(self):
-        return self.__class__.__name__ + '("{}")'.format(self.state_id)
+        from functools import reduce
+        states_s = map(lambda x: "'{}'".format(x), self.states)
+        return self.__class__.__name__ + '({})'.format(reduce(lambda x, y: x + ', ' + y, states_s))
 
 
 class ExitState(Condition):
@@ -218,23 +225,30 @@ class ExitState(Condition):
     A condition based on the fact that a given state has been exited.
     """
 
-    def __init__(self, state_id: str):
+    def __init__(self, *states: str):
         """
-        :param state_id: the id of the state to observe.
+        :param states: the ids of the states to observe.
         """
         Condition.__init__(self)
-        self.state_id = state_id
+        self.states = states
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+        from functools import reduce
+
+        conditions = map(lambda x: '(event.state == "{}")'.format(x), self.states)
+        condition = reduce(lambda x, y: x + ' or ' + y, conditions)
+
         waiting = BasicState(id)
         statechart.add_state(waiting, parent_id)
         statechart.add_transition(Transition(source=id,
                                              target=success_id,
                                              event=Condition.STATE_EXITED_EVENT,
-                                             guard='event.state == "{}"'.format(self.state_id)))
+                                             guard=condition))
 
     def __repr__(self):
-        return self.__class__.__name__ + '("{}")'.format(self.state_id)
+        from functools import reduce
+        states_s = map(lambda x: "'{}'".format(x), self.states)
+        return self.__class__.__name__ + '({})'.format(reduce(lambda x, y: x + ', ' + y, states_s))
 
 
 class ExitAnyState(Condition):
@@ -295,21 +309,28 @@ class ConsumeEvent(Condition):
     This property remains undetermined until the considered event is consumed.
     """
 
-    def __init__(self, event: str):
+    def __init__(self, *events: str):
         """
-        :param event: the event that must be consumed for making this property verified.
+        :param event: the events that must be consumed for making this property verified.
         """
         Condition.__init__(self)
-        self.event = event
+        self.events = events
 
     def __repr__(self):
-        return self.__class__.__name__ + '("{}")'.format(self.event)
+        from functools import reduce
+        events_s = map(lambda x: "'{}'".format(x), self.events)
+        return self.__class__.__name__ + '({})'.format(reduce(lambda x, y: x + ', ' + y, events_s))
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+        from functools import reduce
+
+        conditions = map(lambda x: "(event.event.name == '{}')".format(x), self.events)
+        condition = reduce(lambda x, y: x + ' or ' + y, conditions)
+
         statechart.add_state(BasicState(id), parent=parent_id)
         statechart.add_transition(Transition(source=id, target=success_id,
                                              event=Condition.CONSUME_EVENT,
-                                             guard="event.event.name == '{}'".format(self.event)))
+                                             guard=condition))
 
 
 class ExecutionStart(Condition):
