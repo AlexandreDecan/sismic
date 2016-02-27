@@ -123,7 +123,7 @@ class PropertiesTests(unittest.TestCase):
         self.assertFalse('failure' in interpreter.configuration)
 
         interpreter.context['x'] = 1
-        interpreter.queue(Event('step ended'))
+        interpreter.queue(Event(Condition.END_STEP_EVENT))
 
         interpreter.execute()
         self.assertTrue('success' in interpreter.configuration)
@@ -154,7 +154,7 @@ class PropertiesTests(unittest.TestCase):
         self.assertFalse('failure' in interpreter.configuration)
 
         interpreter.context['x'] = 42
-        interpreter.queue(Event('step ended'))
+        interpreter.queue(Event(Condition.END_STEP_EVENT))
 
         interpreter.execute()
         self.assertFalse('success' in interpreter.configuration)
@@ -363,8 +363,8 @@ class OperatorsTest(unittest.TestCase):
         interpreter.execute()
 
         interpreter.time += delay
-        interpreter.queue(Event('step ended'))
-        interpreter.queue(Event('step ended'))
+        interpreter.queue(Event(Condition.END_STEP_EVENT))
+        interpreter.queue(Event(Condition.END_STEP_EVENT))
         interpreter.execute()
 
         self.assertEqual(success_expected, 'success' in interpreter.configuration)
@@ -717,7 +717,7 @@ class TemporalExpressionReprTest(unittest.TestCase):
 
 class TemporalTests(unittest.TestCase):
     def setUp(self):
-        self.story = [Event('step ended'), Event('step ended'), Event('execution stopped')]
+        self.story = [Event(Condition.END_STEP_EVENT), Event(Condition.END_STEP_EVENT), Event('execution stopped')]
 
     def generic_temporal_test(self, expression: TemporalExpression, story: list, accept_after: bool):
         # Todo: convert the story list into a 'real' story that can be told to an interpreter
@@ -1090,4 +1090,3 @@ class TemporalTests(unittest.TestCase):
         self.generic_temporal_test(AtLeastOnce(False, UndeterminedCondition(), UndeterminedCondition()),
                                    self.story,
                                    False)
-
