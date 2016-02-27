@@ -79,6 +79,11 @@ class PropertiesTests(unittest.TestCase):
     def test_enter_state_right(self):
         self.generic_test(self.sequential_statechart, [Event('event')], EnterState('b_state'), True, False)
 
+    def test_enter_state__multi_right(self):
+        self.generic_test(self.sequential_statechart, [Event('event')], EnterState('foo', 'b_state', 'bar'),
+                          True,
+                          False)
+
     def test_enter_state_wrong(self):
         self.generic_test(self.sequential_statechart, [Event('event')], EnterState('foo'), False, False)
 
@@ -87,6 +92,9 @@ class PropertiesTests(unittest.TestCase):
 
     def test_exit_state_right(self):
         self.generic_test(self.sequential_statechart, [Event('event')], ExitState('a_state'), True, False)
+
+    def test_exit_state_multi_right(self):
+        self.generic_test(self.sequential_statechart, [Event('event')], ExitState('foo', 'a_state', 'bar'), True, False)
 
     def test_exit_state_wrong(self):
         self.generic_test(self.sequential_statechart, [Event('event')], ExitState('b_state'), False, False)
@@ -162,6 +170,9 @@ class PropertiesTests(unittest.TestCase):
 
     def test_consume_event_success(self):
         self.generic_test(self.sequential_statechart, [Event('foo')], ConsumeEvent('foo'), True, False)
+
+    def test_consume_multi_event_success(self):
+        self.generic_test(self.sequential_statechart, [Event('foo')], ConsumeEvent('foo', 'bar'), True, False)
 
     def test_consume_event_failure(self):
         self.generic_test(self.sequential_statechart, [Event('bar')], ConsumeEvent('foo'), False, False)
@@ -327,13 +338,19 @@ class PropertiesTests(unittest.TestCase):
 
 class PropertyReprTest(unittest.TestCase):
     def test_enter_state_repr(self):
-        self.assertEqual('EnterState("foo")', EnterState('foo').__repr__())
+        self.assertEqual("EnterState('foo')", EnterState('foo').__repr__())
+
+    def test_enter_multi_state_repr(self):
+        self.assertEqual("EnterState('foo', 'bar')", EnterState('foo', 'bar').__repr__())
 
     def test_enter_any_state_repr(self):
         self.assertEqual('EnterAnyState()', EnterAnyState().__repr__())
 
     def test_exit_state_repr(self):
-        self.assertEqual('ExitState("foo")', ExitState('foo').__repr__())
+        self.assertEqual("ExitState('foo')", ExitState('foo').__repr__())
+
+    def test_exit_state_multi_repr(self):
+        self.assertEqual("ExitState('foo', 'bar')", ExitState('foo', 'bar').__repr__())
 
     def test_exit_any_state_repr(self):
         self.assertEqual('ExitAnyState()', ExitAnyState().__repr__())
@@ -342,7 +359,10 @@ class PropertyReprTest(unittest.TestCase):
         self.assertEqual('CheckGuard("foo")', CheckGuard('foo').__repr__())
 
     def test_consume_repr(self):
-        self.assertEqual('ConsumeEvent("foo")', ConsumeEvent('foo').__repr__())
+        self.assertEqual("ConsumeEvent('foo')", ConsumeEvent('foo').__repr__())
+
+    def test_consume_multi_repr(self):
+        self.assertEqual("ConsumeEvent('foo', 'bar')", ConsumeEvent('foo', 'bar').__repr__())
 
     def test_consume_any_repr(self):
         self.assertEqual('ConsumeAnyEvent()', ConsumeAnyEvent().__repr__())
