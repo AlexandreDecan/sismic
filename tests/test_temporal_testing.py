@@ -424,8 +424,8 @@ class OperatorsTest(unittest.TestCase):
         interpreter.execute()
 
         interpreter.time += delay
-        interpreter.queue(Event(Condition.END_STEP_EVENT))
-        interpreter.queue(Event(Condition.END_STEP_EVENT))
+        interpreter.queue(Event(Condition.STEP_ENDED_EVENT))
+        interpreter.queue(Event(Condition.STEP_ENDED_EVENT))
         interpreter.execute()
 
         self.assertEqual(success_expected, 'success' in interpreter.configuration)
@@ -775,7 +775,7 @@ class TemporalExpressionReprTest(unittest.TestCase):
 
 class TemporalTests(unittest.TestCase):
     def setUp(self):
-        self.story = [Event(Condition.END_STEP_EVENT), Event(Condition.END_STEP_EVENT), Event('execution stopped')]
+        self.story = [Event(Condition.STEP_ENDED_EVENT), Event(Condition.STEP_ENDED_EVENT), Event('execution stopped')]
 
     def generic_temporal_test(self, expression: TemporalExpression, story: list, accept_after: bool):
         # Todo: convert the story list into a 'real' story that can be told to an interpreter
