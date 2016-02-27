@@ -1073,12 +1073,8 @@ class ActiveState(Condition):
         ip = UniqueIdProvider()
 
         statechart.add_state(CompoundState(ip('composite'), initial=ip('inactive_state')), parent=status_id)
-        statechart.add_state(BasicState(ip('inactive_state'),
-                                        on_entry='print("enter inactive")',
-                                        on_exit='print("exit inactive")'), parent=ip('composite'))
-        statechart.add_state(BasicState(ip('active_state'),
-                                        on_entry='print("enter active")',
-                                        on_exit='print("exit active")'), parent=ip('composite'))
+        statechart.add_state(BasicState(ip('inactive_state')), parent=ip('composite'))
+        statechart.add_state(BasicState(ip('active_state')), parent=ip('composite'))
 
         statechart.add_transition(Transition(source=ip('inactive_state'),
                                              target=ip('active_state'),
@@ -1089,7 +1085,7 @@ class ActiveState(Condition):
                                              event=Condition.STATE_EXITED_EVENT,
                                              guard='event.state == "{}"'.format(self.state)))
 
-        statechart.add_state(BasicState(id, on_entry='print("entry waiting")', on_exit='print("exit waiting")'), parent_id)
+        statechart.add_state(BasicState(id), parent_id)
 
         statechart.add_transition(Transition(source=id,
                                              target=success_id,
