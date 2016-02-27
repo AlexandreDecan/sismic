@@ -123,15 +123,7 @@ class PropertiesTests(unittest.TestCase):
                                     failure_id='failure')
 
         interpreter = Interpreter(statechart)
-        self.assertFalse('success' in interpreter.configuration)
-        self.assertFalse('failure' in interpreter.configuration)
-
-        interpreter.execute()
-        self.assertFalse('success' in interpreter.configuration)
-        self.assertFalse('failure' in interpreter.configuration)
-
         interpreter.context['x'] = 1
-        interpreter.queue(Event(Condition.END_STEP_EVENT))
 
         interpreter.execute()
         self.assertTrue('success' in interpreter.configuration)
@@ -154,15 +146,7 @@ class PropertiesTests(unittest.TestCase):
                                     failure_id='failure')
 
         interpreter = Interpreter(statechart)
-        self.assertFalse('success' in interpreter.configuration)
-        self.assertFalse('failure' in interpreter.configuration)
-
-        interpreter.execute()
-        self.assertFalse('success' in interpreter.configuration)
-        self.assertFalse('failure' in interpreter.configuration)
-
         interpreter.context['x'] = 42
-        interpreter.queue(Event(Condition.END_STEP_EVENT))
 
         interpreter.execute()
         self.assertFalse('success' in interpreter.configuration)

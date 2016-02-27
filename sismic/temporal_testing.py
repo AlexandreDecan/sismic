@@ -276,10 +276,7 @@ class CheckGuard(Condition):
     """
     A condition based on the verification of a guard.
 
-    In order to keep it synchronous, this condition is only evaluated after a 'endstep' event is
-    submitted to the generated statechart representing the condition.
-
-    variables.
+    This condition is asynchronous, and may therefore lead to "infinite loops".
     """
 
     def __init__(self, guard: str):
@@ -293,14 +290,14 @@ class CheckGuard(Condition):
         return self.__class__.__name__ + '("{}")'.format(self.guard)
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        # TODO: One probably want to use the context of the tested statechart to determine the value of existing
+        # TODO: One probably wants to use the context of the tested statechart to determine the value of existing
         ip = UniqueIdProvider()
 
         statechart.add_state(BasicState(id), parent_id)
         statechart.add_state(CompoundState(ip('composite'), initial=ip('test')), parent_id)
         statechart.add_state(BasicState(ip('test')), ip('composite'))
 
-        statechart.add_transition(Transition(source=id, target=ip('composite'), event=Condition.END_STEP_EVENT))
+        statechart.add_transition(Transition(source=id, target=ip('composite')))
         statechart.add_transition(Transition(source=ip('test'), target=success_id, guard=self.guard))
         statechart.add_transition(Transition(source=ip('composite'), target=failure_id))
 
