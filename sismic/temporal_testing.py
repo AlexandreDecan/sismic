@@ -194,12 +194,13 @@ class EnterState(Condition):
     A condition based on the fact that a given state has been entered.
     """
 
-    def __init__(self, *states: str):
+    def __init__(self, state: str, *states: str):
         """
-        :param states: the ids of the states to observe.
+        :param state: id of the state to observe.
+        :param states: ids of other states to observe.
         """
         Condition.__init__(self)
-        self.states = states
+        self.states = [state] + list(states)
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
         from functools import reduce
@@ -225,12 +226,13 @@ class ExitState(Condition):
     A condition based on the fact that a given state has been exited.
     """
 
-    def __init__(self, *states: str):
+    def __init__(self, state: str, *states: str):
         """
-        :param states: the ids of the states to observe.
+        :param state: id of the state to observe.
+        :param states: ids of other states to observe.
         """
         Condition.__init__(self)
-        self.states = states
+        self.states = [state] + list(states)
 
     def add_to(self, statechart: Statechart, id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
         from functools import reduce
@@ -309,12 +311,13 @@ class ConsumeEvent(Condition):
     This property remains undetermined until the considered event is consumed.
     """
 
-    def __init__(self, *events: str):
+    def __init__(self, event: str, *events: str):
         """
-        :param event: the events that must be consumed for making this property verified.
+        :param event: a event that must be consumed for making this property true.
+        :param events: alternative events, the consumption of which makes this property verified.
         """
         Condition.__init__(self)
-        self.events = events
+        self.events = [event] + list(events)
 
     def __repr__(self):
         from functools import reduce
@@ -420,12 +423,13 @@ class ConsumeAnyEventBut(Condition):
     This property remains undetermined until an event that doesn't belong to the forbidden event is consumed.
     """
 
-    def __init__(self, *events: str):
+    def __init__(self, event: str, *events: str):
         """
-        :param events: the id of the forbidden events.
+        :param event: the id of a forbidden event.
+        :param events: the id of other forbidden events.
         """
         Condition.__init__(self)
-        self.events = events
+        self.events = [event] + list(events)
 
     def __repr__(self):
         from functools import reduce
