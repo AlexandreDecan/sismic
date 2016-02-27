@@ -282,6 +282,48 @@ class PropertiesTests(unittest.TestCase):
                           False,
                           True)
 
+    def test_before_right(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          Before(EnterState('a_state'), EnterState('b_state')),
+                          True,
+                          False)
+
+    def test_true_before_false_right(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          Before(EnterState('a_state'), FalseCondition()),
+                          True,
+                          False)
+
+    def test_true_before_undetermined_right(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          Before(EnterState('a_state'), UndeterminedCondition()),
+                          True,
+                          False)
+
+    def test_before_wrong(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          Before(EnterState('b_state'), EnterState('a_state')),
+                          False,
+                          True)
+
+    def test_before_false_right(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          Before(EnterState('b_state'), FalseCondition()),
+                          True,
+                          False)
+
+    def test_before_undetermined_right(self):
+        self.generic_test(self.sequential_statechart,
+                          [Event('event')],
+                          Before(EnterState('b_state'), UndeterminedCondition()),
+                          True,
+                          False)
+
 
 class PropertyReprTest(unittest.TestCase):
     def test_enter_state_repr(self):
@@ -486,9 +528,6 @@ class OperatorsTest(unittest.TestCase):
 
     def test_undetermined_xor_undetermined(self):
         self.generic_test(Xor(UndeterminedCondition(), UndeterminedCondition()), False, False)
-
-    def test_true_before_true(self):
-        self.generic_test(Before(TrueCondition(), TrueCondition()), False, True)
 
     def test_true_before_false(self):
         self.generic_test(Before(TrueCondition(), FalseCondition()), True, False)

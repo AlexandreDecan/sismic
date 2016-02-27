@@ -853,7 +853,6 @@ class Before(Condition):
         statechart.add_transition(Transition(source=ip('waiting'), target=failure_id, event=success_b))
         statechart.add_transition(Transition(source=ip('waiting'), target=failure_id, event=failure_a))
 
-
     def add_to(self, statechart: Statechart, id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
         _add_parallel_condition(statechart,
                                 id=id,
