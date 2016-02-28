@@ -101,13 +101,12 @@ class PropertiesTests(unittest.TestCase):
             ('event', Before(EnterState('a_state'), FalseCondition())),
             ('event', Before(EnterState('a_state'), UndeterminedCondition())),
             ('event', Before(EnterState('b_state'), FalseCondition())),
-            ('event', Before(EnterState('b_state'), UndeterminedCondition())),
-
+            ('event', Before(EnterState('b_state'), UndeterminedCondition()))
         ]:
             with self.subTest(condition=condition):
                 self.generic_test(self.sequential_statechart, [Event(event)], condition, True, False)
 
-    def test_condition_faillure(self):
+    def test_condition_failure(self):
         for (event, condition) in [
             ('event', Before(EnterState('b_state'), EnterState('a_state'))),
         ]:
@@ -177,8 +176,6 @@ class PropertiesTests(unittest.TestCase):
         self.assertFalse('success' in interpreter.configuration)
         self.assertTrue('failure' in interpreter.configuration)
 
-
-
     def test_consume_any_event_but_wrong(self):
         self.generic_test(self.sequential_statechart, [], ConsumeAnyEventBut('foo'), False, False)
 
@@ -244,7 +241,7 @@ class OperatorsTest(unittest.TestCase):
         condition.add_to(statechart=statechart,
                          id='Cond',
                          parent_id='initial_state',
-                         status_id=parallel_state,
+                         status_id='parallel_state',
                          success_id='success',
                          failure_id='failure')
 
@@ -314,7 +311,7 @@ class OperatorsTest(unittest.TestCase):
             IfElse(TrueCondition(), FalseCondition(), UndeterminedCondition()),
             IfElse(FalseCondition(), TrueCondition(), FalseCondition()),
             IfElse(FalseCondition(), FalseCondition(), FalseCondition()),
-            IfElse(UndeterminedCondition(), FalseCondition(), FalseCondition()) # fail-fast
+            IfElse(UndeterminedCondition(), FalseCondition(), FalseCondition())  # fail-fast
         ]:
             with self.subTest(condition=condition):
                 self.generic_test(condition, False, True)
@@ -449,7 +446,6 @@ class ReprTest(unittest.TestCase):
             ('LastTime(True, TrueCondition(), FalseCondition())', LastTime(True, TrueCondition(), FalseCondition())),
             ('EveryTime(True, TrueCondition(), FalseCondition())', EveryTime(True, TrueCondition(), FalseCondition())),
             ('AtLeastOnce(True, TrueCondition(), FalseCondition())', AtLeastOnce(True, TrueCondition(), FalseCondition())),
-
         ]:
             with self.subTest(expected=expected, condition=condition):
                 self.assertEqual(expected, condition.__repr__())
