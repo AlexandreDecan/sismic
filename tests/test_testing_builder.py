@@ -2,6 +2,7 @@ import unittest
 
 from sismic.interpreter import Interpreter
 from sismic.model import Event
+from sismic.stories import Story
 from sismic.testing import teststory_from_trace
 from sismic.testing.builder import *
 
@@ -457,13 +458,10 @@ class TemporalTests(unittest.TestCase):
         self.story = [Event(Condition.STEP_ENDED_EVENT), Event(Condition.STEP_ENDED_EVENT), Event('execution stopped')]
 
     def generic_temporal_test(self, expression: TemporalExpression, story: list, accept_after: bool):
-        # Todo: convert the story list into a 'real' story that can be told to an interpreter
         statechart = expression.generate_statechart()
         interpreter = Interpreter(statechart)
 
-        for event in story:
-            interpreter.queue(event)
-
+        Story(story).tell(interpreter)
         interpreter.execute()
 
         self.assertEqual(len(interpreter.configuration) == 0, accept_after)
