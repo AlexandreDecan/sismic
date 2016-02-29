@@ -192,13 +192,19 @@ class EnterState(Condition):
 
     def __init__(self, state: str, *states: str):
         """
-        :param state: id of the state to observe.
-        :param states: ids of other states to observe.
+        :param state: name of the state to observe.
+        :param states: names of other states to observe.
         """
         super().__init__()
         self.states = [state] + list(states)
 
-    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+    def add_to_statechart(self,
+                          statechart: Statechart,
+                          condition_state: str,
+                          parent_state: str,
+                          status_state: str,
+                          success_state: str,
+                          failure_state: str):
         from functools import reduce
 
         conditions = map(lambda x: '(event.state == "{}")'.format(x), self.states)
@@ -225,8 +231,8 @@ class ExitState(Condition):
 
     def __init__(self, state: str, *states: str):
         """
-        :param state: id of the state to observe.
-        :param states: ids of other states to observe.
+        :param state: name of the state to observe.
+        :param states: names of other states to observe.
         """
         super().__init__()
         self.states = [state] + list(states)
@@ -1301,9 +1307,9 @@ class TemporalExpression(metaclass=abc.ABCMeta):
         """
         Generates a partial statechart for representing the expression of a rule.
 
-        :param parallel_id: id of the parallel state containing the machine and the other parallel states.
-        :param rule_satisfied_id: the id of the state representing the fact that the rule is satisfied.
-        :param rule_not_satisfied_id: the id of the state representing the fact that the rule is not satisfied.
+        :param parallel_id: name of the parallel state containing the machine and the other parallel states.
+        :param rule_satisfied_id: the name of the state representing the fact that the rule is satisfied.
+        :param rule_not_satisfied_id: the name of the state representing the fact that the rule is not satisfied.
         :return: a prepared statechart
         """
         ip = UniqueIdProvider()
