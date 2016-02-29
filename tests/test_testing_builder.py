@@ -1,8 +1,9 @@
 import unittest
-from sismic.temporal_testing import *
+
 from sismic.interpreter import Interpreter
 from sismic.model import Event, Statechart, CompoundState, BasicState, Transition
 from sismic.testing import teststory_from_trace
+from sismic.temporal_testing import *
 
 
 class UniqueIdProviderTest(unittest.TestCase):

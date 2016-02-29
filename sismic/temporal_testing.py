@@ -291,16 +291,12 @@ class CheckGuard(Condition):
         return self.__class__.__name__ + '("{}")'.format(self.guard)
 
     def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        # TODO: One probably wants to use the context of the tested statechart to determine the value of existing
         ip = UniqueIdProvider()
 
-        statechart.add_state(BasicState(condition_id), parent_id)
-        statechart.add_state(CompoundState(ip('composite'), initial=ip('test')), parent_id)
-        statechart.add_state(BasicState(ip('test')), ip('composite'))
+        statechart.add_state(BasicState(condition_id, on_entry='send("{}")'.format(ip('event'))), parent=parent_id)
 
-        statechart.add_transition(Transition(source=condition_id, target=ip('composite')))
-        statechart.add_transition(Transition(source=ip('test'), target=success_id, guard=self.guard))
-        statechart.add_transition(Transition(source=ip('composite'), target=failure_id))
+        statechart.add_transition(Transition(source=condition_id, target=failure_id, event=ip('event')))
+        statechart.add_transition(Transition(source=condition_id, target=success_id, guard=self.guard))
 
 
 class ConsumeEvent(Condition):
