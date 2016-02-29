@@ -160,8 +160,7 @@ class UndeterminedCondition(Condition):
         super().__init__()
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
-        waiting_state = BasicState(condition_state)
-        statechart.add_state(waiting_state, parent_state)
+        statechart.add_state(BasicState(condition_state), parent_state)
 
     def __repr__(self):
         return self.__class__.__name__ + "()"
@@ -176,8 +175,7 @@ class EnterAnyState(Condition):
         super().__init__()
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
-        waiting = BasicState(condition_state)
-        statechart.add_state(waiting, parent_state)
+        statechart.add_state(BasicState(condition_state), parent_state)
         statechart.add_transition(Transition(source=condition_state,
                                              target=success_state,
                                              event=Condition.STATE_ENTERED_EVENT))
