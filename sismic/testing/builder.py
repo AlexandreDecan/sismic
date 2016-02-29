@@ -14,7 +14,7 @@ class UniqueIdProvider(object):
         """
         Creates an id provider.
         """
-        self.d = defaultdict(uuid4)
+        self.__d = defaultdict(uuid4)
 
     def __call__(self, element):
         """
