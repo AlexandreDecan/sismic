@@ -53,9 +53,6 @@ class Condition(metaclass=abc.ABCMeta):
     STEP_STARTED_EVENT = 'step started'
     TRANSITION_PROCESSED_EVENT = 'transition processed'
 
-    def __init__(self):
-        pass
-
     def add_to_statechart(self,
                           statechart: Statechart,
                           condition_state: str,
@@ -127,7 +124,7 @@ class TrueCondition(Condition):
     """
 
     def __init__(self):
-        Condition.__init__(self)
+        super().__init__()
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         statechart.add_state(BasicState(condition_state), parent=parent_state)
@@ -144,7 +141,7 @@ class FalseCondition(Condition):
     """
 
     def __init__(self):
-        Condition.__init__(self)
+        super().__init__()
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         Not(TrueCondition()).add_to_statechart(statechart, condition_state, parent_state, status_state, success_state, failure_state)
@@ -160,7 +157,7 @@ class UndeterminedCondition(Condition):
     """
 
     def __init__(self):
-        Condition.__init__(self)
+        super().__init__()
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         waiting_state = BasicState(condition_state)
@@ -176,7 +173,7 @@ class EnterAnyState(Condition):
     """
 
     def __init__(self):
-        Condition.__init__(self)
+        super().__init__()
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         waiting = BasicState(condition_state)
@@ -200,7 +197,7 @@ class EnterState(Condition):
         :param state: id of the state to observe.
         :param states: ids of other states to observe.
         """
-        Condition.__init__(self)
+        super().__init__()
         self.states = [state] + list(states)
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
@@ -233,7 +230,7 @@ class ExitState(Condition):
         :param state: id of the state to observe.
         :param states: ids of other states to observe.
         """
-        Condition.__init__(self)
+        super().__init__()
         self.states = [state] + list(states)
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
@@ -261,7 +258,7 @@ class ExitAnyState(Condition):
     """
 
     def __init__(self):
-        Condition.__init__(self)
+        super().__init__()
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         waiting = BasicState(condition_state)
@@ -285,7 +282,7 @@ class CheckGuard(Condition):
         """
         :param guard: an arbitrary condition that must be verified to make the condition verified.
         """
-        Condition.__init__(self)
+        super().__init__()
         self.guard = guard
     
     def __repr__(self):
@@ -311,7 +308,7 @@ class ConsumeEvent(Condition):
         :param event: a event that must be consumed for making this property true.
         :param events: alternative events, the consumption of which makes this property verified.
         """
-        Condition.__init__(self)
+        super().__init__()
         self.events = [event] + list(events)
 
     def __repr__(self):
@@ -337,7 +334,7 @@ class ExecutionStart(Condition):
     """
 
     def __init__(self):
-        Condition.__init__(self)
+        super().__init__()
 
     def __repr__(self):
         return self.__class__.__name__ + '()'
@@ -353,7 +350,7 @@ class ExecutionStop(Condition):
     """
 
     def __init__(self):
-        Condition.__init__(self)
+        super().__init__()
 
     def __repr__(self):
         return self.__class__.__name__ + '()'
@@ -369,7 +366,7 @@ class StartStep(Condition):
     """
 
     def __init__(self):
-        Condition.__init__(self)
+        super().__init__()
 
     def __repr__(self):
         return self.__class__.__name__ + '()'
@@ -385,7 +382,7 @@ class EndStep(Condition):
     """
 
     def __init__(self):
-        Condition.__init__(self)
+        super().__init__()
 
     def __repr__(self):
         return self.__class__.__name__ + '()'
@@ -402,7 +399,7 @@ class ConsumeAnyEvent(Condition):
     """
 
     def __init__(self):
-        Condition.__init__(self)
+        super().__init__()
 
     def __repr__(self):
         return self.__class__.__name__ + '()'
@@ -423,7 +420,7 @@ class ConsumeAnyEventBut(Condition):
         :param event: the id of a forbidden event.
         :param events: the id of other forbidden events.
         """
-        Condition.__init__(self)
+        super().__init__()
         self.events = [event] + list(events)
 
     def __repr__(self):
@@ -460,7 +457,7 @@ class TransitionProcess(Condition):
         be eventless.
         """
 
-        Condition.__init__(self)
+        super().__init__()
         self.source = source
         self.target = target
         self.event = event
@@ -510,7 +507,7 @@ class And(Condition):
         :param a: a condition to combine
         :param b: an other condition to combine
         """
-        Condition.__init__(self)
+        super().__init__()
         self.a = a
         self.b = b
 
@@ -600,7 +597,7 @@ class Or(Condition):
         :param a: a condition to combine
         :param b: an other condition to combine
         """
-        Condition.__init__(self)
+        super().__init__()
         self.a = a
         self.b = b
 
@@ -686,7 +683,7 @@ class Xor(Condition):
         :param a: a condition to combine
         :param b: an other condition to combine
         """
-        Condition.__init__(self)
+        super().__init__()
         self.a = a
         self.b = b
 
@@ -785,7 +782,7 @@ class Not(Condition):
         """
         :param cond: the condition to reverse
         """
-        Condition.__init__(self)
+        super().__init__()
         self.condition = cond
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
@@ -819,7 +816,7 @@ class Then(Condition):
         :param a: the condition that must be verified before testing the second condition.
         :param b: the condition that will be evaluated after a is verified.
         """
-        Condition.__init__(self)
+        super().__init__()
         self.a = a
         self.b = b
 
@@ -861,7 +858,7 @@ class Before(Condition):
     """
 
     def __init__(self, a: Condition, b: Condition):
-        Condition.__init__(self)
+        super().__init__()
         self.a = a
         self.b = b
 
@@ -943,7 +940,7 @@ class During(Condition):
         to the verification of this condition. Must be positive or null.
         """
 
-        Condition.__init__(self)
+        super().__init__()
         self.cond = cond
         self.start = start
         self.length = lenght
@@ -1020,7 +1017,7 @@ class IfElse(Condition):
         :param a: the condition that is equivalent to the changing condition before a given condition is verified.
         :param b: the condition that is equivalent to the changing condition after the given condition is verified.
         """
-        Condition.__init__(self)
+        super().__init__()
         self.a = a
         self.b = b
         self.condition = condition
@@ -1045,7 +1042,7 @@ class DelayedCondition(Condition):
         :param delay: a positive or null value representing the time
         to wait before the DelayedCondition adopts the given condition.
         """
-        Condition.__init__(self)
+        super().__init__()
         self.condition = condition
         self.delay = delay
 
@@ -1076,7 +1073,7 @@ class DelayedTrueCondition(Condition):
         :param delay: A positive or null value representing the time
         to wait before the condition becomes verified.
         """
-        Condition.__init__(self)
+        super().__init__()
         self.delay = delay
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
@@ -1097,7 +1094,7 @@ class DelayedFalseCondition(Condition):
     """
 
     def __init__(self, delay: int):
-        Condition.__init__(self)
+        super().__init__()
         self.delay = delay
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
@@ -1122,7 +1119,7 @@ class ActiveState(Condition):
         """
         :param state: the id of the state to check.
         """
-        Condition.__init__(self)
+        super().__init__()
         self.state = state
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
@@ -1161,7 +1158,7 @@ class InactiveState(Condition):
     leaving its undetermined state.
     """
     def __init__(self, state):
-        Condition.__init__(self)
+        super().__init__()
         self.state = state
 
     def add_to_statechart(self,
@@ -1191,7 +1188,7 @@ class SynchronousCondition(Condition):
     """
 
     def __init__(self, condition: Condition):
-        Condition.__init__(self)
+        super().__init__()
         self.condition = condition
 
     def add_to_statechart(self,
@@ -1361,7 +1358,7 @@ class FirstTime(TemporalExpression):
         :param premise: a condition that can be verified.
         :param consequence: the consequence that must be verified each time the premise is verified.
         """
-        TemporalExpression.__init__(self, decision, premise, consequence)
+        super().__init__(decision, premise, consequence)
 
     def generate_statechart(self):
         """
@@ -1428,7 +1425,7 @@ class EveryTime(TemporalExpression):
         :param premise: a condition that can be verified.
         :param consequence: the consequence that must be verified each time the premise is verified.
         """
-        TemporalExpression.__init__(self, decision, premise, consequence)
+        super().__init__(decision, premise, consequence)
 
     def generate_statechart(self):
         """
@@ -1497,7 +1494,7 @@ class LastTime(TemporalExpression):
         :param premise: a condition that can be verified.
         :param consequence: the consequence that must be verified each time the premise is verified.
         """
-        TemporalExpression.__init__(self, decision, premise, consequence)
+        super().__init__(decision, premise, consequence)
 
     def generate_statechart(self):
         """
@@ -1602,7 +1599,7 @@ class AtLeastOnce(TemporalExpression):
         :param premise: a condition that can be verified.
         :param consequence: the consequence that must be verified each time the premise is verified.
         """
-        TemporalExpression.__init__(self, decision, premise, consequence)
+        super().__init__(decision, premise, consequence)
 
     def generate_statechart(self):
         """
