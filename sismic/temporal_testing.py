@@ -929,7 +929,7 @@ class During(Condition):
     must be verified in the [start, start+length] interval.
 
     The time is expressed in the unit than in the rest of Sismic. The interval limits are relative to
-    the moment at which the InTime condition begins to be checked.
+    the moment at which the During condition begins to be checked.
     """
 
     def __init__(self, cond: Condition, start: int, lenght: int):

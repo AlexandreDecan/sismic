@@ -355,16 +355,16 @@ class OperatorsTest(unittest.TestCase):
             with self.subTest(condition=condition):
                 self.generic_test(condition, False, False)
 
-    def test_intime_delayed_true_instant(self):
+    def test_during_delayed_true_instant(self):
         self.generic_test(During(DelayedTrueCondition(2), 0, 10), True, False, 3)
 
-    def test_intime_delayed_true_delay(self):
+    def test_during_delayed_true_delay(self):
         self.generic_test(During(DelayedTrueCondition(7), 5, 10), True, False, 10)
 
-    def test_intime_delayed_false_instant(self):
+    def test_during_delayed_false_instant(self):
         self.generic_test(During(DelayedFalseCondition(2), 0, 10), False, True, 3)
 
-    def test_intime_delayed_false_delay(self):
+    def test_during_delayed_false_delay(self):
         self.generic_test(During(DelayedFalseCondition(7), 5, 10), False, True, 10)
 
     def test_delayed_true(self):
