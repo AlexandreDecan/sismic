@@ -326,7 +326,7 @@ class ConsumeEvent(Condition):
     def __repr__(self):
         from functools import reduce
         events_s = map(lambda x: "'{}'".format(x), self._events)
-        return self.__class__.__name__ + '({})'.format(', '.event_s)
+        return self.__class__.__name__ + '({})'.format(', '.join(events_s))
 
 
 class ExecutionStart(Condition):
@@ -433,15 +433,18 @@ class ConsumeAnyEventBut(Condition):
         self._events = [event] + list(events)
 
     def __repr__(self):
-        from functools import reduce
         events_s = map(lambda x: "'{}'".format(x), self._events)
-        return self.__class__.__name__ + '({})'.format(reduce(lambda x, y: x + ', ' + y, events_s))
+        return self.__class__.__name__ + '({})'.format(', '.join(events_s))
 
-    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
-        from functools import reduce
-
+    def add_to_statechart(self,
+                          statechart: Statechart,
+                          condition_state: str,
+                          parent_state: str,
+                          status_state: str,
+                          success_state: str,
+                          failure_state: str):
         conditions = map(lambda x: "(not(event.event.name == '{}'))", self._events)
-        condition = reduce(lambda x, y: x + ' and ' + y, conditions)
+        condition = ' and '.join(conditions)
 
         statechart.add_state(BasicState(condition_state), parent=parent_state)
         statechart.add_transition(Transition(source=condition_state,
