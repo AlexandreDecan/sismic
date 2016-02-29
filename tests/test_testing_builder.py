@@ -90,10 +90,10 @@ class PropertiesTests(unittest.TestCase):
             ('foo', ConsumeAnyEvent()),
             ('foo', ConsumeAnyEventBut('bar')),
             ('foo', ConsumeAnyEventBut('bar', 'baz')),
-            ('foo', ExecutionStart()),
-            ('foo', ExecutionStop()),
+            ('foo', StartExecution()),
+            ('foo', StopExecution()),
             ('foo', StartStep()),
-            ('foo', ExecutionStop()),
+            ('foo', StopExecution()),
             ('event', TransitionProcess()),
             ('event', TransitionProcess(event='event')),
             ('event', TransitionProcess(source='a_state')),
@@ -392,54 +392,54 @@ class ConditionOperatorTests(unittest.TestCase):
 
 class ReprTest(unittest.TestCase):
     def test_operators(self):
-        for expected, condition in [
-            ('TrueCondition()', TrueCondition()),
-            ('FalseCondition()', FalseCondition()),
-            ('UndeterminedCondition()', UndeterminedCondition()),
-            ('And(TrueCondition(), FalseCondition())', And(TrueCondition(), FalseCondition())),
-            ('Or(TrueCondition(), FalseCondition())', Or(TrueCondition(), FalseCondition())),
-            ('Not(TrueCondition())', Not(TrueCondition())),
-            ('Xor(TrueCondition(), FalseCondition())', Xor(TrueCondition(), FalseCondition())),
-            ('Before(TrueCondition(), FalseCondition())', Before(TrueCondition(), FalseCondition())),
-            ('Then(TrueCondition(), FalseCondition())', Then(TrueCondition(), FalseCondition())),
-            ('During(TrueCondition(), 10, 42)', During(TrueCondition(), 10, 42)),
-            ('DelayedTrueCondition(42)', DelayedTrueCondition(42)),
-            ('DelayedFalseCondition(42)', DelayedFalseCondition(42)),
-            ('IfElse(TrueCondition(), TrueCondition(), FalseCondition())', IfElse(TrueCondition(),
-                                                                                  TrueCondition(),
-                                                                                  FalseCondition())),
-            ('DelayedCondition(TrueCondition(), 42)', DelayedCondition(TrueCondition(), 42))
+        for condition in [
+            'TrueCondition()',
+            'FalseCondition()',
+            'UndeterminedCondition()',
+            'And(TrueCondition(), FalseCondition())',
+            'Or(TrueCondition(), FalseCondition())',
+            'Not(TrueCondition())',
+            'Xor(TrueCondition(), FalseCondition())',
+            'Before(TrueCondition(), FalseCondition())',
+            'Then(TrueCondition(), FalseCondition())',
+            'During(TrueCondition(), 10, 42)',
+            'DelayedTrueCondition(42)',
+            'DelayedFalseCondition(42)',
+            'IfElse(TrueCondition(), TrueCondition(), FalseCondition())',
+            'DelayedCondition(TrueCondition(), 42)'
         ]:
-            with self.subTest(expected=expected, condition=condition):
-                self.assertEqual(expected, condition.__repr__())
+            with self.subTest(condition=condition):
+                instance = eval(condition)
+                self.assertEqual(condition, instance.__repr__())
 
     def test_properties(self):
-        for (expected, condition) in [
-            ("EnterState('foo')", EnterState('foo')),
-            ("EnterState('foo', 'bar')", EnterState('foo', 'bar')),
-            ('EnterAnyState()', EnterAnyState()),
-            ("ExitState('foo')", ExitState('foo')),
-            ("ExitState('foo', 'bar')", ExitState('foo', 'bar')),
-            ('ExitAnyState()', ExitAnyState()),
-            ('CheckGuard("foo")', CheckGuard('foo')),
-            ("ConsumeEvent('foo')", ConsumeEvent('foo')),
-            ("ConsumeEvent('foo', 'bar')", ConsumeEvent('foo', 'bar')),
-            ('ConsumeAnyEvent()', ConsumeAnyEvent()),
-            ("ConsumeAnyEventBut('foo')", ConsumeAnyEventBut('foo')),
-            ("ConsumeAnyEventBut('foo', 'bar')", ConsumeAnyEventBut('foo', 'bar')),
-            ('ExecutionStart()', ExecutionStart()),
-            ('ExecutionStop()', ExecutionStop()),
-            ('StartStep()', StartStep()),
-            ('EndStep()', EndStep()),
-            ('TransitionProcess(None, None, None)', TransitionProcess()),
-            ('TransitionProcess("foo", None, None)', TransitionProcess(source='foo')),
-            ('TransitionProcess(None, "foo", None)', TransitionProcess(target='foo')),
-            ('TransitionProcess(None, None, "foo")', TransitionProcess(event='foo')),
-            ('InactiveState("foo")', InactiveState('foo')),
-            ('ActiveState("foo")', ActiveState('foo'))
+        for condition in [
+            "EnterState('foo')",
+            "EnterState('foo', 'bar')",
+            'EnterAnyState()',
+            "ExitState('foo')",
+            "ExitState('foo', 'bar')",
+            'ExitAnyState()',
+            'CheckGuard("foo")',
+            "ConsumeEvent('foo')",
+            "ConsumeEvent('foo', 'bar')",
+            'ConsumeAnyEvent()',
+            "ConsumeAnyEventBut('foo')",
+            "ConsumeAnyEventBut('foo', 'bar')",
+            'StartExecution()',
+            'StopExecution()',
+            'StartStep()',
+            'EndStep()',
+            'TransitionProcess(None, None, None)',
+            'TransitionProcess("foo", None, None)',
+            'TransitionProcess(None, "foo", None)',
+            'TransitionProcess(None, None, "foo")',
+            'InactiveState("foo")',
+            'ActiveState("foo")'
         ]:
-            with self.subTest(condition=condition, expected=expected):
-                self.assertEqual(expected, condition.__repr__())
+            with self.subTest(condition=condition):
+                instance = eval(condition)
+                self.assertEqual(condition, instance.__repr__())
 
     def test_temporal_expression(self):
         for expected, condition in [
