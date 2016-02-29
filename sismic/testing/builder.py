@@ -175,7 +175,13 @@ class EnterAnyState(Condition):
     def __init__(self):
         super().__init__()
 
-    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+    def add_to_statechart(self,
+                          statechart: Statechart,
+                          condition_state: str,
+                          parent_state: str,
+                          status_state: str,
+                          success_state: str,
+                          failure_state: str):
         statechart.add_state(BasicState(condition_state), parent_state)
         statechart.add_transition(Transition(source=condition_state,
                                              target=success_state,
@@ -329,7 +335,7 @@ class ConsumeEvent(Condition):
         return self.__class__.__name__ + '({})'.format(', '.join(events_s))
 
 
-class ExecutionStart(Condition):
+class StartExecution(Condition):
     """
     A property consisting in the fact that the execution of the tested statechart starts.
     """
@@ -353,7 +359,7 @@ class ExecutionStart(Condition):
                                              event=Condition.EXECUTION_STARTED_EVENT))
 
 
-class ExecutionStop(Condition):
+class StopExecution(Condition):
     """
     A property consisting in the fact that the execution of the tested statechart stops.
     """
