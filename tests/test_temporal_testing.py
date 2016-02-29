@@ -51,7 +51,7 @@ class PropertiesTests(unittest.TestCase):
         tester_statechart.add_state(BasicState('failure_state'), parent='testing_area')
 
         property.add_to(tester_statechart,
-                        id='property',
+                        condition_id='property',
                         parent_id='testing_area',
                         status_id='parallel_state',
                         success_id='success_state',
@@ -140,7 +140,7 @@ class PropertiesTests(unittest.TestCase):
         statechart.add_state(BasicState('failure'), parent='initial_state')
 
         CheckGuard('x == 1').add_to(statechart=statechart,
-                                    id='condition',
+                                    condition_id='condition',
                                     parent_id='initial_state',
                                     status_id='parallel_state',
                                     success_id='success',
@@ -163,7 +163,7 @@ class PropertiesTests(unittest.TestCase):
         statechart.add_state(BasicState('failure'), parent='initial_state')
 
         CheckGuard('x == 1').add_to(statechart=statechart,
-                                    id='condition',
+                                    condition_id='condition',
                                     parent_id='initial_state',
                                     status_id='parallel_state',
                                     success_id='success',
@@ -239,7 +239,7 @@ class OperatorsTest(unittest.TestCase):
         statechart.add_state(BasicState('failure'), 'initial_state')
 
         condition.add_to(statechart=statechart,
-                         id='Cond',
+                         condition_id='Cond',
                          parent_id='initial_state',
                          status_id='parallel_state',
                          success_id='success',
