@@ -1,3 +1,4 @@
+import abc
 from sismic.model import Statechart, BasicState, FinalState, Transition, CompoundState, OrthogonalState
 from collections import defaultdict
 from uuid import uuid4
@@ -30,10 +31,10 @@ class UniqueIdProvider(object):
         :return: the unique id associated to element in this provider.
         """
 
-        return str(self.d[element])
+        return str(self.__d[element])
 
 
-class Condition:
+class Condition(metaclass=abc.ABCMeta):
     """
     A condition is a property being true, false, or undetermined.
     Such a condition is expressed thanks to a set of states and transitions that can be added to a statechart.
@@ -72,7 +73,7 @@ class Condition:
         :param status_id: the id of the (preexisting) orthogonal state placed as a direct child of the initial state
         of the statechart. Children of this orthogonal states run as long as the statechart is running.
         """
-        pass
+        raise NotImplementedError()
 
     def __invert__(self):
         """
@@ -1292,7 +1293,7 @@ def _add_parallel_condition(statechart: Statechart,
                      failure_id=failure_id)
 
 
-class TemporalExpression:
+class TemporalExpression(metaclass=abc.ABCMeta):
     def __init__(self, decision: bool, premise: Condition, consequence: Condition):
         self.decision = decision
         self.premise = premise
@@ -1334,7 +1335,7 @@ class TemporalExpression:
         Generates a statechart representing the expression.
         :return: a tester statechart representing the expression.
         """
-        pass
+        raise NotImplementedError()
 
     def __repr__(self):
         return self.__class__.__name__ + "({}, {}, {})".format(self.decision,
