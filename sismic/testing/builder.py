@@ -2,6 +2,7 @@ import abc
 from sismic.model import Statechart, BasicState, FinalState, Transition, CompoundState, OrthogonalState
 from collections import defaultdict
 from uuid import uuid4
+from functools import reduce
 
 
 class UniqueIdProvider(object):
@@ -205,10 +206,9 @@ class EnterState(Condition):
                           status_state: str,
                           success_state: str,
                           failure_state: str):
-        from functools import reduce
 
         conditions = map(lambda x: '(event.state == "{}")'.format(x), self._states)
-        condition = reduce(lambda x, y: x + ' or ' + y, conditions)
+        condition = ' or '.join(conditions)
 
         waiting = BasicState(condition_state)
         statechart.add_state(waiting, parent_state)
@@ -218,9 +218,8 @@ class EnterState(Condition):
                                              guard=condition))
 
     def __repr__(self):
-        from functools import reduce
         states_s = map(lambda x: "'{}'".format(x), self._states)
-        return self.__class__.__name__ + '({})'.format(reduce(lambda x, y: x + ', ' + y, states_s))
+        return self.__class__.__name__ + '({})'.format(', '.join(states_s))
 
 
 class ExitState(Condition):
@@ -253,7 +252,7 @@ class ExitState(Condition):
     def __repr__(self):
         from functools import reduce
         states_s = map(lambda x: "'{}'".format(x), self._states)
-        return self.__class__.__name__ + '({})'.format(reduce(lambda x, y: x + ', ' + y, states_s))
+        return self.__class__.__name__ + '({})'.format(', '.join(states_s))
 
 
 class ExitAnyState(Condition):
@@ -288,9 +287,6 @@ class CheckGuard(Condition):
         """
         super().__init__()
         self._guard = guard
-    
-    def __repr__(self):
-        return self.__class__.__name__ + '("{}")'.format(self._guard)
 
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         ip = UniqueIdProvider()
@@ -299,6 +295,9 @@ class CheckGuard(Condition):
 
         statechart.add_transition(Transition(source=condition_state, target=failure_state, event=ip('event')))
         statechart.add_transition(Transition(source=condition_state, target=success_state, guard=self._guard))
+
+    def __repr__(self):
+        return self.__class__.__name__ + '("{}")'.format(self._guard)
 
 
 class ConsumeEvent(Condition):
@@ -315,21 +314,19 @@ class ConsumeEvent(Condition):
         super().__init__()
         self._events = [event] + list(events)
 
-    def __repr__(self):
-        from functools import reduce
-        events_s = map(lambda x: "'{}'".format(x), self._events)
-        return self.__class__.__name__ + '({})'.format(reduce(lambda x, y: x + ', ' + y, events_s))
-
     def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
-        from functools import reduce
-
         conditions = map(lambda x: "(event.event.name == '{}')".format(x), self._events)
-        condition = reduce(lambda x, y: x + ' or ' + y, conditions)
+        condition = ' or '.join(conditions)
 
         statechart.add_state(BasicState(condition_state), parent=parent_state)
         statechart.add_transition(Transition(source=condition_state, target=success_state,
                                              event=Condition.CONSUMED_EVENT_EVENT,
                                              guard=condition))
+
+    def __repr__(self):
+        from functools import reduce
+        events_s = map(lambda x: "'{}'".format(x), self._events)
+        return self.__class__.__name__ + '({})'.format(', '.event_s)
 
 
 class ExecutionStart(Condition):
@@ -343,9 +340,17 @@ class ExecutionStart(Condition):
     def __repr__(self):
         return self.__class__.__name__ + '()'
 
-    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+    def add_to_statechart(self,
+                          statechart: Statechart,
+                          condition_state: str,
+                          parent_state: str,
+                          status_state: str,
+                          success_state: str,
+                          failure_state: str):
         statechart.add_state(BasicState(condition_state), parent=parent_state)
-        statechart.add_transition(Transition(source=condition_state, target=success_state, event=Condition.EXECUTION_STARTED_EVENT))
+        statechart.add_transition(Transition(source=condition_state,
+                                             target=success_state,
+                                             event=Condition.EXECUTION_STARTED_EVENT))
 
 
 class ExecutionStop(Condition):
