@@ -56,21 +56,21 @@ class Condition(metaclass=abc.ABCMeta):
     def __init__(self):
         pass
 
-    def add_to(self,
-               statechart: Statechart,
-               condition_id: str,
-               parent_id: str,
-               status_id: str,
-               success_id: str,
-               failure_id: str):
+    def add_to_statechart(self,
+                          statechart: Statechart,
+                          condition_state: str,
+                          parent_state: str,
+                          status_state: str,
+                          success_state: str,
+                          failure_state: str):
         """
         Places states and transitions into an existing statechart in order to represent the transition.
         :param statechart: the statechart in which the states and transitions must be placed.
-        :param condition_id: the id of the state that represents the condition.
-        :param parent_id: the id of the parent in which the representative state must be placed.
-        :param success_id: the id of the (preexisting) state the success transition must point to.
-        :param failure_id: the id of the (preexisting) state the failure transition must point to.
-        :param status_id: the id of the (preexisting) orthogonal state placed as a direct child of the initial state
+        :param condition_state: the id of the state that represents the condition.
+        :param parent_state: the id of the parent in which the representative state must be placed.
+        :param success_state: the id of the (preexisting) state the success transition must point to.
+        :param failure_state: the id of the (preexisting) state the failure transition must point to.
+        :param status_state: the id of the (preexisting) orthogonal state placed as a direct child of the initial state
         of the statechart. Children of this orthogonal states run as long as the statechart is running.
         """
         raise NotImplementedError()
@@ -129,9 +129,9 @@ class TrueCondition(Condition):
     def __init__(self):
         Condition.__init__(self)
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        statechart.add_state(BasicState(condition_id), parent=parent_id)
-        statechart.add_transition(Transition(source=condition_id, target=success_id))
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+        statechart.add_state(BasicState(condition_state), parent=parent_state)
+        statechart.add_transition(Transition(source=condition_state, target=success_state))
 
     def __repr__(self):
         return self.__class__.__name__ + "()"
@@ -146,8 +146,8 @@ class FalseCondition(Condition):
     def __init__(self):
         Condition.__init__(self)
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        Not(TrueCondition()).add_to(statechart, condition_id, parent_id, status_id, success_id, failure_id)
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+        Not(TrueCondition()).add_to_statechart(statechart, condition_state, parent_state, status_state, success_state, failure_state)
 
     def __repr__(self):
         return self.__class__.__name__ + "()"
@@ -162,9 +162,9 @@ class UndeterminedCondition(Condition):
     def __init__(self):
         Condition.__init__(self)
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        waiting_state = BasicState(condition_id)
-        statechart.add_state(waiting_state, parent_id)
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+        waiting_state = BasicState(condition_state)
+        statechart.add_state(waiting_state, parent_state)
 
     def __repr__(self):
         return self.__class__.__name__ + "()"
@@ -178,11 +178,11 @@ class EnterAnyState(Condition):
     def __init__(self):
         Condition.__init__(self)
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        waiting = BasicState(condition_id)
-        statechart.add_state(waiting, parent_id)
-        statechart.add_transition(Transition(source=condition_id,
-                                             target=success_id,
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+        waiting = BasicState(condition_state)
+        statechart.add_state(waiting, parent_state)
+        statechart.add_transition(Transition(source=condition_state,
+                                             target=success_state,
                                              event=Condition.STATE_ENTERED_EVENT))
 
     def __repr__(self):
@@ -203,16 +203,16 @@ class EnterState(Condition):
         Condition.__init__(self)
         self.states = [state] + list(states)
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         from functools import reduce
 
         conditions = map(lambda x: '(event.state == "{}")'.format(x), self.states)
         condition = reduce(lambda x, y: x + ' or ' + y, conditions)
 
-        waiting = BasicState(condition_id)
-        statechart.add_state(waiting, parent_id)
-        statechart.add_transition(Transition(source=condition_id,
-                                             target=success_id,
+        waiting = BasicState(condition_state)
+        statechart.add_state(waiting, parent_state)
+        statechart.add_transition(Transition(source=condition_state,
+                                             target=success_state,
                                              event=Condition.STATE_ENTERED_EVENT,
                                              guard=condition))
 
@@ -236,16 +236,16 @@ class ExitState(Condition):
         Condition.__init__(self)
         self.states = [state] + list(states)
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         from functools import reduce
 
         conditions = map(lambda x: '(event.state == "{}")'.format(x), self.states)
         condition = reduce(lambda x, y: x + ' or ' + y, conditions)
 
-        waiting = BasicState(condition_id)
-        statechart.add_state(waiting, parent_id)
-        statechart.add_transition(Transition(source=condition_id,
-                                             target=success_id,
+        waiting = BasicState(condition_state)
+        statechart.add_state(waiting, parent_state)
+        statechart.add_transition(Transition(source=condition_state,
+                                             target=success_state,
                                              event=Condition.STATE_EXITED_EVENT,
                                              guard=condition))
 
@@ -263,11 +263,11 @@ class ExitAnyState(Condition):
     def __init__(self):
         Condition.__init__(self)
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        waiting = BasicState(condition_id)
-        statechart.add_state(waiting, parent_id)
-        statechart.add_transition(Transition(source=condition_id,
-                                             target=success_id,
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+        waiting = BasicState(condition_state)
+        statechart.add_state(waiting, parent_state)
+        statechart.add_transition(Transition(source=condition_state,
+                                             target=success_state,
                                              event=Condition.STATE_EXITED_EVENT))
 
     def __repr__(self):
@@ -291,13 +291,13 @@ class CheckGuard(Condition):
     def __repr__(self):
         return self.__class__.__name__ + '("{}")'.format(self.guard)
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         ip = UniqueIdProvider()
 
-        statechart.add_state(BasicState(condition_id, on_entry='send("{}")'.format(ip('event'))), parent=parent_id)
+        statechart.add_state(BasicState(condition_state, on_entry='send("{}")'.format(ip('event'))), parent=parent_state)
 
-        statechart.add_transition(Transition(source=condition_id, target=failure_id, event=ip('event')))
-        statechart.add_transition(Transition(source=condition_id, target=success_id, guard=self.guard))
+        statechart.add_transition(Transition(source=condition_state, target=failure_state, event=ip('event')))
+        statechart.add_transition(Transition(source=condition_state, target=success_state, guard=self.guard))
 
 
 class ConsumeEvent(Condition):
@@ -319,14 +319,14 @@ class ConsumeEvent(Condition):
         events_s = map(lambda x: "'{}'".format(x), self.events)
         return self.__class__.__name__ + '({})'.format(reduce(lambda x, y: x + ', ' + y, events_s))
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         from functools import reduce
 
         conditions = map(lambda x: "(event.event.name == '{}')".format(x), self.events)
         condition = reduce(lambda x, y: x + ' or ' + y, conditions)
 
-        statechart.add_state(BasicState(condition_id), parent=parent_id)
-        statechart.add_transition(Transition(source=condition_id, target=success_id,
+        statechart.add_state(BasicState(condition_state), parent=parent_state)
+        statechart.add_transition(Transition(source=condition_state, target=success_state,
                                              event=Condition.CONSUMED_EVENT_EVENT,
                                              guard=condition))
 
@@ -342,9 +342,9 @@ class ExecutionStart(Condition):
     def __repr__(self):
         return self.__class__.__name__ + '()'
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        statechart.add_state(BasicState(condition_id), parent=parent_id)
-        statechart.add_transition(Transition(source=condition_id, target=success_id, event=Condition.EXECUTION_STARTED_EVENT))
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+        statechart.add_state(BasicState(condition_state), parent=parent_state)
+        statechart.add_transition(Transition(source=condition_state, target=success_state, event=Condition.EXECUTION_STARTED_EVENT))
 
 
 class ExecutionStop(Condition):
@@ -358,9 +358,9 @@ class ExecutionStop(Condition):
     def __repr__(self):
         return self.__class__.__name__ + '()'
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        statechart.add_state(BasicState(condition_id), parent=parent_id)
-        statechart.add_transition(Transition(source=condition_id, target=success_id, event=Condition.EXECUTION_STOPPED_EVENT))
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+        statechart.add_state(BasicState(condition_state), parent=parent_state)
+        statechart.add_transition(Transition(source=condition_state, target=success_state, event=Condition.EXECUTION_STOPPED_EVENT))
 
 
 class StartStep(Condition):
@@ -374,9 +374,9 @@ class StartStep(Condition):
     def __repr__(self):
         return self.__class__.__name__ + '()'
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        statechart.add_state(BasicState(condition_id), parent=parent_id)
-        statechart.add_transition(Transition(source=condition_id, target=success_id, event=Condition.STEP_STARTED_EVENT))
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+        statechart.add_state(BasicState(condition_state), parent=parent_state)
+        statechart.add_transition(Transition(source=condition_state, target=success_state, event=Condition.STEP_STARTED_EVENT))
 
 
 class EndStep(Condition):
@@ -390,9 +390,9 @@ class EndStep(Condition):
     def __repr__(self):
         return self.__class__.__name__ + '()'
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        statechart.add_state(BasicState(condition_id), parent=parent_id)
-        statechart.add_transition(Transition(source=condition_id, target=success_id, event=Condition.STEP_ENDED_EVENT))
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+        statechart.add_state(BasicState(condition_state), parent=parent_state)
+        statechart.add_transition(Transition(source=condition_state, target=success_state, event=Condition.STEP_ENDED_EVENT))
 
 
 class ConsumeAnyEvent(Condition):
@@ -407,9 +407,9 @@ class ConsumeAnyEvent(Condition):
     def __repr__(self):
         return self.__class__.__name__ + '()'
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        statechart.add_state(BasicState(condition_id), parent=parent_id)
-        statechart.add_transition(Transition(source=condition_id, target=success_id, event=Condition.CONSUMED_EVENT_EVENT))
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+        statechart.add_state(BasicState(condition_state), parent=parent_state)
+        statechart.add_transition(Transition(source=condition_state, target=success_state, event=Condition.CONSUMED_EVENT_EVENT))
 
 
 class ConsumeAnyEventBut(Condition):
@@ -431,15 +431,15 @@ class ConsumeAnyEventBut(Condition):
         events_s = map(lambda x: "'{}'".format(x), self.events)
         return self.__class__.__name__ + '({})'.format(reduce(lambda x, y: x + ', ' + y, events_s))
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         from functools import reduce
 
         conditions = map(lambda x: "(not(event.event.name == '{}'))", self.events)
         condition = reduce(lambda x, y: x + ' and ' + y, conditions)
 
-        statechart.add_state(BasicState(condition_id), parent=parent_id)
-        statechart.add_transition(Transition(source=condition_id,
-                                             target=success_id,
+        statechart.add_state(BasicState(condition_state), parent=parent_state)
+        statechart.add_transition(Transition(source=condition_state,
+                                             target=success_state,
                                              event=Condition.CONSUMED_EVENT_EVENT,
                                              guard=condition))
 
@@ -472,7 +472,7 @@ class TransitionProcess(Condition):
 
         return self.__class__.__name__ + '({}, {}, {})'.format(source_repr, target_repr, event_repr)
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         condition_source = '(event.source == "{}")'.format(self.source) if self.source is not None else 'True'
         condition_target = '(event.target == "{}")'.format(self.target) if self.target is not None else 'True'
 
@@ -485,8 +485,8 @@ class TransitionProcess(Condition):
 
         condition = condition_source + ' and ' + condition_target + ' and ' + condition_event
 
-        statechart.add_state(BasicState(condition_id), parent=parent_id)
-        statechart.add_transition(Transition(source=condition_id, target=success_id, event=Condition.TRANSITION_PROCESSED_EVENT,
+        statechart.add_state(BasicState(condition_state), parent=parent_state)
+        statechart.add_transition(Transition(source=condition_state, target=success_state, event=Condition.TRANSITION_PROCESSED_EVENT,
                                              guard=condition))
 
 
@@ -565,13 +565,13 @@ class And(Condition):
         statechart.add_transition(Transition(source=ip('partial'), target=success_id, event=success_a))
         statechart.add_transition(Transition(source=ip('partial'), target=success_id, event=success_b))
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         _add_parallel_condition(statechart,
-                                id=condition_id,
-                                parent_id=parent_id,
-                                status_id=status_id,
-                                success_id=success_id,
-                                failure_id=failure_id,
+                                id=condition_state,
+                                parent_id=parent_state,
+                                status_id=status_state,
+                                success_id=success_state,
+                                failure_id=failure_state,
                                 condition_a=self.a,
                                 condition_b=self.b,
                                 payload_function=And._payload)
@@ -649,13 +649,13 @@ class Or(Condition):
         statechart.add_transition(Transition(source=id, target=success_id, event=success_a))
         statechart.add_transition(Transition(source=id, target=success_id, event=success_b))
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         _add_parallel_condition(statechart,
-                                id=condition_id,
-                                parent_id=parent_id,
-                                status_id=status_id,
-                                success_id=success_id,
-                                failure_id=failure_id,
+                                id=condition_state,
+                                parent_id=parent_state,
+                                status_id=status_state,
+                                success_id=success_state,
+                                failure_id=failure_state,
                                 condition_a=self.a,
                                 condition_b=self.b,
                                 payload_function=Or._payload)
@@ -757,13 +757,13 @@ class Xor(Condition):
         statechart.add_transition(Transition(source=ip('b_failure'), target=success_id, event=success_a))
         statechart.add_transition(Transition(source=ip('b_failure'), target=failure_id, event=failure_a))
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         _add_parallel_condition(statechart,
-                                id=condition_id,
-                                parent_id=parent_id,
-                                status_id=status_id,
-                                success_id=success_id,
-                                failure_id=failure_id,
+                                id=condition_state,
+                                parent_id=parent_state,
+                                status_id=status_state,
+                                success_id=success_state,
+                                failure_id=failure_state,
                                 condition_a=self.a,
                                 condition_b=self.b,
                                 payload_function=Xor._payload)
@@ -788,17 +788,17 @@ class Not(Condition):
         Condition.__init__(self)
         self.condition = cond
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         ip = UniqueIdProvider()
-        composite = CompoundState(condition_id, initial=ip('condition'))
-        statechart.add_state(composite, parent_id)
+        composite = CompoundState(condition_state, initial=ip('condition'))
+        statechart.add_state(composite, parent_state)
 
-        self.condition.add_to(statechart,
-                              condition_id=ip('condition'),
-                              parent_id=condition_id,
-                              status_id=status_id,
-                              success_id=failure_id,
-                              failure_id=success_id)
+        self.condition.add_to_statechart(statechart,
+                                         condition_state=ip('condition'),
+                                         parent_state=condition_state,
+                                         status_state=status_state,
+                                         success_state=failure_state,
+                                         failure_state=success_state)
 
     def __repr__(self):
         return self.__class__.__name__ + '({})'.format(self.condition)
@@ -823,25 +823,25 @@ class Then(Condition):
         self.a = a
         self.b = b
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         ip = UniqueIdProvider()
 
-        composite = CompoundState(condition_id, initial=ip('a'))
-        statechart.add_state(composite, parent_id)
+        composite = CompoundState(condition_state, initial=ip('a'))
+        statechart.add_state(composite, parent_state)
 
-        self.b.add_to(statechart,
-                      condition_id=ip('b'),
-                      parent_id=condition_id,
-                      status_id=status_id,
-                      success_id=success_id,
-                      failure_id=failure_id)
+        self.b.add_to_statechart(statechart,
+                                 condition_state=ip('b'),
+                                 parent_state=condition_state,
+                                 status_state=status_state,
+                                 success_state=success_state,
+                                 failure_state=failure_state)
 
-        self.a.add_to(statechart,
-                      condition_id=ip('a'),
-                      parent_id=condition_id,
-                      status_id=status_id,
-                      success_id=ip('b'),
-                      failure_id=failure_id)
+        self.a.add_to_statechart(statechart,
+                                 condition_state=ip('a'),
+                                 parent_state=condition_state,
+                                 status_state=status_state,
+                                 success_state=ip('b'),
+                                 failure_state=failure_state)
 
     def __repr__(self):
         return self.__class__.__name__ + "({}, {})".format(self.a, self.b)
@@ -907,13 +907,13 @@ class Before(Condition):
         statechart.add_transition(Transition(source=ip('waiting'), target=failure_id, event=success_b))
         statechart.add_transition(Transition(source=ip('waiting'), target=failure_id, event=failure_a))
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         _add_parallel_condition(statechart,
-                                id=condition_id,
-                                parent_id=parent_id,
-                                status_id=status_id,
-                                success_id=success_id,
-                                failure_id=failure_id,
+                                id=condition_state,
+                                parent_id=parent_state,
+                                status_id=status_state,
+                                success_id=success_state,
+                                failure_id=failure_state,
                                 condition_a=self.a,
                                 condition_b=self.b,
                                 payload_function=Before._payload)
@@ -948,12 +948,12 @@ class During(Condition):
         self.start = start
         self.length = lenght
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        parallel_id = condition_id
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+        parallel_id = condition_state
         ip = UniqueIdProvider()
 
-        parallel = OrthogonalState(condition_id)
-        statechart.add_state(parallel, parent_id)
+        parallel = OrthogonalState(condition_state)
+        statechart.add_state(parallel, parent_state)
 
         cond_block = CompoundState(ip('cond_block'), initial=ip('condition'))
         statechart.add_state(cond_block, parallel_id)
@@ -964,12 +964,12 @@ class During(Condition):
         failure_a = BasicState(ip('failure_a'), on_entry='send("{}")'.format(ip('failure_event')))
         statechart.add_state(failure_a, ip('cond_block'))
 
-        self.cond.add_to(statechart,
-                         condition_id=ip('condition'),
-                         parent_id=ip('cond_block'),
-                         status_id=status_id,
-                         success_id=ip('success_a'),
-                         failure_id=ip('failure_a'))
+        self.cond.add_to_statechart(statechart,
+                                    condition_state=ip('condition'),
+                                    parent_state=ip('cond_block'),
+                                    status_state=status_state,
+                                    success_state=ip('success_a'),
+                                    failure_state=ip('failure_a'))
 
         time_block = CompoundState(ip('time_block'), initial=ip('too_early'))
         statechart.add_state(time_block, parallel_id)
@@ -980,20 +980,20 @@ class During(Condition):
                                              target=ip('valid'),
                                              guard='after({})'.format(self.start)))
         statechart.add_transition(Transition(source=ip('too_early'),
-                                             target=failure_id,
+                                             target=failure_state,
                                              event=ip('success_event')))
         statechart.add_transition(Transition(source=ip('too_early'),
-                                             target=failure_id,
+                                             target=failure_state,
                                              event=ip('failure_event')))
 
         statechart.add_transition(Transition(source=ip('valid'),
-                                             target=success_id,
+                                             target=success_state,
                                              event=ip('success_event')))
         statechart.add_transition(Transition(source=ip('valid'),
-                                             target=failure_id,
+                                             target=failure_state,
                                              event=ip('failure_event')))
         statechart.add_transition(Transition(source=ip('valid'),
-                                             target=failure_id,
+                                             target=failure_state,
                                              guard='after({})'.format(self.length)))
 
     def __repr__(self):
@@ -1025,9 +1025,9 @@ class IfElse(Condition):
         self.b = b
         self.condition = condition
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         Or(And(self.condition, self.a),
-           And(Not(self.condition), self.b)).add_to(statechart, condition_id, parent_id, status_id, success_id, failure_id)
+           And(Not(self.condition), self.b)).add_to_statechart(statechart, condition_state, parent_state, status_state, success_state, failure_state)
 
     def __repr__(self):
         return self.__class__.__name__ + "({}, {}, {})".format(self.condition, self.a, self.b)
@@ -1049,18 +1049,18 @@ class DelayedCondition(Condition):
         self.condition = condition
         self.delay = delay
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         ip = UniqueIdProvider()
 
-        statechart.add_state(CompoundState(condition_id), parent_id)
+        statechart.add_state(CompoundState(condition_state), parent_state)
 
-        self.condition.add_to(statechart,
-                              condition_id=ip('condition'),
-                              parent_id=parent_id,
-                              status_id=status_id,
-                              success_id=success_id,
-                              failure_id=failure_id)
-        statechart.add_transition(Transition(source=condition_id, target=ip('condition'), guard='after({})'.format(self.delay)))
+        self.condition.add_to_statechart(statechart,
+                                         condition_state=ip('condition'),
+                                         parent_state=parent_state,
+                                         status_state=status_state,
+                                         success_state=success_state,
+                                         failure_state=failure_state)
+        statechart.add_transition(Transition(source=condition_state, target=ip('condition'), guard='after({})'.format(self.delay)))
 
     def __repr__(self):
         return self.__class__.__name__ + "({}, {})".format(self.condition, self.delay)
@@ -1079,13 +1079,13 @@ class DelayedTrueCondition(Condition):
         Condition.__init__(self)
         self.delay = delay
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        DelayedCondition(TrueCondition(), self.delay).add_to(statechart,
-                                                             condition_id=condition_id,
-                                                             parent_id=parent_id,
-                                                             status_id=status_id,
-                                                             success_id=success_id,
-                                                             failure_id=failure_id)
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+        DelayedCondition(TrueCondition(), self.delay).add_to_statechart(statechart,
+                                                                        condition_state=condition_state,
+                                                                        parent_state=parent_state,
+                                                                        status_state=status_state,
+                                                                        success_state=success_state,
+                                                                        failure_state=failure_state)
 
     def __repr__(self):
         return self.__class__.__name__ + '({})'.format(self.delay)
@@ -1100,13 +1100,13 @@ class DelayedFalseCondition(Condition):
         Condition.__init__(self)
         self.delay = delay
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
-        DelayedCondition(FalseCondition(), self.delay).add_to(statechart,
-                                                              condition_id=condition_id,
-                                                              parent_id=parent_id,
-                                                              status_id=status_id,
-                                                              success_id=success_id,
-                                                              failure_id=failure_id)
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
+        DelayedCondition(FalseCondition(), self.delay).add_to_statechart(statechart,
+                                                                         condition_state=condition_state,
+                                                                         parent_state=parent_state,
+                                                                         status_state=status_state,
+                                                                         success_state=success_state,
+                                                                         failure_state=failure_state)
 
     def __repr__(self):
         return self.__class__.__name__ + '({})'.format(self.delay)
@@ -1125,10 +1125,10 @@ class ActiveState(Condition):
         Condition.__init__(self)
         self.state = state
 
-    def add_to(self, statechart: Statechart, condition_id: str, parent_id: str, status_id: str, success_id: str, failure_id: str):
+    def add_to_statechart(self, statechart: Statechart, condition_state: str, parent_state: str, status_state: str, success_state: str, failure_state: str):
         ip = UniqueIdProvider()
 
-        statechart.add_state(CompoundState(ip('composite'), initial=ip('inactive_state')), parent=status_id)
+        statechart.add_state(CompoundState(ip('composite'), initial=ip('inactive_state')), parent=status_state)
         statechart.add_state(BasicState(ip('inactive_state')), parent=ip('composite'))
         statechart.add_state(BasicState(ip('active_state')), parent=ip('composite'))
 
@@ -1141,13 +1141,13 @@ class ActiveState(Condition):
                                              event=Condition.STATE_EXITED_EVENT,
                                              guard='event.state == "{}"'.format(self.state)))
 
-        statechart.add_state(BasicState(condition_id), parent_id)
+        statechart.add_state(BasicState(condition_state), parent_state)
 
-        statechart.add_transition(Transition(source=condition_id,
-                                             target=success_id,
+        statechart.add_transition(Transition(source=condition_state,
+                                             target=success_state,
                                              guard='active("{}")'.format(ip('active_state'))))
-        statechart.add_transition(Transition(source=condition_id,
-                                             target=failure_id,
+        statechart.add_transition(Transition(source=condition_state,
+                                             target=failure_state,
                                              guard='active("{}")'.format(ip('inactive_state'))))
 
     def __repr__(self):
@@ -1164,19 +1164,19 @@ class InactiveState(Condition):
         Condition.__init__(self)
         self.state = state
 
-    def add_to(self,
-               statechart: Statechart,
-               condition_id: str,
-               parent_id: str,
-               status_id: str,
-               success_id: str,
-               failure_id: str):
-        Not(ActiveState(self.state)).add_to(statechart=statechart,
-                                            condition_id=condition_id,
-                                            parent_id=parent_id,
-                                            status_id=status_id,
-                                            success_id=success_id,
-                                            failure_id=failure_id)
+    def add_to_statechart(self,
+                          statechart: Statechart,
+                          condition_state: str,
+                          parent_state: str,
+                          status_state: str,
+                          success_state: str,
+                          failure_state: str):
+        Not(ActiveState(self.state)).add_to_statechart(statechart=statechart,
+                                                       condition_state=condition_state,
+                                                       parent_state=parent_state,
+                                                       status_state=status_state,
+                                                       success_state=success_state,
+                                                       failure_state=failure_state)
 
     def __repr__(self):
         return self.__class__.__name__ + '("{}")'.format(self.state)
@@ -1194,33 +1194,33 @@ class SynchronousCondition(Condition):
         Condition.__init__(self)
         self.condition = condition
 
-    def add_to(self,
-               statechart: Statechart,
-               condition_id: str,
-               parent_id: str,
-               status_id: str,
-               success_id: str,
-               failure_id: str):
+    def add_to_statechart(self,
+                          statechart: Statechart,
+                          condition_state: str,
+                          parent_state: str,
+                          status_state: str,
+                          success_state: str,
+                          failure_state: str):
         ip = UniqueIdProvider()
 
-        statechart.add_state(CompoundState(condition_id, initial=ip('condition')), parent=parent_id)
+        statechart.add_state(CompoundState(condition_state, initial=ip('condition')), parent=parent_state)
 
-        statechart.add_state(BasicState(ip('waiting_success')), parent=condition_id)
-        statechart.add_state(BasicState(ip('waiting_failure')), parent=condition_id)
+        statechart.add_state(BasicState(ip('waiting_success')), parent=condition_state)
+        statechart.add_state(BasicState(ip('waiting_failure')), parent=condition_state)
 
         statechart.add_transition(Transition(source=ip('waiting_success'),
-                                             target=success_id,
+                                             target=success_state,
                                              event=Condition.STEP_ENDED_EVENT))
         statechart.add_transition(Transition(source=ip('waiting_failure'),
-                                             target=failure_id,
+                                             target=failure_state,
                                              event=Condition.STEP_ENDED_EVENT))
 
-        self.condition.add_to(statechart=statechart,
-                              condition_id=ip('condition'),
-                              parent_id=condition_id,
-                              status_id=status_id,
-                              success_id=ip('waiting_success'),
-                              failure_id=ip('waiting_failure'))
+        self.condition.add_to_statechart(statechart=statechart,
+                                         condition_state=ip('condition'),
+                                         parent_state=condition_state,
+                                         status_state=status_state,
+                                         success_state=ip('waiting_success'),
+                                         failure_state=ip('waiting_failure'))
 
     def __repr__(self):
         return self.__class__.__name__ + '("{}")'.format(self.condition)
@@ -1262,12 +1262,12 @@ def _add_parallel_condition(statechart: Statechart,
     statechart.add_state(success_a, ip('compound_a'))
     failure_a = BasicState(ip('failure_a'), on_entry='send("{}")'.format(ip('a_false')))
     statechart.add_state(failure_a, ip('compound_a'))
-    condition_a.add_to(statechart,
-                       condition_id=ip('a'),
-                       parent_id=ip('compound_a'),
-                       status_id=status_id,
-                       success_id=ip('success_a'),
-                       failure_id=ip('failure_a'))
+    condition_a.add_to_statechart(statechart,
+                                  condition_state=ip('a'),
+                                  parent_state=ip('compound_a'),
+                                  status_state=status_id,
+                                  success_state=ip('success_a'),
+                                  failure_state=ip('failure_a'))
 
     compound_b = CompoundState(ip('compound_b'), initial=ip('b'))
     statechart.add_state(compound_b, id)
@@ -1275,12 +1275,12 @@ def _add_parallel_condition(statechart: Statechart,
     statechart.add_state(success_b, ip('compound_b'))
     failure_b = BasicState(ip('failure_b'), on_entry='send("{}")'.format(ip('b_false')))
     statechart.add_state(failure_b, ip('compound_b'))
-    condition_b.add_to(statechart,
-                       condition_id=ip('b'),
-                       parent_id=ip('compound_b'),
-                       status_id=status_id,
-                       success_id=ip('success_b'),
-                       failure_id=ip('failure_b'))
+    condition_b.add_to_statechart(statechart,
+                                  condition_state=ip('b'),
+                                  parent_state=ip('compound_b'),
+                                  status_state=status_id,
+                                  success_state=ip('success_b'),
+                                  failure_state=ip('failure_b'))
 
     payload_function(statechart, 
                      id=ip('payload_id'), 
@@ -1386,23 +1386,23 @@ class FirstTime(TemporalExpression):
 
         statechart.add_state(CompoundState(ip('global'), initial=ip('premise')), parent=ip('parallel'))
 
-        self.consequence.add_to(statechart,
-                                condition_id=ip('consequence'),
-                                parent_id=ip('global'),
-                                status_id=ip('parallel'),
-                                success_id=ip('rule_satisfied'),
-                                failure_id=ip('rule_not_satisfied'))
+        self.consequence.add_to_statechart(statechart,
+                                           condition_state=ip('consequence'),
+                                           parent_state=ip('global'),
+                                           status_state=ip('parallel'),
+                                           success_state=ip('rule_satisfied'),
+                                           failure_state=ip('rule_not_satisfied'))
 
         statechart.add_transition(Transition(source=ip('consequence'),
                                              target=ip('rule_not_satisfied'),
                                              event=Condition.EXECUTION_STOPPED_EVENT))
 
-        SynchronousCondition(self.premise).add_to(statechart,
-                                                  condition_id=ip('premise'),
-                                                  parent_id=ip('global'),
-                                                  status_id=ip('parallel'),
-                                                  success_id=ip('consequence'),
-                                                  failure_id=ip('premise'))
+        SynchronousCondition(self.premise).add_to_statechart(statechart,
+                                                             condition_state=ip('premise'),
+                                                             parent_state=ip('global'),
+                                                             status_state=ip('parallel'),
+                                                             success_state=ip('consequence'),
+                                                             failure_state=ip('premise'))
 
         statechart.add_transition(Transition(source=ip('premise'),
                                              target=ip('rule_satisfied'),
@@ -1455,19 +1455,19 @@ class EveryTime(TemporalExpression):
 
         statechart.add_state(CompoundState(ip('consequence_wrapper'), initial=ip('consequence')), parent=ip('global'))
 
-        SynchronousCondition(self.premise).add_to(statechart,
-                                                  condition_id=ip('premise'),
-                                                  parent_id=ip('global'),
-                                                  status_id=ip('parallel'),
-                                                  success_id=ip('consequence_wrapper'),
-                                                  failure_id=ip('premise'))
+        SynchronousCondition(self.premise).add_to_statechart(statechart,
+                                                             condition_state=ip('premise'),
+                                                             parent_state=ip('global'),
+                                                             status_state=ip('parallel'),
+                                                             success_state=ip('consequence_wrapper'),
+                                                             failure_state=ip('premise'))
 
-        self.consequence.add_to(statechart,
-                                condition_id=ip('consequence'),
-                                parent_id=ip('consequence_wrapper'),
-                                status_id=ip('parallel'),
-                                success_id=ip('premise'),
-                                failure_id=ip('rule_not_satisfied'))
+        self.consequence.add_to_statechart(statechart,
+                                           condition_state=ip('consequence'),
+                                           parent_state=ip('consequence_wrapper'),
+                                           status_state=ip('parallel'),
+                                           success_state=ip('premise'),
+                                           failure_state=ip('rule_not_satisfied'))
 
         statechart.add_transition(Transition(source=ip('consequence'),
                                              target=ip('rule_not_satisfied'),
@@ -1525,12 +1525,12 @@ class LastTime(TemporalExpression):
         statechart.add_state(BasicState(ip('premise_success'), on_entry='send("{}")'.format(ip('reset_event'))),
                              parent=ip('premise_parallel'))
 
-        SynchronousCondition(self.premise).add_to(statechart,
-                                                  condition_id=ip('premise'),
-                                                  parent_id=ip('premise_parallel'),
-                                                  status_id=ip('parallel'),
-                                                  success_id=ip('premise_success'),
-                                                  failure_id=ip('premise'))
+        SynchronousCondition(self.premise).add_to_statechart(statechart,
+                                                             condition_state=ip('premise'),
+                                                             parent_state=ip('premise_parallel'),
+                                                             status_state=ip('parallel'),
+                                                             success_state=ip('premise_success'),
+                                                             failure_state=ip('premise'))
 
         statechart.add_transition(Transition(source=ip('premise_success'),
                                              target=ip('premise')))
@@ -1567,12 +1567,12 @@ class LastTime(TemporalExpression):
                        target=ip('rule_not_satisfied'),
                        event=Condition.EXECUTION_STOPPED_EVENT))
 
-        self.consequence.add_to(statechart,
-                                condition_id=ip('consequence'),
-                                parent_id=ip('consequence_comp'),
-                                status_id=ip('parallel'),
-                                success_id=ip('consequence_success'),
-                                failure_id=ip('consequence_failure'))
+        self.consequence.add_to_statechart(statechart,
+                                           condition_state=ip('consequence'),
+                                           parent_state=ip('consequence_comp'),
+                                           status_state=ip('parallel'),
+                                           success_state=ip('consequence_success'),
+                                           failure_state=ip('consequence_failure'))
 
         statechart.add_transition(Transition(source=ip('consequence'),
                                              target=ip('rule_not_satisfied'),
@@ -1630,19 +1630,19 @@ class AtLeastOnce(TemporalExpression):
 
         statechart.add_state(BasicState(ip('premise_success')), parent=ip('premise_consequence'))
 
-        SynchronousCondition(self.premise).add_to(statechart,
-                                                  condition_id=ip('premise'),
-                                                  parent_id=ip('premise_consequence'),
-                                                  status_id=ip('parallel'),
-                                                  success_id=ip('premise_success'),
-                                                  failure_id=ip('premise'))
+        SynchronousCondition(self.premise).add_to_statechart(statechart,
+                                                             condition_state=ip('premise'),
+                                                             parent_state=ip('premise_consequence'),
+                                                             status_state=ip('parallel'),
+                                                             success_state=ip('premise_success'),
+                                                             failure_state=ip('premise'))
 
-        self.consequence.add_to(statechart=statechart,
-                                condition_id=ip('consequence'),
-                                parent_id=ip('premise_consequence'),
-                                status_id=ip('parallel'),
-                                success_id=ip('rule_satisfied'),
-                                failure_id=ip('premise'))
+        self.consequence.add_to_statechart(statechart=statechart,
+                                           condition_state=ip('consequence'),
+                                           parent_state=ip('premise_consequence'),
+                                           status_state=ip('parallel'),
+                                           success_state=ip('rule_satisfied'),
+                                           failure_state=ip('premise'))
 
         statechart.add_transition(Transition(source=ip('premise_success'),
                                              target=ip('consequence'),

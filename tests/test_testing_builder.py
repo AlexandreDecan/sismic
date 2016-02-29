@@ -51,12 +51,12 @@ class PropertiesTests(unittest.TestCase):
         tester_statechart.add_state(BasicState('success_state'), parent='testing_area')
         tester_statechart.add_state(BasicState('failure_state'), parent='testing_area')
 
-        property.add_to(tester_statechart,
-                        condition_id='property',
-                        parent_id='testing_area',
-                        status_id='parallel_state',
-                        success_id='success_state',
-                        failure_id='failure_state')
+        property.add_to_statechart(tester_statechart,
+                                   condition_state='property',
+                                   parent_state='testing_area',
+                                   status_state='parallel_state',
+                                   success_state='success_state',
+                                   failure_state='failure_state')
 
         tester_interpreter = Interpreter(tester_statechart)
 
@@ -140,12 +140,12 @@ class PropertiesTests(unittest.TestCase):
         statechart.add_state(BasicState('success'), parent='initial_state')
         statechart.add_state(BasicState('failure'), parent='initial_state')
 
-        CheckGuard('x == 1').add_to(statechart=statechart,
-                                    condition_id='condition',
-                                    parent_id='initial_state',
-                                    status_id='parallel_state',
-                                    success_id='success',
-                                    failure_id='failure')
+        CheckGuard('x == 1').add_to_statechart(statechart=statechart,
+                                               condition_state='condition',
+                                               parent_state='initial_state',
+                                               status_state='parallel_state',
+                                               success_state='success',
+                                               failure_state='failure')
 
         interpreter = Interpreter(statechart)
         interpreter.context['x'] = 1
@@ -163,12 +163,12 @@ class PropertiesTests(unittest.TestCase):
         statechart.add_state(BasicState('success'), parent='initial_state')
         statechart.add_state(BasicState('failure'), parent='initial_state')
 
-        CheckGuard('x == 1').add_to(statechart=statechart,
-                                    condition_id='condition',
-                                    parent_id='initial_state',
-                                    status_id='parallel_state',
-                                    success_id='success',
-                                    failure_id='failure')
+        CheckGuard('x == 1').add_to_statechart(statechart=statechart,
+                                               condition_state='condition',
+                                               parent_state='initial_state',
+                                               status_state='parallel_state',
+                                               success_state='success',
+                                               failure_state='failure')
 
         interpreter = Interpreter(statechart)
         interpreter.context['x'] = 42
@@ -239,12 +239,12 @@ class OperatorsTest(unittest.TestCase):
         statechart.add_state(BasicState('success'), 'initial_state')
         statechart.add_state(BasicState('failure'), 'initial_state')
 
-        condition.add_to(statechart=statechart,
-                         condition_id='Cond',
-                         parent_id='initial_state',
-                         status_id='parallel_state',
-                         success_id='success',
-                         failure_id='failure')
+        condition.add_to_statechart(statechart=statechart,
+                                    condition_state='Cond',
+                                    parent_state='initial_state',
+                                    status_state='parallel_state',
+                                    success_state='success',
+                                    failure_state='failure')
 
         interpreter = Interpreter(statechart)
 
