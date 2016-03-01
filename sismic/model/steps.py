@@ -66,7 +66,7 @@ class MacroStep:
     @property
     def event(self) -> Event:
         """
-        Event (or *None*) that were consumed.
+        Event (or *None*) that was consumed.
         """
         for step in self._steps:
             if step.event:
