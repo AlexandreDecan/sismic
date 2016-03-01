@@ -1208,25 +1208,25 @@ class IfElse(Condition):
     """
     This condition is equivalent to an other condition, depending of the value of a third condition.
     """
-    def __init__(self, condition: Condition, a: Condition, b: Condition):
+    def __init__(self, condition: Condition, then: Condition, otherwise: Condition):
         """
         :param condition: a test condition that determines the condition that will be equivalent to the IfElse
-        condition. The IfElse condition may remain undetermined while the test condition remains undetermined.
-        If the test condition is determined, condition a or condition b is chosen based on the value of the condition :
+        condition. The IfElse condition may remain undetermined while condition remains undetermined.
+        If condition is determined, then or otherwise is chosen based on the value of the condition :
 
-        if(condition) a else b
+        if(condition) then else otherwise
 
-        Due to the fail-fast mechanism, the IfElse condition may be determined even if the test condition is not (yet)
+        Due to the fail-fast mechanism, the IfElse condition may be determined even if condition is not (yet)
         determined. For instance, the following condition is determined:
 
         IfElse(UndeterminedCondition(), FalseCondition(), FalseCondition())
 
-        :param a: the condition that is equivalent to the changing condition before a given condition is verified.
-        :param b: the condition that is equivalent to the changing condition after the given condition is verified.
+        :param then: the condition that is used if condition is verified.
+        :param otherwise: the condition that is used if condition is not verified.
         """
         super().__init__()
-        self._a = a
-        self._b = b
+        self._a = then
+        self._b = otherwise
         self._condition = condition
 
     def add_to_statechart(self,
