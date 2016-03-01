@@ -545,12 +545,12 @@ class TransitionProcess(Condition):
     """
     def __init__(self, source=None, target=None, event=None):
         """
-        :param source: the name of the source the transition must come from in order to be accepted. A None value means
-        that any source is acceptable.
-        :param target: the name of the target the transition must point to in order to be accepted. A None value means
-        that any target is acceptable.
-        :param event: the name of the target the transition must depend on in order to be accepted. A None value means
-        that any event (or the lack of event) is acceptable. An empty value means that the considered transition must
+        :param source: the name of the source the transition must come from in order to be accepted. If not provided,
+        any source is acceptable.
+        :param target: the name of the target the transition must point to in order to be accepted. If not provided,
+        any target is acceptable.
+        :param event: the name of the target the transition must depend on in order to be accepted. If not provided,
+        any event (or the lack of event) is acceptable. An empty value means that the considered transition must
         be eventless.
         """
 
