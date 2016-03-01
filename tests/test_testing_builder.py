@@ -431,10 +431,10 @@ class ReprTest(unittest.TestCase):
             'StopExecution()',
             'StartStep()',
             'EndStep()',
-            'TransitionProcess(None, None, None)',
-            'TransitionProcess("foo", None, None)',
-            'TransitionProcess(None, "foo", None)',
-            'TransitionProcess(None, None, "foo")',
+            'TransitionProcess()',
+            'TransitionProcess(source="foo")',
+            'TransitionProcess(target="foo")',
+            'TransitionProcess(event="foo")',
             'InactiveState("foo")',
             'ActiveState("foo")'
         ]:

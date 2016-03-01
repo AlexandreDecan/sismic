@@ -560,11 +560,13 @@ class TransitionProcess(Condition):
         self._event = event
 
     def __repr__(self):
-        source_repr = '"{}"'.format(self._source) if self._source is not None else 'None'
-        target_repr = '"{}"'.format(self._target) if self._target is not None else 'None'
-        event_repr = '"{}"'.format(self._event) if self._event is not None else 'None'
+        source_repr = 'source="{}"'.format(self._source) if self._source else ''
+        target_repr = 'target="{}"'.format(self._target) if self._target else ''
+        event_repr = 'event="{}"'.format(self._event) if self._event else ''
 
-        return self.__class__.__name__ + '({}, {}, {})'.format(source_repr, target_repr, event_repr)
+        parameters = filter(lambda x: len(x)>0, [source_repr, target_repr, event_repr])
+
+        return self.__class__.__name__ + '({})'.format(', '.join(parameters))
 
     def add_to_statechart(self,
                           statechart: Statechart,
@@ -573,8 +575,8 @@ class TransitionProcess(Condition):
                           status_state: str,
                           success_state: str,
                           failure_state: str):
-        condition_source = '(event.source == "{}")'.format(self._source) if self._source is not None else 'True'
-        condition_target = '(event.target == "{}")'.format(self._target) if self._target is not None else 'True'
+        condition_source = '(event.source == "{}")'.format(self._source) if self._source else 'True'
+        condition_target = '(event.target == "{}")'.format(self._target) if self._target else 'True'
 
         if self._event is None:
             condition_event = 'True'
