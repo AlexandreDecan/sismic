@@ -528,7 +528,7 @@ class ConsumeAnyEventBut(Condition):
                           status_state: str,
                           success_state: str,
                           failure_state: str):
-        conditions = map(lambda x: "(not(event.event.name == '{}'))", self._events)
+        conditions = map(lambda x: "event.event.name != '{}'", self._events)
         condition = ' and '.join(conditions)
 
         statechart.add_state(BasicState(condition_state), parent=parent_state)
