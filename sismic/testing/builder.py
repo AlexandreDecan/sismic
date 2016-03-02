@@ -1225,8 +1225,8 @@ class IfElse(Condition):
         :param otherwise: the condition that is used if condition is not verified.
         """
         super().__init__()
-        self._a = then
-        self._b = otherwise
+        self._then = then
+        self._otherwise = otherwise
         self._condition = condition
 
     def add_to_statechart(self,
@@ -1236,16 +1236,16 @@ class IfElse(Condition):
                           status_state: str,
                           success_state: str,
                           failure_state: str):
-        Or(And(self._condition, self._a),
-           And(Not(self._condition), self._b)).add_to_statechart(statechart,
-                                                                 condition_state,
-                                                                 parent_state,
-                                                                 status_state,
-                                                                 success_state,
-                                                                 failure_state)
+        Or(And(self._condition, self._then),
+           And(Not(self._condition), self._otherwise)).add_to_statechart(statechart,
+                                                                         condition_state,
+                                                                         parent_state,
+                                                                         status_state,
+                                                                         success_state,
+                                                                         failure_state)
 
     def __repr__(self):
-        return self.__class__.__name__ + "({}, {}, {})".format(self._condition, self._a, self._b)
+        return self.__class__.__name__ + "({}, {}, {})".format(self._condition, self._then, self._otherwise)
 
 
 class DelayedCondition(Condition):
@@ -1413,6 +1413,7 @@ class InactiveState(Condition):
                           status_state: str,
                           success_state: str,
                           failure_state: str):
+
         Not(ActiveState(self._state)).add_to_statechart(statechart=statechart,
                                                         condition_state=condition_state,
                                                         parent_state=parent_state,
@@ -1428,7 +1429,7 @@ class SynchronousCondition(Condition):
     """
     This condition forces an arbitrary condition to remain in an undetermined status
     until a 'step ended' event occurs.
-    More precisely, the arbitrary condition is evaluated as usually, but transitions to
+    More precisely, the condition to synchronize is evaluated as usually, but transitions to
     a success or a failure states are blocked until a 'step ended' event occurs.
     """
 
