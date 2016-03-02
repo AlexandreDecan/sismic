@@ -1713,7 +1713,7 @@ class SynchronousCondition(Condition):
                                           failure_state=self._uname('waiting_failure'))
 
     def __repr__(self):
-        return self.__class__.__name__ + '("{}")'.format(self._condition)
+        return self.__class__.__name__ + '({})'.format(self._condition)
 
 
 def _add_parallel_condition(statechart: Statechart,

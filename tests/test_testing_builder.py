@@ -407,7 +407,8 @@ class ReprTest(unittest.TestCase):
             'DelayedTrueCondition(42)',
             'DelayedFalseCondition(42)',
             'IfElse(TrueCondition(), TrueCondition(), FalseCondition())',
-            'DelayedCondition(TrueCondition(), 42)'
+            'DelayedCondition(TrueCondition(), 42)',
+            'SynchronousCondition(TrueCondition())'
         ]:
             with self.subTest(condition=condition):
                 instance = eval(condition)
