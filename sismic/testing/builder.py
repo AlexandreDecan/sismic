@@ -71,7 +71,7 @@ class Condition(metaclass=abc.ABCMeta):
         :param success_state: the id of the (preexisting) state the success transition must point to.
         :param failure_state: the id of the (preexisting) state the failure transition must point to.
         :param status_state: the id of the (preexisting) orthogonal state placed as a direct child of the initial state
-        of the statechart. Children of this orthogonal states run as long as the statechart is running.
+         of the statechart. Children of this orthogonal states run as long as the statechart is running.
         """
         raise NotImplementedError()
 
@@ -704,7 +704,7 @@ class And(Condition):
                      failure_id: str):
             """
             Generates in a preexisting statechart a composite state that represents the way the results of A and B, two
-            arbitrary conditions, must be combined with a logic AND.
+             arbitrary conditions, must be combined with a logic AND.
             :param statechart: the statechart in which the AND operator must be placed.
             :param id: the id of the composite state representing the AND operator.
             :param parent_id: the id of the parent state in which the composite state representing the AND operator
@@ -847,7 +847,7 @@ class Or(Condition):
                      failure_id: str):
             """
             Generates in a preexisting statechart a composite state that represents the way the results of A and B, two
-            arbitrary conditions, must be combined with a logic OR.
+             arbitrary conditions, must be combined with a logic OR.
             :param statechart: the statechart in which the OR operator must be placed.
             :param id: the id of the composite state representing the OR operator.
             :param parent_id: the id of the parent state in which the composite state representing the OR operator
@@ -860,11 +860,8 @@ class Or(Condition):
             :param failure_id: the id of the state a transition must point to if the OR operator fails.
             """
 
-    
-
-            # This composite state is only created so that the payload
-            # is entirely included in a state, and has no "floating"
-            # states
+            # This composite state is only created so that the payload is entirely included in a state,
+            # and has no "floating" states
             composite = CompoundState(id, initial=self._uname('waiting'))
             statechart.add_state(composite, parent_id)
 
@@ -974,7 +971,7 @@ class Xor(Condition):
                      failure_id: str):
             """
             Generates in a preexisting statechart a composite state that represents the way the results of A and B, two
-            arbitrary conditions, must be combined with a logic XOR (exclusive OR).
+             arbitrary conditions, must be combined with a logic XOR (exclusive OR).
             :param statechart: the statechart in which the XOR operator must be placed.
             :param id: the id of the composite state representing the XOR operator.
             :param parent_id: the id of the parent state in which the composite state representing the XOR operator
@@ -987,11 +984,8 @@ class Xor(Condition):
             :param failure_id: the id of the state a transition must point to if the XOR operator fails.
             """
 
-    
-
-            # This composite state is only created so that the payload
-            # is entirely included in a state, and has no "floating"
-            # states
+            # This composite state is only created so that the payload is entirely included in a state,
+            # and has no "floating" states
             composite = CompoundState(id, initial=self._uname('waiting'))
             statechart.add_state(composite, parent_id)
 
@@ -1180,7 +1174,6 @@ class Then(Condition):
                           success_state: str,
                           failure_state: str):
 
-
         composite = CompoundState(condition_state, initial=self._uname('a'))
         statechart.add_state(composite, parent_state)
 
@@ -1205,7 +1198,7 @@ class Then(Condition):
 class Before(Condition):
     """
     This condition is verified if a first condition a is verified, and this
-    condition is verified before a second condition b is verified.
+     condition is verified before a second condition b is verified.
 
     In other words,
     - if b is verified before a, the condition is not verified.
@@ -1239,7 +1232,7 @@ class Before(Condition):
                      failure_id: str):
             """
             Generates in a preexisting statechart a composite state that represents the way the results of A and B, two
-            arbitrary conditions, must be combined with a logic Before.
+             arbitrary conditions, must be combined with a logic Before.
 
             :param statechart: the statechart in which the Before operator must be placed.
             :param id: the id of the composite state representing the Before operator.
@@ -1253,10 +1246,8 @@ class Before(Condition):
             :param failure_id: the id of the state a transition must point to if the Before operator fails.
             """
 
-    
-
-            # This composite state is only created so that the payload
-            # is entirely included in a state, and has no "floating" states
+            # This composite state is only created so that the payload is entirely included in a state,
+            # and has no "floating" states
             composite = CompoundState(id, initial=self._uname('waiting_comp'))
             statechart.add_state(composite, parent=parent_id)
 
@@ -1316,12 +1307,12 @@ class During(Condition):
     def __init__(self, cond: Condition, start: int, lenght: int):
         """
         :param cond: the condition to check. This condition will be verified if cond is verified after
-        start and before start+length
+         start and before start+length
         :param start: the begining of the time interval during which a verification of cond leads
-        to the verification of this condition. Must be positive or null. If start equals 0, the checked
-        condition can be instantly verified.
+         to the verification of this condition. Must be positive or null. If start equals 0, the checked
+         condition can be instantly verified.
         :param lenght: the lenght of the time interval during which a verification of cond leads
-        to the verification of this condition. Must be positive or null.
+         to the verification of this condition. Must be positive or null.
         """
 
         super().__init__()
@@ -1373,6 +1364,7 @@ class During(Condition):
                 guard='after({})'.format(self._start)
             )
         )
+
         statechart.add_transition(
             Transition(
                 source=self._uname('too_early'),
@@ -1380,6 +1372,7 @@ class During(Condition):
                 event=self._uname('success_event')
             )
         )
+
         statechart.add_transition(
             Transition(
                 source=self._uname('too_early'),
@@ -1423,15 +1416,15 @@ class IfElse(Condition):
     def __init__(self, condition: Condition, then: Condition, otherwise: Condition):
         """
         :param condition: a test condition that determines the condition that will be equivalent to the IfElse
-        condition. The IfElse condition may remain undetermined while condition remains undetermined.
-        If condition is determined, then or otherwise is chosen based on the value of the condition :
+         condition. The IfElse condition may remain undetermined while condition remains undetermined.
+         If condition is determined, then or otherwise is chosen based on the value of the condition :
 
-        if(condition) then else otherwise
+         if(condition) then else otherwise
 
-        Due to the fail-fast mechanism, the IfElse condition may be determined even if condition is not (yet)
-        determined. For instance, the following condition is determined:
+         Due to the fail-fast mechanism, the IfElse condition may be determined even if condition is not (yet)
+         determined. For instance, the following condition is determined:
 
-        IfElse(UndeterminedCondition(), FalseCondition(), FalseCondition())
+         IfElse(UndeterminedCondition(), FalseCondition(), FalseCondition())
 
         :param then: the condition that is used if condition is verified.
         :param otherwise: the condition that is used if condition is not verified.
@@ -1448,13 +1441,15 @@ class IfElse(Condition):
                           status_state: str,
                           success_state: str,
                           failure_state: str):
-        Or(And(self._condition, self._then),
-           And(Not(self._condition), self._otherwise)).add_to_statechart(statechart,
-                                                                         condition_state,
-                                                                         parent_state,
-                                                                         status_state,
-                                                                         success_state,
-                                                                         failure_state)
+        Or(
+            And(self._condition, self._then),
+            And(Not(self._condition), self._otherwise)
+        ).add_to_statechart(statechart,
+                            condition_state,
+                            parent_state,
+                            status_state,
+                            success_state,
+                            failure_state)
 
     def __repr__(self):
         return self.__class__.__name__ + "({}, {}, {})".format(self._condition, self._then, self._otherwise)
@@ -1483,7 +1478,6 @@ class DelayedCondition(Condition):
                           status_state: str,
                           success_state: str,
                           failure_state: str):
-
 
         statechart.add_state(CompoundState(condition_state), parent_state)
 
@@ -1684,7 +1678,13 @@ class SynchronousCondition(Condition):
                           success_state: str,
                           failure_state: str):
 
-        statechart.add_state(CompoundState(condition_state, initial=self._uname('condition')), parent=parent_state)
+        statechart.add_state(
+            CompoundState(
+                condition_state,
+                initial=self._uname('condition')
+            ),
+            parent=parent_state
+        )
 
         statechart.add_state(BasicState(self._uname('waiting_success')), parent=condition_state)
         statechart.add_state(BasicState(self._uname('waiting_failure')), parent=condition_state)
@@ -1696,6 +1696,7 @@ class SynchronousCondition(Condition):
                 event=Condition.STEP_ENDED_EVENT
             )
         )
+
         statechart.add_transition(
             Transition(
                 source=self._uname('waiting_failure'),
@@ -1854,14 +1855,15 @@ class FirstTime(TemporalExpression):
     def __init__(self, decision: bool, premise: Condition, consequence: Condition):
         """
         :param decision: determine the behaviour to adopt when a rule made of a premise and an associated consequence
-        are verified (or not):
+         are verified (or not):
 
-        - *True* means the rule is required, and the consequence must be verified each time the premise is verified.
-        - *False* means the rule is forbidden, and the consequence must be not verified each time the premise is verified.
+         - *True* means the rule is required, and the consequence must be verified each time the premise is verified.
+         - *False* means the rule is forbidden, and the consequence must be not verified each time the premise is verified.
 
         :param premise: a condition that can be verified.
         :param consequence: the consequence that must be verified each time the premise is verified.
         """
+
         super().__init__(decision, premise, consequence)
 
     def generate_statechart(self):
@@ -1869,8 +1871,13 @@ class FirstTime(TemporalExpression):
                                               rule_satisfied_id=self._uname('rule_satisfied'),
                                               rule_not_satisfied_id=self._uname('rule_not_satisfied'))
 
-        statechart.add_state(CompoundState(self._uname('global'), initial=self._uname('premise')),
-                             parent=self._uname('parallel'))
+        statechart.add_state(
+            CompoundState(
+                self._uname('global'),
+                initial=self._uname('premise')
+            ),
+            parent=self._uname('parallel')
+        )
 
         self._consequence.add_to_statechart(statechart,
                                             condition_state=self._uname('consequence'),
@@ -2023,8 +2030,12 @@ class LastTime(TemporalExpression):
                                                               success_state=self._uname('premise_success'),
                                                               failure_state=self._uname('premise'))
 
-        statechart.add_transition(Transition(source=self._uname('premise_success'),
-                                             target=self._uname('premise')))
+        statechart.add_transition(
+            Transition(
+                source=self._uname('premise_success'),
+                target=self._uname('premise')
+            )
+        )
 
         # For the consequence
         statechart.add_state(
@@ -2035,7 +2046,10 @@ class LastTime(TemporalExpression):
             parent=self._uname('parallel')
         )
 
-        statechart.add_state(BasicState(self._uname('waiting')), parent=self._uname('consequence_parallel'))
+        statechart.add_state(
+            BasicState(self._uname('waiting')),
+            parent=self._uname('consequence_parallel')
+        )
 
         statechart.add_state(
             CompoundState(
@@ -2178,8 +2192,14 @@ class AtLeastOnce(TemporalExpression):
         )
 
         statechart.add_state(
-            BasicState(self._uname('never')), parent=self._uname('checked_parallel'))
-        statechart.add_state(BasicState(self._uname('checked')), parent=self._uname('checked_parallel'))
+            BasicState(self._uname('never')),
+            parent=self._uname('checked_parallel')
+        )
+
+        statechart.add_state(
+            BasicState(self._uname('checked')),
+            parent=self._uname('checked_parallel')
+        )
 
         statechart.add_transition(
             Transition(
