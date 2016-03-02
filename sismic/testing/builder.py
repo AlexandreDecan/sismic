@@ -1821,8 +1821,18 @@ class TemporalExpression(metaclass=abc.ABCMeta):
 
     def generate_statechart(self) -> Statechart:
         """
-        Generates a statechart representing the expression.
-        :return: a tester statechart representing the expression.
+        Generates a statechart that represents this expression. The generated statechart can be considered as a tester
+        of an other statechart.
+
+        - If the generated statechart ends in a final pseudo-state, that means the execution of the tested statechart
+        led to the validation of this expression.
+        - If the generated statechart ends in a state which is not a final pseudo-state, that means the exection of the
+        tested statechart led to the invalidation of this expression.
+
+        The resulting statemachine is such that, after the premise is verified, the next verification of this premise
+        only occurs after the condition is verified.
+
+        :return: a statechart representing this expression.
         """
         raise NotImplementedError()
 
@@ -1855,21 +1865,6 @@ class FirstTime(TemporalExpression):
         super().__init__(decision, premise, consequence)
 
     def generate_statechart(self):
-        """
-        Generates a statechart that represents this expression. The generated statechart can be considered as a tester
-        of an other statechart.
-
-        - If the generated statechart ends in a final pseudo-state, that means the execution of the tested statechart
-        led to the validation of this expression.
-        - If the generated statechart ends in a state which is not a final pseudo-state, that means the exection of the
-        tested statechart led to the invalidation of this expression.
-
-        The resulting statemachine is such that, after the premise is verified, the next verification of this premise
-        only occurs after the condition is verified.
-
-        :return: a statechart representing this expression.
-        """
-
         statechart = self._prepare_statechart(parallel_id=self._uname('parallel'),
                                               rule_satisfied_id=self._uname('rule_satisfied'),
                                               rule_not_satisfied_id=self._uname('rule_not_satisfied'))
@@ -1933,21 +1928,6 @@ class EveryTime(TemporalExpression):
         super().__init__(decision, premise, consequence)
 
     def generate_statechart(self):
-        """
-        Generates a statechart that represents this expression. The generated statechart can be considered as a tester
-        of an other statechart.
-
-        - If the generated statechart ends in a final pseudo-state, that means the execution of the tested statechart
-        led to the validation of this expression.
-        - If the generated statechart ends in a state which is not a final pseudo-state, that means the exection of the
-        tested statechart led to the invalidation of this expression.
-
-        The resulting statemachine is such that, after the premise is verified, the next verification of this premise
-        only occurs after the condition is verified.
-
-        :return: a statechart representing this expression.
-        """
-
         statechart = self._prepare_statechart(parallel_id=self._uname('parallel'),
                                               rule_satisfied_id=self._uname('rule_satisfied'),
                                               rule_not_satisfied_id=self._uname('rule_not_satisfied'))
@@ -2015,21 +1995,6 @@ class LastTime(TemporalExpression):
         super().__init__(decision, premise, consequence)
 
     def generate_statechart(self):
-        """
-        Generates a statechart that represents this expression. The generated statechart can be considered as a tester
-        of an other statechart.
-
-        - If the generated statechart ends in a final pseudo-state, that means the execution of the tested statechart
-        led to the validation of this expression.
-        - If the generated statechart ends in a state which is not a final pseudo-state, that means the execution of the
-        tested statechart led to the invalidation of this expression.
-
-        The resulting statemachine is such that, after the premise is verified, the next verification of this premise
-        only occurs after the condition is verified.
-
-        :return: a statechart representing this expression.
-        """
-
         statechart = self._prepare_statechart(parallel_id=self._uname('parallel'),
                                               rule_satisfied_id=self._uname('rule_satisfied'),
                                               rule_not_satisfied_id=self._uname('rule_not_satisfied'))
@@ -2166,21 +2131,6 @@ class AtLeastOnce(TemporalExpression):
         super().__init__(decision, premise, consequence)
 
     def generate_statechart(self):
-        """
-        Generates a statechart that represents this expression. The generated statechart can be considered as a tester
-        of an other statechart.
-
-        - If the generated statechart ends in a final pseudo-state, that means the execution of the tested statechart
-        led to the validation of this expression.
-        - If the generated statechart ends in a state which is not a final pseudo-state, that means the exection of the
-        tested statechart led to the invalidation of this expression.
-
-        The resulting statemachine is such that, after the premise is verified, the next verification of this premise
-        only occurs after the condition is verified.
-
-        :return: a statechart representing this expression.
-        """
-
         statechart = self._prepare_statechart(parallel_id=self._uname('parallel'),
                                               rule_satisfied_id=self._uname('rule_satisfied'),
                                               rule_not_satisfied_id=self._uname('rule_not_satisfied'))
