@@ -1598,8 +1598,10 @@ class FirstTime(TemporalExpression):
         """
         :param decision: determine the behaviour to adopt when a rule made of a premise and an associated consequence
         are verified (or not):
+
         - True means the rule is required, and the consequence must be verified each time the premise is verified.
         - False means the rule is forbidden, and the consequence must be not verified each time the premise is verified.
+
         :param premise: a condition that can be verified.
         :param consequence: the consequence that must be verified each time the premise is verified.
         """
@@ -1609,6 +1611,7 @@ class FirstTime(TemporalExpression):
         """
         Generates a statechart that represents this expression. The generated statechart can be considered as a tester
         of an other statechart.
+
         - If the generated statechart ends in a final pseudo-state, that means the execution of the tested statechart
         led to the validation of this expression.
         - If the generated statechart ends in a state which is not a final pseudo-state, that means the exection of the
@@ -1664,10 +1667,13 @@ class EveryTime(TemporalExpression):
         """
         :param decision: determine the behaviour to adopt when a rule made of a premise and an associated consequence
         are verified (or not):
-        - True means the rule is required, and the consequence must be verified each time the premise is verified.
-        - False means the rule is forbidden, and the consequence must be not verified each time the premise is verified.
+
+        - *True* means the rule is required, and *consequence* must be verified each time the premise is verified.
+        - *False* means the rule is forbidden, and *consequence* must be not verified each time the premise is
+        verified.
+
         :param premise: a condition that can be verified.
-        :param consequence: the consequence that must be verified each time the premise is verified.
+        :param consequence: the consequence that must be verified each time *premise* is verified.
         """
         super().__init__(decision, premise, consequence)
 
@@ -1675,6 +1681,7 @@ class EveryTime(TemporalExpression):
         """
         Generates a statechart that represents this expression. The generated statechart can be considered as a tester
         of an other statechart.
+
         - If the generated statechart ends in a final pseudo-state, that means the execution of the tested statechart
         led to the validation of this expression.
         - If the generated statechart ends in a state which is not a final pseudo-state, that means the exection of the
@@ -1735,10 +1742,12 @@ class LastTime(TemporalExpression):
         """
         :param decision: determine the behaviour to adopt when a rule made of a premise and an associated consequence
         are verified (or not):
-        - True means the rule is required, and the consequence must be verified each time the premise is verified.
-        - False means the rule is forbidden, and the consequence must be not verified each time the premise is verified.
+
+        - True means the rule is required, and *consequence* must be verified each time *premise* is verified.
+        - False means the rule is forbidden, and *consequence* must be not verified each time *premise* is verified.
+
         :param premise: a condition that can be verified.
-        :param consequence: the consequence that must be verified each time the premise is verified.
+        :param consequence: the consequence that must be verified each time *premise* is verified.
         """
         super().__init__(decision, premise, consequence)
 
@@ -1746,9 +1755,10 @@ class LastTime(TemporalExpression):
         """
         Generates a statechart that represents this expression. The generated statechart can be considered as a tester
         of an other statechart.
+
         - If the generated statechart ends in a final pseudo-state, that means the execution of the tested statechart
         led to the validation of this expression.
-        - If the generated statechart ends in a state which is not a final pseudo-state, that means the exection of the
+        - If the generated statechart ends in a state which is not a final pseudo-state, that means the execution of the
         tested statechart led to the invalidation of this expression.
 
         The resulting statemachine is such that, after the premise is verified, the next verification of this premise
@@ -1841,12 +1851,13 @@ class AtLeastOnce(TemporalExpression):
 
     def __init__(self, decision: bool, premise: Condition, consequence: Condition):
         """
-        :param decision: determine the behaviour to adopt when a rule made of a premise and an associated consequence
+        :param decision: determine the behaviour to adopt when a rule made of a *premise* and an associated *consequence*
         are verified (or not):
-        - True means the rule is required, and the consequence must be verified each time the premise is verified.
-        - False means the rule is forbidden, and the consequence must be not verified each time the premise is verified.
+
+        - True means the rule is required, and *consequence* must be verified each time *premise* is verified.
+        - False means the rule is forbidden, and *consequence* must be not verified each time *premise* is verified.
         :param premise: a condition that can be verified.
-        :param consequence: the consequence that must be verified each time the premise is verified.
+        :param consequence: the consequence that must be verified each time *premise* is verified.
         """
         super().__init__(decision, premise, consequence)
 
@@ -1854,6 +1865,7 @@ class AtLeastOnce(TemporalExpression):
         """
         Generates a statechart that represents this expression. The generated statechart can be considered as a tester
         of an other statechart.
+        
         - If the generated statechart ends in a final pseudo-state, that means the execution of the tested statechart
         led to the validation of this expression.
         - If the generated statechart ends in a state which is not a final pseudo-state, that means the exection of the
