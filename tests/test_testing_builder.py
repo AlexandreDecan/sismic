@@ -358,24 +358,24 @@ class OperatorsTest(unittest.TestCase):
                 self.generic_test(condition, False, False)
 
     def test_during_delayed_true_instant(self):
-        self.generic_test(During(DelayedTrueCondition(2), 0, 10), True, False, 3)
+        self.generic_test(During(DelayedCondition(TrueCondition(), 2), 0, 10), True, False, 3)
 
     def test_during_delayed_true_delay(self):
-        self.generic_test(During(DelayedTrueCondition(7), 5, 10), True, False, 10)
+        self.generic_test(During(DelayedCondition(TrueCondition(), 7), 5, 10), True, False, 10)
 
     def test_during_delayed_false_instant(self):
-        self.generic_test(During(DelayedFalseCondition(2), 0, 10), False, True, 3)
+        self.generic_test(During(DelayedCondition(FalseCondition(), 2), 0, 10), False, True, 3)
 
     def test_during_delayed_false_delay(self):
-        self.generic_test(During(DelayedFalseCondition(7), 5, 10), False, True, 10)
+        self.generic_test(During(DelayedCondition(FalseCondition(), 7), 5, 10), False, True, 10)
 
     def test_delayed_true(self):
-        self.generic_test(DelayedTrueCondition(2), False, False, 0)
-        self.generic_test(DelayedTrueCondition(2), True, False, 5)
+        self.generic_test(DelayedCondition(TrueCondition(), 2), False, False, 0)
+        self.generic_test(DelayedCondition(TrueCondition(), 2), True, False, 5)
 
     def test_delayed_false(self):
-        self.generic_test(DelayedFalseCondition(2), False, False, 0)
-        self.generic_test(DelayedFalseCondition(2), False, True, 5)
+        self.generic_test(DelayedCondition(FalseCondition(), 2), False, False, 0)
+        self.generic_test(DelayedCondition(FalseCondition(), 2), False, True, 5)
 
 
 class ConditionOperatorTests(unittest.TestCase):
@@ -404,8 +404,8 @@ class ReprTest(unittest.TestCase):
             'Before(TrueCondition(), FalseCondition())',
             'Then(TrueCondition(), FalseCondition())',
             'During(TrueCondition(), 10, 42)',
-            'DelayedTrueCondition(42)',
-            'DelayedFalseCondition(42)',
+            'DelayedCondition(TrueCondition(), 42)',
+            'DelayedCondition(FalseCondition(), 42)',
             'IfElse(TrueCondition(), TrueCondition(), FalseCondition())',
             'DelayedCondition(TrueCondition(), 42)',
             'SynchronousCondition(TrueCondition())'

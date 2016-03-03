@@ -6,20 +6,16 @@ from uuid import uuid4
 
 class UniqueIdProvider(object):
     """
-    This class provides unique id of elements included in a spacename.
-    If the id of an element is requested for the first time, a unique id is provided.
-    After that initialisation, the id associated to a specific remains the same.
+    Each instance of this class provides a unique mapping between a (possibly infinite) set
+    of (hashable) items to an infinite set of unique names amongst all instances.
     """
 
     def __init__(self):
-        """
-        Creates an id provider.
-        """
         self.__d = defaultdict(uuid4)
 
-    def __call__(self, element):
+    def __call__(self, element) -> str:
         """
-        Provides the id associated to a given element, according to the following rules:
+        Return a (globally) unique value for given element.
 
         - Two calls to the same instance of UniqueIdProvider, with the same parameter, will result in the same id.
         - Two calls to different instances of UniqueIdProvider, with the same parameter, will result in different ids.
@@ -30,18 +26,15 @@ class UniqueIdProvider(object):
         :param element: the element whose the id must be returned.
         :return: the unique id associated to element in this provider.
         """
-
         return str(self.__d[element])
 
 
 class Condition(metaclass=abc.ABCMeta):
     """
-    A condition is a property being true, false, or undetermined.
+    Abstract class to represent a condition.
+
+    A condition is a property that can be true, false or undetermined.
     Such a condition is expressed thanks to a set of states and transitions that can be added to a statechart.
-    The resulting representation of the condition is a state having two output transitions.
-    The success transition will be followed if the property is true.
-    The failure transition will be followed if the property is false.
-    While the property remains undetermined, none of these transitions are followed.
     """
 
     STEP_ENDED_EVENT = 'step ended'
@@ -64,13 +57,14 @@ class Condition(metaclass=abc.ABCMeta):
                           success_state: str,
                           failure_state: str):
         """
-        Places states and transitions into an existing statechart in order to represent the transition.
-        :param statechart: the statechart in which the states and transitions must be placed.
-        :param condition_state: the id of the state that represents the condition.
-        :param parent_state: the id of the parent in which the representative state must be placed.
-        :param success_state: the id of the (preexisting) state the success transition must point to.
-        :param failure_state: the id of the (preexisting) state the failure transition must point to.
-        :param status_state: the id of the (preexisting) orthogonal state placed as a direct child of the initial state
+        Add to a statechart the states and the transitions that encode/represent current condition.
+
+        :param statechart: the statechart in which the states and transitions must be added.
+        :param condition_state: the name of the state that will represent this condition.
+        :param parent_state: the name of the parent state in which to put the condition.
+        :param success_state: the name of the target state if the condition is satisfied.
+        :param failure_state: the name of the target state if the condition is unsatisfied.
+        :param status_state: the name of the (preexisting) orthogonal state put as a child of the initial state
          of the statechart. Children of this orthogonal states run as long as the statechart is running.
         """
         raise NotImplementedError()
@@ -79,13 +73,13 @@ class Condition(metaclass=abc.ABCMeta):
         """
         Inverts this condition.
 
-        :return: the negation of this condition.
+        :return: a negation of this condition.
         """
         return Not(self)
 
     def __and__(self, other):
         """
-        Combines this condition and an other one by a logic AND.
+        Combines this condition and another one by a logic AND.
 
         :param other: an other condition.
         :return: (self AND other)
@@ -94,7 +88,7 @@ class Condition(metaclass=abc.ABCMeta):
 
     def __or__(self, other):
         """
-        Combines this condition and an other one by a logic OR.
+        Combines this condition and another one by a logic OR.
 
         :param other: an other condition.
         :return: (self OR other)
@@ -103,7 +97,7 @@ class Condition(metaclass=abc.ABCMeta):
 
     def __xor__(self, other):
         """
-        Combines this condition and an other one by a logic XOR.
+        Combines this condition and another one by a logic XOR.
 
         :param other: an other condition.
         :return: (self XOR other)
@@ -112,7 +106,7 @@ class Condition(metaclass=abc.ABCMeta):
 
     def then(self, other):
         """
-        Combines this condition and an other one by a temporal dependency.
+        Combines this condition and another one by a temporal dependency.
 
         :param other: an other condition.
         :return: (self THEN other)
@@ -122,8 +116,7 @@ class Condition(metaclass=abc.ABCMeta):
 
 class TrueCondition(Condition):
     """
-    This condition is always true, so that entering the representative state
-    always ends up to the success transition.
+    Represent a condition that is always true, and thus always leads to the success target state.
     """
 
     def __init__(self):
@@ -145,8 +138,7 @@ class TrueCondition(Condition):
 
 class FalseCondition(Condition):
     """
-    This condition is always false, so that entering the representative state
-    always ends up to the failure transition.
+    Represent a condition that is always false, and thus leads to the failure target state.
     """
 
     def __init__(self):
@@ -172,8 +164,7 @@ class FalseCondition(Condition):
 
 class UndeterminedCondition(Condition):
     """
-    This condition is never evaluated, so that entering the representative state
-    never ends up to the success or the failure transition.
+    Represent a condition which will never be true or false, and thus remains in an undetermined status.
     """
 
     def __init__(self):
@@ -192,9 +183,10 @@ class UndeterminedCondition(Condition):
         return self.__class__.__name__ + "()"
 
 
+# TODO: Regroup EnterState and EnterAnyState into one condition
 class EnterAnyState(Condition):
     """
-    A condition based on the fact that any state has been entered.
+    Represent a condition that becomes true if a state is entered.
     """
 
     def __init__(self):
@@ -222,15 +214,13 @@ class EnterAnyState(Condition):
 
 class EnterState(Condition):
     """
-    A condition based on the fact that a given state has been entered.
-    The condition remains undetermined until one of the considered states is entered.
-    """
+    Represent a condition that becomes true when one of the given states is entered.
 
+    :param state: name of a state
+    :param *states: optional additional state names
+    """
     def __init__(self, state: str, *states: str):
-        """
-        :param state: name of the state to observe.
-        :param states: names of other states to observe.
-        """
+
         super().__init__()
         self._states = [state] + list(states)
 
@@ -261,17 +251,15 @@ class EnterState(Condition):
         return self.__class__.__name__ + '({})'.format(', '.join(states_s))
 
 
+# TODO: Regroup ExitState and ExitAnyState into one condition
 class ExitState(Condition):
     """
-    A condition based on the fact that a given state has been exited.
-    The condition remains undetermined until one of the considered states is exited.
-    """
+    Represent a condition that becomes true when one of the given states is exited.
 
+    :param state: name of a state
+    :param *states: optional additional state names
+    """
     def __init__(self, state: str, *states: str):
-        """
-        :param state: name of the state to observe.
-        :param states: names of other states to observe.
-        """
         super().__init__()
         self._states = [state] + list(states)
 
@@ -298,16 +286,14 @@ class ExitState(Condition):
         )
 
     def __repr__(self):
-        from functools import reduce
-        states_s = map(lambda x: "'{}'".format(x), self._states)
+        states_s = map("'{}'".format, self._states)
         return self.__class__.__name__ + '({})'.format(', '.join(states_s))
 
 
 class ExitAnyState(Condition):
     """
-    A condition based on the fact that any state has been exited.
+    Represent a condition that becomes true when a state is exited.
     """
-
     def __init__(self):
         super().__init__()
 
@@ -332,17 +318,18 @@ class ExitAnyState(Condition):
         return self.__class__.__name__ + '()'
 
 
+# TODO: Rename to Satisfy
 class CheckGuard(Condition):
     """
-    A condition based on the verification of a guard.
+    Represent a condition that becomes true when given expression is satisfied, or that
+    becomes false when given expression is unsatisfied.
 
-    This condition is asynchronous, and may therefore lead to "infinite loops".
+    Notice that the evaluation is NOT triggered by an event, and may therefore lead to an infinite execution.
+
+    :param guard: an arbitrary expression
     """
 
     def __init__(self, guard: str):
-        """
-        :param guard: an arbitrary condition that must be verified to make the condition verified.
-        """
         super().__init__()
         self._guard = guard
 
@@ -382,51 +369,10 @@ class CheckGuard(Condition):
         return self.__class__.__name__ + '("{}")'.format(self._guard)
 
 
-class ConsumeEvent(Condition):
-    """
-    A property consisting in the consumption of a given event.
-    This property remains undetermined until one of the considered events is consumed.
-    """
-
-    def __init__(self, event: str, *events: str):
-        """
-        :param event: a event that must be consumed for making this property true.
-        :param events: alternative events, the consumption of which makes this property verified.
-        """
-        super().__init__()
-        self._events = [event] + list(events)
-
-    def add_to_statechart(self,
-                          statechart: Statechart,
-                          condition_state: str,
-                          parent_state: str,
-                          status_state: str,
-                          success_state: str,
-                          failure_state: str):
-        conditions = map(lambda x: "(event.event.name == '{}')".format(x), self._events)
-        condition = ' or '.join(conditions)
-
-        statechart.add_state(BasicState(condition_state), parent=parent_state)
-        statechart.add_transition(
-            Transition(
-                source=condition_state,
-                target=success_state,
-                event=Condition.CONSUMED_EVENT_EVENT,
-                guard=condition
-            )
-        )
-
-    def __repr__(self):
-        from functools import reduce
-        events_s = map(lambda x: "'{}'".format(x), self._events)
-        return self.__class__.__name__ + '({})'.format(', '.join(events_s))
-
-
 class StartExecution(Condition):
     """
-    A property consisting in the fact that the execution of the tested statechart starts.
+    Represent a condition that becomes true at the beginning of the execution of a statechart under test.
     """
-
     def __init__(self):
         super().__init__()
 
@@ -452,9 +398,8 @@ class StartExecution(Condition):
 
 class StopExecution(Condition):
     """
-    A property consisting in the fact that the execution of the tested statechart stops.
+    Represent a condition that becomes true at the end of the execution of a statechart under test.
     """
-
     def __init__(self):
         super().__init__()
 
@@ -480,9 +425,8 @@ class StopExecution(Condition):
 
 class StartStep(Condition):
     """
-    A property consisting in the fact that a micro step starts.
+    Represent a condition that becomes true at the beginning of a step.
     """
-
     def __init__(self):
         super().__init__()
 
@@ -508,9 +452,8 @@ class StartStep(Condition):
 
 class EndStep(Condition):
     """
-    A property consisting in the fact that a micro step ends.
+    Represent a condition that becomes true at the end of a step.
     """
-
     def __init__(self):
         super().__init__()
 
@@ -534,10 +477,47 @@ class EndStep(Condition):
         )
 
 
+# TODO: Regroup ConsumeEvent, ConsumeAnyEvent and ConsumeAnyEventBut into one condition
+class ConsumeEvent(Condition):
+    """
+    Represent a condition that becomes true when one of the given event is consumed.
+
+    :param event: name of an event
+    :param *events: optional additional event names
+    """
+
+    def __init__(self, event: str, *events: str):
+        super().__init__()
+        self._events = [event] + list(events)
+
+    def add_to_statechart(self,
+                          statechart: Statechart,
+                          condition_state: str,
+                          parent_state: str,
+                          status_state: str,
+                          success_state: str,
+                          failure_state: str):
+        conditions = map("(event.event.name == '{}')".format, self._events)
+        condition = ' or '.join(conditions)
+
+        statechart.add_state(BasicState(condition_state), parent=parent_state)
+        statechart.add_transition(
+            Transition(
+                source=condition_state,
+                target=success_state,
+                event=Condition.CONSUMED_EVENT_EVENT,
+                guard=condition
+            )
+        )
+
+    def __repr__(self):
+        events_s = map("'{}'".format, self._events)
+        return self.__class__.__name__ + '({})'.format(', '.join(events_s))
+
+
 class ConsumeAnyEvent(Condition):
     """
-    A property consisting in the consumption of any event.
-    This property remains undetermined until any event is consumed.
+    Represent a condition that becomes true if an event is consumed.
     """
 
     def __init__(self):
@@ -565,20 +545,20 @@ class ConsumeAnyEvent(Condition):
 
 class ConsumeAnyEventBut(Condition):
     """
-    A property consisting in the consumption of any event, except some specific ones.
-    This property remains undetermined until an event that doesn't belong to the forbidden event is consumed.
-    """
+    Represent a condition that becomes true if an event is consumed and its name is not one of the
+    given event names.
 
+    Notice that this condition never becomes false, even if a "forbidden" event is consumed.
+
+    :param event: name of an event
+    :param *events: optional additional event names
+    """
     def __init__(self, event: str, *events: str):
-        """
-        :param event: the id of a forbidden event.
-        :param events: the id of other forbidden events.
-        """
         super().__init__()
         self._events = [event] + list(events)
 
     def __repr__(self):
-        events_s = map(lambda x: "'{}'".format(x), self._events)
+        events_s = map("'{}'".format, self._events)
         return self.__class__.__name__ + '({})'.format(', '.join(events_s))
 
     def add_to_statechart(self,
@@ -588,7 +568,7 @@ class ConsumeAnyEventBut(Condition):
                           status_state: str,
                           success_state: str,
                           failure_state: str):
-        conditions = map(lambda x: "event.event.name != '{}'", self._events)
+        conditions = map("event.event.name != '{}'".format, self._events)
         condition = ' and '.join(conditions)
 
         statechart.add_state(BasicState(condition_state), parent=parent_state)
@@ -604,20 +584,16 @@ class ConsumeAnyEventBut(Condition):
 
 class TransitionProcess(Condition):
     """
-    A property consisting in the process of a transition.
-    One can restrict the nature of the processed transition based on its source, its target, or its event.
+    Represent a condition that becomes true when a matching transition is processed.
+    A matching transition is a transition that satisfies given source state name, given target state name
+    and given event name, all of them being optional.
+
+    :param source: name of a source state. If not provided, all source states will be matched.
+    :param target: name of a target state. If not provided, all target states will be matched.
+    :param event: name of an event. If not provided, all event name will be matched. If empty,
+        only eventless transitions will be matched.
     """
     def __init__(self, source=None, target=None, event=None):
-        """
-        :param source: the name of the source the transition must come from in order to be accepted. If not provided,
-        any source is acceptable.
-        :param target: the name of the target the transition must point to in order to be accepted. If not provided,
-        any target is acceptable.
-        :param event: the name of the target the transition must depend on in order to be accepted. If not provided,
-        any event (or the lack of event) is acceptable. An empty value means that the considered transition must
-        be eventless.
-        """
-
         super().__init__()
         self._source = source
         self._target = target
@@ -628,7 +604,7 @@ class TransitionProcess(Condition):
         target_repr = 'target="{}"'.format(self._target) if self._target else ''
         event_repr = 'event="{}"'.format(self._event) if self._event else ''
 
-        parameters = filter(lambda x: len(x)>0, [source_repr, target_repr, event_repr])
+        parameters = filter(lambda x: len(x) > 0, [source_repr, target_repr, event_repr])
 
         return self.__class__.__name__ + '({})'.format(', '.join(parameters))
 
@@ -664,24 +640,16 @@ class TransitionProcess(Condition):
 
 class And(Condition):
     """
-    A condition performing a logic AND between two conditions, according the following table:
+    Represent a condition that performs a logical AND between the two given conditions.
 
-    true AND true                   => true
-    true AND false                  => false
-    true AND undetermined           => undetermined
+    This condition becomes true only if both nested conditions are satisfied.
+    This condition becomes false if at least one of the two nested conditions is false.
+    This condition remains undetermined otherwise.
 
-    false AND X                     => false
-
-    undetermined AND true           => undetermined
-    undetermined AND false          => false
-    undetermined AND undetermined   => undetermined
+    :param a: first nested condition
+    :param b: second nested condition
     """
-
     def __init__(self, a: Condition, b: Condition):
-        """
-        :param a: a condition to combine
-        :param b: an other condition to combine
-        """
         super().__init__()
         self._a = a
         self._b = b
@@ -716,8 +684,6 @@ class And(Condition):
             :param success_id: the id of the state a transition must point to if the AND operator succeeds.
             :param failure_id: the id of the state a transition must point to if the AND operator fails.
             """
-
-    
 
             # This composite state is only created so that the payload
             # is entirely included in a state, and has no "floating"
@@ -807,24 +773,16 @@ class And(Condition):
 
 class Or(Condition):
     """
-    A condition performing a logic OR between two conditions, according the following table:
+    Represent a condition that performs a logical OR between the two given conditions.
 
-    true OR X                       => true
+    This condition becomes true only if at least one of the two nested conditions is satisfied.
+    This condition becomes false if the two nested conditions are false.
+    This condition remains undetermined otherwise.
 
-    false OR true                   => true
-    false OR false                  => false
-    false OR undetermined           => undetermined
-
-    undetermined OR true            => true
-    undetermined OR false           => undetermined
-    undetermined OR undetermined    => undetermined
+    :param a: first nested condition
+    :param b: second nested condition
     """
-
     def __init__(self, a: Condition, b: Condition):
-        """
-        :param a: a condition to combine
-        :param b: an other condition to combine
-        """
         super().__init__()
         self._a = a
         self._b = b
@@ -929,26 +887,16 @@ class Or(Condition):
 
 class Xor(Condition):
     """
-    A condition performing a logic Exclusive OR between two conditions, according the following table:
+    Represent a condition that performs a logical XOR between the two given conditions.
 
-    undetermined XOR undetermined   => undetermined
-    undetermined XOR true           => undetermined
-    undetermined XOR false          => undetermined
+    This condition becomes true only if one of the nested conditions is satisfied and the other evaluates to false.
+    This condition becomes false when both conditions are satisfied or false.
+    This condition remains undetermined otherwise.
 
-    true         XOR undetermined   => undetermined
-    true         XOR true           => false
-    true         XOR false          => true
-
-    false        XOR undetermined   => undetermined
-    false        XOR true           => true
-    false        XOR false          => false
+    :param a: first nested condition
+    :param b: second nested condition
     """
-
     def __init__(self, a: Condition, b: Condition):
-        """
-        :param a: a condition to combine
-        :param b: an other condition to combine
-        """
         super().__init__()
         self._a = a
         self._b = b
@@ -1111,17 +1059,15 @@ class Xor(Condition):
 
 class Not(Condition):
     """
-    A condition performing a logic negation of an other condition, according the following table:
+    Represent a condition that performs a logical NOT on a given condition.
 
-    Not(true)           => false
-    Not(false)          => true
-    Not(undetermined)   => undetermined
+    This condition becomes true if given condition is false, becomes false if given condition is true, and
+    remains undetermined as long as the given condition is not true or false.
+
+    :param cond: A condition
     """
 
     def __init__(self, cond: Condition):
-        """
-        :param cond: the condition to reverse
-        """
         super().__init__()
         self._condition = cond
 
@@ -1149,19 +1095,17 @@ class Not(Condition):
 
 class Then(Condition):
     """
-    This condition is verified if a first condition is verified, and after that a second condition is verified.
+    Represent a condition that chains the two given conditions.
     The verification of the second condition does not start before the first condition is verified.
 
     true THEN X         => X
     false THEN X        => false
     undetermined THEN X => undetermined
-    """
 
+    :param a: the first condition
+    :param b: the second condition
+    """
     def __init__(self, a: Condition, b: Condition):
-        """
-        :param a: the condition that must be verified before testing the second condition.
-        :param b: the condition that will be evaluated after a is verified.
-        """
         super().__init__()
         self._a = a
         self._b = b
@@ -1197,17 +1141,19 @@ class Then(Condition):
 
 class Before(Condition):
     """
-    This condition is verified if a first condition a is verified, and this
-     condition is verified before a second condition b is verified.
+    Represent a condition that checks whether first given condition is satisfied strictly before
+    the second becomes satisfied.
 
     In other words,
-    - if b is verified before a, the condition is not verified.
-    - if a is verified before b, the condition is verified.
-    - if a and b become simultaneously verified, the condition is not verified.
-    - if a is not verified, the condition is not verified.
-    - if b is not verified, the verification of the condition is equivalent to the verification of a.
-    """
+    - if b is satisfied before a, this condition is not satisfied.
+    - if a is satisfied before b, this condition becomes satisfied.
+    - if a and b become simultaneously satisfied, this condition is NOT satisfied.
+    - if a is not satisfied, this condition is not satisfied.
+    - if b is not satisfied, the satisfaction of this condition only depends on the satisfaction of a.
 
+    :param a: first condition
+    :param b: second condition
+    """
     def __init__(self, a: Condition, b: Condition):
         super().__init__()
         self._a = a
@@ -1296,29 +1242,19 @@ class Before(Condition):
 
 class During(Condition):
     """
-    This condition is verified iff an other condition is verified during a specified time interval.
-    The time interval is specified as a pair of positive integers (start, length), so that the condition
-    must be verified in the [start, start+length] interval.
+    Represent a condition that becomes true if and only if given condition becomes satisfied in given
+    time interval [start, start + duration].
 
-    The time is expressed in the unit than in the rest of Sismic. The interval limits are relative to
-    the moment at which the During condition begins to be checked.
+    :param cond: condition to observe
+    :param start: time value
+    :param duration: duration value
     """
 
-    def __init__(self, cond: Condition, start: int, lenght: int):
-        """
-        :param cond: the condition to check. This condition will be verified if cond is verified after
-         start and before start+length
-        :param start: the begining of the time interval during which a verification of cond leads
-         to the verification of this condition. Must be positive or null. If start equals 0, the checked
-         condition can be instantly verified.
-        :param lenght: the lenght of the time interval during which a verification of cond leads
-         to the verification of this condition. Must be positive or null.
-        """
-
+    def __init__(self, cond: Condition, start: int, duration: int):
         super().__init__()
         self._cond = cond
         self._start = start
-        self._length = lenght
+        self._length = duration
 
     def add_to_statechart(self,
                           statechart: Statechart,
@@ -1328,7 +1264,6 @@ class During(Condition):
                           success_state: str,
                           failure_state: str):
         parallel_id = condition_state
-
 
         parallel = OrthogonalState(condition_state)
         statechart.add_state(parallel, parent_state)
@@ -1411,24 +1346,16 @@ class During(Condition):
 
 class IfElse(Condition):
     """
-    This condition is equivalent to an other condition, depending of the value of a third condition.
+    Represent a condition that is equivalent to the classical if-then-else.
+
+    As soon as the *if* part becomes true (resp. false), the *then* part (resp. *else*) is evaluated.
+    This condition remains undetermined otherwise.
+
+    :param condition: condition that represents the *if* part
+    :param then: condition that represents the *then* part
+    :param otherwise: condition that represents the *else* part.
     """
     def __init__(self, condition: Condition, then: Condition, otherwise: Condition):
-        """
-        :param condition: a test condition that determines the condition that will be equivalent to the IfElse
-         condition. The IfElse condition may remain undetermined while condition remains undetermined.
-         If condition is determined, then or otherwise is chosen based on the value of the condition :
-
-         if(condition) then else otherwise
-
-         Due to the fail-fast mechanism, the IfElse condition may be determined even if condition is not (yet)
-         determined. For instance, the following condition is determined:
-
-         IfElse(UndeterminedCondition(), FalseCondition(), FalseCondition())
-
-        :param then: the condition that is used if condition is verified.
-        :param otherwise: the condition that is used if condition is not verified.
-        """
         super().__init__()
         self._then = then
         self._otherwise = otherwise
@@ -1455,18 +1382,15 @@ class IfElse(Condition):
         return self.__class__.__name__ + "({}, {}, {})".format(self._condition, self._then, self._otherwise)
 
 
+# TODO: Rename to Delay
 class DelayedCondition(Condition):
     """
-    This condition adopts a defined behavior after a given delay.
-    """
+    Delay the evaluation of given condition for some time.
 
+    :param condition: condition to delay
+    :param delay: time value
+    """
     def __init__(self, condition: Condition, delay: int):
-        """
-        :param condition: a condition the behavior of which this DelayedCondition adopts after the given
-        delay expires.
-        :param delay: a positive or null value representing the time
-        to wait before the DelayedCondition adopts the given condition.
-        """
         super().__init__()
         self._condition = condition
         self._delay = delay
@@ -1499,74 +1423,18 @@ class DelayedCondition(Condition):
         return self.__class__.__name__ + "({}, {})".format(self._condition, self._delay)
 
 
-class DelayedTrueCondition(Condition):
-    """
-    This condition becomes true after a given delay.
-    """
-
-    def __init__(self, delay: int):
-        """
-        :param delay: A positive or null value representing the time
-        to wait before the condition becomes verified.
-        """
-        super().__init__()
-        self._delay = delay
-
-    def add_to_statechart(self,
-                          statechart: Statechart,
-                          condition_state: str,
-                          parent_state: str,
-                          status_state: str,
-                          success_state: str,
-                          failure_state: str):
-        DelayedCondition(TrueCondition(), self._delay).add_to_statechart(statechart,
-                                                                         condition_state=condition_state,
-                                                                         parent_state=parent_state,
-                                                                         status_state=status_state,
-                                                                         success_state=success_state,
-                                                                         failure_state=failure_state)
-
-    def __repr__(self):
-        return self.__class__.__name__ + '({})'.format(self._delay)
-
-
-class DelayedFalseCondition(Condition):
-    """
-    This condition becomes false after a given delay.
-    """
-
-    def __init__(self, delay: int):
-        super().__init__()
-        self._delay = delay
-
-    def add_to_statechart(self,
-                          statechart: Statechart,
-                          condition_state: str,
-                          parent_state: str,
-                          status_state: str,
-                          success_state: str,
-                          failure_state: str):
-        DelayedCondition(FalseCondition(), self._delay).add_to_statechart(statechart,
-                                                                          condition_state=condition_state,
-                                                                          parent_state=parent_state,
-                                                                          status_state=status_state,
-                                                                          success_state=success_state,
-                                                                          failure_state=failure_state)
-
-    def __repr__(self):
-        return self.__class__.__name__ + '({})'.format(self._delay)
-
-
+# TODO: Support for multiple state names
 class ActiveState(Condition):
     """
-    This condition is verified if a given state is active when evaluated. Otherwise, the condition is not verified.
-    This property is asynchronous and may therefore lead to an "infinite loop".
-    """
+    Represent a condition that becomes true when given state is active.
+    If the state is not active, this condition remains undetermined.
 
+    Notice that the evaluation of this condition is not triggered by an event, and may therefore lead
+    to an infinite execution.
+
+    :param state: name of the state
+    """
     def __init__(self, state: str):
-        """
-        :param state: the id of the state to check.
-        """
         super().__init__()
         self._state = state
 
@@ -1629,11 +1497,16 @@ class ActiveState(Condition):
         return self.__class__.__name__ + '("{}")'.format(self._state)
 
 
+# TODO: Support for multiple state names
 class InactiveState(Condition):
     """
-    This condition is verified if a given state is inactive when evaluated. Otherwise, the condition is not verified.
-    This condition is artificially made synchronous by waiting a 'end step' event to occur before
-    leaving its undetermined state.
+    Represent a condition that becomes true when given state is not active.
+    If the state is active, this condition remains undetermined.
+
+    Notice that the evaluation of this condition is not triggered by an event, and may therefore lead
+    to an infinite execution.
+
+    :param state: name of the state
     """
     def __init__(self, state):
         super().__init__()
@@ -1658,14 +1531,14 @@ class InactiveState(Condition):
         return self.__class__.__name__ + '("{}")'.format(self._state)
 
 
+# TODO: Rename to DelayUntilStepEnds
 class SynchronousCondition(Condition):
     """
-    This condition forces an arbitrary condition to remain in an undetermined status
-    until a 'step ended' event occurs.
-    More precisely, the condition to synchronize is evaluated as usually, but transitions to
-    a success or a failure states are blocked until a 'step ended' event occurs.
-    """
+    This condition has the same truth value that given condition, but delay its result
+    until the end of a step.
 
+    :param condition: a condition to delay
+    """
     def __init__(self, condition: Condition):
         super().__init__()
         self._condition = condition
@@ -1783,6 +1656,7 @@ def _add_parallel_condition(statechart: Statechart,
                      failure_id=failure_id)
 
 
+# TODO: Documentation
 class TemporalExpression(metaclass=abc.ABCMeta):
     def __init__(self, decision: bool, premise: Condition, consequence: Condition):
         self._decision = decision
@@ -1843,6 +1717,7 @@ class TemporalExpression(metaclass=abc.ABCMeta):
                                                                self._consequence.__repr__())
 
 
+# TODO: Try to make the require/forbid more API friendly
 class FirstTime(TemporalExpression):
     """
     An expression that checks if a consequence is verified the first time an associated premise is verified.
