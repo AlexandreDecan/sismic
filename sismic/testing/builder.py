@@ -3,6 +3,8 @@ from sismic.model import Statechart, BasicState, FinalState, Transition, Compoun
 from collections import defaultdict
 from uuid import uuid4
 
+# TODO: Use {!r} in __repr__
+# TODO: Then, And, Or, ... __repr__ could possibly make use of Python syntax (.then(), and, or, etc.)
 
 class UniqueIdProvider(object):
     """
@@ -1142,7 +1144,7 @@ class Then(Condition):
 class Before(Condition):
     """
     Represent a condition that checks whether first given condition is satisfied strictly before
-    the second becomes satisfied.
+    the second one.
 
     In other words,
     - if b is satisfied before a, this condition is not satisfied.
@@ -1240,10 +1242,11 @@ class Before(Condition):
         return self.__class__.__name__ + "({}, {})".format(self._a, self._b)
 
 
+# TODO: Use case?
 class During(Condition):
     """
     Represent a condition that becomes true if and only if given condition becomes satisfied in given
-    time interval [start, start + duration].
+    relative time interval [start, start + duration].
 
     :param cond: condition to observe
     :param start: time value
@@ -1344,6 +1347,8 @@ class During(Condition):
         return self.__class__.__name__ + "({}, {}, {})".format(self._cond, self._start, self._length)
 
 
+# TODO: Rename to IfThenElse
+# TODO: Allow `otherwise` to be optional?
 class IfElse(Condition):
     """
     Represent a condition that is equivalent to the classical if-then-else.
@@ -1787,6 +1792,7 @@ class FirstTime(TemporalExpression):
         return statechart
 
 
+# TODO: Rename into EachTime?
 class EveryTime(TemporalExpression):
     """
     An expression that checks if a consequence is verified each time an associated premise is verified.
@@ -1995,6 +2001,8 @@ class LastTime(TemporalExpression):
         return statechart
 
 
+# TODO: What's the difference between AtLeastOnce and FirstTime?
+# TODO: I suggest renaming to Once(condition) which checks that condition holds at least once?
 class AtLeastOnce(TemporalExpression):
     """
     An expression that checks if a consequence is verified at least one time after an associated premise
