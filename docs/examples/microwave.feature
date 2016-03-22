@@ -1,6 +1,7 @@
 Feature: microwave
 
   Scenario: Microwave startup configuration
+    Given I execute the statechart
     Then state heating.off should be active
     And state lamp.off should be active
     And state turntable.off should be active
@@ -26,5 +27,8 @@ Feature: microwave
 
   Scenario: Microwave bells when it stops heating
     Given I reproduce "Microwave starts"
-    When I wait 1 second 5 times
-    Then event ding should be fired
+    When I wait 1 second 2 times
+    Then state heating.on should be active
+    When I wait 1 second 3 times
+    Then state heating.on should not be active
+    And event ding should be fired

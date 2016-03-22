@@ -34,10 +34,13 @@ def repeat_step(context, step, repeat):
 
 
 # #################### CONFIGURATION
-def _execute_statechart(context, force_execution=False):
+def _execute_statechart(context, force_execution=False, execute_once=False):
     if context._automatic_execution or force_execution:
-        context._events = []
-        steps = context._interpreter.execute()
+        if execute_once:
+            steps = [context._interpreter.execute_once()]
+        else:
+            steps = context._interpreter.execute()
+
         for step in steps:
             context._steps.append(step)
 
@@ -73,7 +76,7 @@ def execute_statechart(context):
 @given('I execute once the statechart')
 @when('I execute once the statechart')
 def execute_once_statechart(context):
-    _execute_statechart(context, force_execution=True)
+    _execute_statechart(context, force_execution=True, execute_once=True)
 
 
 # #################### STATECHART

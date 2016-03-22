@@ -3,10 +3,15 @@ Changelog
 
 0.20.3 (2016-03-22)
 -------------------
+
+- (Changed) Step *Event x should be fired* now checks sent events from the beginning of the test, not only for the last
+  executed step.
 - (Fixed) Internal events that are sequentially sent are now sequentially consumed (and not anymore in reverse order).
+
 
 0.20.2 (2016-02-24)
 -------------------
+
 - (Fixed) ``interpreter.log_trace`` does not anymore log empty macro step.
 
 0.20.1 (2016-02-19)
