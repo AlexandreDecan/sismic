@@ -33,7 +33,8 @@ class Interpreter:
         self._time = 0  # Internal clock
         self._memory = {}  # History states memory
         self._configuration = set()  # Set of active states
-        self._events = deque()  # Events queue
+        self._external_events = deque()  # External events queue
+        self._internal_events = deque()  # Internal events queue
         self._bound = []  # List of bound event callbacks
 
         # Evaluator
@@ -113,12 +114,13 @@ class Interpreter:
         :return: *self* so it can be chained.
         """
         if isinstance(event, model.InternalEvent):
-            self._events.appendleft(event)
+            self._internal_events.append(event)
+            # Propagate event to bound callable as an external event
             external_event = model.Event(event.name, **event.data)
             for bound_callable in self._bound:
                 bound_callable(external_event)
         elif isinstance(event, model.Event):
-            self._events.append(event)
+            self._external_events.append(event)
         else:
             raise ValueError('{} is not an Event instance'.format(event))
         return self
@@ -168,19 +170,24 @@ class Interpreter:
         # Eventless transitions first
         transitions = self._select_eventless_transitions()
 
-        if len(transitions) == 0:
-            if len(self._events) > 0:
-                event = self._events.popleft()  # consumes event
-                transitions = self._select_transitions(event)
-
-                # If the event can not be processed, discard it
-                if len(transitions) == 0:
-                    return model.MacroStep(time=self.time, steps=[model.MicroStep(event=event)])
-            else:
-                # No step and no event to consume, do nothing!
-                return None
+        if len(transitions) > 0:
+            event = None
         else:
-            event = None  # Eventless transition
+            # Internal events are processed first
+            if len(self._internal_events) > 0:
+                event = self._internal_events.popleft()
+            elif len(self._external_events) > 0:
+                event = self._external_events.popleft()
+            else:
+                # No available event
+                return None
+
+            # assert(event is not None)
+            transitions = self._select_transitions(event)
+
+            # If the event can not be processed, discard it
+            if len(transitions) == 0:
+                return model.MacroStep(time=self.time, steps=[model.MicroStep(event=event)])
 
         # We get a list of transitions to perform
         transitions = self._sort_transitions(transitions)

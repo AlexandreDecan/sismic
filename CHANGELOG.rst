@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.20.3 (2016-03-22)
+-------------------
+- (Fixed) Internal events that are sequentially sent are now sequentially consumed (and not anymore in reverse order).
+
 0.20.2 (2016-02-24)
 -------------------
 - (Fixed) ``interpreter.log_trace`` does not anymore log empty macro step.

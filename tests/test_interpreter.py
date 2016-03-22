@@ -386,8 +386,8 @@ class BindTests(unittest.TestCase):
         self.assertEqual(self.interpreter._bound, [other_interpreter.queue])
 
         self.interpreter.queue(InternalEvent('test'))
-        self.assertTrue(self.interpreter._events.pop(), Event('test'))
-        self.assertTrue(other_interpreter._events.pop(), Event('test'))
+        self.assertTrue(self.interpreter._internal_events.pop(), Event('test'))
+        self.assertTrue(other_interpreter._external_events.pop(), Event('test'))
 
     def test_bind_callable(self):
         with open('tests/yaml/simple.yaml') as f:
@@ -398,5 +398,5 @@ class BindTests(unittest.TestCase):
         self.assertEqual(self.interpreter._bound, [other_interpreter.queue])
 
         self.interpreter.queue(InternalEvent('test'))
-        self.assertTrue(self.interpreter._events.pop(), Event('test'))
-        self.assertTrue(other_interpreter._events.pop(), Event('test'))
+        self.assertTrue(self.interpreter._internal_events.pop(), Event('test'))
+        self.assertTrue(other_interpreter._external_events.pop(), Event('test'))

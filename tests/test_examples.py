@@ -84,7 +84,7 @@ class RemoteElevatorTests(unittest.TestCase):
         self.buttons.queue(Event('button_2_pushed'))
         self.buttons.execute()
 
-        event = self.elevator._events.pop()
+        event = self.elevator._external_events.pop()
         self.assertEqual(event.name, 'floorSelected')
         self.assertEqual(event.data['floor'], 2)
 
