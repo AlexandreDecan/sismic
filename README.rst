@@ -12,8 +12,8 @@ Sismic for Python
 .. image:: https://readthedocs.org/projects/sismic/badge/?version=master
     :target: https://sismic.readthedocs.org/
 
-Sismic Interactive State Machine Interpreter and Checker
---------------------------------------------------------
+Sismic Interactive Statechart Model Interpreter and Checker
+-----------------------------------------------------------
 
 Statecharts are a well-known visual language for modeling the executable behavior of complex reactive event-based systems.
 The Sismic library for Python >= 3.4 provides a set of tools to define, validate, simulate, execute and debug statecharts.
