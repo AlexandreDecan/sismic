@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- (Changed) Statechart testers are now called statechart property.
+
 0.20.3 (2016-03-22)
 -------------------
 
