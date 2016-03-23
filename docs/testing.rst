@@ -20,22 +20,22 @@ Using stories to write tests
 ----------------------------
 
 **Remark**: in the following, the term *statechart under test* refers to the statechart that is to be tested,
-while the term *tester statechart* (or *tester* for short) refers to a statechart that expresses conditions or
+while the term *statechart property* refers to a statechart that expresses conditions or
 invariants that should be satisfied by the statechart under test.
 
 While *contracts* can be used to verify assertions on the context of a statechart during its execution,
-*tester statecharts* can be used to test specific behavior of a *statechart under test*.
+*statechart property* can be used to test specific behavior of a *statechart under test*.
 
-A *tester statechart* defines a property that should (or not) be satisfied by other statecharts.
-A *tester statechart* is like any other statechart, in the sense that neither their syntax nor their semantics
+A *statechart property* defines a property that should (or not) be satisfied by other statecharts.
+A *statechart property* is like any other statechart, in the sense that neither their syntax nor their semantics
 differs from any other statechart. The difference comes from the events it receives and the role it plays.
-A run of a *tester statechart* must end in a final state, meaning the test did not fail.
+A run of a *statechart property* must end in a final state, meaning the test did not fail.
 
 .. note::
 
     This is more a convention than a requirement, but you should follow it.
 
-The run of such a *tester statechart* is driven by a specific sequence of events and pauses, which represents
+The run of such a *statechart property* is driven by a specific sequence of events and pauses, which represents
 what happens during the execution of a *statechart under test*.
 
 For example, such a sequence contains *event consumed* events, *state entered* events, *state exited* events, ...
@@ -74,32 +74,32 @@ The trace of an interpreter is the list of its executed macro steps. The trace c
 each call to :py:meth:`~sismic.interpreter.Interpreter.execute` (or :py:meth:`~sismic.interpreter.Interpreter.execute_once`),
 or can be automatically built using :py:meth:`~sismic.interpreter.log_trace` function.
 
-Function :py:func:`~sismic.testing.teststory_from_trace` provides an easy way to construct a story for *statechart testers*
-from the trace obtained by executing a *statechart under test*.
+Function :py:func:`~sismic.testing.teststory_from_trace` provides an easy way to construct a story for
+statechart properties from the trace obtained by executing a *statechart under test*.
 
 .. autofunction:: sismic.testing.teststory_from_trace
     :noindex:
 
-Notice that using this function, the statechart tester can not access the context of the tested statechart.
+Notice that using this function, the statechart property can not access the context of the statechart under test.
 
 To summarize, if you want to test the **trace** of a *statechart under test* ``tested``, you need to:
 
-    1. construct a *tester statechart* ``tester`` that expresses the property you want to test.
+    1. construct a *statechart property* ``tester`` that expresses the property you want to test.
     2. execute ``tested`` (using a story or directly by sending events) and log its trace.
     3. generate a new story from this trace with :py:func:`~sismic.testing.teststory_from_trace`.
-    4. tell this story to an interpreter of the *tester statechart* ``tester``.
+    4. tell this story to an interpreter of the *statechart property* ``tester``.
 
 If ``tester`` ends in a final configuration, ie. ``tester.final`` holds, then the test is **considered** successful.
 
-The following *tester statechart* examples are relative to :ref:`this statechart <elevator_example>`.
+The following *statechart property* examples are relative to :ref:`this statechart <elevator_example>`.
 They show the specification of some testers in YAML, and how to execute them.
 
-Note that these testers are currently used as unit tests for Sismic.
+Note that these statechart properties are currently used as unit tests for Sismic.
 
 7th floor is never reached
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This *tester statechart* ensures that the 7th floor is never reached.
+This *statechart property* ensures that the 7th floor is never reached.
 It stores the current floor based on the number of times the elevator goes up
 and goes down.
 
@@ -119,7 +119,7 @@ You can even simulate a failure:
 Elevator moves after 10 seconds
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This *tester statechart* checks that the elevator automatically moves after some idle time if it is not on
+This *statechart property* checks that the elevator automatically moves after some idle time if it is not on
 the ground floor. The test sets a timeout of 12 seconds, but it should work for any number strictly greater than
 10 seconds.
 
@@ -136,7 +136,7 @@ We check this tester using several stories, as follows:
 Using statecharts to check properties at runtime
 ------------------------------------------------
 
-Sismic provides a convenience class to allow *tester statecharts* to check properties at runtime.
+Sismic provides a convenience class to allow *statechart property* to check properties at runtime.
 Class :py:class:`~sismic.testing.ExecutionWatcher` can be used to associate a statechart tester with a *statechart under test*:
 
 .. autoclass:: sismic.testing.ExecutionWatcher
@@ -147,7 +147,7 @@ Class :py:class:`~sismic.testing.ExecutionWatcher` can be used to associate a st
 To summarize, if you want to test (**at runtime**) the execution of a *statechart under test* ``tested``, you need to:
 
     1. create an :py:class:`~sismic.testing.ExecutionWatcher` with ``tested``.
-    2. construct at least one *tester statechart* ``tester`` that expresses the property you want to test.
+    2. construct at least one *statechart property* ``tester`` that expresses the property you want to test.
     3. associate each ``tester`` to the watcher with :py:meth:`~sismic.testing.ExecutionWatcher.watch_with`.
     4. start watching with :py:meth:`~sismic.testing.ExecutionWatcher.start`.
     5. execute ``tested`` (using a story or directly by sending events).
@@ -158,7 +158,7 @@ If ``tester`` ends in a final configuration, ie. ``tester.final`` holds, then th
 Destination should be reached
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This *tester statechart* ensures that every chosen destination is finally reached.
+This *statechart property* ensures that every chosen destination is finally reached.
 
 .. literalinclude:: /examples/tester_elevator_destination_reached.yaml
    :language: yaml
