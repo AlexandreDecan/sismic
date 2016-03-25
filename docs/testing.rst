@@ -29,7 +29,9 @@ While *contracts* can be used to verify assertions on the context of a statechar
 A *statechart property* defines a property that should (or not) be satisfied by other statecharts.
 A *statechart property* is like any other statechart, in the sense that neither their syntax nor their semantics
 differs from any other statechart. The difference comes from the events it receives and the role it plays.
-A run of a *statechart property* must end in a final state, meaning the test did not fail.
+If the run of a *statechart property* ends in a final state, it signifies that the property was verified.
+In the case of a *desirable* property, this means that the test succeed.
+In the case of an *undesirable* property, this means that the test failed.
 
 .. note::
 
