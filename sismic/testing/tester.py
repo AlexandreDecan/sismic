@@ -32,15 +32,15 @@ class ExecutionWatcher:
     This can be used to associate a property statechart with a statechart under test.
     An instance of this class is built upon an *Interpreter* instance (the tested one).
 
-    It provides a method, namely *watch_with* which takes a statechart property
+    It provides a method, namely *watch_with* which takes a property statechart
     (and a set of optional parameters that can be used to tune the interpreter that will be built upon this
-    statechart property) and returns the resulting *Interpreter* instance for this tester.
+    property statechart) and returns the resulting *Interpreter* instance for this tester.
 
     If started (using *start*), whenever something happens during the execution of the interpreter under test,
     events are automatically sent to every associated statechart properties.
     Their internal clock are synchronized, and the context of the statechart under test is
-    also exposed to the statechart property, ie. if *x* is a variable in the context of a statechart under test, then
-    *context.x* is dynamically exposed to every associated statechart property.
+    also exposed to the property statechart, ie. if *x* is a variable in the context of a statechart under test, then
+    *context.x* is dynamically exposed to every associated property statechart.
 
     :param tested_interpreter: Interpreter to watch
     """
@@ -64,17 +64,17 @@ class ExecutionWatcher:
         def __copy__(self):
             return None
 
-    def watch_with(self, statechart_property: Statechart, interpreter_klass=None, **kwargs):
+    def watch_with(self, property_statechart: Statechart, interpreter_klass=None, **kwargs):
         """
-        Watch the execution of the tested interpreter with given statechart property.
+        Watch the execution of the tested interpreter with given sproperty statechart.
 
         *interpreter_klass* is a callable that accepts a *Statechart* instance, an *initial_context* parameter and
         any additional parameters provided to this method. This callable must return an *Interpreter* instance
 
-        :param statechart_property: a statechart property (instance of *Statechart*)
+        :param property_statechart: a property statechart (instance of *Statechart*)
         :param interpreter_klass: a callable that accepts a *Statechart* instance, an *initial_context* and any
             additional (optional) parameters provided to this method.
-        :return: the interpreter instance that wraps given statechart property.
+        :return: the interpreter instance that wraps given property statechart.
         """
         interpreter_klass = interpreter_klass if interpreter_klass else Interpreter
 
@@ -82,7 +82,7 @@ class ExecutionWatcher:
         context = kwargs.pop('initial_context', {})
         context['context'] = ExecutionWatcher.DynamicContext(self._tested)
 
-        tester = interpreter_klass(statechart_property, initial_context=context, **kwargs)
+        tester = interpreter_klass(property_statechart, initial_context=context, **kwargs)
         self._testers.append(tester)
 
         return tester
