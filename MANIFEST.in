@@ -4,4 +4,3 @@ include CHANGELOG.rst
 include README.rst
 include LICENSE
 include requirements.txt
-include sismic/schema.yaml
