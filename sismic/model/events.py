@@ -1,3 +1,6 @@
+from typing import Any
+
+
 class Event:
     """
     Simple event with a name and (optionally) some data.
@@ -8,7 +11,7 @@ class Event:
     :param data: additional data (mapping, dict-like)
     """
 
-    def __init__(self, name: str, **additional_parameters):
+    def __init__(self, name: str, **additional_parameters: Any) -> None:
         self.name = name
         self.data = additional_parameters
 
