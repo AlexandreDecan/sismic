@@ -48,7 +48,7 @@ class MacroStep:
     :param steps: a list of *MicroStep* instances
     """
 
-    def __init__(self, time: int, steps: List[MicroStep]) -> None:
+    def __init__(self, time: float, steps: List[MicroStep]) -> None:
         self._time = time
         self._steps = steps
 

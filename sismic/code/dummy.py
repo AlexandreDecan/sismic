@@ -1,4 +1,4 @@
-from sismic.code import Evaluator
+from .evaluator import Evaluator
 
 __all__ = ['DummyEvaluator']
 

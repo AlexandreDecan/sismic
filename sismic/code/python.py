@@ -2,7 +2,7 @@ from functools import partial
 from typing import Dict, Union, Iterator
 import copy
 
-from sismic.code import Evaluator
+from .evaluator import Evaluator
 from sismic.model import Event, InternalEvent, Transition, StateMixin
 from sismic.exceptions import CodeEvaluationError
 
@@ -197,13 +197,13 @@ class PythonEvaluator(Evaluator):
         super().execute_action(transition, event)
 
     def evaluate_postconditions(self, obj: Union[Transition, StateMixin], event: Event=None) -> Iterator[str]:
-        context = {'event': event} if isinstance(obj, Transition) else {}
+        context = {'event': event} if isinstance(obj, Transition) else {}  # type: dict
         context['__old__'] = self.__get_memory(obj)
 
         return filter(lambda c: not self._evaluate_code(c, context), getattr(obj, 'postconditions', []))
 
     def evaluate_invariants(self, obj: Union[Transition, StateMixin], event: Event=None) -> Iterator[str]:
-        context = {'event': event} if isinstance(obj, Transition) else {}
+        context = {'event': event} if isinstance(obj, Transition) else {}  # type: dict
         context['__old__'] = self.__get_memory(obj)
 
         return filter(lambda c: not self._evaluate_code(c, context), getattr(obj, 'invariants', []))

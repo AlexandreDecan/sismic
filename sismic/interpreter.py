@@ -1,11 +1,13 @@
-from collections import deque
+import threading
 from itertools import combinations
 
-from sismic import model
-from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
-from sismic.exceptions import InvariantError, PreconditionError, PostconditionError
-from sismic.code import PythonEvaluator
+from collections import deque
 from functools import wraps
+from sismic import model
+from sismic.code import Evaluator, PythonEvaluator
+from sismic.exceptions import InvariantError, PreconditionError, PostconditionError
+from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
+from typing import Optional, List, Union, Callable, Any, cast
 
 __all__ = ['Interpreter', 'log_trace', 'run_in_background']
 
@@ -23,33 +25,38 @@ class Interpreter:
     :param ignore_contract: set to True to ignore contract checking during the execution.
     """
 
-    def __init__(self, statechart: model.Statechart, evaluator_klass=None,
-                 initial_context: dict=None, ignore_contract: bool=False):
+    def __init__(self, statechart: model.Statechart,
+                 evaluator_klass: Callable[['Interpreter', dict], Evaluator]=None,
+                 initial_context: dict=None,
+                 ignore_contract: bool=False) -> None:
         # Internal variables
         self._ignore_contract = ignore_contract
         self._statechart = statechart
 
         self._initialized = False
-        self._time = 0  # Internal clock
-        self._memory = {}  # History states memory
-        self._configuration = set()  # Set of active states
-        self._external_events = deque()  # External events queue
-        self._internal_events = deque()  # Internal events queue
-        self._bound = []  # List of bound event callbacks
+        self._time = 0  # type: float  # Internal clock
+        self._memory = {}  # type: Dict[str, Optional[List[str]]]  # History states memory
+        self._configuration = set()  # type: Set[str]  # Set of active states
+        self._external_events = deque()  # type: deque[model.Event]  # External events queue
+        self._internal_events = deque()  # type: deque[model.InternalEvent]  # Internal events queue
+        self._bound = []  # type: List[Callable[[model.Event], Any]]
 
         # Evaluator
-        self._evaluator = (evaluator_klass if evaluator_klass else PythonEvaluator)(self, initial_context)
+        if evaluator_klass:
+            self._evaluator = evaluator_klass(self, initial_context)  # type: Evaluator
+        else:
+            self._evaluator = PythonEvaluator(self, initial_context)
         self._evaluator.execute_statechart(statechart)
 
     @property
-    def time(self) -> int:
+    def time(self) -> float:
         """
         Time value (in seconds) for the internal clock
         """
         return self._time
 
     @time.setter
-    def time(self, value):
+    def time(self, value: float):
         """
         Set the time of the internal clock
 
@@ -58,7 +65,7 @@ class Interpreter:
         self._time = value
 
     @property
-    def configuration(self) -> list:
+    def configuration(self) -> List[str]:
         """
         List of active states names, ordered by depth. Ties are broken according to the lexicographic order
         on the state name.
@@ -80,13 +87,13 @@ class Interpreter:
         return self._initialized and len(self._configuration) == 0
 
     @property
-    def statechart(self):
+    def statechart(self) -> model.Statechart:
         """
         Embedded statechart
         """
         return self._statechart
 
-    def bind(self, interpreter_or_callable):
+    def bind(self, interpreter_or_callable: Union['Interpreter', Callable[[model.Event], Any]]) -> 'Interpreter':
         """
         Bind an interpreter or a callable to the current interpreter.
         Each time an internal event is sent by this interpreter, any bound object will be called
@@ -104,7 +111,7 @@ class Interpreter:
         self._bound.append(bound_callable)
         return self
 
-    def queue(self, event: model.Event):
+    def queue(self, event: model.Event) -> 'Interpreter':
         """
         Queue an event to the interpreter.
         Internal events are propagated to bound callables (see *bind* method).
@@ -125,7 +132,7 @@ class Interpreter:
             raise ValueError('{} is not an Event instance'.format(event))
         return self
 
-    def execute(self, max_steps: int=-1) -> list:
+    def execute(self, max_steps: int=-1) -> List[model.MacroStep]:
         """
         Repeatedly calls *execute_once* and return a list containing
         the returned values of *execute_once*.
@@ -171,7 +178,7 @@ class Interpreter:
         transitions = self._select_eventless_transitions()
 
         if len(transitions) > 0:
-            event = None
+            event = None  # type: Optional[model.Event]
         else:
             # Internal events are processed first
             if len(self._internal_events) > 0:
@@ -210,7 +217,7 @@ class Interpreter:
 
         return macro_step
 
-    def _select_eventless_transitions(self) -> list:
+    def _select_eventless_transitions(self) -> List[model.Transition]:
         """
         Return a list of eventless transitions that can be triggered.
 
@@ -218,7 +225,7 @@ class Interpreter:
         """
         return self._select_transitions(event=None)
 
-    def _select_transitions(self, event: model.Event=None) -> list:
+    def _select_transitions(self, event: model.Event=None) -> List[model.Transition]:
         """
         Return a list of transitions that can be triggered according to the given event, or eventless
         transition if *event* is None.
@@ -244,9 +251,9 @@ class Interpreter:
                     removed_transitions.add(transition)
                     break
 
-        return transitions.difference(removed_transitions)
+        return list(transitions.difference(removed_transitions))
 
-    def _sort_transitions(self, transitions: list) -> list:
+    def _sort_transitions(self, transitions: List[model.Transition]) -> List[model.Transition]:
         """
         Given a list of triggered transitions, return a list of transitions in an order that represents
         the order in which they have to be processed.
@@ -296,7 +303,8 @@ class Interpreter:
 
         return transitions
 
-    def _compute_transitions_steps(self, event: model.Event, transitions: list) -> list:
+    def _compute_transitions_steps(self, event: model.Event,
+                                   transitions: List[model.Transition]) -> List[model.MicroStep]:
         """
         Return a (possibly empty) list of micro steps. Each micro step corresponds to the process of a transition
         matching given event.
@@ -361,8 +369,8 @@ class Interpreter:
         """
         # Check if we are in a set of "stable" states
         leaves_names = self._statechart.leaf_for(list(self._configuration))
-        leaves = map(self._statechart.state_for, leaves_names)
-        leaves = sorted(leaves, key=lambda s: (-self._statechart.depth_for(s.name), s.name))
+        leaves = sorted(map(self._statechart.state_for, leaves_names),
+                        key=lambda s: (-self._statechart.depth_for(s.name), s.name))
 
         # Final states?
         if len(leaves) > 0 and all([isinstance(s, model.FinalState) for s in leaves]):
@@ -372,16 +380,17 @@ class Interpreter:
 
         # Otherwise, develop history, compound and orthogonal states.
         for leaf in leaves:
+            name = cast(model.StateMixin, leaf).name
             if isinstance(leaf, model.HistoryStateMixin):
-                states_to_enter = self._memory.get(leaf.name, [leaf.memory])
+                states_to_enter = self._memory.get(name, [leaf.memory])
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_for(x), x))
-                return model.MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
+                return model.MicroStep(entered_states=states_to_enter, exited_states=[name])
             elif isinstance(leaf, model.OrthogonalState) and self._statechart.children_for(leaf.name):
                 return model.MicroStep(entered_states=sorted(self._statechart.children_for(leaf.name)))
             elif isinstance(leaf, model.CompoundState) and leaf.initial:
                 return model.MicroStep(entered_states=[leaf.initial])
 
-    def _execute_step(self, step: model.MicroStep):
+    def _execute_step(self, step: model.MicroStep) -> None:
         """
         Apply given *MicroStep* on this statechart
 
@@ -441,7 +450,7 @@ class Interpreter:
         # Update configuration
         self._configuration = self._configuration.union(step.entered_states)
 
-    def __stabilize(self) -> list:
+    def __stabilize(self) -> List[model.MicroStep]:
         """
         Compute, apply and return stabilization steps.
 
@@ -456,7 +465,9 @@ class Interpreter:
             step = self._compute_stabilization_step()
         return steps
 
-    def __evaluate_contract_conditions(self, obj, cond_type: str, step=None):
+    def __evaluate_contract_conditions(self, obj: Union[model.Transition, model.StateMixin],
+                                       cond_type: str,
+                                       step: Union[model.MacroStep, model.MicroStep]=None) -> None:
         """
         Evaluate the conditions for given object.
 
@@ -468,9 +479,9 @@ class Interpreter:
         if self._ignore_contract:
             return
 
-        exception_klass = {'preconditions': PreconditionError,
-                           'postconditions': PostconditionError,
-                           'invariants': InvariantError}[cond_type]
+        exception_klass = cast(Callable[..., Exception], {'preconditions': PreconditionError,
+                                                          'postconditions': PostconditionError,
+                                                          'invariants': InvariantError}[cond_type])
 
         unsatisfied_conditions = getattr(self._evaluator, 'evaluate_' + cond_type)(obj, getattr(step, 'event', None))
 
@@ -482,7 +493,7 @@ class Interpreter:
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))
 
 
-def log_trace(interpreter: Interpreter) -> list:
+def log_trace(interpreter: Interpreter) -> List[model.MacroStep]:
     """
     Return a list that will be populated by each value returned by the *execute_once* method
     of given interpreter.
@@ -490,21 +501,23 @@ def log_trace(interpreter: Interpreter) -> list:
     :param interpreter: an *Interpreter* instance
     :return: a list of *MacroStep*
     """
-    func = interpreter.execute_once
+    func = interpreter.execute_once  # type: Callable[[], model.MacroStep]
     trace = []
 
     @wraps(func)
-    def new_func(*args, **kwargs):
-        step = func(*args, **kwargs)
+    def new_func():
+        step = func()
         if step:
             trace.append(step)
         return step
 
-    interpreter.execute_once = new_func
+    interpreter.execute_once = new_func  # type: ignore
     return trace
 
 
-def run_in_background(interpreter: Interpreter, delay: float=0.05, callback=None):
+def run_in_background(interpreter: Interpreter,
+                      delay: float=0.05,
+                      callback: Callable[[model.MacroStep], Any]=None) -> threading.Thread:
     """
     Run given interpreter in background. The time is updated according to
     *time.time() - starttime*. The interpreter is ran until it reaches a final configuration.
@@ -518,7 +531,6 @@ def run_in_background(interpreter: Interpreter, delay: float=0.05, callback=None
     :return: started thread (instance of *threading.Thread*)
     """
     import time
-    import threading
 
     def _task():
         starttime = time.time()
@@ -533,7 +545,7 @@ def run_in_background(interpreter: Interpreter, delay: float=0.05, callback=None
     def stop_thread():
         interpreter._configuration = []
 
-    thread.stop = stop_thread
+    thread.stop = stop_thread  # type: ignore
 
     thread.start()
     return thread
