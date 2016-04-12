@@ -1,5 +1,7 @@
 import abc
+from sismic.model import ActionStateMixin
 from sismic.model import Event, Transition, StateMixin, Statechart
+from typing import cast, Iterator
 
 __all__ = ['Evaluator']
 
@@ -19,7 +21,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         is expected to be an *Interpreter* instance
     :param initial_context: an optional dictionary to populate the context
     """
-    def __init__(self, interpreter=None, initial_context: dict = None):
+    def __init__(self, interpreter=None, initial_context: dict=None) -> None:
         self._context = initial_context if initial_context else {}
         self._interpreter = interpreter
 
@@ -32,7 +34,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         return self._context
 
     @abc.abstractmethod
-    def _evaluate_code(self, code: str, additional_context: dict = None) -> bool:
+    def _evaluate_code(self, code: str, additional_context: dict=None) -> bool:
         """
         Generic method to evaluate a piece of code. This method is a fallback if one of
         the other evaluate_* methods is not overridden.
@@ -44,7 +46,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _execute_code(self, code: str, additional_context: dict = None):
+    def _execute_code(self, code: str, additional_context: dict=None):
         """
         Generic method to execute a piece of code. This method is a fallback if one
         of the other execute_* methods is not overridden.
@@ -94,7 +96,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param state: the considered state
         """
         if getattr(state, 'on_entry', None):
-            return self._execute_code(state.on_entry)
+            return self._execute_code(cast(ActionStateMixin, state).on_entry)
 
     def execute_onexit(self, state: StateMixin):
         """
@@ -104,9 +106,9 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param state: the considered state
         """
         if getattr(state, 'on_exit', None):
-            return self._execute_code(state.on_exit)
+            return self._execute_code(cast(ActionStateMixin, state).on_exit)
 
-    def evaluate_preconditions(self, obj, event: Event = None) -> list:
+    def evaluate_preconditions(self, obj, event: Event=None) -> Iterator[str]:
         """
         Evaluate the preconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -118,7 +120,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         event_d = {'event': event} if isinstance(obj, Transition) else None
         return filter(lambda c: not self._evaluate_code(c, event_d), getattr(obj, 'preconditions', []))
 
-    def evaluate_invariants(self, obj, event: Event = None) -> list:
+    def evaluate_invariants(self, obj, event: Event=None) -> Iterator[str]:
         """
         Evaluate the invariants for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -130,7 +132,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         event_d = {'event': event} if isinstance(obj, Transition) else None
         return filter(lambda c: not self._evaluate_code(c, event_d), getattr(obj, 'invariants', []))
 
-    def evaluate_postconditions(self, obj, event: Event = None) -> list:
+    def evaluate_postconditions(self, obj, event: Event=None) -> Iterator[str]:
         """
         Evaluate the postconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -141,4 +143,3 @@ class Evaluator(metaclass=abc.ABCMeta):
         """
         event_d = {'event': event} if isinstance(obj, Transition) else None
         return filter(lambda c: not self._evaluate_code(c, event_d), getattr(obj, 'postconditions', []))
-

@@ -1,6 +1,7 @@
 from functools import partial
-
+from typing import Dict, Union, Iterator
 import copy
+
 from sismic.code import Evaluator
 from sismic.model import Event, InternalEvent, Transition, StateMixin
 from sismic.exceptions import CodeEvaluationError
@@ -14,7 +15,7 @@ class FrozenContext:
     exposed as attributes.
     """
 
-    def __init__(self, context: dict):
+    def __init__(self, context: dict) -> None:
         self.__frozencontext = {k: copy.copy(v) for k, v in context.items()}
 
     def __getattr__(self, item):
@@ -62,13 +63,13 @@ class PythonEvaluator(Evaluator):
     :param initial_context: a dictionary that will be used as *__locals__*
     """
 
-    def __init__(self, interpreter=None, initial_context: dict = None):
+    def __init__(self, interpreter=None, initial_context: dict=None) -> None:
         super().__init__(interpreter, initial_context)
-        self._memory = {}  # Associate to each state or transition the context on state entry and transition action
-        self._idle_time = {}  # Associate a timer to each state name (idle timer)
-        self._entry_time = {}  # Associate a timer to each state name (entry timer)
+        self._memory = {}  # type: Dict[int, Union[FrozenContext, dict]]
+        self._idle_time = {}  # type: Dict[str, float]
+        self._entry_time = {}  # type: Dict[str, float]
 
-    def __set_memory(self, obj):
+    def __set_memory(self, obj: Union[Transition, StateMixin]):
         """
         Freeze current context and associate it to given *obj*.
 
@@ -76,7 +77,7 @@ class PythonEvaluator(Evaluator):
         """
         self._memory[id(obj)] = FrozenContext(self._context)
 
-    def __get_memory(self, obj):
+    def __get_memory(self, obj: Union[Transition, StateMixin]) -> Union[FrozenContext, Dict]:
         """
         Return frozen context for given *obj*.
 
@@ -94,7 +95,7 @@ class PythonEvaluator(Evaluator):
         """
         self._interpreter.queue(InternalEvent(name, **kwargs))
 
-    def __active(self, name: str):
+    def __active(self, name: str) -> bool:
         """
         Return True if given state name is active.
 
@@ -103,7 +104,7 @@ class PythonEvaluator(Evaluator):
         """
         return name in self._interpreter.configuration
 
-    def __after(self, name: str, seconds: float):
+    def __after(self, name: str, seconds: float) -> bool:
         """
         Return True if given state was entered more than *seconds* ago.
 
@@ -113,7 +114,7 @@ class PythonEvaluator(Evaluator):
         """
         return self._interpreter.time - seconds >= self._entry_time[name]
 
-    def __idle(self, name: str, seconds: float):
+    def __idle(self, name: str, seconds: float) -> bool:
         """
         Return True if given state was the target of a transition more than *seconds* ago.
 
@@ -123,7 +124,7 @@ class PythonEvaluator(Evaluator):
         """
         return self._interpreter.time - seconds >= self._idle_time[name]
 
-    def _evaluate_code(self, code: str, additional_context: dict = None) -> bool:
+    def _evaluate_code(self, code: str, additional_context: dict=None) -> bool:
         """
         Evaluate given code using Python.
 
@@ -145,7 +146,7 @@ class PythonEvaluator(Evaluator):
         except Exception as e:
             raise CodeEvaluationError('The above exception occurred while evaluating:\n{}'.format(code)) from e
 
-    def _execute_code(self, code: str, additional_context: dict = None):
+    def _execute_code(self, code: str, additional_context: dict=None):
         """
         Execute given code using Python.
 
@@ -195,13 +196,13 @@ class PythonEvaluator(Evaluator):
 
         super().execute_action(transition, event)
 
-    def evaluate_postconditions(self, obj, event: Event = None):
+    def evaluate_postconditions(self, obj: Union[Transition, StateMixin], event: Event=None) -> Iterator[str]:
         context = {'event': event} if isinstance(obj, Transition) else {}
         context['__old__'] = self.__get_memory(obj)
 
         return filter(lambda c: not self._evaluate_code(c, context), getattr(obj, 'postconditions', []))
 
-    def evaluate_invariants(self, obj, event: Event = None):
+    def evaluate_invariants(self, obj: Union[Transition, StateMixin], event: Event=None) -> Iterator[str]:
         context = {'event': event} if isinstance(obj, Transition) else {}
         context['__old__'] = self.__get_memory(obj)
 
