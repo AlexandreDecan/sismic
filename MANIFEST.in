@@ -3,4 +3,5 @@ recursive-include tests *
 include sismic/io/schema.yaml
 include CHANGELOG.rst
 include README.rst
-include LICENSEpython
+include LICENSE
+include requirements.txt

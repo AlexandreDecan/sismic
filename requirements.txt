@@ -1,0 +1,7 @@
+pyyaml
+pykwalify
+behave
+coverage
+sphinx
+typing
+mypy-lang
