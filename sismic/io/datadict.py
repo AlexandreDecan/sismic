@@ -3,12 +3,15 @@ from collections import OrderedDict
 from sismic.model import Transition, Statechart, BasicState, CompoundState, OrthogonalState, ShallowHistoryState, \
     DeepHistoryState, FinalState, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 from sismic.exceptions import StatechartError
+from typing import Any
+
+from typing import Tuple, List, Optional
 
 
 __all__ = ['import_from_dict', 'export_to_dict']
 
 
-def import_from_dict(data):
+def import_from_dict(data: dict) -> Statechart:
     data = data['statechart']
 
     statechart = Statechart(name=data['name'],
@@ -17,7 +20,7 @@ def import_from_dict(data):
 
     states = []  # (StateMixin instance, parent name)
     transitions = []  # Transition instances
-    data_to_consider = [(data['root state'], None)]  # (State dict, parent name)
+    data_to_consider = [(data['root state'], None)]  # type: List[Tuple[dict, Optional[str]]]  # (State dict, parent name)
 
     while data_to_consider:
         state_data, parent_name = data_to_consider.pop()
@@ -95,7 +98,7 @@ def _import_state_from_dict(state_d: dict) -> StateMixin:
     on_exit = state_d.get('on exit', None)
 
     if stype == 'final':
-        state = FinalState(name, on_entry=on_entry, on_exit=on_exit)
+        state = FinalState(name, on_entry=on_entry, on_exit=on_exit)  # type: Any
     elif stype == 'shallow history':
         state = ShallowHistoryState(name, on_entry=on_entry, on_exit=on_exit, memory=state_d.get('memory', None))
     elif stype == 'deep history':
@@ -134,7 +137,7 @@ def export_to_dict(statechart: Statechart, ordered=True) -> dict:
     :param ordered: set to True to use an ordereddict instead of a dict
     :return: a dict that can be used in *_import_from_dict*
     """
-    d = OrderedDict() if ordered else {}
+    d = OrderedDict() if ordered else {}  # type: dict
     d['name'] = statechart.name
     if statechart.description:
         d['description'] = statechart.description
@@ -146,7 +149,7 @@ def export_to_dict(statechart: Statechart, ordered=True) -> dict:
     return {'statechart': d}
 
 
-def _export_state_to_dict(statechart, state_name, ordered=True) -> dict:
+def _export_state_to_dict(statechart: Statechart, state_name: str, ordered=True) -> dict:
     data = OrderedDict() if ordered else {}
 
     state = statechart.state_for(state_name)
