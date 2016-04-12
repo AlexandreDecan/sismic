@@ -2,7 +2,7 @@ from sismic.exceptions import StatechartError
 from .elements import CompositeStateMixin, \
     CompoundState, HistoryStateMixin, StateMixin, Transition, TransitionStateMixin
 
-from typing import Optional, List, Union, cast, Any
+from typing import Optional, List, Union, cast
 
 __all__ = ['Statechart']
 
@@ -532,10 +532,13 @@ class Statechart:
         :raise StatechartError:
         """
         for name, state in self._states.items():
-            if isinstance(state, HistoryStateMixin) and state.memory:
-                if state.memory == state.name:
+            if isinstance(state, HistoryStateMixin):
+                memory = state.memory
+                if memory is None:
+                    continue
+                if memory == name:
                     raise StatechartError('Initial memory {} of {} cannot target itself'.format(state.memory, state))
-                if state.memory not in self._states:
+                if memory not in self._states:
                     raise StatechartError('Initial memory {} of {} does not exist'.format(state.memory, state))
                 if state.memory not in self.children_for(self.parent_for(name)):
                     raise StatechartError(

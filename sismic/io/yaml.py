@@ -1,8 +1,8 @@
-import yaml
+import yaml  # type: ignore
 import os
 import typing
 
-from pykwalify.core import Core
+from pykwalify.core import Core  # type: ignore
 from sismic.model import Statechart
 from .datadict import import_from_dict, export_to_dict
 

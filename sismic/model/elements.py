@@ -1,10 +1,12 @@
 from typing import List
+from abc import ABCMeta
 
 __all__ = ['ContractMixin', 'StateMixin', 'ActionStateMixin', 'TransitionStateMixin', 'CompositeStateMixin',
            'HistoryStateMixin', 'BasicState', 'CompoundState', 'OrthogonalState', 'ShallowHistoryState',
-           'DeepHistoryState', 'FinalState', 'Transition']
+           'Deep']
 
-class ContractMixin:
+
+class ContractMixin(metaclass=ABCMeta):
     """
     Mixin with a contract: preconditions, postconditions and invariants.
     """
@@ -15,7 +17,7 @@ class ContractMixin:
         self.invariants = []  # type: List[str]
 
 
-class StateMixin:
+class StateMixin(metaclass=ABCMeta):
     """
     State element with a name.
 
@@ -39,7 +41,7 @@ class StateMixin:
         return hash(self.name)
 
 
-class ActionStateMixin:
+class ActionStateMixin(metaclass=ABCMeta):
     """
     State that can define actions on entry and on exit.
 
@@ -52,21 +54,21 @@ class ActionStateMixin:
         self.on_exit = on_exit
 
 
-class TransitionStateMixin:
+class TransitionStateMixin(metaclass=ABCMeta):
     """
     A simple state can host transitions
     """
     pass
 
 
-class CompositeStateMixin:
+class CompositeStateMixin(metaclass=ABCMeta):
     """
     Composite state can have children states.
     """
     pass
 
 
-class HistoryStateMixin:
+class HistoryStateMixin(metaclass=ABCMeta):
     """
     History state has a memory that can be resumed.
 
