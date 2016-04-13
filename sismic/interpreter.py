@@ -514,7 +514,7 @@ def log_trace(interpreter: Interpreter) -> List[model.MacroStep]:
 
 def run_in_background(interpreter: Interpreter,
                       delay: float=0.05,
-                      callback: Callable[[model.MacroStep], Any]=None) -> threading.Thread:
+                      callback: Callable[[List[model.MacroStep]], Any]=None) -> threading.Thread:
     """
     Run given interpreter in background. The time is updated according to
     *time.time() - starttime*. The interpreter is ran until it reaches a final configuration.
@@ -540,7 +540,7 @@ def run_in_background(interpreter: Interpreter,
     thread = threading.Thread(target=_task)
 
     def stop_thread():
-        interpreter._configuration = []
+        interpreter._configuration = set()
 
     thread.stop = stop_thread  # type: ignore
 

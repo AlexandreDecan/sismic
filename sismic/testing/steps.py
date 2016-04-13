@@ -1,7 +1,7 @@
-from behave import *
+from behave import given, when, then  # type: ignore
 from sismic.io import import_from_yaml
 from sismic.interpreter import Interpreter
-from sismic.model import Event
+from sismic.model import Event, MacroStep
 
 
 # #################### GENERAL PURPOSE

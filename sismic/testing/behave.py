@@ -2,7 +2,7 @@ import tempfile
 import shutil
 import os
 import argparse
-from behave import __main__ as behave_main
+from behave import __main__ as behave_main  # type: ignore
 
 DEFAULT_STEPS_CONTENT = """
 from sismic.testing.steps import *
@@ -66,7 +66,7 @@ def after_feature(context, feature):
 """
 
 
-def execute_behave(statechart, features, coverage, parameters):
+def execute_behave(statechart, features, coverage, parameters) -> None:
     # Create temporary directory
     with tempfile.TemporaryDirectory() as tempdir:
         # Move statechart inside
@@ -100,7 +100,7 @@ def execute_behave(statechart, features, coverage, parameters):
         os.chdir(cwd)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(prog='sismic-behave',
                                      description='Command-line utility to execute Gherkin feature files using Behave.\n'
                                                  'Additional parameters will be passed to Behave.')

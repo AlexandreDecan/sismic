@@ -1,6 +1,6 @@
 import yaml  # type: ignore
 import os
-import typing
+from typing import Iterable
 
 from pykwalify.core import Core  # type: ignore
 from sismic.model import Statechart
@@ -12,7 +12,7 @@ __all__ = ['import_from_yaml', 'export_to_yaml']
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.yaml')
 
 
-def import_from_yaml(statechart: str, ignore_schema: bool=False, ignore_validation: bool=False) -> Statechart:
+def import_from_yaml(statechart: Iterable[str], ignore_schema: bool=False, ignore_validation: bool=False) -> Statechart:
     """
     Import a statechart from a YAML representation.
     YAML is first validated against *sismic.io.yaml.SCHEMA_PATH*, and resulting statechart is validated
