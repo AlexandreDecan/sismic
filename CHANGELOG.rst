@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.20.5 (2016-04-14)
+-------------------
 
 - (Added) Type hinting (see PEP484 and mypy-lang project)
 
