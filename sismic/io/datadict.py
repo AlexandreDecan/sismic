@@ -20,7 +20,8 @@ def import_from_dict(data: dict) -> Statechart:
 
     states = []  # (StateMixin instance, parent name)
     transitions = []  # Transition instances
-    data_to_consider = [(data['root state'], None)]  # type: List[Tuple[dict, Optional[str]]]  # (State dict, parent name)
+    # (State dict, parent name)
+    data_to_consider = [(data['root state'], None)]  # type: List[Tuple[dict, Optional[str]]]
 
     while data_to_consider:
         state_data, parent_name = data_to_consider.pop()

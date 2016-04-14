@@ -3,7 +3,7 @@ from sismic.model import Event, Statechart, MacroStep
 from sismic.interpreter import Interpreter
 from sismic import exceptions
 
-from typing import List, Callable, Dict
+from typing import List, Callable
 
 __all__ = ['ExecutionWatcher', 'teststory_from_trace']
 
