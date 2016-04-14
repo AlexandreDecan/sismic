@@ -331,27 +331,21 @@ class Statechart:
         """
         Return the leaves of *names*.
 
-        Considering the list of states names in *states*, return a list containing each
-        element of *states* such that this element has no descendant in *states*.
-        In other words, this method returns the leaves from the given list of states.
+        Considering the list of states names in *names*, return a list containing each
+        element of *names* such that this element has no descendant in *names*.
 
-        :param names: a list of names
-        :return: the names of the leaves in *states*
+        :param names: a list of state names
+        :return: the names of the leaves in *names*
         :raise StatechartError: if state does not exist
         """
-        # Check that states exist
-        for name in names:
-            self.state_for(name)  # Raise a StatechartError if it does not exist!
+        leaves = []  # type: List[str]
+        names = set(names)  # Lookup is more efficient
 
-        leaves = []
-        # TODO: Need a more efficient way to compute this set
         for name in names:
-            keep = True
-            for descendant in self.descendants_for(name):
+            for descendant in self.descendants_for(name):  # Raise a StatechartError if it does not exist!
                 if descendant in names:
-                    keep = False
                     break
-            if keep:
+            else:  # no break occurs
                 leaves.append(name)
         return leaves
 
