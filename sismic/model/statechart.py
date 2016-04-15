@@ -2,7 +2,7 @@ from sismic.exceptions import StatechartError
 from .elements import CompositeStateMixin, \
     CompoundState, HistoryStateMixin, StateMixin, Transition, TransitionStateMixin
 
-from typing import Optional, List, Union, cast
+from typing import Optional, List, Union, cast, Iterable
 
 __all__ = ['Statechart']
 
@@ -327,7 +327,7 @@ class Statechart:
             if state in s2_anc:
                 return state
 
-    def leaf_for(self, names: List[str]) -> List[str]:
+    def leaf_for(self, names: Iterable[str]) -> List[str]:
         """
         Return the leaves of *names*.
 

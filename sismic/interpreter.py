@@ -7,7 +7,7 @@ from sismic import model
 from sismic.code import Evaluator, PythonEvaluator
 from sismic.exceptions import InvariantError, PreconditionError, PostconditionError
 from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
-from typing import Optional, List, Union, Callable, Any, cast
+from typing import Optional, List, Union, Callable, Any, cast, Iterable
 
 __all__ = ['Interpreter', 'log_trace', 'run_in_background']
 
@@ -167,7 +167,7 @@ class Interpreter:
         # Initial step and stabilization
         if not self._initialized:
             step = model.MicroStep(entered_states=[self._statechart.root])
-            self._execute_step(step)
+            self._apply_step(step)
             self._initialized = True
             return model.MacroStep(time=self.time, steps=[step] + self.__stabilize())
 
@@ -177,36 +177,30 @@ class Interpreter:
         if len(transitions) > 0:
             event = None  # type: Optional[model.Event]
         else:
-            # Internal events are processed first
-            if len(self._internal_events) > 0:
-                event = self._internal_events.popleft()
-            elif len(self._external_events) > 0:
-                event = self._external_events.popleft()
-            else:
-                # No available event
+            event = self._select_event()
+            if event is None:
                 return None
 
-            # assert(event is not None)
-            transitions = self._select_transitions(event)
-
             # If the event can not be processed, discard it
+            transitions = self._select_transitions(event)
             if len(transitions) == 0:
                 return model.MacroStep(time=self.time, steps=[model.MicroStep(event=event)])
 
         # We get a list of transitions to perform
-        transitions = self._filter_transitions(transitions)
-        transitions = self._sort_transitions(transitions)
+        transitions = self._sort_transitions(
+            self._filter_transitions(transitions)
+        )
 
         # Compute and execute the resulting steps
-        returned_steps = []
-        steps = self._compute_transitions_steps(event, transitions)
+        executed_steps = []
+        steps = self._create_steps(event, transitions)
         for step in steps:
-            self._execute_step(step)
-            returned_steps.append(step)
+            self._apply_step(step)
+            executed_steps.append(step)
             for stabilization_step in self.__stabilize():
-                returned_steps.append(stabilization_step)
+                executed_steps.append(stabilization_step)
 
-        macro_step = model.MacroStep(time=self.time, steps=returned_steps)
+        macro_step = model.MacroStep(time=self.time, steps=executed_steps)
 
         # Check state invariants
         for name in self._configuration:
@@ -214,6 +208,21 @@ class Interpreter:
             self.__evaluate_contract_conditions(state, 'invariants', macro_step)
 
         return macro_step
+
+    def _select_event(self) -> Optional[model.Event]:
+        """
+        Return the next available event if any.
+        This method prioritizes internal events over external ones.
+
+        :return: An instance of Event or None if no event is available
+        """
+        # Internal events are processed first
+        if len(self._internal_events) > 0:
+            return self._internal_events.popleft()
+        elif len(self._external_events) > 0:
+            return self._external_events.popleft()
+        else:
+            return None
 
     def _select_transitions(self, event: model.Event=None) -> List[model.Transition]:
         """
@@ -300,8 +309,8 @@ class Interpreter:
 
         return transitions
 
-    def _compute_transitions_steps(self, event: model.Event,
-                                   transitions: List[model.Transition]) -> List[model.MicroStep]:
+    def _create_steps(self, event: model.Event,
+                      transitions: Iterable[model.Transition]) -> List[model.MicroStep]:
         """
         Return a (possibly empty) list of micro steps. Each micro step corresponds to the process of a transition
         matching given event.
@@ -352,7 +361,7 @@ class Interpreter:
 
         return returned_steps
 
-    def _compute_stabilization_step(self) -> model.MicroStep:
+    def _create_stabilization_step(self, names: Iterable[str]) -> model.MicroStep:
         """
         Return a stabilization step, ie. a step that lead to a more stable situation
         for the current statechart. Stabilization means:
@@ -362,10 +371,11 @@ class Interpreter:
          - Enter the children of an orthogonal state with no active child
          - Exit active states if all "deepest" (leaves) states are final
 
+        :param names: List of states to consider (usually, the active configuration)
         :return: A *MicroStep* instance or *None* if this statechart can not be more stabilized
         """
         # Check if we are in a set of "stable" states
-        leaves_names = self._statechart.leaf_for(list(self._configuration))
+        leaves_names = self._statechart.leaf_for(names)
         leaves = sorted(map(self._statechart.state_for, leaves_names),
                         key=lambda s: (-self._statechart.depth_for(s.name), s.name))
 
@@ -387,7 +397,7 @@ class Interpreter:
             elif isinstance(leaf, model.CompoundState) and leaf.initial:
                 return model.MicroStep(entered_states=[leaf.initial])
 
-    def _execute_step(self, step: model.MicroStep) -> None:
+    def _apply_step(self, step: model.MicroStep) -> None:
         """
         Apply given *MicroStep* on this statechart
 
@@ -455,11 +465,11 @@ class Interpreter:
         """
         # Stabilization
         steps = []
-        step = self._compute_stabilization_step()
+        step = self._create_stabilization_step(self._configuration)
         while step:
             steps.append(step)
-            self._execute_step(step)
-            step = self._compute_stabilization_step()
+            self._apply_step(step)
+            step = self._create_stabilization_step(self._configuration)
         return steps
 
     def __evaluate_contract_conditions(self, obj: Union[model.Transition, model.StateMixin],
