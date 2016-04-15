@@ -1,7 +1,7 @@
 pyyaml
 pykwalify
 behave
+typing
 coverage
 sphinx
-typing
-mypy-lang
+sphinx-autodoc-typehints

@@ -4,7 +4,7 @@ python:
 - 3.5
 - nightly
 install:
-- pip install coveralls coverage wheel sphinx
+- pip install coveralls coverage wheel sphinx sphinx-autodoc-typehints
 - pip install -e .
 script:
 - coverage run --source sismic -m unittest discover
