@@ -406,6 +406,8 @@ class Interpreter:
         entered_states = list(map(self._statechart.state_for, step.entered_states))
         exited_states = list(map(self._statechart.state_for, step.exited_states))
 
+        active_configuration = set(self._configuration)  # Copy
+
         # Exit states
         for state in exited_states:
             # Execute exit action
@@ -414,24 +416,24 @@ class Interpreter:
             # Postconditions
             self.__evaluate_contract_conditions(state, 'postconditions', step)
 
-        # Deal with history: this only concerns compound states
-        exited_compound_states = list(filter(lambda s: isinstance(s, model.CompoundState), exited_states))
-        for state in exited_compound_states:
-            # Look for an HistoryStateMixin among its children
-            for child_name in self._statechart.children_for(state.name):
-                child = self._statechart.state_for(child_name)
-                if isinstance(child, model.DeepHistoryState):
-                    # This MUST contain at least one element!
-                    active = self._configuration.intersection(self._statechart.descendants_for(state.name))
-                    assert len(active) >= 1
-                    self._memory[child.name] = list(active)
-                elif isinstance(child, model.ShallowHistoryState):
-                    # This MUST contain exactly one element!
-                    active = self._configuration.intersection(self.statechart.children_for(state.name))
-                    assert len(active) == 1
-                    self._memory[child.name] = list(active)
-        # Update configuration
-        self._configuration = self._configuration.difference(step.exited_states)
+            # Deal with history
+            if isinstance(state, model.CompoundState):
+                # Look for an HistoryStateMixin among its children
+                for child_name in self._statechart.children_for(state.name):
+                    child = self._statechart.state_for(child_name)
+                    if isinstance(child, model.DeepHistoryState):
+                        # This MUST contain at least one element!
+                        active = active_configuration.intersection(self._statechart.descendants_for(state.name))
+                        assert len(active) >= 1
+                        self._memory[child.name] = list(active)
+                    elif isinstance(child, model.ShallowHistoryState):
+                        # This MUST contain exactly one element!
+                        active = active_configuration.intersection(self.statechart.children_for(state.name))
+                        assert len(active) == 1
+                        self._memory[child.name] = list(active)
+
+            # Remove state from active configuration
+            self._configuration.remove(state.name)
 
         # Execute transition
         if step.transition and step.transition.action:
@@ -454,8 +456,8 @@ class Interpreter:
             # Execute entry action
             self._evaluator.execute_onentry(state)
 
-        # Update configuration
-        self._configuration = self._configuration.union(step.entered_states)
+            # Update configuration
+            self._configuration.add(state.name)
 
     def __stabilize(self) -> List[model.MicroStep]:
         """

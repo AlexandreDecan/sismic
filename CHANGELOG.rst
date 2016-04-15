@@ -12,6 +12,9 @@ Some refactoring for the ``interpreter.Interpreter`` class:
 - (Changed) ``_execute_step`` is now ``_apply_step``.
 - (Changed) ``_compute_stabilization_step`` is now ``_create_stabilization_step`` and accepts a list of state names
 - (Changed) ``_compute_transitions_step`` is now ``_create_steps``.
+- (Fixed) States are added/removed from the active configuration as soon as they are entered/exited.
+  Previously, the configuration was only updated at the end of the step (and could possibly lead to inaccurate results
+  when using ``active(name)`` in a ``PythonEvaluator``).
 
 0.20.5 (2016-04-14)
 -------------------
