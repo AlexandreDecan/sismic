@@ -336,10 +336,10 @@ class Statechart:
 
         :param names: a list of state names
         :return: the names of the leaves in *names*
-        :raise StatechartError: if state does not exist
+        :raise StatechartError: if a state does not exist
         """
         leaves = []  # type: List[str]
-        names = set(names)  # Lookup is more efficient
+        names = set(names)  # Lookups in set are more efficient
 
         for name in names:
             for descendant in self.descendants_for(name):  # Raise a StatechartError if it does not exist!
@@ -396,12 +396,12 @@ class Statechart:
         """
         Rotate given transition.
 
-        You MUST specify *new_source* (a valid state name) or *new_target* (a valid state name or None) or both.
+        You MUST specify either *new_source* (a valid state name) or *new_target* (a valid state name or None) or both.
 
         :param transition: a *Transition* instance
         :param new_source: a state name
         :param new_target: a state name or None
-        :raise StatechartError: if transition or state do not exist.
+        :raise StatechartError: if given transition or a given state does not exist.
         """
         # Check that either new_source or new_target is set
         if 'new_source' not in kwargs and 'new_target' not in kwargs:
