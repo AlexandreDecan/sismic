@@ -172,7 +172,7 @@ class Interpreter:
             return model.MacroStep(time=self.time, steps=[step] + self.__stabilize())
 
         # Eventless transitions first
-        transitions = self._select_eventless_transitions()
+        transitions = self._select_transitions(event=None)
 
         if len(transitions) > 0:
             event = None  # type: Optional[model.Event]
@@ -194,6 +194,7 @@ class Interpreter:
                 return model.MacroStep(time=self.time, steps=[model.MicroStep(event=event)])
 
         # We get a list of transitions to perform
+        transitions = self._filter_transitions(transitions)
         transitions = self._sort_transitions(transitions)
 
         # Compute and execute the resulting steps
@@ -214,32 +215,31 @@ class Interpreter:
 
         return macro_step
 
-    def _select_eventless_transitions(self) -> List[model.Transition]:
-        """
-        Return a list of eventless transitions that can be triggered.
-
-        :return: a list of *Transition* instances
-        """
-        return self._select_transitions(event=None)
-
     def _select_transitions(self, event: model.Event=None) -> List[model.Transition]:
         """
         Return a list of transitions that can be triggered according to the given event, or eventless
         transition if *event* is None.
-        Transitions are kept according to a inner-first/source-state semantic.
 
         :param event: event to consider
         :return: a list of *Transition* instances
         """
-        transitions = set()
+        transitions = []
 
         # Retrieve the firable transitions for all active state
         for transition in self._statechart.transitions:
             if (transition.event == getattr(event, 'name', None) and transition.source in self._configuration and
                     (transition.guard is None or self._evaluator.evaluate_guard(transition, event))):
-                transitions.add(transition)
+                transitions.append(transition)
+        return transitions
 
-        # inner-first/source-state
+    def _filter_transitions(self, transitions: List[model.Transition]) -> List[model.Transition]:
+        """
+        Given a list of transitions, return a filtered list of transitions with respect to the
+        inner-first/source-state semantic.
+
+        :param transitions: a list of *Transition* instances
+        :return: a list of *Transition* instances
+        """
         removed_transitions = set()
         for transition in transitions:
             source_state_descendants = self._statechart.descendants_for(transition.source)
@@ -248,7 +248,7 @@ class Interpreter:
                     removed_transitions.add(transition)
                     break
 
-        return list(transitions.difference(removed_transitions))
+        return list(set(transitions).difference(removed_transitions))
 
     def _sort_transitions(self, transitions: List[model.Transition]) -> List[model.Transition]:
         """
