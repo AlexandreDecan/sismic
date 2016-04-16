@@ -163,42 +163,37 @@ class Interpreter:
 
         :return: a macro step or *None* if nothing happened
         """
-
-        # Initial step and stabilization
+        # Initialization
         if not self._initialized:
-            step = model.MicroStep(entered_states=[self._statechart.root])
-            self._apply_step(step)
+            computed_steps = [model.MicroStep(entered_states=[self._statechart.root])]
             self._initialized = True
-            return model.MacroStep(time=self.time, steps=[step] + self.__stabilize())
-
-        # Eventless transitions first
-        transitions = self._select_transitions(event=None)
-
-        if len(transitions) > 0:
-            event = None  # type: Optional[model.Event]
         else:
-            event = self._select_event()
-            if event is None:
-                return None
-
-            # If the event can not be processed, discard it
-            transitions = self._select_transitions(event)
+            # Look for eventless transitions first
+            event = None  # type: Optional[model.Event]
+            transitions = self._select_transitions(event=event)
             if len(transitions) == 0:
-                return model.MacroStep(time=self.time, steps=[model.MicroStep(event=event)])
+                # Look for evented transitions
+                event = self._select_event()
+                if event is None:
+                    return None  # No event means no step!
+                transitions = self._select_transitions(event=event)
 
-        # We get a list of transitions to perform
-        transitions = self._sort_transitions(
-            self._filter_transitions(transitions)
-        )
+            # No transition? Empty step!
+            if len(transitions) == 0:
+                computed_steps = [model.MicroStep(event=event)]
+            else:
+                # Select the transitions that will be performed
+                transitions = self._sort_transitions(
+                    self._filter_transitions(transitions)
+                )
+                computed_steps = self._create_steps(event, transitions)
 
-        # Compute and execute the resulting steps
+        # Execute the steps
         executed_steps = []
-        steps = self._create_steps(event, transitions)
-        for step in steps:
+        for step in computed_steps:
             self._apply_step(step)
             executed_steps.append(step)
-            for stabilization_step in self.__stabilize():
-                executed_steps.append(stabilization_step)
+            executed_steps.extend(self.__stabilize())
 
         macro_step = model.MacroStep(time=self.time, steps=executed_steps)
 
@@ -211,7 +206,7 @@ class Interpreter:
 
     def _select_event(self) -> Optional[model.Event]:
         """
-        Return the next available event if any.
+        Return (and consume!) the next available event if any.
         This method prioritizes internal events over external ones.
 
         :return: An instance of Event or None if no event is available

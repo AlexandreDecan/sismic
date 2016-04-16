@@ -34,7 +34,6 @@ Some refactoring for the ``interpreter.Interpreter`` class:
   executed step.
 - (Fixed) Internal events that are sequentially sent are now sequentially consumed (and not anymore in reverse order).
 
-
 0.20.2 (2016-02-24)
 -------------------
 
