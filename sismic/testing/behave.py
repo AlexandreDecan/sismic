@@ -33,7 +33,7 @@ def transitions_coverage(transitions, processed):
     processed_stats = Counter(processed)
     coverage_stat = len(processed_stats.keys()) / len(transitions)
 
-    print('Transition coverage: {:.2f}%'.format(100 * coverage_stat))
+    print('Transition coverage: {:.2%}'.format(coverage_stat))
     print('Processed transitions:', ' | '.join(('{} ({})'.format(k, v) for k, v in processed_stats.most_common())))
 
 
