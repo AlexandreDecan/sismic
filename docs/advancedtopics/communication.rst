@@ -27,6 +27,9 @@ Binding statecharts
 Every instance of :py:class:`~sismic.interpreter.Interpreter` exposes a :py:meth:`~sismic.interpreter.Interpreter.bind`
 method which allows to bind statecharts.
 
+.. automethod:: sismic.interpreter.Interpreter.bind
+    :noindex:
+
 When an interpreter ``interpreter_1`` is bound to an interpreter ``interpreter_2`` using
 ``interpreter_1.bind(interpreter_2)``, the **internal** events that are sent by ``interpreter_1`` are automatically
 propagated as **external** events to ``interpreter_2``.
