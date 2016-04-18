@@ -7,7 +7,7 @@ from sismic import model
 from sismic.code import Evaluator, PythonEvaluator
 from sismic.exceptions import InvariantError, PreconditionError, PostconditionError
 from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
-from typing import Optional, List, Union, Callable, Any, cast, Iterable
+from typing import Optional, List, Union, Callable, Any, cast, Iterable, Mapping
 
 __all__ = ['Interpreter', 'log_trace', 'run_in_background']
 
@@ -26,8 +26,8 @@ class Interpreter:
     """
 
     def __init__(self, statechart: model.Statechart,
-                 evaluator_klass: Callable[['Interpreter', dict], Evaluator]=PythonEvaluator,
-                 initial_context: dict=None,
+                 evaluator_klass: Callable[['Interpreter', Mapping], Evaluator]=PythonEvaluator,
+                 initial_context: Mapping=None,
                  ignore_contract: bool=False) -> None:
         # Internal variables
         self._ignore_contract = ignore_contract
@@ -70,7 +70,7 @@ class Interpreter:
         return sorted(self._configuration, key=lambda s: (self._statechart.depth_for(s), s))
 
     @property
-    def context(self) -> dict:
+    def context(self) -> Mapping[str, Any]:
         """
         The context of execution.
         """
@@ -431,12 +431,11 @@ class Interpreter:
             self._configuration.remove(state.name)
 
         # Execute transition
-        if step.transition and step.transition.action:
+        if step.transition:
             # Preconditions and invariants
             self.__evaluate_contract_conditions(step.transition, 'preconditions', step)
             self.__evaluate_contract_conditions(step.transition, 'invariants', step)
 
-            # Execution
             self._evaluator.execute_action(step.transition, step.event)
 
             # Postconditions and invariants
