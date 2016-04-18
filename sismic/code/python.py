@@ -156,15 +156,16 @@ class PythonEvaluator(Evaluator):
 
         self.__evaluable_code = {}  # type: Dict[str, CodeType]
         self.__executable_code = {}  # type: Dict[str, CodeType]
-
-        # Initialize nested contexts
         self.__contexts = {}  # type: Dict[str, Context]
-        sc = self._interpreter.statechart  # type: Statechart
 
-        self.__contexts[sc.root] = self._context.new_child()
-        for name in sc.descendants_for(sc.root):
-            parent_name = sc.parent_for(name)
-            self.__contexts[name] = self.__contexts[parent_name].new_child()
+        if getattr(interpreter, 'statechart', None) is not None:
+            # Initialize nested contexts
+            sc = self._interpreter.statechart  # type: Statechart
+
+            self.__contexts[sc.root] = self._context.new_child()
+            for name in sc.descendants_for(sc.root):
+                parent_name = sc.parent_for(name)
+                self.__contexts[name] = self.__contexts[parent_name].new_child()
 
     @property
     def context(self) -> Context:
