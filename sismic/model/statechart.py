@@ -392,7 +392,7 @@ class Statechart:
         except ValueError:
             raise StatechartError('Transition {} does not exist'.format(transition))
 
-    def rotate_transition(self, transition: Transition, **kwargs) -> None:
+    def rotate_transition(self, transition: Transition, new_source: str='', new_target: Optional[str]='') -> None:
         """
         Rotate given transition.
 
@@ -404,7 +404,7 @@ class Statechart:
         :raise StatechartError: if given transition or a given state does not exist.
         """
         # Check that either new_source or new_target is set
-        if 'new_source' not in kwargs and 'new_target' not in kwargs:
+        if new_source == new_target == '':
             raise ValueError('You must at least specify the new source or new target')
 
         # Check that transition exists
@@ -412,19 +412,19 @@ class Statechart:
             raise StatechartError('Unknown transition {}'.format(transition))
 
         # Rotate using source
-        if 'new_source' in kwargs:
-            new_source_state = self.state_for(kwargs['new_source'])
+        if new_source != '':
+            new_source_state = self.state_for(new_source)
             if not isinstance(new_source_state, TransitionStateMixin):
                 raise StatechartError('{} cannot have transitions'.format(new_source_state))
             assert isinstance(new_source_state, StateMixin)
             transition._source = new_source_state.name
 
         # Rotate using target
-        if 'new_target' in kwargs:
-            if kwargs['new_target'] is None:
+        if new_target != '':
+            if new_target is None:
                 transition._target = None
             else:
-                new_target_state = self.state_for(kwargs['new_target'])
+                new_target_state = self.state_for(new_target)
                 transition._target = new_target_state.name
 
     def transitions_from(self, source: str) -> List[Transition]:
