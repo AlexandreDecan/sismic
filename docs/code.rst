@@ -20,8 +20,7 @@ By default, Sismic provides two built-in :py:class:`~sismic.code.Evaluator` subc
  - A :py:class:`~sismic.code.DummyEvaluator` that always evaluates to ``True`` and silently executes nothing when
    it is called. Its context is an empty dictionary.
 
-An instance of :py:class:`~sismic.code.PythonEvaluator` can evaluate and execute Python code specified in the statechart.
-The key point to understand how it works is the concept of ``context``, which is a dictionary-like structure that contains the data
+The key point to understand how an evaluator works is the concept of ``context``, which is a dictionary-like structure that contains the data
 that is exposed to the code fragments contained in the statechart (ie. override ``__locals__``).
 
 As an example, consider the following partial statechart definition.
@@ -50,8 +49,7 @@ When a :py:class:`~sismic.code.PythonEvaluator` instance is initialized, a prepo
 
     evaluator = PythonEvaluator(initial_context={'x': 1, 'math': my_favorite_module})
 
-For convenience, the initial context can be directly provided to an :py:class:`~sismic.interpreter.Interpreter`
-constructor.
+For convenience, the initial context can be directly provided to the constructor of an :py:class:`~sismic.interpreter.Interpreter`.
 
 .. note:: The initial context is evaluated *before* any code contained in the statechart.
     As a consequence, this implies that if a same variable name is used both in the initial context and
@@ -103,7 +101,7 @@ or equivalently,
 
 .. warning::
 
-    Under the hood, a Python evaluator makes use of ``eval()`` and ``exec()`` with a local context.
+    Under the hood, a Python evaluator makes use of ``eval()`` and ``exec()`` with global and local contexts.
     This can lead to some *weird* issues with variable scope (as in list comprehensions or lambda's).
     See `this question on Stackoverflow <http://stackoverflow.com/questions/32894942/listcomp-unable-to-access-locals-defined-in-code-called-by-exec-if-nested-in-fun>`__ for more information.
 

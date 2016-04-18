@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 from sismic import code
+from sismic.code.python import Context
 from sismic import exceptions
 from sismic.model import Event, InternalEvent
 
@@ -22,56 +23,39 @@ class DummyEvaluatorTests(unittest.TestCase):
         self.assertEqual(self.evaluator.context, {})
 
 
-class PythonEvaluatorTests(unittest.TestCase):
+class ContextTests(unittest.TestCase):
     def setUp(self):
-        context = {
-            'x': 1,
-            'y': 2,
-            'z': 3
-        }
+        self.context = Context()
 
-        interpreter = MagicMock(name='Interpreter')
-        interpreter.time = MagicMock(return_value=0)
-        interpreter.queue = MagicMock(return_value=None)
-        interpreter.configuration = MagicMock(return_value=[])
+    def test_empty(self):
+        self.assertEqual(0, len(self.context))
 
-        self.evaluator = code.PythonEvaluator(interpreter=interpreter, initial_context=context)
-        self.interpreter = interpreter
+    def test_insert_root(self):
+        self.context['a'] = 1
+        self.assertEqual(1, self.context['a'])
 
-    def test_condition(self):
-        self.assertTrue(self.evaluator._evaluate_code('True'))
-        self.assertFalse(self.evaluator._evaluate_code('False'))
-        self.assertTrue(self.evaluator._evaluate_code('1 == 1'))
-        self.assertTrue(self.evaluator._evaluate_code('x == 1'))
-        with self.assertRaises(Exception):
-            self.evaluator._evaluate_code('a')
+    def test_delete_root(self):
+        self.context['a'] = 1
+        del self.context['a']
+        self.assertEqual(0, len(self.context))
 
-    def test_condition_on_event(self):
-        self.assertTrue(self.evaluator._evaluate_code('event.data[\'a\'] == 1', {'event': Event('test', a=1)}))
-        self.assertTrue(self.evaluator._evaluate_code('event.name == \'test\'', {'event': Event('test')}))
+    def test_insert_nested(self):
+        nested = self.context.new_child()
+        nested['a'] = 1
+        self.assertEqual(1, nested['a'])
+        self.assertEqual(0, len(self.context.map))
+        self.assertEqual(1, len(nested.map))
 
-    def test_execution(self):
-        self.evaluator._execute_code('a = 1')
-        self.assertEqual(self.evaluator.context['a'], 1)
-        self.evaluator._execute_code('x = 2')
-        self.assertEqual(self.evaluator.context['x'], 2)
+    def test_update_nested(self):
+        nested = self.context.new_child()
+        self.context['a'] = 1
+        nested['b'] = 2
+        self.assertEqual(1, self.context.map['a'])
+        self.assertEqual(2, nested.map['b'])
 
-    def test_invalid_condition(self):
-        with self.assertRaises(exceptions.CodeEvaluationError):
-            self.evaluator._evaluate_code('x.y')
+        nested['a'] = 3
+        self.assertEqual(3, self.context['a'])
 
-    def test_invalid_action(self):
-        with self.assertRaises(exceptions.CodeEvaluationError):
-            self.evaluator._execute_code('x = x.y')
-
-    def test_send(self):
-        self.evaluator._execute_code('send("hello")')
-        self.interpreter.queue.assert_called_with(InternalEvent('hello'))
-
-    def test_add_variable_in_context(self):
-        self.evaluator._execute_code('a = 1\nassert a == 1')
-        self.assertTrue(self.evaluator._evaluate_code('a == 1'))
-
-    @unittest.skip('http://stackoverflow.com/questions/32894942/listcomp-unable-to-access-locals-defined-in-code-called-by-exec-if-nested-in-fun')
-    def test_access_outer_scope(self):
-        self.evaluator._execute_code('a = 1\nd = [x for x in range(10) if x!=a]')
+        self.context['b'] = 4
+        self.assertEqual(2, nested['b'])
+        self.assertEqual(4, self.context['b'])
