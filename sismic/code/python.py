@@ -132,8 +132,9 @@ class PythonEvaluator(Evaluator):
     If an exception occurred while executing or evaluating a piece of code, it is propagated by the
     evaluator.
 
-    Each piece of code is executed in a context. The context of a code is defined by the context of its associated
-    state or transition. The context of a state is built upon the context of its parent, and so one until the global
+    Each piece of code is executed with (a partially isolated) local context.
+    The context of a code is defined by the context of its associated state or transition.
+    The context of a state is built upon the context of its parent, and so one until the global
     context is reached (ie. the context defined by the *initial_context* and the *preamble* variables).
     The context of a transition is built upon the context of its source state.
     Notice that, while you have full access to an ancestor's context, the converse is not true: every variable that
