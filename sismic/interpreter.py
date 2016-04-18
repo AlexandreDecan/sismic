@@ -552,4 +552,3 @@ def run_in_background(interpreter: Interpreter,
 
     thread.start()
     return thread
-

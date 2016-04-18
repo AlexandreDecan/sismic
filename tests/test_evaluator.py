@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 from sismic import code
-from sismic.code.python import Context
+from sismic.code.python import Context, FrozenContext
 
 
 class DummyEvaluatorTests(unittest.TestCase):
@@ -19,6 +19,22 @@ class DummyEvaluatorTests(unittest.TestCase):
         self.assertIsNone(self.evaluator._execute_code('blablabla'))
 
         self.assertEqual(self.evaluator.context, {})
+
+
+class FrozenContextTests(unittest.TestCase):
+    def setUp(self):
+        self.context = {'a': 1, 'b': 2}
+
+    def test_freeze(self):
+        freeze = FrozenContext(self.context)
+        self.assertEqual(len(freeze), 2)
+        self.assertEqual(freeze.a, 1)
+        self.assertEqual(freeze.b, 2)
+
+    def test_freeze_is_frozen(self):
+        freeze = FrozenContext(self.context)
+        self.context['a'] = 2
+        self.assertEqual(freeze.a, 1)
 
 
 class ContextTests(unittest.TestCase):
