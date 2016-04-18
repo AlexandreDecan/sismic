@@ -53,14 +53,14 @@ class MacroStep:
         self._steps = steps
 
     @property
-    def steps(self):
+    def steps(self) -> List[MicroStep]:
         """
         List of micro steps
         """
         return self._steps
 
     @property
-    def time(self):
+    def time(self) -> float:
         """
         Time at which this step was executed.
         """

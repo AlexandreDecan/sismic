@@ -2,8 +2,6 @@ import unittest
 from unittest.mock import MagicMock
 from sismic import code
 from sismic.code.python import Context
-from sismic import exceptions
-from sismic.model import Event, InternalEvent
 
 
 class DummyEvaluatorTests(unittest.TestCase):

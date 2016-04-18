@@ -42,7 +42,7 @@ Sismic requires Python >=3.4
 Documentation
 -------------
 
-The documentation for the latest distributed version is available at `sismic.readthedocs.org <http://sismic.readthedocs.org/>`_.
+The documentation for the latest distributed version is available on `sismic.readthedocs.org <http://sismic.readthedocs.org/>`_.
 
 Many examples are available in `docs/examples <https://github.com/AlexandreDecan/sismic/tree/master/docs/examples>`_.
 

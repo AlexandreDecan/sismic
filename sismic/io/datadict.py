@@ -3,7 +3,7 @@ from collections import OrderedDict
 from sismic.model import Transition, Statechart, BasicState, CompoundState, OrthogonalState, ShallowHistoryState, \
     DeepHistoryState, FinalState, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 from sismic.exceptions import StatechartError
-from typing import Any
+from typing import Any, cast, Dict, Mapping, MutableMapping
 
 from typing import Tuple, List, Optional
 
@@ -11,7 +11,7 @@ from typing import Tuple, List, Optional
 __all__ = ['import_from_dict', 'export_to_dict']
 
 
-def import_from_dict(data: dict) -> Statechart:
+def import_from_dict(data: Mapping[str, Any]) -> Statechart:
     data = data['statechart']
 
     statechart = Statechart(name=data['name'],
@@ -21,7 +21,7 @@ def import_from_dict(data: dict) -> Statechart:
     states = []  # (StateMixin instance, parent name)
     transitions = []  # Transition instances
     # (State dict, parent name)
-    data_to_consider = [(data['root state'], None)]  # type: List[Tuple[dict, Optional[str]]]
+    data_to_consider = [(data['root state'], None)]  # type: List[Tuple[Mapping[str, Any], Optional[str]]]
 
     while data_to_consider:
         state_data, parent_name = data_to_consider.pop()
@@ -62,7 +62,7 @@ def import_from_dict(data: dict) -> Statechart:
     return statechart
 
 
-def _import_transition_from_dict(state_name: str, transition_d: dict) -> Transition:
+def _import_transition_from_dict(state_name: str, transition_d: Mapping[str, Any]) -> Transition:
     """
     Return a Transition instance from given dict.
 
@@ -86,7 +86,7 @@ def _import_transition_from_dict(state_name: str, transition_d: dict) -> Transit
     return transition
 
 
-def _import_state_from_dict(state_d: dict) -> StateMixin:
+def _import_state_from_dict(state_d: Mapping[str, Any]) -> StateMixin:
     """
     Return the appropriate type of state from given dict.
 
@@ -130,7 +130,7 @@ def _import_state_from_dict(state_d: dict) -> StateMixin:
     return state
 
 
-def export_to_dict(statechart: Statechart, ordered=True) -> dict:
+def export_to_dict(statechart: Statechart, ordered=True) -> Mapping[str, Any]:
     """
     Export given StateChart instance to a dict.
 
@@ -138,7 +138,7 @@ def export_to_dict(statechart: Statechart, ordered=True) -> dict:
     :param ordered: set to True to use an ordereddict instead of a dict
     :return: a dict that can be used in *_import_from_dict*
     """
-    d = OrderedDict() if ordered else {}  # type: dict
+    d = OrderedDict() if ordered else {}  # type: MutableMapping
     d['name'] = statechart.name
     if statechart.description:
         d['description'] = statechart.description
@@ -150,7 +150,7 @@ def export_to_dict(statechart: Statechart, ordered=True) -> dict:
     return {'statechart': d}
 
 
-def _export_state_to_dict(statechart: Statechart, state_name: str, ordered=True) -> dict:
+def _export_state_to_dict(statechart: Statechart, state_name: str, ordered=True) -> Mapping[str, Any]:
     data = OrderedDict() if ordered else {}
 
     state = statechart.state_for(state_name)
@@ -192,7 +192,7 @@ def _export_state_to_dict(statechart: Statechart, state_name: str, ordered=True)
 
     if isinstance(state, TransitionStateMixin):
         # event, guard, target, action
-        transitions = statechart.transitions_from(state.name)
+        transitions = statechart.transitions_from(cast(StateMixin, state).name)
         if len(transitions) > 0:
             data['transitions'] = []
 
@@ -209,7 +209,7 @@ def _export_state_to_dict(statechart: Statechart, state_name: str, ordered=True)
                 data['transitions'].append(transition_data)
 
     if isinstance(state, CompositeStateMixin):
-        children = statechart.children_for(state.name)
+        children = statechart.children_for(cast(StateMixin, state).name)
         children_data = [_export_state_to_dict(statechart, child, ordered) for child in children]
 
         if isinstance(state, CompoundState):

@@ -16,11 +16,11 @@ class Pause:
 
     :param duration: the duration of this pause
     """
-    def __init__(self, duration: int) -> None:
+    def __init__(self, duration: float) -> None:
         self._duration = duration
 
     @property
-    def duration(self):
+    def duration(self) -> float:
         """
         The duration of this pause
         """
@@ -114,7 +114,7 @@ def story_from_trace(trace: List[MacroStep]) -> Story:
     :return: A story
     """
     story = Story()
-    time = 0
+    time = 0  # type: float
 
     for macrostep in trace:
         if macrostep.time > time:

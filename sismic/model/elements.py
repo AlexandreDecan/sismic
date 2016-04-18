@@ -3,7 +3,7 @@ from abc import ABCMeta
 
 __all__ = ['ContractMixin', 'StateMixin', 'ActionStateMixin', 'TransitionStateMixin', 'CompositeStateMixin',
            'HistoryStateMixin', 'BasicState', 'CompoundState', 'OrthogonalState', 'ShallowHistoryState',
-           'Deep']
+           'DeepHistoryState']
 
 
 class ContractMixin(metaclass=ABCMeta):
