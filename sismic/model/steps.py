@@ -32,13 +32,6 @@ class MicroStep:
         return 'MicroStep({}, {}, >{}, <{})'.format(self.event, self.transition,
                                                     self.entered_states, self.exited_states)
 
-    def __eq__(self, other):
-        return (isinstance(other, MicroStep) and
-                self.event == other.event and
-                self.transition == other.transition and
-                self.entered_states == other.entered_states and
-                self.exited_states == other.exited_states)
-
 
 class MacroStep:
     """
@@ -106,8 +99,3 @@ class MacroStep:
     def __repr__(self):
         return 'MacroStep@{}({}, {}, >{}, <{})'.format(round(self.time, 3), self.event, self.transitions,
                                                        self.entered_states, self.exited_states)
-
-    def __eq__(self, other):
-        return (isinstance(other, MacroStep) and
-                self.time == other.time and
-                self.steps == other.steps)
