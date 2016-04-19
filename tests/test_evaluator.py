@@ -5,6 +5,9 @@ from sismic.model import Event, InternalEvent
 from sismic.code.python import Context, FrozenContext
 from sismic.exceptions import CodeEvaluationError
 
+from sismic.io import import_from_yaml
+from sismic.interpreter import Interpreter
+
 
 class DummyEvaluatorTests(unittest.TestCase):
     def setUp(self):
@@ -157,3 +160,54 @@ class PythonEvaluatorTests(unittest.TestCase):
     @unittest.skip('http://stackoverflow.com/questions/32894942/listcomp-unable-to-access-locals-defined-in-code-called-by-exec-if-nested-in-fun')
     def test_access_outer_scope(self):
         self.evaluator._execute_code('d = [x for x in range(10) if x!=a]', context=Context({'a': 1}))
+
+
+class PythonEvaluatorNestedContextTests(unittest.TestCase):
+    def setUp(self):
+        statechart = """
+        statechart:
+          name: test
+          preamble: x = y = 1
+          root state:
+            name: root
+            initial: s1
+            states:
+             - name: s1
+               on entry: x, z = 2, 1
+               transitions:
+                - target: s2
+                  guard: y == 1
+                  action: a, z, y = 2, 2, 2
+             - name: s2
+        """
+        sc = import_from_yaml(statechart)
+        self.intp = Interpreter(sc)
+
+    def test_initialization(self):
+        self.assertEqual(self.intp.context.get('x'), 1)
+        self.assertEqual(self.intp.context.get('y'), 1)
+        with self.assertRaises(KeyError):
+            _ = self.intp.context['z']
+        with self.assertRaises(KeyError):
+            _ = self.intp.context['a']
+
+    def test_global_context(self):
+        self.intp.execute()
+
+        self.assertEqual(self.intp.context.get('x'), 2)
+        self.assertEqual(self.intp.context.get('y'), 2)
+        with self.assertRaises(KeyError):
+            _ = self.intp.context['z']
+        with self.assertRaises(KeyError):
+            _ = self.intp.context['a']
+
+    def test_nested_context(self):
+        self.intp.execute()
+
+        s1 = self.intp._evaluator.context_for('s1')
+        self.assertEqual(s1['x'], 2)
+        self.assertEqual(s1['y'], 2)
+        self.assertEqual(s1['z'], 2)
+        with self.assertRaises(KeyError):
+            _ = s1['a']
+

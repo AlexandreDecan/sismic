@@ -3,7 +3,7 @@ from collections import OrderedDict
 from sismic.model import Transition, Statechart, BasicState, CompoundState, OrthogonalState, ShallowHistoryState, \
     DeepHistoryState, FinalState, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 from sismic.exceptions import StatechartError
-from typing import Any, cast, Dict, Mapping, MutableMapping
+from typing import Any, cast, Mapping, MutableMapping
 
 from typing import Tuple, List, Optional
 

@@ -1,5 +1,5 @@
 from .evaluator import Evaluator
-from collections import Mapping
+from typing import Mapping
 
 __all__ = ['DummyEvaluator']
 

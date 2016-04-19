@@ -61,7 +61,7 @@ class ExecutionWatcher:
             try:
                 return self.__interpreter.context[item]
             except KeyError:
-                raise AttributeError('Statechart under test\'s context has no attribute {}'.format(item))
+                raise AttributeError('Property statechart\'s context has no attribute {}'.format(item))
 
         def __copy__(self):
             return None
