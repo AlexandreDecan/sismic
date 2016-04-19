@@ -1,6 +1,6 @@
 from types import CodeType
 from functools import partial
-from typing import Dict, Iterator, cast, Any, Mapping, MutableMapping
+from typing import Dict, Iterator, cast, Any, Mapping, MutableMapping, Optional
 from itertools import chain
 import collections
 import copy
@@ -172,6 +172,14 @@ class PythonEvaluator(Evaluator):
     def context(self) -> Context:
         return self._context
 
+    def context_for(self, name: str) -> Context:
+        """
+        Context object for given state name.
+        :param name: State name
+        :return: Context object
+        """
+        return self.__contexts[name]
+
     def __send(self, name: str, **kwargs):
         """
         Add an internal event to interpreter queue.
@@ -268,7 +276,7 @@ class PythonEvaluator(Evaluator):
         except Exception as e:
             raise CodeEvaluationError('The above exception occurred while executing:\n{}'.format(code)) from e
 
-    def execute_statechart(self, statechart: Statechart):
+    def execute_statechart(self, statechart: Statechart) -> None:
         """
         Execute the initial code of a statechart.
         This method is called at the very beginning of the execution.
@@ -276,8 +284,8 @@ class PythonEvaluator(Evaluator):
         :param statechart: statechart to consider
         """
         if statechart.preamble:
-            return self._execute_code(statechart.preamble,
-                                      context=self._context)
+            self._execute_code(statechart.preamble,
+                               context=self._context)
 
     def evaluate_guard(self, transition: Transition, event: Event) -> bool:
         """
@@ -296,7 +304,7 @@ class PythonEvaluator(Evaluator):
                                    context=self.__contexts[transition.source].new_child(),
                                    additional_context=additional_context)
 
-    def execute_action(self, transition: Transition, event: Event) -> bool:
+    def execute_action(self, transition: Transition, event: Event) -> None:
         """
         Execute the action for given transition.
         This method is called for every transition that is processed, even those with no *action*.
@@ -306,11 +314,11 @@ class PythonEvaluator(Evaluator):
         """
         self.__idle_time[transition.source] = self._interpreter.time
 
-        return self._execute_code(getattr(transition, 'action', None),
-                                  context=self.__contexts[transition.source].new_child(),
-                                  additional_context={'event': event})
+        self._execute_code(getattr(transition, 'action', None),
+                           context=self.__contexts[transition.source].new_child(),
+                           additional_context={'event': event})
 
-    def execute_onentry(self, state: StateMixin):
+    def execute_onentry(self, state: StateMixin) -> None:
         """
         Execute the on entry action for given state.
         This method is called for every state that is entered, even those with no *on_entry*.
@@ -320,18 +328,18 @@ class PythonEvaluator(Evaluator):
         self.__entry_time[state.name] = self._interpreter.time
         self.__idle_time[state.name] = self._interpreter.time
 
-        return self._execute_code(getattr(state, 'on_entry', None),
-                                  context=self.__contexts[state.name])
+        self._execute_code(getattr(state, 'on_entry', None),
+                           context=self.__contexts[state.name])
 
-    def execute_onexit(self, state: StateMixin):
+    def execute_onexit(self, state: StateMixin) -> None:
         """
         Execute the on exit action for given state.
         This method is called for every state that is exited, even those with no *on_exit*.
 
         :param state: the considered state
         """
-        return self._execute_code(getattr(state, 'on_exit', None),
-                                  context=self.__contexts[state.name])
+        self._execute_code(getattr(state, 'on_exit', None),
+                           context=self.__contexts[state.name])
 
     def evaluate_preconditions(self, obj, event: Event=None) -> Iterator[str]:
         """

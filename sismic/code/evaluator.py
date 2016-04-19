@@ -58,7 +58,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
-    def execute_statechart(self, statechart: Statechart):
+    def execute_statechart(self, statechart: Statechart) -> None:
         """
         Execute the initial code of a statechart.
         This method is called at the very beginning of the execution.
@@ -66,7 +66,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param statechart: statechart to consider
         """
         if statechart.preamble:
-            return self._execute_code(statechart.preamble)
+            self._execute_code(statechart.preamble)
 
     def evaluate_guard(self, transition: Transition, event: Event) -> bool:
         """
@@ -90,7 +90,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         if transition.action:
             return self._execute_code(transition.action, {'event': event})
 
-    def execute_onentry(self, state: StateMixin):
+    def execute_onentry(self, state: StateMixin) -> None:
         """
         Execute the on entry action for given state.
         This method is called for every state that is entered, even those with no *on_entry*.
@@ -98,9 +98,9 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param state: the considered state
         """
         if getattr(state, 'on_entry', None):
-            return self._execute_code(cast(ActionStateMixin, state).on_entry)
+            self._execute_code(cast(ActionStateMixin, state).on_entry)
 
-    def execute_onexit(self, state: StateMixin):
+    def execute_onexit(self, state: StateMixin) -> None:
         """
         Execute the on exit action for given state.
         This method is called for every state that is exited, even those with no *on_exit*.
@@ -108,7 +108,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param state: the considered state
         """
         if getattr(state, 'on_exit', None):
-            return self._execute_code(cast(ActionStateMixin, state).on_exit)
+            self._execute_code(cast(ActionStateMixin, state).on_exit)
 
     def evaluate_preconditions(self, obj, event: Event=None) -> Iterator[str]:
         """
