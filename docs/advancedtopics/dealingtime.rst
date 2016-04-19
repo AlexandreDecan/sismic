@@ -182,7 +182,8 @@ This is illustrated in the following example.
         statechart = import_from_yaml(f)
 
     # Set the initial time
-    interpreter = Interpreter(statechart, initial_time=time.time())
+    interpreter = Interpreter(statechart)
+    interpreter.time = time.time()
 
     # Send an initial event
     interpreter.queue(Event('floorSelected', floor=4))
@@ -202,7 +203,7 @@ The output should look like::
 
 As our statechart does not define any way to reach a final configuration,
 the ``not interpreter.final`` condition always holds,
-and the executiong needs to be interrupted manually.
+and the execution needs to be interrupted manually.
 
 
 Asynchronous execution
