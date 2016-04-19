@@ -226,7 +226,7 @@ class JavascriptEvaluatorTests(unittest.TestCase):
 
         interpreter = MagicMock(name='Interpreter')
         interpreter.time = 0
-        interpreter.queue = []
+        interpreter.queue = MagicMock()
         interpreter.configuration = []
 
         self.evaluator = code.JavascriptEvaluator(interpreter=interpreter, initial_context=context)
