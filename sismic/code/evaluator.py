@@ -23,7 +23,7 @@ class Evaluator(metaclass=abc.ABCMeta):
     :param initial_context: an optional dictionary to populate the context
     """
     @abc.abstractmethod
-    def __init__(self, interpreter=None, initial_context: Mapping=None) -> None:
+    def __init__(self, interpreter=None, *, initial_context: Mapping=None) -> None:
         pass
 
     @property

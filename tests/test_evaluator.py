@@ -117,7 +117,7 @@ class PythonEvaluatorTests(unittest.TestCase):
         interpreter.statechart = MagicMock()
         interpreter.configuration = []
 
-        self.evaluator = code.PythonEvaluator(interpreter, context)
+        self.evaluator = code.PythonEvaluator(interpreter, initial_context=context)
         self.interpreter = interpreter
 
     def test_condition(self):

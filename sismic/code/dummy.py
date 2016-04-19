@@ -9,7 +9,7 @@ class DummyEvaluator(Evaluator):
     A dummy evaluator that does nothing and evaluates every condition to True.
     """
 
-    def __init__(self, interpreter=None, initial_context=None):
+    def __init__(self, interpreter=None, *, initial_context=None):
         super().__init__()
 
     @property

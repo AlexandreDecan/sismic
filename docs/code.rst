@@ -36,11 +36,11 @@ As an example, consider the following partial statechart definition.
         name: s1
         on entry: x += 1
 
-When the statechart is initialized, the ``context`` of a :py:class:`~sismic.code.PythonEvaluator` is ``{'x': 1, 'y': 0}``.
+When the statechart is initialized, the ``context`` of the :py:class:`~sismic.code.PythonEvaluator` is ``{'x': 1, 'y': 0}``.
 When *s1* is entered, the code will be evaluated with this context.
 After the execution of ``x += 1``, the context associates ``2`` to ``x``.
 
-When a :py:class:`~sismic.code.PythonEvaluator` instance is initialized, a prepopulated context can be specified:
+When a :py:class:`~sismic.code.PythonEvaluator` instance is initialized, an initial context can be specified:
 
 .. testcode::
 
