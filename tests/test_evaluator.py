@@ -241,8 +241,8 @@ class JavascriptEvaluatorTests(unittest.TestCase):
             self.evaluator._evaluate_code('a')
 
     def test_condition_on_event(self):
-        self.assertTrue(self.evaluator._evaluate_code('event.data[\'a\'] == 1', {'event': Event('test', a=1)}))
-        self.assertTrue(self.evaluator._evaluate_code('event.name == \'test\'', {'event': Event('test')}))
+        self.assertTrue(self.evaluator._evaluate_code('event.data[\'a\'] == 1', additional_context={'event': Event('test', a=1)}))
+        self.assertTrue(self.evaluator._evaluate_code('event.name == \'test\'', additional_context={'event': Event('test')}))
 
     def test_execution(self):
         self.evaluator._execute_code('a = 1')
@@ -251,11 +251,11 @@ class JavascriptEvaluatorTests(unittest.TestCase):
         self.assertEqual(self.evaluator.context['x'], 2)
 
     def test_invalid_condition(self):
-        with self.assertRaises(exceptions.CodeEvaluationError):
+        with self.assertRaises(CodeEvaluationError):
             self.evaluator._evaluate_code('unknown()')
 
     def test_invalid_action(self):
-        with self.assertRaises(exceptions.CodeEvaluationError):
+        with self.assertRaises(CodeEvaluationError):
             self.evaluator._execute_code('x = unknown()')
 
     def test_send(self):
