@@ -25,7 +25,7 @@ class Interpreter:
     :param ignore_contract: set to True to ignore contract checking during the execution.
     """
 
-    def __init__(self, statechart: model.Statechart,
+    def __init__(self, statechart: model.Statechart, *,
                  evaluator_klass: Callable[['Interpreter', Mapping], Evaluator]=PythonEvaluator,
                  initial_context: Mapping=None,
                  ignore_contract: bool=False) -> None:
@@ -42,7 +42,7 @@ class Interpreter:
         self._bound = []  # type: List[Callable[[model.Event], Any]]
 
         # Evaluator
-        self._evaluator = evaluator_klass(self, initial_context)
+        self._evaluator = evaluator_klass(self, initial_context=initial_context)
         self._evaluator.execute_statechart(statechart)
 
     @property

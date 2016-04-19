@@ -12,6 +12,8 @@ Some refactoring for the ``interpreter.Interpreter`` class:
 - (Changed) ``_execute_step`` is now ``_apply_step``.
 - (Changed) ``_compute_stabilization_step`` is now ``_create_stabilization_step`` and accepts a list of state names
 - (Changed) ``_compute_transitions_step`` is now ``_create_steps``.
+- (Changed) Except for the ``statechart`` parameter, all the parameters for ``Interpreter``'s constructor can now be
+  only provided by name.
 - (Fixed) Contracts on a transition are checked (if not explicitly disabled) even if the transition has no *action*.
 - (Fixed) ``Evaluator.execute_action`` is called even if the transition has no *action*.
 - (Fixed) States are added/removed from the active configuration as soon as they are entered/exited.
@@ -27,8 +29,9 @@ The default ``PythonEvaluator`` class has been completely rewritten:
 - (Changed) The code is now compiled (once) before is evaluation/execution. This should increase performance.
 - (Changed) The frozen context of a state (ie. ``__old__``) is now computed only if contracts are checked, and only
   if at least one invariant or one postcondition exists.
-- (Changed) The ``additional_context`` parameter of ``Evaluator._evaluate_code`` and ``Evaluator._execute_code`` must now
-  be provided by name only.
+- (Changed) The ``initial_context`` parameter of ``Evaluator``'s constructor can now only be provided by name.
+- (Changed) The ``additional_context`` parameter of ``Evaluator._evaluate_code`` and ``Evaluator._execute_code`` can
+  now only be provided by name.
 
 0.20.5 (2016-04-14)
 -------------------

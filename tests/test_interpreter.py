@@ -42,7 +42,7 @@ class SimulatorSimpleTests(unittest.TestCase):
     def setUp(self):
         with open('tests/yaml/simple.yaml') as f:
             sc = io.import_from_yaml(f)
-        self.interpreter = Interpreter(sc, DummyEvaluator)
+        self.interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
         # Stabilization
         self.interpreter.execute_once()
 
@@ -117,7 +117,7 @@ class SimulatorNonDeterminismTests(unittest.TestCase):
     def test_nondeterminism(self):
         with open('tests/yaml/nondeterministic.yaml') as f:
             sc = io.import_from_yaml(f)
-        interpreter = Interpreter(sc, DummyEvaluator)
+        interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
         # Stabilization
         interpreter.execute_once()
 
@@ -129,7 +129,7 @@ class SimulatorHistoryTests(unittest.TestCase):
     def setUp(self):
         with open('tests/yaml/history.yaml') as f:
             sc = io.import_from_yaml(f)
-        self.interpreter = Interpreter(sc, DummyEvaluator)
+        self.interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
         # Stabilization
         self.interpreter.execute_once()
 
@@ -165,7 +165,7 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
     def setUp(self):
         with open('tests/yaml/deep_history.yaml') as f:
             sc = io.import_from_yaml(f)
-        self.interpreter = Interpreter(sc, DummyEvaluator)
+        self.interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
         # Stabilization
         self.interpreter.execute_once()
 

@@ -124,4 +124,3 @@ def story_from_trace(trace: List[MacroStep]) -> Story:
         if macrostep.event and not isinstance(macrostep.event, InternalEvent):
             story.append(macrostep.event)
     return story
-

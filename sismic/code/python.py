@@ -145,7 +145,7 @@ class PythonEvaluator(Evaluator):
     :param initial_context: a dictionary that will be used as *__locals__*
     """
 
-    def __init__(self, interpreter=None, initial_context: Mapping=None) -> None:
+    def __init__(self, interpreter=None, *, initial_context: Mapping=None) -> None:
         super().__init__()
 
         self._context = Context(initial_context)
