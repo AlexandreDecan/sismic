@@ -27,9 +27,8 @@ class StopwatchApplication(tk.Frame):
 
         # Create a stopwatch object and pass it to the interpreter
         self.stopwatch = Stopwatch()
-        self.interpreter = Interpreter(statechart,
-                                       initial_context={'stopwatch': self.stopwatch},
-                                       initial_time=time.time())
+        self.interpreter = Interpreter(statechart, initial_context={'stopwatch': self.stopwatch})
+        self.interpreter.time = time.time()
 
         # Run the interpreter
         self.run()
