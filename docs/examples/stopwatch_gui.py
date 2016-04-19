@@ -22,7 +22,8 @@ class StopwatchApplication(tk.Frame):
         # Create a Stopwatch interpreter
         with open('stopwatch.yaml') as f:
             statechart = import_from_yaml(f)
-        self.interpreter = Interpreter(statechart, initial_time=time.time())
+        self.interpreter = Interpreter(statechart)
+        self.interpreter.time = time.time()
 
         # Bind interpreter events to the GUI
         self.interpreter.bind(self.event_handler)
