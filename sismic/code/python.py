@@ -210,17 +210,19 @@ class PythonEvaluator(Evaluator):
         """
         return self._interpreter.time - seconds >= self.__idle_time[name]
 
-    def _evaluate_code(self, code: str, additional_context: Mapping=None, context: Context=None) -> bool:
+    def _evaluate_code(self, code: str, *, additional_context: Mapping=None, context: Context=None) -> bool:
         """
         Evaluate given code using Python.
 
         :param code: code to evaluate
-        :param context: the current context for this piece of code
         :param additional_context: an optional additional context
+        :param context: the current context for this piece of code
         :return: truth value of *code*
         """
         if not code:
             return True
+        if context is None:
+            context = self._context
 
         compiled_code = self.__evaluable_code.get(code, None)
         if compiled_code is None:
@@ -237,16 +239,18 @@ class PythonEvaluator(Evaluator):
         except Exception as e:
             raise CodeEvaluationError('The above exception occurred while evaluating:\n{}'.format(code)) from e
 
-    def _execute_code(self, code: str, additional_context: Mapping=None, context: Context=None):
+    def _execute_code(self, code: str, *, additional_context: Mapping=None, context: Context=None) -> None:
         """
         Execute given code using Python.
 
         :param code: code to execute
-        :param context: the current context for this piece of code
         :param additional_context: an optional additional context
+        :param context: the current context for this piece of code
         """
         if not code:
             return
+        if context is None:
+            context = self._context
 
         compiled_code = self.__executable_code.get(code, None)
         if compiled_code is None:

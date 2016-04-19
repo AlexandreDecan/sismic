@@ -27,6 +27,8 @@ The default ``PythonEvaluator`` class has been completely rewritten:
 - (Changed) The code is now compiled (once) before is evaluation/execution. This should increase performance.
 - (Changed) The frozen context of a state (ie. ``__old__``) is now computed only if contracts are checked, and only
   if at least one invariant or one postcondition exists.
+- (Changed) The ``additional_context`` parameter of ``Evaluator._evaluate_code`` and ``Evaluator._execute_code`` must now
+  be provided by name only.
 
 0.20.5 (2016-04-14)
 -------------------

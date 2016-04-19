@@ -36,7 +36,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _evaluate_code(self, code: str, additional_context: Mapping=None) -> bool:
+    def _evaluate_code(self, code: str, *, additional_context: Mapping=None) -> bool:
         """
         Generic method to evaluate a piece of code. This method is a fallback if one of
         the other evaluate_* methods is not overridden.
@@ -48,7 +48,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _execute_code(self, code: str, additional_context: Mapping=None):
+    def _execute_code(self, code: str, *, additional_context: Mapping=None) -> None:
         """
         Generic method to execute a piece of code. This method is a fallback if one
         of the other execute_* methods is not overridden.
