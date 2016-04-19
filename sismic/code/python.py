@@ -1,6 +1,6 @@
 from types import CodeType
 from functools import partial
-from typing import Dict, Iterator, cast, Any, Mapping, MutableMapping, Optional
+from typing import Dict, Iterator, cast, Any, Mapping, MutableMapping
 from itertools import chain
 import collections
 import copy

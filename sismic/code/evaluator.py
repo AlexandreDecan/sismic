@@ -1,8 +1,7 @@
 import abc
 from sismic.model import ActionStateMixin
 from sismic.model import Event, Transition, StateMixin, Statechart
-from typing import cast, Iterator
-from collections import Mapping
+from typing import cast, Iterator, Mapping
 
 __all__ = ['Evaluator']
 
