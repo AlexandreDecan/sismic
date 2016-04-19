@@ -74,9 +74,9 @@ class ImportFromYamlTests(unittest.TestCase):
 class ExportToDictYAMLTests(unittest.TestCase):
     def setUp(self):
         files_t = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',
-                 'nondeterministic', 'parallel', 'simple', 'timer']
+                   'nondeterministic', 'parallel', 'simple', 'timer']
         files_e = ['elevator', 'elevator_contract', 'microwave', 'tester_elevator_7th_floor_never_reached',
-                 'tester_elevator_moves_after_10s', 'writer_options']
+                   'tester_elevator_moves_after_10s', 'writer_options']
 
         self.files = []
         for filename in files_t:
@@ -153,4 +153,3 @@ class ExportToTreeTests(unittest.TestCase):
                     depth = statechart.depth_for(name)
                     spaces = len(r) - len(name)
                     self.assertEqual(depth - 1, spaces)
-

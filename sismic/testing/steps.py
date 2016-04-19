@@ -1,4 +1,4 @@
-from behave import *
+from behave import given, when, then  # type: ignore
 from sismic.io import import_from_yaml
 from sismic.interpreter import Interpreter
 from sismic.model import Event
@@ -27,17 +27,21 @@ def reproduce_scenario(context, scenario):
 @when('I repeat step "{step}" {repeat:d} times')
 def repeat_step(context, step, repeat):
     keyword = step.split(' ', 1)[0].lower()
-    assert keyword in ['given', 'when', 'and', 'but', 'then'], 'Step {} should start with a supported keyword'.format(step)
+    assert keyword in ['given', 'when', 'and', 'but', 'then'], \
+        'Step {} should start with a supported keyword'.format(step)
 
     for _ in range(repeat):
         context.execute_steps(step)
 
 
 # #################### CONFIGURATION
-def _execute_statechart(context, force_execution=False):
+def _execute_statechart(context, force_execution=False, execute_once=False):
     if context._automatic_execution or force_execution:
-        context._events = []
-        steps = context._interpreter.execute()
+        if execute_once:
+            steps = [context._interpreter.execute_once()]
+        else:
+            steps = context._interpreter.execute()
+
         for step in steps:
             context._steps.append(step)
 
@@ -67,13 +71,13 @@ def load_statechart(context, path):
 @given('I execute the statechart')
 @when('I execute the statechart')
 def execute_statechart(context):
-     _execute_statechart(context, force_execution=True)
+    _execute_statechart(context, force_execution=True)
 
 
 @given('I execute once the statechart')
 @when('I execute once the statechart')
 def execute_once_statechart(context):
-    _execute_statechart(context, force_execution=True)
+    _execute_statechart(context, force_execution=True, execute_once=True)
 
 
 # #################### STATECHART
@@ -179,4 +183,5 @@ def expression_holds(context, expression):
 
 @then('the statechart is in a final configuration')
 def final_configuration(context):
-    assert context._interpreter.final, 'The statechart is not in a final configuration: {}'.format(context._interpreter.configuration)
+    assert context._interpreter.final, \
+        'The statechart is not in a final configuration: {}'.format(context._interpreter.configuration)

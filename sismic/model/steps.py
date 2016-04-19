@@ -1,6 +1,9 @@
 from .elements import Transition
 from .events import Event
 
+from typing import List
+
+
 __all__ = ['MicroStep', 'MacroStep']
 
 
@@ -18,23 +21,16 @@ class MicroStep:
     :param exited_states: possibly empty list of exited states
     """
 
-    def __init__(self, event: Event = None, transition: Transition = None,
-                 entered_states: list = None, exited_states: list = None):
+    def __init__(self, event: Event=None, transition: Transition=None,
+                 entered_states: List[str]=None, exited_states: List[str]=None) -> None:
         self.event = event
-        self.transition = transition if transition else []
-        self.entered_states = entered_states if entered_states else []
-        self.exited_states = exited_states if exited_states else []
+        self.transition = transition
+        self.entered_states = entered_states if entered_states else []  # type: List[str]
+        self.exited_states = exited_states if exited_states else []  # type: List[str]
 
     def __repr__(self):
         return 'MicroStep({}, {}, >{}, <{})'.format(self.event, self.transition,
                                                     self.entered_states, self.exited_states)
-
-    def __eq__(self, other):
-        return (isinstance(other, MicroStep) and
-                self.event == other.event and
-                self.transition == other.transition and
-                self.entered_states == other.entered_states and
-                self.exited_states == other.exited_states)
 
 
 class MacroStep:
@@ -45,19 +41,19 @@ class MacroStep:
     :param steps: a list of *MicroStep* instances
     """
 
-    def __init__(self, time: int, steps: list):
+    def __init__(self, time: float, steps: List[MicroStep]) -> None:
         self._time = time
         self._steps = steps
 
     @property
-    def steps(self):
+    def steps(self) -> List[MicroStep]:
         """
         List of micro steps
         """
         return self._steps
 
     @property
-    def time(self):
+    def time(self) -> float:
         """
         Time at which this step was executed.
         """
@@ -66,7 +62,7 @@ class MacroStep:
     @property
     def event(self) -> Event:
         """
-        Event (or *None*) that were consumed.
+        Event (or *None*) that was consumed.
         """
         for step in self._steps:
             if step.event:
@@ -74,28 +70,28 @@ class MacroStep:
         return None
 
     @property
-    def transitions(self) -> list:
+    def transitions(self) -> List[Transition]:
         """
         A (possibly empty) list of transitions that were triggered.
         """
         return [step.transition for step in self._steps if step.transition]
 
     @property
-    def entered_states(self) -> list:
+    def entered_states(self) -> List[str]:
         """
         List of the states names that were entered.
         """
-        states = []
+        states = []  # type: List[str]
         for step in self._steps:
             states += step.entered_states
         return states
 
     @property
-    def exited_states(self) -> list:
+    def exited_states(self) -> List[str]:
         """
         List of the states names that were exited.
         """
-        states = []
+        states = []  # type: List[str]
         for step in self._steps:
             states += step.exited_states
         return states
@@ -103,8 +99,3 @@ class MacroStep:
     def __repr__(self):
         return 'MacroStep@{}({}, {}, >{}, <{})'.format(round(self.time, 3), self.event, self.transitions,
                                                        self.entered_states, self.exited_states)
-
-    def __eq__(self, other):
-        return (isinstance(other, MacroStep) and
-                self.time == other.time and
-                self.steps == other.steps)

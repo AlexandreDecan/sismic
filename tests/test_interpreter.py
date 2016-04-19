@@ -20,6 +20,11 @@ class LogTraceTests(unittest.TestCase):
         self.tested.queue(Event('floorSelected', floor=4)).execute()
         self.assertTrue(len(self.steps) > 0)
 
+    def test_log_content(self):
+        self.tested.queue(Event('floorSelected', floor=4))
+        steps = self.tested.execute()
+        self.assertSequenceEqual(self.steps, steps)
+
 
 class RunInBackgroundTests(unittest.TestCase):
     def test_run_in_background(self):
@@ -37,13 +42,23 @@ class SimulatorSimpleTests(unittest.TestCase):
     def setUp(self):
         with open('tests/yaml/simple.yaml') as f:
             sc = io.import_from_yaml(f)
-        self.interpreter = Interpreter(sc, DummyEvaluator)
+        self.interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
         # Stabilization
         self.interpreter.execute_once()
 
     def test_init(self):
         self.assertEqual(self.interpreter.configuration, ['root', 's1'])
         self.assertFalse(self.interpreter.final)
+
+    def test_queue(self):
+        self.interpreter.queue(Event('e1'))
+        self.assertEqual(self.interpreter._select_event(), Event('e1'))
+
+        self.interpreter.queue(InternalEvent('e1'))
+        self.assertEqual(self.interpreter._select_event(), InternalEvent('e1'))
+
+        with self.assertRaises(ValueError):
+            self.interpreter.queue('e1')
 
     def test_simple_configuration(self):
         self.interpreter.execute_once()  # Should do nothing!
@@ -102,7 +117,7 @@ class SimulatorNonDeterminismTests(unittest.TestCase):
     def test_nondeterminism(self):
         with open('tests/yaml/nondeterministic.yaml') as f:
             sc = io.import_from_yaml(f)
-        interpreter = Interpreter(sc, DummyEvaluator)
+        interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
         # Stabilization
         interpreter.execute_once()
 
@@ -114,7 +129,7 @@ class SimulatorHistoryTests(unittest.TestCase):
     def setUp(self):
         with open('tests/yaml/history.yaml') as f:
             sc = io.import_from_yaml(f)
-        self.interpreter = Interpreter(sc, DummyEvaluator)
+        self.interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
         # Stabilization
         self.interpreter.execute_once()
 
@@ -150,7 +165,7 @@ class SimulatorDeepHistoryTests(unittest.TestCase):
     def setUp(self):
         with open('tests/yaml/deep_history.yaml') as f:
             sc = io.import_from_yaml(f)
-        self.interpreter = Interpreter(sc, DummyEvaluator)
+        self.interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
         # Stabilization
         self.interpreter.execute_once()
 
@@ -381,8 +396,8 @@ class BindTests(unittest.TestCase):
         self.assertEqual(self.interpreter._bound, [other_interpreter.queue])
 
         self.interpreter.queue(InternalEvent('test'))
-        self.assertTrue(self.interpreter._events.pop(), Event('test'))
-        self.assertTrue(other_interpreter._events.pop(), Event('test'))
+        self.assertTrue(self.interpreter._internal_events.pop(), Event('test'))
+        self.assertTrue(other_interpreter._external_events.pop(), Event('test'))
 
     def test_bind_callable(self):
         with open('tests/yaml/simple.yaml') as f:
@@ -393,5 +408,5 @@ class BindTests(unittest.TestCase):
         self.assertEqual(self.interpreter._bound, [other_interpreter.queue])
 
         self.interpreter.queue(InternalEvent('test'))
-        self.assertTrue(self.interpreter._events.pop(), Event('test'))
-        self.assertTrue(other_interpreter._events.pop(), Event('test'))
+        self.assertTrue(self.interpreter._internal_events.pop(), Event('test'))
+        self.assertTrue(other_interpreter._external_events.pop(), Event('test'))

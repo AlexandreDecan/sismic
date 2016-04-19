@@ -72,10 +72,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['pyyaml>=3.11',
-                      'pykwalify>=1.5.0',
-                      'behave>=1.2.5',
-                      'js2py>=0.35'],
+    install_requires=['pyyaml>=3.11', 'pykwalify>=1.5.0', 'behave>=1.2.5', 'js2py>=0.35'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -83,12 +80,9 @@ setup(
     # $ pip install -e .[dev,test]
     extras_require={
         #'dev': ['check-manifest'],
-        'dev': ['coverage', 'sphinx'],
     },
 
-    package_data={
-        'sismic.io': ['schema.yaml']
-    },
+    include_package_data=True,
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow

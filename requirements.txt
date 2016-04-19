@@ -1,0 +1,8 @@
+behave>=1.2.5
+coverage>=4.0.3
+pykwalify>=1.5.1
+PyYAML>=3.11
+Sphinx>=1.4.1
+sphinx-autodoc-typehints>=1.0.4
+sphinx-rtd-theme>=0.1.9
+typing>=3.5.1

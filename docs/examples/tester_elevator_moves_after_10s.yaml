@@ -7,35 +7,35 @@ statechart:
     states:
       - name: active
         transitions:
-          - event: stopped
+          - event: execution stopped
             target: success
         parallel states:
           - name: guess floor
             transitions:
-              - event: entered
-                guard: event.entered_state == 'movingUp'
+              - event: state entered
+                guard: event.state == 'movingUp'
                 action: floor += 1
-              - event: entered
-                guard: event.entered_state == 'movingDown'
+              - event: state entered
+                guard: event.state == 'movingDown'
                 action: floor -= 1
           - name: check timeout
             initial: standing
             states:
               - name: standing
                 transitions:
-                  - event: entered
-                    guard: event.entered_state == 'moving'
+                  - event: state entered
+                    guard: event.state == 'moving'
                     target: moving
                   - guard: after(12) and floor != 0
                     target: timeout
               - name: moving
                 transitions:
-                  - event: exited
-                    guard: event.exited_state == 'moving'
+                  - event: state exited
+                    guard: event.state == 'moving'
                     target: standing
               - name: timeout
                 transitions:
-                  - event: stopped  # With inner-first, override parent's transition to success
+                  - event: execution stopped  # With inner-first, override parent's transition to success
                     target: timeout
       - name: success
         type: final

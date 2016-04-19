@@ -1,7 +1,7 @@
 recursive-include docs *
 recursive-include tests *
+include sismic/io/schema.yaml
 include CHANGELOG.rst
 include README.rst
 include LICENSE
 include requirements.txt
-include sismic/schema.yaml

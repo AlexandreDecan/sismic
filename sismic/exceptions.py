@@ -78,7 +78,7 @@ class ContractError(SismicError):
         return self._context
 
     def __str__(self):  # pragma: no cover
-        message = ['{} not satisfied!'.format(self.__class__.__name__.replace('Failed', ''))]
+        message = ['{}'.format(self.__class__.__name__.replace('Failed', ''))]
         if self._obj:
             message.append('Object: {}'.format(self._obj))
         if self._assertion:

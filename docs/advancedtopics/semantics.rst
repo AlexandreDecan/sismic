@@ -8,17 +8,19 @@ An :py:class:`~sismic.interpreter.Interpreter` makes use of several *private* me
 These methods computes the transition(s) that should be processed, the resulting steps, etc.
 These methods can be overridden or combined easily to define other variants of the statechart semantics.
 
-.. automethod:: sismic.interpreter.Interpreter._select_eventless_transitions
+.. automethod:: sismic.interpreter.Interpreter._select_event
 
 .. automethod:: sismic.interpreter.Interpreter._select_transitions
 
+.. automethod:: sismic.interpreter.Interpreter._filter_transitions
+
 .. automethod:: sismic.interpreter.Interpreter._sort_transitions
 
-.. automethod:: sismic.interpreter.Interpreter._compute_transitions_steps
+.. automethod:: sismic.interpreter.Interpreter._create_steps
 
-.. automethod:: sismic.interpreter.Interpreter._execute_step
+.. automethod:: sismic.interpreter.Interpreter._create_stabilization_step
 
-.. automethod:: sismic.interpreter.Interpreter._compute_stabilization_step
+.. automethod:: sismic.interpreter.Interpreter._apply_step
 
 
 These methods are called directly (or not) by :py:class:`~sismic.interpreter.Interpreter.execute_once`.
@@ -34,21 +36,15 @@ Example: Outer-first/source-state semantics
 For example, in order to obtain an outer-first/source-state semantics (instead of the
 inner-first/source-state one that Sismic provides by default),
 one should subclass :py:class:`~sismic.interpreter.Interpreter`
-and override :py:class:`~sismic.interpreter.Interpreter._select_eventless_transitions` and
-:py:class:`~sismic.interpreter.Interpreter._select_transitions`.
-
-.. note:: Actually, as the former relies on the later, the changes will only concern the traversal order in the
-    :py:class:`~sismic.interpreter.Interpreter._select_transitions` method.
+and override :py:class:`~sismic.interpreter.Interpreter._filter_transitions`.
 
 
 Example: Semantics where internal events have no priority
 ---------------------------------------------------------
 
 If you want to change the semantics of Sismic so that internal events no longer have
-priority over external events, it suffices to override the :py:meth:`~sismic.interpreter.Interpreter.queue` method
-and to replace ``self._events.appendleft(event)`` by ``self._events.append(event)`` in the
-``if isinstance(event, InternalEvent):`` part.
-
+priority over external events, it suffices to override the :py:meth:`~sismic.interpreter.Interpreter._select_event` method
+and to invert the order in which the internal and external events queues are visited.
 
 Example: Custom way to deal with non-determinism
 ------------------------------------------------

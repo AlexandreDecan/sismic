@@ -82,9 +82,9 @@ is sent both to ``interpreter_1`` and ``interpreter_2``.
     # Manually create and send an internal event
     interpreter_3.queue(InternalEvent('test'))
 
-    print('Events for interpreter_1:', interpreter_1._events.pop())  # External event
-    print('Events for interpreter_2:', interpreter_2._events.pop())  # External event
-    print('Events for interpreter_3:', interpreter_3._events.pop())  # Internal event
+    print('Events for interpreter_1:', interpreter_1._external_events.pop())
+    print('Events for interpreter_2:', interpreter_2._external_events.pop())
+    print('Events for interpreter_3:', interpreter_3._internal_events.pop())
 
 .. testoutput:: bind
 
@@ -129,14 +129,14 @@ are automatically propagated to ``elevator``:
 
 .. testcode:: buttons
 
-    print('Awaiting events in buttons:', list(buttons._events))  # Empty
+    print('Awaiting events in buttons:', list(buttons._external_events))  # Empty
     buttons.queue(Event('button_2_pushed'))
 
-    print('Awaiting events in buttons:', list(buttons._events))  # External event
+    print('Awaiting events in buttons:', list(buttons._external_events))  # External event
 
     buttons.execute(max_steps=2)  # (1) initialize buttons, and (2) consume button_2_pushed
-    print('Awaiting events in buttons:', list(buttons._events))  # Internal event
-    print('Awaiting events in elevator:', list(elevator._events))  # External event
+    print('Awaiting events in buttons:', list(buttons._internal_events))
+    print('Awaiting events in elevator:', list(elevator._external_events))
 
 .. testoutput:: buttons
 
