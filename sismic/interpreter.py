@@ -26,7 +26,7 @@ class Interpreter:
     """
 
     def __init__(self, statechart: model.Statechart, *,
-                 evaluator_klass: Callable[['Interpreter', Mapping], Evaluator]=PythonEvaluator,
+                 evaluator_klass: Callable[['Interpreter'], Evaluator]=PythonEvaluator,
                  initial_context: Mapping=None,
                  ignore_contract: bool=False) -> None:
         # Internal variables
@@ -42,7 +42,7 @@ class Interpreter:
         self._bound = []  # type: List[Callable[[model.Event], Any]]
 
         # Evaluator
-        self._evaluator = evaluator_klass(self, initial_context=initial_context)
+        self._evaluator = evaluator_klass(self, initial_context=initial_context)  # type: ignore
         self._evaluator.execute_statechart(statechart)
 
     @property

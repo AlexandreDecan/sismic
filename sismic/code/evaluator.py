@@ -76,9 +76,9 @@ class Evaluator(metaclass=abc.ABCMeta):
         :return: truth value of *code*
         """
         if transition.guard:
-            return self._evaluate_code(transition.guard, {'event': event})
+            return self._evaluate_code(transition.guard, additional_context={'event': event})
 
-    def execute_action(self, transition: Transition, event: Event) -> bool:
+    def execute_action(self, transition: Transition, event: Event) -> None:
         """
         Execute the action for given transition.
         This method is called for every transition that is processed, even those with no *action*.
@@ -87,7 +87,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param event: instance of *Event* if any
         """
         if transition.action:
-            return self._execute_code(transition.action, {'event': event})
+            self._execute_code(transition.action, additional_context={'event': event})
 
     def execute_onentry(self, state: StateMixin) -> None:
         """
@@ -119,7 +119,9 @@ class Evaluator(metaclass=abc.ABCMeta):
         :return: list of unsatisfied conditions
         """
         event_d = {'event': event} if isinstance(obj, Transition) else None
-        return filter(lambda c: not self._evaluate_code(c, event_d), getattr(obj, 'preconditions', []))
+        return filter(
+            lambda c: not self._evaluate_code(c, additional_context=event_d), getattr(obj, 'preconditions', [])
+        )
 
     def evaluate_invariants(self, obj, event: Event=None) -> Iterator[str]:
         """
@@ -131,7 +133,9 @@ class Evaluator(metaclass=abc.ABCMeta):
         :return: list of unsatisfied conditions
         """
         event_d = {'event': event} if isinstance(obj, Transition) else None
-        return filter(lambda c: not self._evaluate_code(c, event_d), getattr(obj, 'invariants', []))
+        return filter(
+            lambda c: not self._evaluate_code(c, additional_context=event_d), getattr(obj, 'invariants', [])
+        )
 
     def evaluate_postconditions(self, obj, event: Event=None) -> Iterator[str]:
         """
@@ -143,4 +147,6 @@ class Evaluator(metaclass=abc.ABCMeta):
         :return: list of unsatisfied conditions
         """
         event_d = {'event': event} if isinstance(obj, Transition) else None
-        return filter(lambda c: not self._evaluate_code(c, event_d), getattr(obj, 'postconditions', []))
+        return filter(
+            lambda c: not self._evaluate_code(c, additional_context=event_d), getattr(obj, 'postconditions', [])
+        )
