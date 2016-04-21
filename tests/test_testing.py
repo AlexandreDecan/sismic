@@ -58,7 +58,7 @@ class ElevatorStoryTests(unittest.TestCase):
         with open('docs/examples/tester_elevator_7th_floor_never_reached.yaml') as f:
             tester = Interpreter(io.import_from_yaml(f))
         test_story.tell(tester)
-        self.assertTrue(tester.final)
+        self.assertFalse(tester.final)
 
     def test_7th_floor_never_reached_fails(self):
         story = Story([Event('floorSelected', floor=4), Pause(2), Event('floorSelected', floor=7)])
@@ -69,7 +69,7 @@ class ElevatorStoryTests(unittest.TestCase):
         with open('docs/examples/tester_elevator_7th_floor_never_reached.yaml') as f:
             tester = Interpreter(io.import_from_yaml(f))
         test_story.tell(tester)
-        self.assertFalse(tester.final)
+        self.assertTrue(tester.final)
 
     def test_elevator_moves_after_10s(self):
         stories = [
@@ -93,7 +93,7 @@ class ElevatorStoryTests(unittest.TestCase):
                 with open('docs/examples/tester_elevator_moves_after_10s.yaml') as f:
                     tester = Interpreter(io.import_from_yaml(f))
                 test_story.tell(tester)
-                self.assertTrue(tester.final)
+                self.assertFalse(tester.final)
 
 
 class WatchElevatorTests(unittest.TestCase):
@@ -113,7 +113,7 @@ class WatchElevatorTests(unittest.TestCase):
         # Send elevator to 4th
         self.tested.queue(Event('floorSelected', floor=4)).execute()
         self.watcher.stop()
-        self.assertTrue(tester.final)
+        self.assertFalse(tester.final)
 
     def test_7th_floor_never_reached_fails(self):
         with open('docs/examples/tester_elevator_7th_floor_never_reached.yaml') as f:
@@ -125,7 +125,7 @@ class WatchElevatorTests(unittest.TestCase):
         # Send elevator to 7th
         self.tested.queue(Event('floorSelected', floor=7)).execute()
         self.watcher.stop()
-        self.assertFalse(tester.final)
+        self.assertTrue(tester.final)
 
     def test_destination_reached(self):
         with open('docs/examples/tester_elevator_destination_reached.yaml') as f:
@@ -148,4 +148,4 @@ class WatchElevatorTests(unittest.TestCase):
         # Stop watching. The tester must be in a final state
         watcher.stop()
 
-        self.assertTrue(tester.final)
+        self.assertFalse(tester.final)

@@ -9,9 +9,6 @@ statechart:
       - name: check
         transitions:
           - event: execution stopped
-            guard: len(destinations) == 0
-            target: success
-          - event: execution stopped
             guard: len(destinations) > 0
             target: fail
         parallel states:
@@ -33,6 +30,5 @@ statechart:
                     destinations.remove(floor)
                   except ValueError:
                     pass
-      - name: success
-        type: final
       - name: fail
+        type: final
