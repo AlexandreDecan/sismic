@@ -3,7 +3,7 @@ from sismic.model.steps import MacroStep
 from sismic.interpreter import Interpreter
 
 import random
-from typing import List, Generator, Union, Tuple
+from typing import List, Generator, Union, Tuple, Iterable, Sequence
 
 __all__ = ['Pause', 'Story', 'random_stories_generator', 'story_from_trace']
 
@@ -80,7 +80,7 @@ class Story(list):
         return 'Story({})'.format(super().__repr__())
 
 
-def random_stories_generator(items, length: int=None, number: int=None) -> Generator[Story, None, None]:
+def random_stories_generator(items: Sequence[Union[Event, Pause]], length: int=None, number: int=None) -> Generator[Story, None, None]:
     """
     A generator that returns random stories whose elements come from *items*.
     Parameter *items* can be any iterable containing events and/or pauses.
@@ -100,7 +100,7 @@ def random_stories_generator(items, length: int=None, number: int=None) -> Gener
         number -= 1
 
 
-def story_from_trace(trace: List[MacroStep]) -> Story:
+def story_from_trace(trace: Iterable[MacroStep]) -> Story:
     """
     Return a story that is built upon the given trace (a list of macro steps).
 
