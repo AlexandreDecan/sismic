@@ -4,7 +4,7 @@ Changelog
 Unreleased
 ----------
 
-Some refactoring for the ``interpreter.Interpreter`` class:
+Changes for ``interpreter.Interpreter`` class:
 
 - (Removed) ``_select_eventless_transition`` which is a special case of ``_select_transition``.
 - (Added) ``_select_event``, extracted from ``execute_once``.
@@ -32,6 +32,11 @@ The default ``PythonEvaluator`` class has been completely rewritten:
 - (Changed) The ``initial_context`` parameter of ``Evaluator``'s constructor can now only be provided by name.
 - (Changed) The ``additional_context`` parameter of ``Evaluator._evaluate_code`` and ``Evaluator._execute_code`` can
   now only be provided by name.
+
+Miscellaneous:
+
+- (Changed) Step *I load the statechart* now executes (once) the statechart in order to put it into a stable
+  initial configuration.
 
 0.20.5 (2016-04-14)
 -------------------

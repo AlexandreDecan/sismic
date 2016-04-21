@@ -66,6 +66,7 @@ def load_statechart(context, path):
     context._events = []
     context._automatic_execution = True
     context._interpreter.bind(context._events.append)
+    context._interpreter.execute_once()  # init
 
 
 @given('I execute the statechart')
