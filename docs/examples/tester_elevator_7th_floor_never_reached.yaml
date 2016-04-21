@@ -12,8 +12,6 @@ statechart:
             target: moving
           - guard: floor == 7
             target: fail
-          - event: execution stopped
-            target: success
       - name: moving
         transitions:
           - event: state entered
@@ -25,8 +23,5 @@ statechart:
           - event: state exited
             guard: event.state == 'moving'
             target: standing
-          - event: execution stopped
-            target: success
       - name: fail
-      - name: success
         type: final

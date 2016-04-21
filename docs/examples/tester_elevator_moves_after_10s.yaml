@@ -6,9 +6,6 @@ statechart:
     initial: active
     states:
       - name: active
-        transitions:
-          - event: execution stopped
-            target: success
         parallel states:
           - name: guess floor
             transitions:
@@ -34,8 +31,4 @@ statechart:
                     guard: event.state == 'moving'
                     target: standing
               - name: timeout
-                transitions:
-                  - event: execution stopped  # With inner-first, override parent's transition to success
-                    target: timeout
-      - name: success
-        type: final
+                type: final

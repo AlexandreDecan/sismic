@@ -92,6 +92,7 @@ To summarize, if you want to test the **trace** of a *statechart under test* ``t
     4. tell this story to an interpreter of the *property statechart* ``tester``.
 
 If ``tester`` ends in a final configuration, ie. ``tester.final`` holds, then the test is **considered** successful.
+The semantic of *successful* depends on the *desirability* of the checked property.
 
 The following *property statechart* examples are relative to :ref:`this statechart <elevator_example>`.
 They show the specification of some testers in YAML, and how to execute them.
@@ -156,6 +157,7 @@ To summarize, if you want to test (**at runtime**) the execution of a *statechar
     6. stop watching with :py:meth:`~sismic.testing.ExecutionWatcher.stop`.
 
 If ``tester`` ends in a final configuration, ie. ``tester.final`` holds, then the test is **considered** successful.
+Again, the semantic of a *successful* run depends on the *desirability* of the property.
 
 Destination should be reached
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -195,7 +197,7 @@ It can be tested as follows:
     interpreter.execute()
     assert tester.context['destinations'] == []
 
-    # Stop watching. The tester must be in a final state
+    # Stop watching. The statechart ends in a final state only if a failure occured
     watcher.stop()
 
-    assert tester.final
+    assert not tester.final
