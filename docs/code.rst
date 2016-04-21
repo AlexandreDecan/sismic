@@ -40,6 +40,14 @@ When the statechart is initialized, the ``context`` of the :py:class:`~sismic.co
 When *s1* is entered, the code will be evaluated with this context.
 After the execution of ``x += 1``, the context associates ``2`` to ``x``.
 
+More precisely, every state and every transition has a specific evaluation context.
+The code associated with a state is executed in a local context which is composed of local variables and every
+variable that is defined in the context of the parent state. The context of a transition is built upon the context
+of its source state.
+
+.. note:: While you have full access to an ancestor's context, the converse is not true: every variable that
+    is defined in a context is NOT visible by any other context, except the ones that are nested.
+
 When a :py:class:`~sismic.code.PythonEvaluator` instance is initialized, an initial context can be specified:
 
 .. testcode::
