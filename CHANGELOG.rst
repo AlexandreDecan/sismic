@@ -35,8 +35,8 @@ The default ``PythonEvaluator`` class has been completely rewritten:
 
 Miscellaneous:
 
-- (Changed) Step *I load the statechart* now executes (once) the statechart in order to put it into a stable
-  initial configuration.
+- (Fixed) Step *I load the statechart* now executes (once) the statechart in order to put it into a stable
+  initial configuration (regression introduced in 0.20.0).
 
 0.20.5 (2016-04-14)
 -------------------
