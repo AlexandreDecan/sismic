@@ -133,12 +133,10 @@ class PythonEvaluator(Evaluator):
     evaluator.
 
     Each piece of code is executed with (a partially isolated) local context.
-    The context of a code is defined by the context of its associated state or transition.
-    The context of a state is built upon the context of its parent, and so one until the global
-    context is reached (ie. the context defined by the *initial_context* and the *preamble* variables).
-    The context of a transition is built upon the context of its source state.
-    Notice that, while you have full access to an ancestor's context, the converse is not true: every variable that
-    is defined in a context is NOT visible by any other context, except the ones that are nested.
+    Every state and every transition has a specific evaluation context.
+    The code associated with a state is executed in a local context which is composed of local variables and every
+    variable that is defined in the context of the parent state. The context of a transition is built upon the context
+    of its source state.
 
     :param interpreter: the interpreter that will use this evaluator,
         is expected to be an *Interpreter* instance
