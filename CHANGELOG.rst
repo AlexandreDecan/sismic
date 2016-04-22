@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.21.0 (2016-04-22)
+-------------------
 
 Changes for ``interpreter.Interpreter`` class:
 
