@@ -490,7 +490,7 @@ class Interpreter:
 
         for condition in unsatisfied_conditions:
             raise exception_klass(configuration=self.configuration, step=step, obj=obj,
-                                  assertion=condition, context=self._evaluator.context)
+                                  assertion=condition, context=self.context)
 
     def __repr__(self):
         return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))
