@@ -91,6 +91,7 @@ The Sismic library is written in a modular way:
     :caption: Misc
     :maxdepth: 1
 
+    authors
     changelog
     api
 
