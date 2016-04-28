@@ -1,5 +1,5 @@
 import unittest
-from sismic.testing.specs import declared_variables, code_for, infer_types
+from sismic.testing.specs import declared_variables, code_for, infer_types, sent_events
 from sismic.io import import_from_yaml
 
 
@@ -79,7 +79,7 @@ class InferTypesTest(unittest.TestCase):
 
     def test_simple(self):
         code = 'x = 1'
-        values = {'x': 'builtins_int'}
+        values = {'x': 'builtins.int'}
 
         values.update(self.base)
         self.assertDictEqual(infer_types(code), values)
@@ -91,3 +91,43 @@ class InferTypesTest(unittest.TestCase):
     def test_impossible_inference(self):
         with self.assertRaises(ValueError):
             _ = infer_types('x = None\nx.a = 1')
+
+    def test_incompatible_types(self):
+        with self.assertRaises(ValueError):
+            _ = infer_types('x = 1\ny = "hello"\nz = x + y')
+
+    def test_fake_initial_context(self):
+        code = 'x = locals().get("x", None)'
+        values = {'x': 'Any'}
+
+        values.update(self.base)
+        self.assertDictEqual(infer_types(code), values)
+
+
+class SentEventsTests(unittest.TestCase):
+    def make_call(self, name, **kwargs):
+        if kwargs:
+            param = ', ' + ', '.join(['%s=%s' % (k, v) for k, v in kwargs.items()])
+        else:
+            param = ''
+        return 'send(\'%s\'%s)' % (name, param)
+
+    def test_simple(self):
+        call = self.make_call('a')
+        self.assertDictEqual(sent_events(call), {'a': [{}]})
+
+    def test_arguments(self):
+        call = self.make_call('a', x=1, y=2)
+        self.assertDictEqual(sent_events(call), {'a': [{'x': '1', 'y': '2'}]})
+
+    def test_multiple_calls(self):
+        call_1 = self.make_call('a', x=1)
+        call_2 = self.make_call('a', y=2)
+        self.assertDictEqual(sent_events(call_1 + ', ' + call_2),
+                             {'a': [{'x': '1'}, {'y': '2'}]})
+
+    def test_multiple_events(self):
+        call_1 = self.make_call('a', x=1)
+        call_2 = self.make_call('b', x=2)
+        self.assertDictEqual(sent_events(call_1 + ', ' + call_2),
+                             {'a': [{'x': '1'}], 'b': [{'x': '2'}]})

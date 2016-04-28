@@ -1,7 +1,7 @@
 import redbaron
 from baron.parser import ParsingError
 
-from mypy import build as mypybuild
+import mypy.build
 from typing import List, Union, Dict
 
 from collections import OrderedDict
@@ -88,30 +88,51 @@ def infer_types(code: str) -> Dict[str, str]:
     :return: Mapping between variables and types (as str)
     :raise: ValueError if code is malformed or if unable to infer something
     """
-    source = mypybuild.BuildSource(None, None, code)
+    source = mypy.build.BuildSource(None, None, code)
     try:
-        result = mypybuild.build([source], target=1)
-    except mypybuild.CompileError as e:
-        raise ValueError('Invalid Python code in "%s"' % code) from e
+        result = mypy.build.build([source], target=1)
+    except mypy.build.CompileError as e:
+        raise ValueError('%s\nin: \n%s' % ('\n'.join(e.messages), code)) from e
 
     return {var: str(val.type) for var, val in result.files['__main__'].names.items()}
 
 
-if __name__ == '__main__':
-    from sismic.io import import_from_yaml
+def sent_events(code: str) -> Dict[str, List[Dict[str, str]]]:
+    """
+    Try to identify calls to *send* in given piece of Python code and return
+    a list of identified events, with parameters and values.
 
-    with open('../../docs/examples/elevator.yaml') as f:
-        sc = import_from_yaml(f)
+    Example: "send('floorSelected', floor=4)" will return
+    {'floorSelected': [{'floor': '4'}]}.
 
-    code_lines = code_for(sc, sc.transitions_from('floorSelecting')[0])
-    default_types = infer_types('\n'.join(PYTHON_EVALUATOR_STUBS))
-    inferred_types = infer_types('\n'.join(PYTHON_EVALUATOR_STUBS + code_lines))
+    Example: "send('a', x=1), send('a', y=2)" will return
+    {'a': [{'x': '1'}, {'y': '2'}]}
 
-    for k, v in inferred_types.items():
-        if k not in default_types:
-            print(k, '->', v)
+    :param code: A piece of Python code
+    :return: A mapping {event_name: [{param: value}]}
+    :raise: ValueError if code is malformed
+    """
+    events = {}
+    try:
+        red = redbaron.RedBaron(code)
+    except ParsingError as e:
+        raise ValueError('Invalid Python code in "%s"' % code) from e
+
+    for call_node in red.find_all('Call', lambda n: n.previous.type == 'name' and n.previous.value == 'send'):
+        event_name_node = call_node.find('CallArgument', lambda n: n.target is None and n.value.type == 'string')
+        if event_name_node is None:
+            continue
+        event_name = event_name_node.value.value[1:-1]
+
+        event_arguments = {}
+
+        argument_nodes = call_node.find_all('CallArgument', lambda n: n.target is not None)
+        for argument_node in argument_nodes:
+            event_arguments[argument_node.name.value] = argument_node.value.value
+
+        events.setdefault(event_name, []).append(event_arguments)
+    return events
 
 
-# Infer sent events
-# Infer parameters of received events
-# Infer parameters of sent events
+# Infer parameters type of sent events (infer "floor = 4" in current potential context)
+# Infer parameters of received events: look for event.x, grep x (how to infer type?)
