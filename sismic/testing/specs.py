@@ -1,7 +1,9 @@
 import redbaron
 from baron.parser import ParsingError
+
 from mypy import build as mypybuild
-from typing import List, Union, cast
+from typing import List, Union, Dict
+
 from collections import OrderedDict
 
 from sismic.model import Statechart, Transition, StateMixin
@@ -9,11 +11,13 @@ from sismic.model import Statechart, Transition, StateMixin
 
 PYTHON_EVALUATOR_STUBS = [
     'def send(name: str, **kwargs) -> None: ...',
-    'time = ...  # type: float',
+    'time = 0.0  # type: float',
     'def active(name: str) -> bool: ...',
-    'def after(time: int) -> bool: ...',
-    'def idle(time: int) -> bool: ...',
-    'from sismic.model import Event\nevent = ...  # type: Event'
+    'def after(time: float) -> bool: ...',
+    'def idle(time: float) -> bool: ...',
+    'class Event:\n'
+    '    def __getattr__(self, attr): ...\n'
+    'event = Event()',
 ]
 
 
@@ -30,7 +34,7 @@ def declared_variables(code: str) -> OrderedDict:
     try:
         red = redbaron.RedBaron(code)
     except ParsingError as e:
-        raise ValueError(e)
+        raise ValueError('Invalid Python code in "%s"' % code) from e
     variables = OrderedDict()
 
     for assignment in red.find_all('AssignmentNode'):
@@ -51,6 +55,15 @@ def declared_variables(code: str) -> OrderedDict:
 
 
 def code_for(statechart: Statechart, element: Union[Statechart, Transition, StateMixin]) -> List[str]:
+    """
+    Return a list of codes for given element in given statechart.
+    The list is composed of every piece of code that should be executed when
+    reaching a given element (either a statechart, a state or a transition).
+
+    :param statechart: Statechart to consider
+    :param element: Either a statechart, a state or a transition
+    :return: A list of codes
+    """
     if isinstance(element, Statechart):
         return [element.preamble]
     elif isinstance(element, Transition):
@@ -66,46 +79,39 @@ def code_for(statechart: Statechart, element: Union[Statechart, Transition, Stat
     else:
         raise ValueError('Unsupported type %s for %s' % (type(element), element))
 
-"""
-import redbaron
-line = 'x = 1\nf(1, 2)\nsend("floorSelected", n=4)\nf(send("floorChosen", n=3))'
-red = redbaron.RedBaron(line)
-red.find_all('AtomTrailersNode', value=lambda v: v.find_all('NameNode', value='send', recursive=False))
-"""
 
-"""
-from mypy.main import build as mypyb
+def infer_types(code: str) -> Dict[str, str]:
+    """
+    Return a mapping between variables and their inferred type (using mypy).
 
-preprocessor = 'from typing import Callable\ndef send(name: str, **args): pass\ndef f(func: Callable[..., None]): pass\ndef g(a:int, b:int): pass'
-line = 'x = 1\ng(1, 2)\nsend("floorSelected", n=4)\nf(send("floorChosen", n=x))'
+    :param code: A piece of code
+    :return: Mapping between variables and types (as str)
+    :raise: ValueError if code is malformed or if unable to infer something
+    """
+    source = mypybuild.BuildSource(None, None, code)
+    try:
+        result = mypybuild.build([source], target=1)
+    except mypybuild.CompileError as e:
+        raise ValueError('Invalid Python code in "%s"' % code) from e
 
-source = mypyb.BuildSource(None, None, preprocessor + '\n' + line)
-result = mypyb.build([source], target=1)
-
-for name, node in result.files['__main__'].names.items():
-    print(name, '///', node.type)
-"""
+    return {var: str(val.type) for var, val in result.files['__main__'].names.items()}
 
 
-"""
+if __name__ == '__main__':
+    from sismic.io import import_from_yaml
 
-- List received events
-  - Infer parameter type from transition guard and transition action
-- List sent events using RedBaron
-  - Infer parameter type from call context
-- List contracts
-  - Stronger state preconditions can be inferred from incoming transitions (inv + post)
-  - State invariants can be inferred from ancestors (inv)
-  - Stronger state postconditions can be inferred from outgoing transitions (pre + inv)
-  - Weaker transition preconditions can be inferred from source state (post)
-  - Weaker transition postconditions can be inferred from target state (pre)
-  - Infer context types
-- Check contracts:
-  - Check if state/transition contracts are compatible (see above for the strength relation)
-- Infer contracts:
-  - State: Pre + on entry satisfies inv
-  - State: inv + on exit satisfies post
-  - Transition: pre + guard + action (+ inv) satisfies inv
-  - ... need to think about all that stuff
+    with open('../../docs/examples/elevator.yaml') as f:
+        sc = import_from_yaml(f)
 
-"""
+    code_lines = code_for(sc, sc.transitions_from('floorSelecting')[0])
+    default_types = infer_types('\n'.join(PYTHON_EVALUATOR_STUBS))
+    inferred_types = infer_types('\n'.join(PYTHON_EVALUATOR_STUBS + code_lines))
+
+    for k, v in inferred_types.items():
+        if k not in default_types:
+            print(k, '->', v)
+
+
+# Infer sent events
+# Infer parameters of received events
+# Infer parameters of sent events

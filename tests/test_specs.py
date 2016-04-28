@@ -1,5 +1,5 @@
 import unittest
-from sismic.testing.specs import declared_variables, code_for
+from sismic.testing.specs import declared_variables, code_for, infer_types
 from sismic.io import import_from_yaml
 
 
@@ -59,3 +59,35 @@ class CodeForTests(unittest.TestCase):
         code = code_for(self.sc, transition)
         self.assertEqual(code[0], self.sc.preamble)
         self.assertEqual(code[1], transition.action)
+
+
+class InferTypesTest(unittest.TestCase):
+    base = {
+        '__builtins__': 'None',
+        '__doc__': 'builtins.str',
+        '__file__': 'builtins.str',
+        '__name__': 'builtins.str',
+        '__package__': 'builtins.str',
+    }
+
+    def test_empty(self):
+        code = ''
+        values = {}
+
+        values.update(self.base)
+        self.assertDictEqual(infer_types(code), values)
+
+    def test_simple(self):
+        code = 'x = 1'
+        values = {'x': 'builtins_int'}
+
+        values.update(self.base)
+        self.assertDictEqual(infer_types(code), values)
+
+    def test_invalid_python(self):
+        with self.assertRaises(ValueError):
+            _ = infer_types('@#@M%pqŝ')
+
+    def test_impossible_inference(self):
+        with self.assertRaises(ValueError):
+            _ = infer_types('x = None\nx.a = 1')
