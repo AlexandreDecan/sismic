@@ -10,7 +10,7 @@ Sismic for Python
 .. image:: https://badge.fury.io/py/sismic.svg
     :target: https://pypi.python.org/pypi/sismic
 .. image:: https://readthedocs.org/projects/sismic/badge/?version=master
-    :target: https://sismic.readthedocs.org/
+    :target: https://sismic.readthedocs.io/
 
 Sismic Interactive Statechart Model Interpreter and Checker
 -----------------------------------------------------------
@@ -42,7 +42,7 @@ Sismic requires Python >=3.4
 Documentation
 -------------
 
-The documentation for the latest distributed version is available on `sismic.readthedocs.org <http://sismic.readthedocs.org/>`_.
+The documentation for the latest distributed version is available on `sismic.readthedocs.io <http://sismic.readthedocs.io/>`_.
 
 Many examples are available in `docs/examples <https://github.com/AlexandreDecan/sismic/tree/master/docs/examples>`_.
 
@@ -52,7 +52,7 @@ The documentation can also be directly built from the `docs <https://github.com/
 Changelog
 ---------
 
-See documentation's `changelog <http://sismic.readthedocs.org/en/master/changelog.html>`_.
+See documentation's `changelog <http://sismic.readthedocs.io/en/master/changelog.html>`_.
 Unreleased changes are visible `here <https://github.com/AlexandreDecan/sismic/tree/devel/CHANGELOG.rst>`_.
 
 Credits
