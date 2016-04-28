@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- (Added) Python code evaluator: *after* and *idle* are now available in postconditions and invariants.
+
+
 0.21.0 (2016-04-22)
 -------------------
 
