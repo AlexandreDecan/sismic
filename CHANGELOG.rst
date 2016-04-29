@@ -5,7 +5,9 @@ Unreleased
 ----------
 
 - (Added) Python code evaluator: *after* and *idle* are now available in postconditions and invariants.
-
+- (Added) ``interpreter.raise_event`` to send events from within the statechart.
+- (Changed) Events sent by a code evaluator are now returned by the ``execute_*`` methods instead of being
+  automatically added to the interpreter's queue.
 
 0.21.0 (2016-04-22)
 -------------------

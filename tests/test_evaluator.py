@@ -21,7 +21,7 @@ class DummyEvaluatorTests(unittest.TestCase):
         self.assertEqual(self.evaluator.context, {})
 
     def test_execution(self):
-        self.assertIsNone(self.evaluator._execute_code('blablabla'))
+        self.assertEqual(self.evaluator._execute_code('blablabla'), [])
 
         self.assertEqual(self.evaluator.context, {})
 
@@ -150,8 +150,8 @@ class PythonEvaluatorTests(unittest.TestCase):
             self.evaluator._execute_code('x = x.y')
 
     def test_send(self):
-        self.evaluator._execute_code('send("hello")')
-        self.interpreter.queue.assert_called_with(InternalEvent('hello'))
+        events = self.evaluator._execute_code('send("hello")')
+        self.assertEqual(events, [InternalEvent('hello')])
 
     def test_add_variable_in_context(self):
         self.evaluator._execute_code('a = 1\nassert a == 1', context=self.evaluator.context)

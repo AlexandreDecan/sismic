@@ -43,7 +43,8 @@ class Interpreter:
 
         # Evaluator
         self._evaluator = evaluator_klass(self, initial_context=initial_context)  # type: ignore
-        self._evaluator.execute_statechart(statechart)
+        for event in self._evaluator.execute_statechart(statechart):
+            self.raise_event(event)
 
     @property
     def time(self) -> float:
@@ -108,22 +109,33 @@ class Interpreter:
         self._bound.append(bound_callable)
         return self
 
-    def queue(self, event: model.Event) -> 'Interpreter':
+    def raise_event(self, event: model.InternalEvent) -> None:
         """
-        Queue an event to the interpreter.
-        Internal events are propagated to bound callables (see *bind* method).
+        Raise an event from the statechart.
+        Events are propagated to bound interpreters as non-internal events, and added to the internal queue of the
+        current interpreter.
 
-        :param event: an *Event* or *InternalEvent* instance. If internal, the event is
-            prepended to the events queue and propagated to bound interpreters or callables.
-        :return: *self* so it can be chained.
+        :param event: raised event.
         """
         if isinstance(event, model.InternalEvent):
-            self._internal_events.append(event)
-            # Propagate event to bound callable as an external event
+            # Propagate event to bound callable as an "external" event
             external_event = model.Event(event.name, **event.data)
             for bound_callable in self._bound:
                 bound_callable(external_event)
-        elif isinstance(event, model.Event):
+
+            # Add to current interpreter's internal queue
+            self._internal_events.append(event)
+        else:
+            raise ValueError('{} is not an InternalEvent instance'.format(event))
+
+    def queue(self, event: model.Event) -> 'Interpreter':
+        """
+        Queue an event to the interpreter.
+
+        :param event: an *Event* instance.
+        :return: *self* so it can be chained.
+        """
+        if isinstance(event, model.Event):
             self._external_events.append(event)
         else:
             raise ValueError('{} is not an Event instance'.format(event))
@@ -406,7 +418,8 @@ class Interpreter:
         # Exit states
         for state in exited_states:
             # Execute exit action
-            self._evaluator.execute_onexit(state)
+            for event in self._evaluator.execute_onexit(state):
+                self.raise_event(event)
 
             # Postconditions
             self.__evaluate_contract_conditions(state, 'postconditions', step)
@@ -436,7 +449,8 @@ class Interpreter:
             self.__evaluate_contract_conditions(step.transition, 'preconditions', step)
             self.__evaluate_contract_conditions(step.transition, 'invariants', step)
 
-            self._evaluator.execute_action(step.transition, step.event)
+            for event in self._evaluator.execute_action(step.transition, step.event):
+                self.raise_event(event)
 
             # Postconditions and invariants
             self.__evaluate_contract_conditions(step.transition, 'postconditions', step)
@@ -448,7 +462,8 @@ class Interpreter:
             self.__evaluate_contract_conditions(state, 'preconditions', step)
 
             # Execute entry action
-            self._evaluator.execute_onentry(state)
+            for event in self._evaluator.execute_onentry(state):
+                self.raise_event(event)
 
             # Update configuration
             self._configuration.add(state.name)

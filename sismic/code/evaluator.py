@@ -1,7 +1,7 @@
 import abc
 from sismic.model import ActionStateMixin
 from sismic.model import Event, Transition, StateMixin, Statechart
-from typing import cast, Iterator, Mapping
+from typing import cast, Iterator, Mapping, List
 
 __all__ = ['Evaluator']
 
@@ -47,25 +47,29 @@ class Evaluator(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _execute_code(self, code: str, *, additional_context: Mapping=None) -> None:
+    def _execute_code(self, code: str, *, additional_context: Mapping=None) -> List[Event]:
         """
         Generic method to execute a piece of code. This method is a fallback if one
         of the other execute_* methods is not overridden.
 
         :param code: code to execute
         :param additional_context: an optional additional context
+        :return: a list of sent events
         """
         raise NotImplementedError()
 
-    def execute_statechart(self, statechart: Statechart) -> None:
+    def execute_statechart(self, statechart: Statechart) -> List[Event]:
         """
         Execute the initial code of a statechart.
         This method is called at the very beginning of the execution.
 
         :param statechart: statechart to consider
+        :return: a list of sent events
         """
         if statechart.preamble:
-            self._execute_code(statechart.preamble)
+            return self._execute_code(statechart.preamble)
+        else:
+            return []
 
     def evaluate_guard(self, transition: Transition, event: Event) -> bool:
         """
@@ -78,36 +82,45 @@ class Evaluator(metaclass=abc.ABCMeta):
         if transition.guard:
             return self._evaluate_code(transition.guard, additional_context={'event': event})
 
-    def execute_action(self, transition: Transition, event: Event) -> None:
+    def execute_action(self, transition: Transition, event: Event) -> List[Event]:
         """
         Execute the action for given transition.
         This method is called for every transition that is processed, even those with no *action*.
 
         :param transition: the considered transition
         :param event: instance of *Event* if any
+        :return: a list of sent events
         """
         if transition.action:
-            self._execute_code(transition.action, additional_context={'event': event})
+            return self._execute_code(transition.action, additional_context={'event': event})
+        else:
+            return []
 
-    def execute_onentry(self, state: StateMixin) -> None:
+    def execute_onentry(self, state: StateMixin) -> List[Event]:
         """
         Execute the on entry action for given state.
         This method is called for every state that is entered, even those with no *on_entry*.
 
         :param state: the considered state
+        :return: a list of sent events
         """
         if getattr(state, 'on_entry', None):
-            self._execute_code(cast(ActionStateMixin, state).on_entry)
+            return self._execute_code(cast(ActionStateMixin, state).on_entry)
+        else:
+            return []
 
-    def execute_onexit(self, state: StateMixin) -> None:
+    def execute_onexit(self, state: StateMixin) -> List[Event]:
         """
         Execute the on exit action for given state.
         This method is called for every state that is exited, even those with no *on_exit*.
 
         :param state: the considered state
+        :return: a list of sent events
         """
         if getattr(state, 'on_exit', None):
-            self._execute_code(cast(ActionStateMixin, state).on_exit)
+            return self._execute_code(cast(ActionStateMixin, state).on_exit)
+        else:
+            return []
 
     def evaluate_preconditions(self, obj, event: Event=None) -> Iterator[str]:
         """

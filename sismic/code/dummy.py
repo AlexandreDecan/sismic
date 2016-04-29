@@ -1,5 +1,6 @@
 from .evaluator import Evaluator
-from typing import Mapping
+from typing import Mapping, List
+from sismic.model import Event
 
 __all__ = ['DummyEvaluator']
 
@@ -19,5 +20,5 @@ class DummyEvaluator(Evaluator):
     def _evaluate_code(self, code: str, *, additional_context: Mapping=None) -> bool:
         return True
 
-    def _execute_code(self, code: str, *, additional_context: Mapping=None) -> None:
-        return
+    def _execute_code(self, code: str, *, additional_context: Mapping=None) -> List[Event]:
+        return []
