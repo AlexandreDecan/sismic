@@ -2,7 +2,7 @@ import redbaron
 from baron.parser import ParsingError
 
 import mypy.build
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Set
 
 from collections import OrderedDict
 
@@ -97,6 +97,25 @@ def infer_types(code: str) -> Dict[str, str]:
     return {var: str(val.type) for var, val in result.files['__main__'].names.items()}
 
 
+def attributes_for(code: str, obj_name: str) -> Set[str]:
+    """
+    Find and return every attribute that is accessed on given object name.
+
+    :param code: a piece of Python code
+    :param obj_name: the name of the object to look for.
+    :return: A list of accessed attributes
+    """
+    try:
+        red = redbaron.RedBaron(code)
+    except ParsingError as e:
+        raise ValueError('Invalid Python code in "%s"' % code) from e
+
+    attributes = set()
+    for node in red.find_all('Atomtrailers', lambda n: n.name.value == obj_name):
+        attributes.add(node[1].value)
+    return attributes
+
+
 def sent_events(code: str) -> Dict[str, List[Dict[str, str]]]:
     """
     Try to identify calls to *send* in given piece of Python code and return
@@ -112,12 +131,12 @@ def sent_events(code: str) -> Dict[str, List[Dict[str, str]]]:
     :return: A mapping {event_name: [{param: value}]}
     :raise: ValueError if code is malformed
     """
-    events = {}
     try:
         red = redbaron.RedBaron(code)
     except ParsingError as e:
         raise ValueError('Invalid Python code in "%s"' % code) from e
 
+    events = {}
     for call_node in red.find_all('Call', lambda n: n.previous.type == 'name' and n.previous.value == 'send'):
         event_name_node = call_node.find('CallArgument', lambda n: n.target is None and n.value.type == 'string')
         if event_name_node is None:
@@ -132,6 +151,8 @@ def sent_events(code: str) -> Dict[str, List[Dict[str, str]]]:
 
         events.setdefault(event_name, []).append(event_arguments)
     return events
+
+
 
 
 # Infer parameters type of sent events (infer "floor = 4" in current potential context)

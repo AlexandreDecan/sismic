@@ -1,5 +1,5 @@
 import unittest
-from sismic.testing.specs import declared_variables, code_for, infer_types, sent_events
+from sismic.testing.specs import declared_variables, code_for, infer_types, sent_events, attributes_for
 from sismic.io import import_from_yaml
 
 
@@ -19,6 +19,9 @@ class DeclaredVariablesTests(unittest.TestCase):
 
     def test_commented_assignment(self):
         self.assertEqual(declared_variables('# x = 1'), {})
+
+    def test_multiple_assignments(self):
+        self.assertEqual(declared_variables('x = y = 1'), {'x': 'y = 1', 'y': '1'})
 
     def test_invalid_assignment(self):
         codes = [
@@ -131,3 +134,16 @@ class SentEventsTests(unittest.TestCase):
         call_2 = self.make_call('b', x=2)
         self.assertDictEqual(sent_events(call_1 + ', ' + call_2),
                              {'a': [{'x': '1'}], 'b': [{'x': '2'}]})
+
+
+class AttributesForTests(unittest.TestCase):
+    def test_simple(self):
+        self.assertEqual(attributes_for('x.y = a.b', 'a'), {'b'})
+        self.assertEqual(attributes_for('x.y = a.b', 'x'), {'y'})
+        self.assertEqual(attributes_for('x.y = a.b', 'y'), set())
+        self.assertEqual(attributes_for('x.y = x.z', 'x'), {'y', 'z'})
+
+    def test_composite(self):
+        self.assertEqual(attributes_for('x.y.z', 'y'), set())
+        self.assertEqual(attributes_for('x.y.z', 'x.y'), set())
+        self.assertEqual(attributes_for('x.y.z', 'x'), {'y'})
