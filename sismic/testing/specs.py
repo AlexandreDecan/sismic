@@ -65,17 +65,19 @@ def code_for(statechart: Statechart, element: Union[Statechart, Transition, Stat
     :return: A list of codes
     """
     if isinstance(element, Statechart):
-        return [element.preamble]
+        preamble = element.preamble if element.preamble else ''
+        return [preamble]
     elif isinstance(element, Transition):
-        return code_for(statechart, statechart.state_for(element.source)) + [element.action]
+        action = element.action if element.action else ''
+        return code_for(statechart, statechart.state_for(element.source)) + [action]
     elif isinstance(element, StateMixin):
-        on_entry = getattr(element, 'on_entry', None)
+        on_entry = getattr(element, 'on_entry', None)  # Can also exists with None
+        on_entry = on_entry if on_entry else ''
         parent = statechart.parent_for(element.name)
         if parent is None:
-            return code_for(statechart, statechart) + [on_entry] if on_entry else code_for(statechart, statechart)
+            return code_for(statechart, statechart) + [on_entry]
         else:
-            return code_for(statechart, statechart.state_for(parent)) + [on_entry] if on_entry \
-                else code_for(statechart, statechart.state_for(parent))
+            return code_for(statechart, statechart.state_for(parent)) + [on_entry]
     else:
         raise ValueError('Unsupported type %s for %s' % (type(element), element))
 
@@ -95,6 +97,30 @@ def infer_types(code: str) -> Dict[str, str]:
         raise ValueError('%s\nin: \n%s' % ('\n'.join(e.messages), code)) from e
 
     return {var: str(val.type) for var, val in result.files['__main__'].names.items()}
+
+
+def infer_types_for(statechart: Statechart, element: Union[Statechart, Transition, StateMixin]) -> Dict[str, str]:
+    codes = [''] + code_for(statechart, element)
+
+    i = len(codes) - 1
+
+    while i >= 1:
+        limited_code = '\n'.join(codes[i:])
+        try:
+            types = infer_types(limited_code)
+
+            # Remove variables from parent
+            returned_types = dict()
+            variables = declared_variables(codes[-1])
+            parent_variables = declared_variables('\n'.join(codes[:-1]))
+            for key in variables:
+                if key not in parent_variables:
+                    returned_types[key] = types[key]
+
+            return returned_types
+        except ValueError:
+            i -= 1
+    return None
 
 
 def attributes_for(code: str, obj_name: str) -> Set[str]:

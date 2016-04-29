@@ -1,5 +1,5 @@
 import unittest
-from sismic.testing.specs import declared_variables, code_for, infer_types, sent_events, attributes_for
+from sismic.testing.specs import declared_variables, code_for, infer_types, sent_events, attributes_for, infer_types_for
 from sismic.io import import_from_yaml
 
 
@@ -55,13 +55,13 @@ class CodeForTests(unittest.TestCase):
         state = self.sc.state_for('movingUp')
         code = code_for(self.sc, state)
         self.assertEqual(code[0], self.sc.preamble)
-        self.assertEqual(code[1], state.on_entry)
+        self.assertEqual(code[-1], state.on_entry)
 
     def test_transition(self):
         transition = self.sc.transitions_from('floorSelecting')[0]
         code = code_for(self.sc, transition)
         self.assertEqual(code[0], self.sc.preamble)
-        self.assertEqual(code[1], transition.action)
+        self.assertEqual(code[-1], transition.action)
 
 
 class InferTypesTest(unittest.TestCase):
@@ -105,6 +105,37 @@ class InferTypesTest(unittest.TestCase):
 
         values.update(self.base)
         self.assertDictEqual(infer_types(code), values)
+
+
+class InferTypesForTests(unittest.TestCase):
+    def setUp(self):
+        with open('docs/examples/elevator.yaml') as f:
+            self.sc = import_from_yaml(f)
+
+    def test_statechart_code(self):
+        types = infer_types_for(self.sc, self.sc)
+        self.assertDictEqual(types, {'current': 'builtins.int', 'destination': 'builtins.int', 'doors_open': 'builtins.bool'})
+
+    def test_root_code(self):
+        types = infer_types_for(self.sc, self.sc.state_for(self.sc.root))
+        self.assertDictEqual(types, {})
+
+    def test_root_code_with_new_variable(self):
+        state = self.sc.state_for(self.sc.root)
+        state.on_entry = 'x = doors_open'
+        types = infer_types_for(self.sc, state)
+        self.assertDictEqual(types, {'x': 'builtins.bool'})
+
+    def test_state_with_existing_variables(self):
+        state = self.sc.state_for('movingUp')
+        types = infer_types_for(self.sc, state)
+        self.assertDictEqual(types, {})  # Not 'current'!
+
+    def test_transitions_code(self):
+        element = self.sc.transitions_from('movingUp')[0]
+        element.action = '\nx = y = 1'
+        types = infer_types_for(self.sc, element)
+        self.assertDictEqual(types, {'x': 'builtins.int', 'y': 'builtins.int'})
 
 
 class SentEventsTests(unittest.TestCase):
