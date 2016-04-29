@@ -1,7 +1,7 @@
-import redbaron
-from baron.parser import ParsingError
+import redbaron  # type: ignore
+from baron.parser import ParsingError  # type: ignore
 
-import mypy.build
+import mypy.build  # type: ignore
 from typing import List, Union, Dict, Set
 
 from collections import OrderedDict
@@ -21,7 +21,7 @@ PYTHON_EVALUATOR_STUBS = [
 ]
 
 
-def declared_variables(code: str) -> OrderedDict:
+def declared_variables(code: str) -> Dict[str, str]:
     """
     Given a piece of code, return an OrderedDict that associates to each
     declared variable in the code its assigned value.
@@ -35,7 +35,7 @@ def declared_variables(code: str) -> OrderedDict:
         red = redbaron.RedBaron(code)
     except ParsingError as e:
         raise ValueError('Invalid Python code in "%s"' % code) from e
-    variables = OrderedDict()
+    variables = OrderedDict()  # type: OrderedDict[str, str]
 
     for assignment in red.find_all('AssignmentNode'):
         target, value = assignment.target, assignment.value
@@ -162,7 +162,7 @@ def sent_events(code: str) -> Dict[str, List[Dict[str, str]]]:
     except ParsingError as e:
         raise ValueError('Invalid Python code in "%s"' % code) from e
 
-    events = {}
+    events = {}  # type: Dict[str, List[Dict[str, str]]]
     for call_node in red.find_all('Call', lambda n: n.previous.type == 'name' and n.previous.value == 'send'):
         event_name_node = call_node.find('CallArgument', lambda n: n.target is None and n.value.type == 'string')
         if event_name_node is None:
@@ -179,7 +179,4 @@ def sent_events(code: str) -> Dict[str, List[Dict[str, str]]]:
     return events
 
 
-
-
 # Infer parameters type of sent events (infer "floor = 4" in current potential context)
-# Infer parameters of received events: look for event.x, grep x (how to infer type?)
