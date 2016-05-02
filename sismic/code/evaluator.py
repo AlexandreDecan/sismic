@@ -32,7 +32,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         The context of this evaluator. A context is a dict-like mapping between
         variables and values that is expected to be exposed when the code is evaluated.
         """
-        raise NotImplementedError()
+        pass
 
     @abc.abstractmethod
     def _evaluate_code(self, code: str, *, additional_context: Mapping[str, Any]=None) -> bool:
@@ -44,7 +44,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param additional_context: an optional additional context
         :return: truth value of *code*
         """
-        raise NotImplementedError()
+        pass
 
     @abc.abstractmethod
     def _execute_code(self, code: str, *, additional_context: Mapping[str, Any]=None) -> List[Event]:
@@ -56,7 +56,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param additional_context: an optional additional context
         :return: a list of sent events
         """
-        raise NotImplementedError()
+        pass
 
     def execute_statechart(self, statechart: Statechart) -> List[Event]:
         """
