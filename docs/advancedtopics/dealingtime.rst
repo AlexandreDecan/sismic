@@ -210,14 +210,15 @@ Asynchronous execution
 ----------------------
 
 Notice from previous example that using a loop makes it impossible to send events to the interpreter.
-For convenience, sismic provides a :py:func:`~sismic.interpreter.run_in_background`
+For convenience, sismic provides a :py:func:`sismic.interpreter.helpers.run_in_background`
 function that run an interpreter in a thread, and does the job of synchronizing the clock for you.
 
 .. testcode:: thread
 
     import time
     from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter, run_in_background
+    from sismic.interpreter import Interpreter
+    from sismic.interpreter.helpers import run_in_background
     from sismic.model import Event
 
     with open('examples/microwave.yaml') as f:
@@ -256,6 +257,6 @@ function that run an interpreter in a thread, and does the job of synchronizing 
     Toggledoor: ['root', 'plugged', 'door', 'heating', 'lamp', 'turntable', 'door.close', 'heating.off', 'lamp.off', 'turntable.off']
     Final: []
 
-.. note:: An optional argument ``callback`` can be passed to :py:func:`~sismic.interpreter.run_in_background`.
+.. note:: An optional argument ``callback`` can be passed to :py:func:`~sismic.interpreter.helpers.run_in_background`.
     It must be a callable that accepts the (possibly empty) list of :py:class:`~sismic.model.MacroStep` returned by 
     the underlying call to :py:meth:`~sismic.interpreter.Interpreter.execute`. 
