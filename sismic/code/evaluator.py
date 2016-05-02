@@ -1,7 +1,7 @@
 import abc
 from sismic.model import ActionStateMixin
 from sismic.model import Event, Transition, StateMixin, Statechart
-from typing import cast, Iterator, Mapping, List
+from typing import cast, Iterator, Mapping, List, Any
 
 __all__ = ['Evaluator']
 
@@ -22,12 +22,12 @@ class Evaluator(metaclass=abc.ABCMeta):
     :param initial_context: an optional dictionary to populate the context
     """
     @abc.abstractmethod
-    def __init__(self, interpreter=None, *, initial_context: Mapping=None) -> None:
+    def __init__(self, interpreter=None, *, initial_context: Mapping[str, Any]=None) -> None:
         pass
 
     @property
     @abc.abstractmethod
-    def context(self) -> Mapping:
+    def context(self) -> Mapping[str, Any]:
         """
         The context of this evaluator. A context is a dict-like mapping between
         variables and values that is expected to be exposed when the code is evaluated.
@@ -35,7 +35,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _evaluate_code(self, code: str, *, additional_context: Mapping=None) -> bool:
+    def _evaluate_code(self, code: str, *, additional_context: Mapping[str, Any]=None) -> bool:
         """
         Generic method to evaluate a piece of code. This method is a fallback if one of
         the other evaluate_* methods is not overridden.
@@ -47,7 +47,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _execute_code(self, code: str, *, additional_context: Mapping=None) -> List[Event]:
+    def _execute_code(self, code: str, *, additional_context: Mapping[str, Any]=None) -> List[Event]:
         """
         Generic method to execute a piece of code. This method is a fallback if one
         of the other execute_* methods is not overridden.

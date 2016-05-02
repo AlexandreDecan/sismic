@@ -7,7 +7,7 @@ from sismic import model
 from sismic.code import Evaluator, PythonEvaluator
 from sismic.exceptions import InvariantError, PreconditionError, PostconditionError
 from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
-from typing import Optional, List, Union, Callable, Any, cast, Iterable, Mapping
+from typing import Optional, List, Union, Callable, Any, cast, Iterable, Mapping, Dict
 
 __all__ = ['Interpreter', 'log_trace', 'run_in_background']
 
@@ -27,7 +27,7 @@ class Interpreter:
 
     def __init__(self, statechart: model.Statechart, *,
                  evaluator_klass: Callable[['Interpreter'], Evaluator]=PythonEvaluator,
-                 initial_context: Mapping=None,
+                 initial_context: Mapping[str, Any]=None,
                  ignore_contract: bool=False) -> None:
         # Internal variables
         self._ignore_contract = ignore_contract
@@ -42,7 +42,7 @@ class Interpreter:
         self._bound = []  # type: List[Callable[[model.Event], Any]]
 
         # Evaluator
-        self._evaluator = evaluator_klass(self, initial_context=initial_context)  # type: ignore
+        self._evaluator = evaluator_klass(self, initial_context=initial_context) # type: ignore
         for event in self._evaluator.execute_statechart(statechart):
             self.raise_event(event)
 
