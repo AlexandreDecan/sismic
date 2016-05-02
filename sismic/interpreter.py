@@ -109,7 +109,7 @@ class Interpreter:
         self._bound.append(bound_callable)
         return self
 
-    def raise_event(self, event: model.InternalEvent) -> None:
+    def raise_event(self, event: model.Event) -> None:
         """
         Raise an event from the statechart.
         Events are propagated to bound interpreters as non-internal events, and added to the internal queue of the
@@ -126,7 +126,7 @@ class Interpreter:
             # Add to current interpreter's internal queue
             self._internal_events.append(event)
         else:
-            raise ValueError('{} is not an InternalEvent instance'.format(event))
+            raise ValueError('Only InternalEvent instances are supported'.format(event))
 
     def queue(self, event: model.Event) -> 'Interpreter':
         """
