@@ -5,7 +5,8 @@ Unreleased
 ----------
 
 - (Added) Python code evaluator: *after* and *idle* are now available in postconditions and invariants.
-- (Added) ``interpreter.raise_event`` to send events from within the statechart.
+- (Added) ``Interpreter.raise_event`` to send events from within the statechart.
+- (Added) A ``plug_statechart`` method for a ``Statechart`` instance that allows to copy a statechart into another one.
 - (Changed) Events sent by a code evaluator are now returned by the ``execute_*`` methods instead of being
   automatically added to the interpreter's queue.
 - (Changed) Moved ``run_in_background`` and ``log_trace`` from ``sismic.interpreter`` to the newly added

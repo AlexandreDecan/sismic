@@ -1,8 +1,8 @@
 from sismic.exceptions import StatechartError
 from .elements import CompositeStateMixin, \
-    CompoundState, HistoryStateMixin, StateMixin, Transition, TransitionStateMixin
-
-from typing import Optional, List, Union, cast, Iterable
+    CompoundState, HistoryStateMixin, StateMixin, Transition, TransitionStateMixin, BasicState
+from copy import deepcopy
+from typing import Optional, Dict, List, Union, cast, Iterable, Callable
 
 __all__ = ['Statechart']
 
@@ -21,10 +21,10 @@ class Statechart:
         self.description = description
         self._preamble = preamble
 
-        self._states = {}  # type: Dict[str, StateMixin]  # name -> State object
-        self._parent = {}  # type: Dict[str, str]  # name -> parent.name
-        self._children = {}  # type: Dict[str, List[str]]  # name -> list of names
-        self._transitions = []  # type: List[Transition]  # list of Transition objects
+        self._states = {}  # type: Dict[str, StateMixin]
+        self._parent = {}  # type: Dict[str, str]
+        self._children = {}  # type: Dict[str, List[str]]
+        self._transitions = []  # type: List[Transition]
 
         self._children[None] = []  # Root state
 
@@ -52,172 +52,6 @@ class Statechart:
         List of state names in lexicographic order.
         """
         return sorted(self._states.keys())
-
-    def add_state(self, state: StateMixin, parent: Optional[str]) -> None:
-        """
-        Add given state (a *StateMixin* instance) on given parent (its name as an *str*).
-        If given state should be use as a root state, set *parent* to None.
-
-        :param state: state to add
-        :param parent: name of its parent, or None
-        :raise StatechartError:
-        """
-        # Check name unicity
-        if state.name in self._states.keys():
-            raise StatechartError('State {} already exists!'.format(state))
-
-        if not parent:
-            # Check root state
-            if self.root:
-                raise StatechartError('Root already defined, {} should declare an existing parent state'.format(state))
-        else:
-            parent_state = self.state_for(parent)
-
-            # Check that parent exists
-            if not parent_state:
-                raise StatechartError('Parent "{}" of {} does not exist!'.format(parent, state))
-
-            # Check that parent is a CompositeStateMixin.
-            if not isinstance(parent_state, CompositeStateMixin):
-                raise StatechartError('{} cannot be used as a parent for {}'.format(parent_state, state))
-
-            # If state is an HistoryState, its parent must be a CompoundState
-            if isinstance(state, HistoryStateMixin) and not isinstance(parent_state, CompoundState):
-                raise StatechartError('{} cannot be used as a parent for {}'.format(parent_state, state))
-
-        # Save state
-        self._states[state.name] = state
-        self._parent[state.name] = parent
-        self._children[state.name] = []
-        self._children[parent].append(state.name)
-
-    def remove_state(self, name: str) -> None:
-        """
-        Remove given state.
-
-        The transitions that involve this state will be removed too.
-        If the state is the target of an *initial* or *memory* property, their value will be set to None.
-        If the state has children, they will be removed too.
-
-        :param name: name of a state
-        :raise StatechartError:
-        """
-        state = self.state_for(name)
-
-        # Remove children
-        for child in list(self.children_for(state.name)):
-            self.remove_state(child)
-
-        # Remove transitions
-        for transition in list(self.transitions):  # Make a copy!
-            if transition.source == state.name or transition.target == state.name:
-                self.remove_transition(transition)
-
-        # Remove compoundstate's initial and historystate's memory
-        for o_state in self._states.values():
-            if isinstance(o_state, CompoundState):
-                o_state.initial = None
-            elif isinstance(o_state, HistoryStateMixin):
-                o_state.memory = None
-
-        # Remove state
-        self._states.pop(name)
-        parent = self._parent.pop(name)
-        self._children.pop(name)
-
-        self._children[parent].remove(name)
-
-    def rename_state(self, old_name: str, new_name: str) -> None:
-        """
-        Change state name, and adapt transitions, initial state, memory, etc.
-
-        :param old_name: old name of the state
-        :param new_name: new name of the state
-        """
-        if old_name == new_name:
-            return
-        if new_name in self._states:
-            raise StatechartError('State {} already exists!'.format(new_name))
-
-        # Check state exists
-        state = self.state_for(old_name)
-
-        # Change transitions
-        for transition in self.transitions:
-            if transition.source == old_name:
-                if transition.internal:
-                    transition._target = new_name
-                transition._source = new_name
-
-            if transition.target == old_name:
-                transition._target = new_name
-
-        for other_state in self._states.values():
-            # Change initial (CompoundState)
-            if isinstance(other_state, CompoundState):
-                if other_state.initial == old_name:
-                    other_state.initial = new_name
-
-            # Change memory (HistoryState)
-            if isinstance(other_state, HistoryStateMixin):
-                if other_state.memory == old_name:
-                    other_state.memory = new_name
-
-            # Adapt parent
-            if self._parent[other_state.name] == old_name:
-                self._parent[other_state.name] = new_name
-
-        # Adapt structures
-        parent_name = self._parent[old_name]
-        self._children[parent_name].remove(old_name)
-        self._children[parent_name].append(new_name)
-
-        self._states[new_name] = self._states.pop(old_name)
-        self._parent[new_name] = self._parent.pop(old_name)
-        self._children[new_name] = self._children.pop(old_name)
-
-        # Rename state!
-        state._name = new_name
-
-    def move_state(self, name: str, new_parent: str) -> None:
-        """
-        Move given state (and its children) such that its new parent is *new_parent*.
-
-        Notice that a state cannot be moved inside itself or inside one of its descendants.
-        If the state to move is the target of an *initial* or *memory* property of its parent,
-        this property will be set to None. The same occurs if given state is an history state.
-
-        :param name: name of the state to move
-        :param new_parent: name of the new parent
-        """
-        # Check that both states exist
-        state = self.state_for(name)
-        self.state_for(new_parent)
-
-        # Check that parent is not a descendant (or self) of given state
-        if new_parent in [name] + self.descendants_for(name):
-            raise StatechartError('State {} cannot be moved into itself or one of its descendants.'.format(state))
-
-        # Change its parent and register state as a child
-        old_parent = self.parent_for(name)
-        self._parent[name] = new_parent
-        self._children[old_parent].remove(name)
-        self._children.setdefault(new_parent, []).append(name)
-
-        # Check memory property
-        if isinstance(state, HistoryStateMixin):
-            state.memory = None
-
-        for other_state in self._states.values():
-            # Change initial (CompoundState)
-            if isinstance(other_state, CompoundState):
-                if other_state.initial == name:
-                    other_state.initial = None
-
-            # Change memory (HistoryState)
-            if isinstance(other_state, HistoryStateMixin):
-                if other_state.memory == name:
-                    other_state.memory = None
 
     def state_for(self, name: str) -> StateMixin:
         """
@@ -501,7 +335,216 @@ class Statechart:
                     names.add(transition.event)
         return sorted(names)
 
-    # ######### TOOLS ##########
+    # ######### STRUCTURAL CHANGES ##########
+
+    def add_state(self, state: StateMixin, parent: Optional[str]) -> None:
+        """
+        Add given state (a *StateMixin* instance) on given parent (its name as an *str*).
+        If given state should be use as a root state, set *parent* to None.
+
+        :param state: state to add
+        :param parent: name of its parent, or None
+        :raise StatechartError:
+        """
+        # Check name unicity
+        if state.name in self._states.keys():
+            raise StatechartError('State {} already exists!'.format(state))
+
+        if not parent:
+            # Check root state
+            if self.root:
+                raise StatechartError('Root already defined, {} should declare an existing parent state'.format(state))
+        else:
+            parent_state = self.state_for(parent)
+
+            # Check that parent exists
+            if not parent_state:
+                raise StatechartError('Parent "{}" of {} does not exist!'.format(parent, state))
+
+            # Check that parent is a CompositeStateMixin.
+            if not isinstance(parent_state, CompositeStateMixin):
+                raise StatechartError('{} cannot be used as a parent for {}'.format(parent_state, state))
+
+            # If state is an HistoryState, its parent must be a CompoundState
+            if isinstance(state, HistoryStateMixin) and not isinstance(parent_state, CompoundState):
+                raise StatechartError('{} cannot be used as a parent for {}'.format(parent_state, state))
+
+        # Save state
+        self._states[state.name] = state
+        self._parent[state.name] = parent
+        self._children[state.name] = []
+        self._children[parent].append(state.name)
+
+    def remove_state(self, name: str) -> None:
+        """
+        Remove given state.
+
+        The transitions that involve this state will be removed too.
+        If the state is the target of an *initial* or *memory* property, their value will be set to None.
+        If the state has children, they will be removed too.
+
+        :param name: name of a state
+        :raise StatechartError:
+        """
+        state = self.state_for(name)
+
+        # Remove children
+        for child in list(self.children_for(state.name)):
+            self.remove_state(child)
+
+        # Remove transitions
+        for transition in list(self.transitions):  # Make a copy!
+            if transition.source == state.name or transition.target == state.name:
+                self.remove_transition(transition)
+
+        # Remove compoundstate's initial and historystate's memory
+        for o_state in self._states.values():
+            if isinstance(o_state, CompoundState):
+                o_state.initial = None
+            elif isinstance(o_state, HistoryStateMixin):
+                o_state.memory = None
+
+        # Remove state
+        self._states.pop(name)
+        parent = self._parent.pop(name)
+        self._children.pop(name)
+
+        self._children[parent].remove(name)
+
+    def rename_state(self, old_name: str, new_name: str) -> None:
+        """
+        Change state name, and adapt transitions, initial state, memory, etc.
+
+        :param old_name: old name of the state
+        :param new_name: new name of the state
+        """
+        if old_name == new_name:
+            return
+        if new_name in self._states:
+            raise StatechartError('State {} already exists!'.format(new_name))
+
+        # Check state exists
+        state = self.state_for(old_name)
+
+        # Change transitions
+        for transition in self.transitions:
+            if transition.source == old_name:
+                if transition.internal:
+                    transition._target = new_name
+                transition._source = new_name
+
+            if transition.target == old_name:
+                transition._target = new_name
+
+        for other_state in self._states.values():
+            # Change initial (CompoundState)
+            if isinstance(other_state, CompoundState):
+                if other_state.initial == old_name:
+                    other_state.initial = new_name
+
+            # Change memory (HistoryState)
+            if isinstance(other_state, HistoryStateMixin):
+                if other_state.memory == old_name:
+                    other_state.memory = new_name
+
+            # Adapt parent
+            if self._parent[other_state.name] == old_name:
+                self._parent[other_state.name] = new_name
+
+        # Adapt structures
+        parent_name = self._parent[old_name]
+        self._children[parent_name].remove(old_name)
+        self._children[parent_name].append(new_name)
+
+        self._states[new_name] = self._states.pop(old_name)
+        self._parent[new_name] = self._parent.pop(old_name)
+        self._children[new_name] = self._children.pop(old_name)
+
+        # Rename state!
+        state._name = new_name
+
+    def move_state(self, name: str, new_parent: str) -> None:
+        """
+        Move given state (and its children) such that its new parent is *new_parent*.
+
+        Notice that a state cannot be moved inside itself or inside one of its descendants.
+        If the state to move is the target of an *initial* or *memory* property of its parent,
+        this property will be set to None. The same occurs if given state is an history state.
+
+        :param name: name of the state to move
+        :param new_parent: name of the new parent
+        """
+        # Check that both states exist
+        state = self.state_for(name)
+        self.state_for(new_parent)
+
+        # Check that parent is not a descendant (or self) of given state
+        if new_parent in [name] + self.descendants_for(name):
+            raise StatechartError('State {} cannot be moved into itself or one of its descendants.'.format(state))
+
+        # Change its parent and register state as a child
+        old_parent = self.parent_for(name)
+        self._parent[name] = new_parent
+        self._children[old_parent].remove(name)
+        self._children.setdefault(new_parent, []).append(name)
+
+        # Check memory property
+        if isinstance(state, HistoryStateMixin):
+            state.memory = None
+
+        for other_state in self._states.values():
+            # Change initial (CompoundState)
+            if isinstance(other_state, CompoundState):
+                if other_state.initial == name:
+                    other_state.initial = None
+
+            # Change memory (HistoryState)
+            if isinstance(other_state, HistoryStateMixin):
+                if other_state.memory == name:
+                    other_state.memory = None
+
+    def plug_statechart(self, other_statechart: 'Statechart', target: str, namespace: Callable[[str], str]=lambda s: s) -> None:
+        """
+        Plug given statechart *other_statechart* into current one, replacing given *target* with *other_statechart*'s
+        root state. Target's contracts, entry and exit actions will be replaced. Only its name and its transitions
+        will be kept.
+
+        Parameter *namespace* is a callable that accepts a state name and returns a new state name.
+        This callable will be used to rename every non-root state of *other_statechart* (default to identity).
+
+        :param other_statechart: Other statechart to plug into given *target*
+        :param target: name of the state that will be replaced by *other_statechart*'s root
+        :param namespace: renaming function that will be applied on every non-root state of *other_statechart*
+        """
+        # Check target
+        target_state = self.state_for(target)
+        if not isinstance(target_state, BasicState):
+            raise StatechartError('Cannot plug given statechart into {}: not a BasicState instance.'.format(target))
+
+        statechart = deepcopy(other_statechart)  # type: Statechart
+
+        # Rename states
+        for state in statechart.states:
+            statechart.rename_state(state, namespace(state))
+
+        # Rename root to target
+        statechart.rename_state(statechart.root, target)
+
+        # Replace target
+        self._states[target] = statechart.state_for(target)
+
+        # Plug descendants
+        for descendant in statechart.descendants_for(target):
+            descendant_state = statechart.state_for(descendant)
+            parent = statechart.parent_for(descendant)
+            self.add_state(descendant_state, parent)
+
+        # Plug transitions
+        for transition in statechart.transitions:
+            self.add_transition(transition)
+
+
+    # ######### VALIDATION ##########
 
     def _validate_compoundstate_initial(self) -> bool:
         """
