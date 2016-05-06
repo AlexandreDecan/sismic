@@ -503,38 +503,38 @@ class Statechart:
                 if other_state.memory == name:
                     other_state.memory = None
 
-    def copy_from_statechart(self, statechart: 'Statechart', source: str, target: str,
-                             *, namespace: Callable[[str], str]=lambda s: s) -> None:
+    def copy_from_statechart(self, statechart: 'Statechart', source: str,
+                             *, replace: str, renaming_func: Callable[[str], str]=lambda s: s) -> None:
         """
         Copy (a part of) given *statechart* into current one.
 
         Copy *source* state, all its descendants and all involved transitions from *statechart* into current statechart.
-        The *source* state will override *target* state (but will be renamed to *target), and all its descendants in
+        The *source* state will override *target* state (but will be renamed to *replace*), and all its descendants in
         *statechart* will be copied into current statechart.
         All the transitions that are involved in the process must be fully contained in *source* state (ie. for all
         transition T: S->T, if S (resp. T) is a descendant-or-self of *source*, then T (resp. S) must be
         a descendant-or-self of *source*).
 
-        If necessary, callable *namespace* can be provided. This function should accept a (state) name and return a
-        (new state) name. Use *namespace* to avoid conflicting names in target statechart.
+        If necessary, callable *renaming_func* can be provided. This function should accept a (state) name and return a
+        (new state) name. Use *renaming_func* to avoid conflicting names in target statechart.
 
         :param statechart: Source statechart from which states will be copied.
         :param source: Name of the source state.
-        :param target: Name of the target state. Should refer to a BasicState instance.
-        :param namespace: Optional callable to resolve conflicting names.
+        :param replace: Name of the target state. Should refer to a BasicState instance.
+        :param renaming_func: Optional callable to resolve conflicting names.
         """
         # Target must be a BasicState instance
-        if not isinstance(self.state_for(target), BasicState):
-            raise StatechartError('Cannot copy into {}: not a BasicState instance.'.format(target))
+        if not isinstance(self.state_for(replace), BasicState):
+            raise StatechartError('Cannot copy into {}: not a BasicState instance.'.format(replace))
 
         statechart = deepcopy(statechart)  # type: Statechart
 
         # Rename and copy states
-        statechart.rename_state(source, target)
-        source_name = target  # For lisibility
-        self._states[target] = statechart.state_for(source_name)
+        statechart.rename_state(source, replace)
+        source_name = replace  # For lisibility
+        self._states[replace] = statechart.state_for(source_name)
         for name in statechart.descendants_for(source_name):
-            new_name = namespace(name)
+            new_name = renaming_func(name)
             # May raise a StatechartError if names collides in source statechart.
             # Possible workaround: first rename all states to uid, then rename to new names
             statechart.rename_state(name, new_name)
