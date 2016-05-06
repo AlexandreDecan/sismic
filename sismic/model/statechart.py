@@ -509,7 +509,7 @@ class Statechart:
         Copy (a part of) given *statechart* into current one.
 
         Copy *source* state, all its descendants and all involved transitions from *statechart* into current statechart.
-        The *source* state will override *target* state (but will be renamed to *replace*), and all its descendants in
+        The *source* state will override *replace* state (but will be renamed to *replace*), and all its descendants in
         *statechart* will be copied into current statechart.
         All the transitions that are involved in the process must be fully contained in *source* state (ie. for all
         transition T: S->T, if S (resp. T) is a descendant-or-self of *source*, then T (resp. S) must be
@@ -520,12 +520,11 @@ class Statechart:
 
         :param statechart: Source statechart from which states will be copied.
         :param source: Name of the source state.
-        :param replace: Name of the target state. Should refer to a BasicState instance.
+        :param replace: Name of the target state. Should refer to a StateMixin with no child.
         :param renaming_func: Optional callable to resolve conflicting names.
         """
-        # Target must be a BasicState instance
-        if not isinstance(self.state_for(replace), BasicState):
-            raise StatechartError('Cannot copy into {}: not a BasicState instance.'.format(replace))
+        if len(self.children_for(replace)) > 0:
+            raise StatechartError('State {} cannot be replaced while it has children.'.format(replace))
 
         statechart = deepcopy(statechart)  # type: Statechart
 

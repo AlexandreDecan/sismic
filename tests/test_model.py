@@ -616,18 +616,12 @@ class CopyFromStatechartTests(unittest.TestCase):
     def test_invalid_plug(self):
         # On compound
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc2.copy_from_statechart(self.sc1, 'sc1_root', replace='root')
-        self.assertIn('not a BasicState instance', str(cm.exception))
-
-        with self.assertRaises(exceptions.StatechartError) as cm:
             self.sc2.copy_from_statechart(self.sc1, 'sc1_root', replace='s1')
-        self.assertIn('not a BasicState instance', str(cm.exception))
+        self.assertIn('children', str(cm.exception))
 
-
-        # On final
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc2.copy_from_statechart(self.sc1, 'sc1_root', replace='s2')
-        self.assertIn('not a BasicState instance', str(cm.exception))
+            self.sc2.copy_from_statechart(self.sc1, 'sc1_root', replace='s1b')
+        self.assertIn('children', str(cm.exception))
 
     def test_with_namespace(self):
         sc1_states = self.sc1.states
