@@ -6,7 +6,7 @@ Communication between statecharts
 It is not unusual to have to deal with multiple distinct components in which the behavior of a component is driven
 by things that happen in the other components.
 One can model such a situation using a single statechart with parallel states, or by plugging several statecharts
-into one main statechart (see :py:meth:`sismic.model.Statechart.plug_statechart`).
+into one main statechart (see :py:meth:`sismic.model.Statechart.copy_from_statechart`).
 The communication and synchronization between the components can be done either by using ``active(state_name)`` in
 guards, or by sending internal events that address other components.
 

@@ -503,46 +503,41 @@ class Statechart:
                 if other_state.memory == name:
                     other_state.memory = None
 
-    def plug_statechart(self, other_statechart: 'Statechart', target: str, namespace: Callable[[str], str]=lambda s: s) -> None:
+    def copy_from_statechart(self, statechart: 'Statechart', source: str, target: str,
+                             *, namespace: Callable[[str], str]=lambda s: s) -> None:
         """
-        Plug given statechart *other_statechart* into current one, replacing given *target* with *other_statechart*'s
-        root state. Target's contracts, entry and exit actions will be replaced. Only its name and its transitions
-        will be kept.
 
-        Parameter *namespace* is a callable that accepts a state name and returns a new state name.
-        This callable will be used to rename every non-root state of *other_statechart* (default to identity).
-
-        :param other_statechart: Other statechart to plug into given *target*
-        :param target: name of the state that will be replaced by *other_statechart*'s root
-        :param namespace: renaming function that will be applied on every non-root state of *other_statechart*
+        :param statechart:
+        :param source:
+        :param target:
+        :param namespace:
         """
-        # Check target
-        target_state = self.state_for(target)
-        if not isinstance(target_state, BasicState):
-            raise StatechartError('Cannot plug given statechart into {}: not a BasicState instance.'.format(target))
+        # Target must be a BasicState instance
+        if not isinstance(self.state_for(target), BasicState):
+            raise StatechartError('Cannot copy into {}: not a BasicState instance.'.format(target))
 
-        statechart = deepcopy(other_statechart)  # type: Statechart
+        statechart = deepcopy(statechart)  # type: Statechart
 
-        # Rename states
-        for state in statechart.states:
-            statechart.rename_state(state, namespace(state))
+        # Rename and copy states
+        statechart.rename_state(source, target)
+        source_name = target  # For lisibility
+        self._states[target] = statechart.state_for(source_name)
+        for name in statechart.descendants_for(source_name):
+            new_name = namespace(name)
+            # May raise a StatechartError if names collides in source statechart.
+            # Possible workaround: first rename all states to uid, then rename to new names
+            statechart.rename_state(name, new_name)
+            self.add_state(statechart.state_for(new_name), statechart.parent_for(new_name))
 
-        # Rename root to target
-        statechart.rename_state(statechart.root, target)
-
-        # Replace target
-        self._states[target] = statechart.state_for(target)
-
-        # Plug descendants
-        for descendant in statechart.descendants_for(target):
-            descendant_state = statechart.state_for(descendant)
-            parent = statechart.parent_for(descendant)
-            self.add_state(descendant_state, parent)
-
-        # Plug transitions
-        for transition in statechart.transitions:
-            self.add_transition(transition)
-
+        # Copy transitions
+        for name in [source_name] + statechart.descendants_for(source_name):
+            transitions = set(statechart.transitions_from(name) + statechart.transitions_to(name))
+            for transition in transitions:
+                try:
+                    self.add_transition(transition)
+                except StatechartError as e:
+                    raise StatechartError('Cannot copy {} because transition {} is not contained in {}'.
+                                          format(transition.source, transition, source)) from e
 
     # ######### VALIDATION ##########
 

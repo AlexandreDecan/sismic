@@ -559,19 +559,20 @@ class MoveStateTest(unittest.TestCase):
         self.sc.validate()
 
 
-class PlugStatechartTests(unittest.TestCase):
+class CopyFromStatechartTests(unittest.TestCase):
     def setUp(self):
         with open('tests/yaml/simple.yaml') as f:
             self.sc1 = io.import_from_yaml(f)
         with open('tests/yaml/composite.yaml') as f:
             self.sc2 = io.import_from_yaml(f)
+
         for state in self.sc1.states:
             self.sc1.rename_state(state, 'sc1_' + state)
 
     def test_keep_other_states(self):
         sc1_states = self.sc1.states
 
-        self.sc2.plug_statechart(self.sc1, 's1a')
+        self.sc2.copy_from_statechart(self.sc1, 'sc1_root', 's1a')
         self.assertIn('s1a', self.sc2.states)
         self.assertNotIn('sc1_root', self.sc2.states)
 
@@ -582,7 +583,7 @@ class PlugStatechartTests(unittest.TestCase):
     def test_keep_other_transitions(self):
         sc1_transitions = self.sc1.transitions
 
-        self.sc2.plug_statechart(self.sc1, 's1b1')
+        self.sc2.copy_from_statechart(self.sc1, 'sc1_root', 's1b1')
 
         for transition in sc1_transitions:
             self.assertIn(transition, self.sc2.transitions)
@@ -590,7 +591,7 @@ class PlugStatechartTests(unittest.TestCase):
     def test_keep_existing_states(self):
         sc2_states = self.sc2.states
 
-        self.sc2.plug_statechart(self.sc1, 's1b1')
+        self.sc2.copy_from_statechart(self.sc1, 'sc1_root', 's1b1')
 
         for state in sc2_states:
             self.assertIn(state, self.sc2.states)
@@ -598,25 +599,34 @@ class PlugStatechartTests(unittest.TestCase):
     def test_keep_existing_transitions(self):
         sc2_transitions = self.sc2.transitions
 
-        self.sc2.plug_statechart(self.sc1, 's1b1')
+        self.sc2.copy_from_statechart(self.sc1, 'sc1_root', 's1b1')
 
         for transition in sc2_transitions:
             self.assertIn(transition, self.sc2.transitions)
 
+    def test_orphaned_transitions(self):
+        with self.assertRaises(exceptions.StatechartError) as cm:
+            self.sc2.copy_from_statechart(self.sc1, 'sc1_s1', 's1b1')
+        self.assertIn('not contained in', str(cm.exception))
+
+        with self.assertRaises(exceptions.StatechartError) as cm:
+            self.sc2.copy_from_statechart(self.sc1, 'sc1_final', 's1b1')
+        self.assertIn('not contained in', str(cm.exception))
+
     def test_invalid_plug(self):
         # On compound
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc2.plug_statechart(self.sc1, 'root')
+            self.sc2.copy_from_statechart(self.sc1, 'sc1_root', 'root')
         self.assertIn('not a BasicState instance', str(cm.exception))
 
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc2.plug_statechart(self.sc1, 's1')
+            self.sc2.copy_from_statechart(self.sc1, 'sc1_root', 's1')
         self.assertIn('not a BasicState instance', str(cm.exception))
 
 
         # On final
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc2.plug_statechart(self.sc1, 's2')
+            self.sc2.copy_from_statechart(self.sc1, 'sc1_root', 's2')
         self.assertIn('not a BasicState instance', str(cm.exception))
 
     def test_with_namespace(self):
@@ -624,7 +634,7 @@ class PlugStatechartTests(unittest.TestCase):
         sc2_states = self.sc2.states
 
         namespace = lambda s: '__' + s
-        self.sc2.plug_statechart(self.sc1, 's1a', namespace=namespace)
+        self.sc2.copy_from_statechart(self.sc1, 'sc1_root', 's1a', namespace=namespace)
 
         expected_states = sc2_states + [namespace(s) for s in sc1_states]
         expected_states.remove(namespace(self.sc1.root))
@@ -634,6 +644,6 @@ class PlugStatechartTests(unittest.TestCase):
     def test_conflicting_names(self):
         self.sc1.rename_state('sc1_s1', 's1')
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc2.plug_statechart(self.sc1, 's1a')
+            self.sc2.copy_from_statechart(self.sc1, 'sc1_root', 's1a')
         self.assertIn('already exists', str(cm.exception))
 

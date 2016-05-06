@@ -211,12 +211,12 @@ to model an *internal action*.
 
 
 Statechart examples
--------------------
+*******************
 
 .. _elevator_example:
 
 Elevator
-********
+~~~~~~~~
 
 The Elevator statechart is one of the running examples in this documentation. Its visual description (currently not supported by Sismic) could look as follows:
 
@@ -230,7 +230,7 @@ is included containing two methods ``open()`` and ``close()`` and a boolean vari
    :language: yaml
 
 Microwave
-*********
+~~~~~~~~~
 
 The Microwave statechart contains 4 parallel states *door*, *heating*, *turntable* and *lamp*.
 
@@ -264,6 +264,12 @@ For example:
 
 The parser performs an automatic validation against the YAML schema of the next subsection.
 It also does several other checks using its :py:class:`~sismic.model.Statechart.validate` method.
+
+.. seealso:: While statecharts can be defined in YAML, they can be defined in pure
+    Python too. Moreover, :py:class:`~sismic.model.Statechart` instances exhibit several methods to query and
+    manipulate statecharts (e.g.: :py:meth:`~sismic.model.Statechart.rename_state`,
+    :py:meth:`~sismic.model.Statechart.rotate_transition`, :py:meth:`~sismic.model.Statechart.copy_from_statechart`, etc.).
+    Consider looking at :py:class:`~sismic.model.Statechart` API for more information.
 
 
 YAML validation schema
