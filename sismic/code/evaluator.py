@@ -1,7 +1,7 @@
 import abc
 from sismic.model import ActionStateMixin
 from sismic.model import Event, Transition, StateMixin, Statechart
-from typing import cast, Iterator, Mapping, List, Any
+from typing import cast, Iterable, Mapping, List, Dict, Any
 
 __all__ = ['Evaluator']
 
@@ -32,6 +32,14 @@ class Evaluator(metaclass=abc.ABCMeta):
         The context of this evaluator. A context is a dict-like mapping between
         variables and values that is expected to be exposed when the code is evaluated.
         """
+        raise NotImplementedError()
+
+    def on_step_starts(self, event: Event=None) -> None:
+        """
+        Called each time the interpreter starts a step.
+
+        :param event: Optional processed event
+        """
         pass
 
     @abc.abstractmethod
@@ -44,7 +52,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param additional_context: an optional additional context
         :return: truth value of *code*
         """
-        pass
+        raise NotImplementedError()
 
     @abc.abstractmethod
     def _execute_code(self, code: str, *, additional_context: Mapping[str, Any]=None) -> List[Event]:
@@ -56,7 +64,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param additional_context: an optional additional context
         :return: a list of sent events
         """
-        pass
+        raise NotImplementedError()
 
     def execute_statechart(self, statechart: Statechart) -> List[Event]:
         """
@@ -122,7 +130,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         else:
             return []
 
-    def evaluate_preconditions(self, obj, event: Event=None) -> Iterator[str]:
+    def evaluate_preconditions(self, obj, event: Event=None) -> Iterable[str]:
         """
         Evaluate the preconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -136,7 +144,7 @@ class Evaluator(metaclass=abc.ABCMeta):
             lambda c: not self._evaluate_code(c, additional_context=event_d), getattr(obj, 'preconditions', [])
         )
 
-    def evaluate_invariants(self, obj, event: Event=None) -> Iterator[str]:
+    def evaluate_invariants(self, obj, event: Event=None) -> Iterable[str]:
         """
         Evaluate the invariants for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -150,7 +158,7 @@ class Evaluator(metaclass=abc.ABCMeta):
             lambda c: not self._evaluate_code(c, additional_context=event_d), getattr(obj, 'invariants', [])
         )
 
-    def evaluate_postconditions(self, obj, event: Event=None) -> Iterator[str]:
+    def evaluate_postconditions(self, obj, event: Event=None) -> Iterable[str]:
         """
         Evaluate the postconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.

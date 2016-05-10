@@ -5,6 +5,8 @@ from typing import Callable, List, Any
 from .interpreter import Interpreter
 from sismic import model
 
+__all__ = ['log_trace', 'run_in_background']
+
 
 def log_trace(interpreter: Interpreter) -> List[model.MacroStep]:
     """

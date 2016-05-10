@@ -5,6 +5,7 @@ Unreleased
 ----------
 
 - (Added) Python code evaluator: *after* and *idle* are now available in postconditions and invariants.
+- (Added) Python code evaluator: *received* and *sent* are available in invariants.
 - (Added) ``Interpreter.raise_event`` to send events from within the statechart.
 - (Added) A ``copy_from_statechart`` method for a ``Statechart`` instance that allows to copy (part of) a statechart
   into a state.

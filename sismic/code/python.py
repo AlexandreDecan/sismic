@@ -123,8 +123,8 @@ class PythonEvaluator(Evaluator):
 
     Depending on the method that is called, the context can expose additional values:
 
-    - Always:
-        - A *time: float* value that represents the current time exposed by the interpreter.
+    - On both code execution and code evaluation:
+        - A *time* (float) value that represents the current time exposed by the interpreter.
         - An *active(name: str) -> bool* Boolean function that takes a state name and return *True* if and only
           if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
           that makes use of this evaluator.
@@ -144,6 +144,11 @@ class PythonEvaluator(Evaluator):
         - A variable *__old__* that has an attribute *x* for every *x* in the context when either the state
           was entered (if the condition involves a state) or the transition was processed (if the condition
           involves a transition). The value of *__old__.x* is a shallow copy of *x* at that time.
+    - On invariant evaluation:
+        - A *sent(name: str) -> bool* function that takes an event name and return True if an event with the same name
+          was sent during the current step.
+        - A *received(name: str) -> bool* function  that takes an event name and return True if an event with the
+          same name is currently processed in this step.
 
     If an exception occurred while executing or evaluating a piece of code, it is propagated by the
     evaluator.
@@ -160,19 +165,22 @@ class PythonEvaluator(Evaluator):
     """
 
     def __init__(self, interpreter=None, *, initial_context: Mapping[str, Any]=None) -> None:
-        super().__init__()
+        super().__init__(interpreter, initial_context=initial_context)
 
         self._context = Context(initial_context)
         self._interpreter = interpreter
 
+        # Memory and entry time
         self.__memory = {}  # type: Dict[int, Mapping]
         self.__entry_time = {}  # type: Dict[str, float]
         self.__idle_time = {}  # type: Dict[str, float]
 
+        # Precompiled code
         self.__evaluable_code = {}  # type: Dict[str, CodeType]
         self.__executable_code = {}  # type: Dict[str, CodeType]
-        self.__contexts = {}  # type: Dict[str, Context]
 
+        # Contexts
+        self.__contexts = {}  # type: Dict[str, Context]
         if getattr(interpreter, 'statechart', None) is not None:
             # Initialize nested contexts
             sc = self._interpreter.statechart  # type: Statechart
@@ -182,9 +190,24 @@ class PythonEvaluator(Evaluator):
                 parent_name = sc.parent_for(name)
                 self.__contexts[name] = self.__contexts[parent_name].new_child()
 
+        # Intercept sent and received events
+        self._sents_events = []  # type: List[Event]
+        if self._interpreter is not None:
+            self._interpreter.bind(self._sents_events.append)
+        self._received_event = None  # type: Event
+
     @property
     def context(self) -> Context:
         return self._context
+
+    def on_step_starts(self, event: Event=None) -> None:
+        """
+        Called each time the interpreter starts a step.
+
+        :param event: Optional processed event
+        """
+        self._sents_events.clear()
+        self._received_event = event
 
     def context_for(self, name: str) -> Context:
         """
@@ -194,14 +217,19 @@ class PythonEvaluator(Evaluator):
         """
         return self.__contexts[name]
 
-    def __send(self, name: str, **kwargs):
+    def __received(self, name: str) -> bool:
         """
-        Add an internal event to interpreter queue.
+        :param name: name of an event
+        :return: True if given event name was received in current step.
+        """
+        return getattr(self._received_event, 'name', None) == name
 
-        :param name: name of the event
-        :param kwargs: additional event parameters
+    def __sent(self, name: str) -> bool:
         """
-        self._interpreter.queue(InternalEvent(name, **kwargs))
+        :param name: name of an event
+        :return: True if given event name was sent during this step.
+        """
+        return any((name == e.name for e in self._sents_events))
 
     def __active(self, name: str) -> bool:
         """
@@ -284,8 +312,8 @@ class PythonEvaluator(Evaluator):
 
         exposed_context = {
             'active': self.__active,
-            'time': self._interpreter.time,
             'send': create_send_function(sent_events),
+            'time': self._interpreter.time,
         }
         exposed_context.update(additional_context if additional_context is not None else {})
 
@@ -399,10 +427,12 @@ class PythonEvaluator(Evaluator):
         context = self.__contexts[state_name]
 
         additional_context = {'event': event} if isinstance(obj, Transition) else {}  # type: Dict[str, Any]
-        additional_context.update({'__old__': self.__memory.get(id(obj), None)})
         additional_context.update({
+            '__old__': self.__memory.get(id(obj), None),
             'after': partial(self.__after, state_name),
             'idle': partial(self.__idle, state_name),
+            'received': self.__received,
+            'sent': self.__sent,
         })
 
         return filter(
@@ -423,8 +453,8 @@ class PythonEvaluator(Evaluator):
         context = self.__contexts[state_name]
 
         additional_context = {'event': event} if isinstance(obj, Transition) else {}  # type: Dict[str, Any]
-        additional_context.update({'__old__': self.__memory.get(id(obj), None)})
         additional_context.update({
+            '__old__': self.__memory.get(id(obj), None),
             'after': partial(self.__after, state_name),
             'idle': partial(self.__idle, state_name),
         })

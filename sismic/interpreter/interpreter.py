@@ -9,7 +9,7 @@ from sismic.exceptions import InvariantError, PreconditionError, PostconditionEr
 from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
 from typing import Optional, List, Union, Callable, Any, cast, Iterable, Mapping, Dict
 
-__all__ = ['Interpreter', 'log_trace', 'run_in_background']
+__all__ = ['Interpreter']
 
 
 class Interpreter:
@@ -175,14 +175,15 @@ class Interpreter:
 
         :return: a macro step or *None* if nothing happened
         """
+        event = None  # type: Optional[model.Event]
+
         # Initialization
         if not self._initialized:
             computed_steps = [model.MicroStep(entered_states=[self._statechart.root])]
             self._initialized = True
         else:
             # Look for eventless transitions first
-            event = None  # type: Optional[model.Event]
-            transitions = self._select_transitions(event=event)
+            transitions = self._select_transitions(event=None)
             if len(transitions) == 0:
                 # Look for evented transitions
                 event = self._select_event()
@@ -201,6 +202,8 @@ class Interpreter:
                 computed_steps = self._create_steps(event, transitions)
 
         # Execute the steps
+        self._evaluator.on_step_starts(event)
+
         executed_steps = []
         for step in computed_steps:
             self._apply_step(step)
