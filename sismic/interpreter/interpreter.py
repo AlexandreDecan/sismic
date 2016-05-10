@@ -201,9 +201,6 @@ class Interpreter:
                 )
                 computed_steps = self._create_steps(event, transitions)
 
-        # Execute the steps
-        self._evaluator.on_step_starts(event)
-
         executed_steps = []
         for step in computed_steps:
             self._apply_step(step)

@@ -144,11 +144,6 @@ class PythonEvaluator(Evaluator):
         - A variable *__old__* that has an attribute *x* for every *x* in the context when either the state
           was entered (if the condition involves a state) or the transition was processed (if the condition
           involves a transition). The value of *__old__.x* is a shallow copy of *x* at that time.
-    - On invariant evaluation:
-        - A *sent(name: str) -> bool* function that takes an event name and return True if an event with the same name
-          was sent during the current step.
-        - A *received(name: str) -> bool* function  that takes an event name and return True if an event with the
-          same name is currently processed in this step.
 
     If an exception occurred while executing or evaluating a piece of code, it is propagated by the
     evaluator.
@@ -190,24 +185,9 @@ class PythonEvaluator(Evaluator):
                 parent_name = sc.parent_for(name)
                 self.__contexts[name] = self.__contexts[parent_name].new_child()
 
-        # Intercept sent and received events
-        self._sents_events = []  # type: List[Event]
-        if self._interpreter is not None:
-            self._interpreter.bind(self._sents_events.append)
-        self._received_event = None  # type: Event
-
     @property
     def context(self) -> Context:
         return self._context
-
-    def on_step_starts(self, event: Event=None) -> None:
-        """
-        Called each time the interpreter starts a step.
-
-        :param event: Optional processed event
-        """
-        self._sents_events.clear()
-        self._received_event = event
 
     def context_for(self, name: str) -> Context:
         """
@@ -216,20 +196,6 @@ class PythonEvaluator(Evaluator):
         :return: Context object
         """
         return self.__contexts[name]
-
-    def __received(self, name: str) -> bool:
-        """
-        :param name: name of an event
-        :return: True if given event name was received in current step.
-        """
-        return getattr(self._received_event, 'name', None) == name
-
-    def __sent(self, name: str) -> bool:
-        """
-        :param name: name of an event
-        :return: True if given event name was sent during this step.
-        """
-        return any((name == e.name for e in self._sents_events))
 
     def __active(self, name: str) -> bool:
         """
@@ -431,8 +397,6 @@ class PythonEvaluator(Evaluator):
             '__old__': self.__memory.get(id(obj), None),
             'after': partial(self.__after, state_name),
             'idle': partial(self.__idle, state_name),
-            'received': self.__received,
-            'sent': self.__sent,
         })
 
         return filter(
