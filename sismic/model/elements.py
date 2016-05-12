@@ -8,13 +8,14 @@ __all__ = ['ContractMixin', 'StateMixin', 'ActionStateMixin', 'TransitionStateMi
 
 class ContractMixin(metaclass=ABCMeta):
     """
-    Mixin with a contract: preconditions, postconditions and invariants.
+    Mixin with a contract: preconditions, postconditions, invariants and sequences.
     """
 
     def __init__(self) -> None:
         self.preconditions = []  # type: List[str]
         self.postconditions = []  # type: List[str]
         self.invariants = []  # type: List[str]
+        self.sequences = []  # type: List[str]
 
 
 class StateMixin(metaclass=ABCMeta):

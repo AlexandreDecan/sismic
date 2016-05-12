@@ -2,12 +2,14 @@ from types import CodeType
 from functools import partial
 from typing import Dict, Iterator, cast, Any, Mapping, MutableMapping, List, Callable
 from itertools import chain
+from functools import wraps
 import collections
 import copy
 
 from .evaluator import Evaluator
 from sismic.model import Event, InternalEvent, Transition, StateMixin, Statechart
 from sismic.exceptions import CodeEvaluationError
+from .sequence import build_sequence, Sequence
 
 __all__ = ['PythonEvaluator']
 
@@ -139,11 +141,16 @@ class PythonEvaluator(Evaluator):
           was entered more than *sec* seconds ago. The time is evaluated according to Interpreter's clock.
         - A *idle(sec: float) -> bool* Boolean function that returns *True* if and only if the source state
           did not fire a transition for more than *sec* ago. The time is evaluated according to Interpreter's clock.
-    - On postcondition or invariant:
+    - On postcondition, invariant and sequential condition evaluation:
         - *after(sec: float) -> bool* and *idle(sec: float) -> bool*.
         - A variable *__old__* that has an attribute *x* for every *x* in the context when either the state
           was entered (if the condition involves a state) or the transition was processed (if the condition
           involves a transition). The value of *__old__.x* is a shallow copy of *x* at that time.
+    - On invariant and sequential condition evaluation:
+        - A *sent(name: str) -> bool* function that takes an event name and return True if an event with the same name
+          was sent during the current step.
+        - A *received(name: str) -> bool* function  that takes an event name and return True if an event with the
+          same name is currently processed in this step.
 
     If an exception occurred while executing or evaluating a piece of code, it is propagated by the
     evaluator.
@@ -185,9 +192,24 @@ class PythonEvaluator(Evaluator):
                 parent_name = sc.parent_for(name)
                 self.__contexts[name] = self.__contexts[parent_name].new_child()
 
+        # Intercept sent and received events
+        self._sents_events = []  # type: List[Event]
+        if self._interpreter is not None:
+            self._interpreter.bind(self._sents_events.append)
+        self._received_event = None  # type: Event
+
     @property
     def context(self) -> Context:
         return self._context
+
+    def on_step_starts(self, event: Event=None) -> None:
+        """
+        Called each time the interpreter starts a step.
+
+        :param event: Optional processed event
+        """
+        self._sents_events.clear()
+        self._received_event = event
 
     def context_for(self, name: str) -> Context:
         """
@@ -196,6 +218,20 @@ class PythonEvaluator(Evaluator):
         :return: Context object
         """
         return self.__contexts[name]
+
+    def __received(self, name: str) -> bool:
+        """
+        :param name: name of an event
+        :return: True if given event name was received in current step.
+        """
+        return getattr(self._received_event, 'name', None) == name
+
+    def __sent(self, name: str) -> bool:
+        """
+        :param name: name of an event
+        :return: True if given event name was sent during this step.
+        """
+        return any((name == e.name for e in self._sents_events))
 
     def __active(self, name: str) -> bool:
         """
@@ -371,8 +407,10 @@ class PythonEvaluator(Evaluator):
 
         additional_context = {'event': event} if isinstance(obj, Transition) else {}
 
-        # Only needed if there is an invariant or a postcondition
-        if len(getattr(obj, 'invariants', [])) > 0 or len(getattr(obj, 'postconditions', [])) > 0:
+        # Only needed if there is an invariant, a postcondition or a sequential condition
+        if (len(getattr(obj, 'invariants', [])) > 0 or
+                    len(getattr(obj, 'postconditions', [])) > 0 or
+                    len(getattr(obj, 'sequences', [])) > 0):
             self.__memory[id(obj)] = FrozenContext(context)
 
         return filter(
@@ -397,6 +435,8 @@ class PythonEvaluator(Evaluator):
             '__old__': self.__memory.get(id(obj), None),
             'after': partial(self.__after, state_name),
             'idle': partial(self.__idle, state_name),
+            'received': self.__received,
+            'sent': self.__sent,
         })
 
         return filter(
@@ -427,3 +467,29 @@ class PythonEvaluator(Evaluator):
             lambda c: not self._evaluate_code(c, context=context, additional_context=additional_context),
             getattr(obj, 'postconditions', [])
         )
+
+    def __evaluate_sequential_conditions_for_state(self, state: StateMixin, code: str) -> bool:
+        context = self.__contexts[state.name]
+
+        additional_context = {
+            '__old__': self.__memory.get(id(state), None),
+            'after': partial(self.__after, state.name),
+            'idle': partial(self.__idle, state.name),
+            'received': self.__received,
+            'sent': self.__sent,
+        }
+        return self._evaluate_code(code, context=context, additional_context=additional_context)
+
+    def initialize_sequential_conditions(self, state: StateMixin) -> None:
+        """
+        Initialize sequential conditions.
+
+        :param state: for given state.
+        """
+        condition_mapping = {}  # type: Dict[str, Sequence]
+        func = cast(Callable[[str], bool], partial(self.__evaluate_sequential_conditions_for_state, state))
+
+        for condition in getattr(state, 'sequences', []):
+            condition_mapping[condition] = build_sequence(condition, func)
+
+        self._condition_sequences[state.name] = condition_mapping

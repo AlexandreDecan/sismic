@@ -4,7 +4,9 @@ Changelog
 Unreleased
 ----------
 
+- (Added) Support for sequential conditions in contracts (see documentation for more information).
 - (Added) Python code evaluator: *after* and *idle* are now available in postconditions and invariants.
+- (Added) Python code evaluator: *received* and *sent* are available in invariants.
 - (Added) ``Interpreter.raise_event`` to send events from within the statechart.
 - (Added) A ``copy_from_statechart`` method for a ``Statechart`` instance that allows to copy (part of) a statechart
   into a state.
@@ -12,6 +14,7 @@ Unreleased
   automatically added to the interpreter's queue.
 - (Changed) Moved ``run_in_background`` and ``log_trace`` from ``sismic.interpreter`` to the newly added
   ``sismic.interpreter.helpers``.
+
 
 0.21.0 (2016-04-22)
 -------------------

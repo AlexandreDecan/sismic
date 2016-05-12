@@ -8,7 +8,7 @@ install:
 - pip install -e .
 script:
 - coverage run --source sismic -m unittest discover
-- coverage run -a --source sismic -m sismic.testing.behave docs/examples/elevator.yaml --features docs/examples/elevator.feature --coverage
+- coverage run -a --source sismic -m sismic.testing.behave docs/examples/elevator_contract.yaml --features docs/examples/elevator.feature --coverage
 - coverage run -a --source sismic -m sismic.testing.behave docs/examples/microwave.yaml --features docs/examples/microwave.feature --coverage
 - cd docs && make doctest && cd ..
 after_success:

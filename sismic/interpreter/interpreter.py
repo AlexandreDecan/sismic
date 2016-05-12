@@ -1,11 +1,10 @@
-
 from itertools import combinations
 
 from collections import deque
 
 from sismic import model
 from sismic.code import Evaluator, PythonEvaluator
-from sismic.exceptions import InvariantError, PreconditionError, PostconditionError
+from sismic.exceptions import InvariantError, PreconditionError, PostconditionError, SequentialConditionError
 from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
 from typing import Optional, List, Union, Callable, Any, cast, Iterable, Mapping, Dict
 
@@ -201,6 +200,9 @@ class Interpreter:
                 )
                 computed_steps = self._create_steps(event, transitions)
 
+        # Execute the steps
+        self._evaluator.on_step_starts(event)
+
         executed_steps = []
         for step in computed_steps:
             self._apply_step(step)
@@ -213,6 +215,14 @@ class Interpreter:
         for name in self._configuration:
             state = self._statechart.state_for(name)
             self.__evaluate_contract_conditions(state, 'invariants', macro_step)
+
+        # Check state sequential conditions
+        if not self._ignore_contract:
+            for name in self._configuration:
+                state = self._statechart.state_for(name)
+                for condition in self._evaluator.update_sequential_conditions(state):
+                    raise SequentialConditionError(configuration=self.configuration, step=macro_step, obj=state,
+                                                   assertion=condition, context=self.context)
 
         return macro_step
 
@@ -417,6 +427,12 @@ class Interpreter:
 
         # Exit states
         for state in exited_states:
+            # Sequential conditions
+            if not self._ignore_contract:
+                for condition in self._evaluator.evaluate_sequential_conditions(state):
+                    raise SequentialConditionError(configuration=self.configuration, step=step, obj=state,
+                                                   assertion=condition, context=self.context)
+
             # Execute exit action
             for event in self._evaluator.execute_onexit(state):
                 self.raise_event(event)
@@ -464,6 +480,10 @@ class Interpreter:
             # Execute entry action
             for event in self._evaluator.execute_onentry(state):
                 self.raise_event(event)
+
+            # Sequential conditions
+            if not self._ignore_contract:
+                self._evaluator.initialize_sequential_conditions(state)
 
             # Update configuration
             self._configuration.add(state.name)

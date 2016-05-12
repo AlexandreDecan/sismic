@@ -67,6 +67,8 @@ statechart:
                     guard: destination < current
       - name: floorListener
         initial: floorSelecting
+        contract:
+          - sequentially: "'received(\"floorSelected\")' -> 'current == destination' or ('current != destination' -> 'current == destination')"
         states:
           - name: floorSelecting
             transitions:

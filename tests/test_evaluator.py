@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from sismic import code
 from sismic.model import Event, InternalEvent
 from sismic.code.python import Context, FrozenContext
-from sismic.exceptions import CodeEvaluationError
+from sismic.exceptions import CodeEvaluationError, SequentialConditionError
 
 from sismic.io import import_from_yaml
 from sismic.interpreter import Interpreter
@@ -210,4 +210,61 @@ class PythonEvaluatorNestedContextTests(unittest.TestCase):
         self.assertEqual(s1['z'], 2)
         with self.assertRaises(KeyError):
             _ = s1['a']
+
+
+class PythonEvaluatorSequenceConditionTests(unittest.TestCase):
+    def setUp(self):
+        self.sc = import_from_yaml("""
+        statechart:
+          name: test contract
+          root state:
+            name: root
+            on entry: x = 1
+            initial: s0
+            states:
+             - name: s0
+               initial: s1
+               transitions:
+               - event: end
+                 target: root
+               states:
+               - name: s1
+                 transitions:
+                   - target: s2
+                     action: x = 2
+                     event: e
+               - name: s2
+        """)
+
+        self.root = self.sc.state_for('root')  # Will never be exited
+        self.s0 = self.sc.state_for('s0')  # Will be exited on "end"
+        self.s1 = self.sc.state_for('s1')  # Entered, and then exited on e.
+        self.s2 = self.sc.state_for('s2')  # Entered when e
+        self.intp = Interpreter(self.sc)
+
+    def test_single_condition(self):
+        self.root.sequences.append('"True"')
+        self.intp.execute()
+
+    def test_access_context(self):
+        self.root.sequences.append('"x == 1"')
+        self.intp.execute()
+
+    def test_access_nested_context(self):
+        self.s0.sequences.append('"x == 1" -> "x == 2"')
+        self.intp.queue(Event('e')).queue(Event('end'))
+        self.intp.execute()
+
+    def test_fails_fast(self):
+        self.s0.sequences.append('Failure')
+        with self.assertRaises(SequentialConditionError):
+            self.intp.execute()
+
+    def test_fails_on_exit(self):
+        self.s0.sequences.append('"x == 1" -> "x == 2" -> "x == 3"')
+        self.intp.queue(Event('e'))
+        self.intp.execute()
+        self.intp.queue(Event('end'))
+        with self.assertRaises(SequentialConditionError):
+            self.intp.execute()
 

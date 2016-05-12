@@ -13,6 +13,10 @@ schema;contract:
       mapping:
         "always":
           type: str
+    - type: map
+      mapping:
+        "sequentially":
+          type: str
 
 schema;transition:
   type: map
