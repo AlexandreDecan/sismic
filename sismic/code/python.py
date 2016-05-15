@@ -173,24 +173,24 @@ class PythonEvaluator(Evaluator):
         self._interpreter = interpreter
 
         # Memory and entry time
-        self.__memory = {}  # type: Dict[int, Mapping]
-        self.__entry_time = {}  # type: Dict[str, float]
-        self.__idle_time = {}  # type: Dict[str, float]
+        self._memory = {}  # type: Dict[int, Mapping]
+        self._entry_time = {}  # type: Dict[str, float]
+        self._idle_time = {}  # type: Dict[str, float]
 
         # Precompiled code
-        self.__evaluable_code = {}  # type: Dict[str, CodeType]
-        self.__executable_code = {}  # type: Dict[str, CodeType]
+        self._evaluable_code = {}  # type: Dict[str, CodeType]
+        self._executable_code = {}  # type: Dict[str, CodeType]
 
         # Contexts
-        self.__contexts = {}  # type: Dict[str, Context]
+        self._contexts = {}  # type: Dict[str, Context]
         if getattr(interpreter, 'statechart', None) is not None:
             # Initialize nested contexts
             sc = self._interpreter.statechart  # type: Statechart
 
-            self.__contexts[sc.root] = self._context.new_child()
+            self._contexts[sc.root] = self._context.new_child()
             for name in sc.descendants_for(sc.root):
                 parent_name = sc.parent_for(name)
-                self.__contexts[name] = self.__contexts[parent_name].new_child()
+                self._contexts[name] = self._contexts[parent_name].new_child()
 
         # Intercept sent and received events
         self._sents_events = []  # type: List[Event]
@@ -217,23 +217,23 @@ class PythonEvaluator(Evaluator):
         :param name: State name
         :return: Context object
         """
-        return self.__contexts[name]
+        return self._contexts[name]
 
-    def __received(self, name: str) -> bool:
+    def _received(self, name: str) -> bool:
         """
         :param name: name of an event
         :return: True if given event name was received in current step.
         """
         return getattr(self._received_event, 'name', None) == name
 
-    def __sent(self, name: str) -> bool:
+    def _sent(self, name: str) -> bool:
         """
         :param name: name of an event
         :return: True if given event name was sent during this step.
         """
         return any((name == e.name for e in self._sents_events))
 
-    def __active(self, name: str) -> bool:
+    def _active(self, name: str) -> bool:
         """
         Return True if given state name is active.
 
@@ -242,7 +242,7 @@ class PythonEvaluator(Evaluator):
         """
         return name in self._interpreter.configuration
 
-    def __after(self, name: str, seconds: float) -> bool:
+    def _after(self, name: str, seconds: float) -> bool:
         """
         Return True if given state was entered more than *seconds* ago.
 
@@ -250,9 +250,9 @@ class PythonEvaluator(Evaluator):
         :param seconds: elapsed time
         :return: True if given state was entered more than *seconds* ago.
         """
-        return self._interpreter.time - seconds >= self.__entry_time[name]
+        return self._interpreter.time - seconds >= self._entry_time[name]
 
-    def __idle(self, name: str, seconds: float) -> bool:
+    def _idle(self, name: str, seconds: float) -> bool:
         """
         Return True if given state was the target of a transition more than *seconds* ago.
 
@@ -260,7 +260,7 @@ class PythonEvaluator(Evaluator):
         :param seconds: elapsed time
         :return: True if given state was the target of a transition more than *seconds* ago.
         """
-        return self._interpreter.time - seconds >= self.__idle_time[name]
+        return self._interpreter.time - seconds >= self._idle_time[name]
 
     def _evaluate_code(self, code: str, *, additional_context: Mapping=None, context: Context=None) -> bool:
         """
@@ -276,12 +276,12 @@ class PythonEvaluator(Evaluator):
         if context is None:
             context = self._context
 
-        compiled_code = self.__evaluable_code.get(code, None)
+        compiled_code = self._evaluable_code.get(code, None)
         if compiled_code is None:
-            compiled_code = self.__evaluable_code.setdefault(code, compile(code, '<string>', 'eval'))
+            compiled_code = self._evaluable_code.setdefault(code, compile(code, '<string>', 'eval'))
 
         exposed_context = {
-            'active': self.__active,
+            'active': self._active,
             'time': self._interpreter.time,
         }
         exposed_context.update(additional_context if additional_context is not None else {})
@@ -305,15 +305,15 @@ class PythonEvaluator(Evaluator):
         if context is None:
             context = self._context
 
-        compiled_code = self.__executable_code.get(code, None)
+        compiled_code = self._executable_code.get(code, None)
         if compiled_code is None:
-            compiled_code = self.__executable_code.setdefault(code, compile(code, '<string>', 'exec'))
+            compiled_code = self._executable_code.setdefault(code, compile(code, '<string>', 'exec'))
 
         # Handle sent events
         sent_events = []  # type: List[Event]
 
         exposed_context = {
-            'active': self.__active,
+            'active': self._active,
             'send': create_send_function(sent_events),
             'time': self._interpreter.time,
         }
@@ -348,11 +348,11 @@ class PythonEvaluator(Evaluator):
         """
         additional_context = {
             'event': event,
-            'after': partial(self.__after, transition.source),
-            'idle': partial(self.__idle, transition.source),
+            'after': partial(self._after, transition.source),
+            'idle': partial(self._idle, transition.source),
         }
         return self._evaluate_code(getattr(transition, 'guard', None),
-                                   context=self.__contexts[transition.source].new_child(),
+                                   context=self._contexts[transition.source].new_child(),
                                    additional_context=additional_context)
 
     def execute_action(self, transition: Transition, event: Event) -> List[Event]:
@@ -364,10 +364,10 @@ class PythonEvaluator(Evaluator):
         :param event: instance of *Event* if any
         :return: a list of sent events
         """
-        self.__idle_time[transition.source] = self._interpreter.time
+        self._idle_time[transition.source] = self._interpreter.time
 
         return self._execute_code(getattr(transition, 'action', None),
-                                  context=self.__contexts[transition.source].new_child(),
+                                  context=self._contexts[transition.source].new_child(),
                                   additional_context={'event': event})
 
     def execute_onentry(self, state: StateMixin) -> List[Event]:
@@ -378,10 +378,10 @@ class PythonEvaluator(Evaluator):
         :param state: the considered state
         :return: a list of sent events
         """
-        self.__entry_time[state.name] = self._interpreter.time
-        self.__idle_time[state.name] = self._interpreter.time
+        self._entry_time[state.name] = self._interpreter.time
+        self._idle_time[state.name] = self._interpreter.time
 
-        return self._execute_code(getattr(state, 'on_entry', None), context=self.__contexts[state.name])
+        return self._execute_code(getattr(state, 'on_entry', None), context=self._contexts[state.name])
 
     def execute_onexit(self, state: StateMixin) -> List[Event]:
         """
@@ -391,7 +391,7 @@ class PythonEvaluator(Evaluator):
         :param state: the considered state
         :return: a list of sent events
         """
-        return self._execute_code(getattr(state, 'on_exit', None), context=self.__contexts[state.name])
+        return self._execute_code(getattr(state, 'on_exit', None), context=self._contexts[state.name])
 
     def evaluate_preconditions(self, obj, event: Event=None) -> Iterator[str]:
         """
@@ -403,7 +403,7 @@ class PythonEvaluator(Evaluator):
         :return: list of unsatisfied conditions
         """
         state_name = obj.source if isinstance(obj, Transition) else obj.name
-        context = self.__contexts[state_name]
+        context = self._contexts[state_name]
 
         additional_context = {'event': event} if isinstance(obj, Transition) else {}
 
@@ -411,7 +411,7 @@ class PythonEvaluator(Evaluator):
         if (len(getattr(obj, 'invariants', [])) > 0 or
                     len(getattr(obj, 'postconditions', [])) > 0 or
                     len(getattr(obj, 'sequences', [])) > 0):
-            self.__memory[id(obj)] = FrozenContext(context)
+            self._memory[id(obj)] = FrozenContext(context)
 
         return filter(
             lambda c: not self._evaluate_code(c, context=context, additional_context=additional_context),
@@ -428,15 +428,15 @@ class PythonEvaluator(Evaluator):
         :return: list of unsatisfied conditions
         """
         state_name = obj.source if isinstance(obj, Transition) else obj.name
-        context = self.__contexts[state_name]
+        context = self._contexts[state_name]
 
         additional_context = {'event': event} if isinstance(obj, Transition) else {}  # type: Dict[str, Any]
         additional_context.update({
-            '__old__': self.__memory.get(id(obj), None),
-            'after': partial(self.__after, state_name),
-            'idle': partial(self.__idle, state_name),
-            'received': self.__received,
-            'sent': self.__sent,
+            '__old__': self._memory.get(id(obj), None),
+            'after': partial(self._after, state_name),
+            'idle': partial(self._idle, state_name),
+            'received': self._received,
+            'sent': self._sent,
         })
 
         return filter(
@@ -454,13 +454,13 @@ class PythonEvaluator(Evaluator):
         :return: list of unsatisfied conditions
         """
         state_name = obj.source if isinstance(obj, Transition) else obj.name
-        context = self.__contexts[state_name]
+        context = self._contexts[state_name]
 
         additional_context = {'event': event} if isinstance(obj, Transition) else {}  # type: Dict[str, Any]
         additional_context.update({
-            '__old__': self.__memory.get(id(obj), None),
-            'after': partial(self.__after, state_name),
-            'idle': partial(self.__idle, state_name),
+            '__old__': self._memory.get(id(obj), None),
+            'after': partial(self._after, state_name),
+            'idle': partial(self._idle, state_name),
         })
 
         return filter(
@@ -468,15 +468,15 @@ class PythonEvaluator(Evaluator):
             getattr(obj, 'postconditions', [])
         )
 
-    def __evaluate_sequential_conditions_for_state(self, state: StateMixin, code: str) -> bool:
-        context = self.__contexts[state.name]
+    def _evaluate_sequential_conditions_for_state(self, state: StateMixin, code: str) -> bool:
+        context = self._contexts[state.name]
 
         additional_context = {
-            '__old__': self.__memory.get(id(state), None),
-            'after': partial(self.__after, state.name),
-            'idle': partial(self.__idle, state.name),
-            'received': self.__received,
-            'sent': self.__sent,
+            '__old__': self._memory.get(id(state), None),
+            'after': partial(self._after, state.name),
+            'idle': partial(self._idle, state.name),
+            'received': self._received,
+            'sent': self._sent,
         }
         return self._evaluate_code(code, context=context, additional_context=additional_context)
 
@@ -487,7 +487,7 @@ class PythonEvaluator(Evaluator):
         :param state: for given state.
         """
         condition_mapping = {}  # type: Dict[str, Sequence]
-        func = cast(Callable[[str], bool], partial(self.__evaluate_sequential_conditions_for_state, state))
+        func = cast(Callable[[str], bool], partial(self._evaluate_sequential_conditions_for_state, state))
 
         for condition in getattr(state, 'sequences', []):
             condition_mapping[condition] = build_sequence(condition, func)
