@@ -207,14 +207,14 @@ class Interpreter:
         for step in computed_steps:
             self._apply_step(step)
             executed_steps.append(step)
-            executed_steps.extend(self.__stabilize())
+            executed_steps.extend(self._stabilize())
 
         macro_step = model.MacroStep(time=self.time, steps=executed_steps)
 
         # Check state invariants
         for name in self._configuration:
             state = self._statechart.state_for(name)
-            self.__evaluate_contract_conditions(state, 'invariants', macro_step)
+            self._evaluate_contract_conditions(state, 'invariants', macro_step)
 
         # Check state sequential conditions
         if not self._ignore_contract:
@@ -438,7 +438,7 @@ class Interpreter:
                 self.raise_event(event)
 
             # Postconditions
-            self.__evaluate_contract_conditions(state, 'postconditions', step)
+            self._evaluate_contract_conditions(state, 'postconditions', step)
 
             # Deal with history
             if isinstance(state, model.CompoundState):
@@ -462,20 +462,20 @@ class Interpreter:
         # Execute transition
         if step.transition:
             # Preconditions and invariants
-            self.__evaluate_contract_conditions(step.transition, 'preconditions', step)
-            self.__evaluate_contract_conditions(step.transition, 'invariants', step)
+            self._evaluate_contract_conditions(step.transition, 'preconditions', step)
+            self._evaluate_contract_conditions(step.transition, 'invariants', step)
 
             for event in self._evaluator.execute_action(step.transition, step.event):
                 self.raise_event(event)
 
             # Postconditions and invariants
-            self.__evaluate_contract_conditions(step.transition, 'postconditions', step)
-            self.__evaluate_contract_conditions(step.transition, 'invariants', step)
+            self._evaluate_contract_conditions(step.transition, 'postconditions', step)
+            self._evaluate_contract_conditions(step.transition, 'invariants', step)
 
         # Enter states
         for state in entered_states:
             # Preconditions
-            self.__evaluate_contract_conditions(state, 'preconditions', step)
+            self._evaluate_contract_conditions(state, 'preconditions', step)
 
             # Execute entry action
             for event in self._evaluator.execute_onentry(state):
@@ -488,7 +488,7 @@ class Interpreter:
             # Update configuration
             self._configuration.add(state.name)
 
-    def __stabilize(self) -> List[model.MicroStep]:
+    def _stabilize(self) -> List[model.MicroStep]:
         """
         Compute, apply and return stabilization steps.
 
@@ -503,9 +503,9 @@ class Interpreter:
             step = self._create_stabilization_step(self._configuration)
         return steps
 
-    def __evaluate_contract_conditions(self, obj: Union[model.Transition, model.StateMixin],
-                                       cond_type: str,
-                                       step: Union[model.MacroStep, model.MicroStep]=None) -> None:
+    def _evaluate_contract_conditions(self, obj: Union[model.Transition, model.StateMixin],
+                                      cond_type: str,
+                                      step: Union[model.MacroStep, model.MicroStep]=None) -> None:
         """
         Evaluate the conditions for given object.
 
