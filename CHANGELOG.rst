@@ -14,6 +14,7 @@ Unreleased
   automatically added to the interpreter's queue.
 - (Changed) Moved ``run_in_background`` and ``log_trace`` from ``sismic.interpreter`` to the newly added
   ``sismic.interpreter.helpers``.
+- (Changed) Internal API changes: rename `self.__x` to `self._x` to avoid (mostly) useless name mangling.
 
 
 0.21.0 (2016-04-22)
