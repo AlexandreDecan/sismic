@@ -484,6 +484,9 @@ class Interpreter:
             # Sequential conditions
             if not self._ignore_contract:
                 self._evaluator.initialize_sequential_conditions(state)
+                for condition in self._evaluator.update_sequential_conditions(state):
+                    raise SequentialConditionError(configuration=self.configuration, step=step, obj=state,
+                                                   assertion=condition, context=self.context)
 
             # Update configuration
             self._configuration.add(state.name)
