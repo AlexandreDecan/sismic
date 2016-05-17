@@ -6,7 +6,7 @@ from sismic import model
 from sismic.code import Evaluator, PythonEvaluator
 from sismic.exceptions import InvariantError, PreconditionError, PostconditionError, SequentialConditionError
 from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
-from typing import Optional, List, Union, Callable, Any, cast, Iterable, Mapping, Dict
+from typing import Optional, List, Dict, Set, Union, Callable, Any, cast, Iterable, Mapping
 
 __all__ = ['Interpreter']
 
@@ -33,15 +33,27 @@ class Interpreter:
         self._statechart = statechart
 
         self._initialized = False
-        self._time = 0  # type: float  # Internal clock
-        self._memory = {}  # type: Dict[str, Optional[List[str]]]  # History states memory
-        self._configuration = set()  # type: Set[str]  # Set of active states
-        self._external_events = deque()  # type: deque[model.Event]  # External events queue
-        self._internal_events = deque()  # type: deque[model.InternalEvent]  # Internal events queue
+
+        # Internal clock
+        self._time = 0  # type: float
+
+        # History states memory
+        self._memory = {}  # type: Dict[str, Optional[List[str]]]
+
+        # Set of active states
+        self._configuration = set()  # type: Set[str]
+
+        # External events queue
+        self._external_events = deque()  # type: deque[model.Event]
+
+        # Internal events queue
+        self._internal_events = deque()  # type: deque[model.InternalEvent]
+
+        # Bound callables
         self._bound = []  # type: List[Callable[[model.Event], Any]]
 
         # Evaluator
-        self._evaluator = evaluator_klass(self, initial_context=initial_context) # type: ignore
+        self._evaluator = evaluator_klass(self, initial_context=initial_context)  # type: ignore
         for event in self._evaluator.execute_statechart(statechart):
             self.raise_event(event)
 
@@ -125,7 +137,7 @@ class Interpreter:
             # Add to current interpreter's internal queue
             self._internal_events.append(event)
         else:
-            raise ValueError('Only InternalEvent instances are supported'.format(event))
+            raise ValueError('Only InternalEvent instances are supported, not {}.'.format(type(event)))
 
     def queue(self, event: model.Event) -> 'Interpreter':
         """

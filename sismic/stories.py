@@ -80,7 +80,9 @@ class Story(list):
         return 'Story({})'.format(super().__repr__())
 
 
-def random_stories_generator(items: Sequence[Union[Event, Pause]], length: int=None, number: int=None) -> Generator[Story, None, None]:
+def random_stories_generator(items: Sequence[Union[Event, Pause]],
+                             length: int=None,
+                             number: int=None) -> Generator[Story, None, None]:
     """
     A generator that returns random stories whose elements come from *items*.
     Parameter *items* can be any iterable containing events and/or pauses.

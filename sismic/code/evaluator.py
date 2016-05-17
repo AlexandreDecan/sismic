@@ -182,7 +182,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         condition_mapping = {}  # type: Dict[str, Sequence]
 
         for condition in getattr(state, 'sequences', []):
-            condition_mapping[condition] = build_sequence(condition, lambda p: self._evaluate_code(p))
+            condition_mapping[condition] = build_sequence(condition, self._evaluate_code)
 
         self._condition_sequences[state.name] = condition_mapping
 

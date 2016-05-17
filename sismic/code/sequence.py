@@ -9,7 +9,7 @@ from typing import Callable, Optional, List
 class Sequence(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def evaluate(self, force=False) -> Optional[bool]:
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def __repr__(self):
         return '%s()' % self.__class__.__name__
@@ -250,11 +250,13 @@ def build_sequence(expression: str, evaluation_function: Callable[[str], bool]=e
         pyparsing.CaselessKeyword('success').setParseAction(SequenceSuccess)
     )
 
-    unary_ops = [(pyparsing.CaselessKeyword(keyword).suppress(), 1, pyparsing.opAssoc.RIGHT, partial(unary_operator, func)) for keyword, func in [
+    unary_ops = [(pyparsing.CaselessKeyword(keyword).suppress(), 1, pyparsing.opAssoc.RIGHT,
+                  partial(unary_operator, func)) for keyword, func in [
         ('never', SequenceNever),
     ]]
 
-    binary_ops = [(pyparsing.CaselessKeyword(keyword).suppress(), 2, pyparsing.opAssoc.LEFT, partial(binary_operator, func)) for keyword, func in [
+    binary_ops = [(pyparsing.CaselessKeyword(keyword).suppress(), 2, pyparsing.opAssoc.LEFT,
+                   partial(binary_operator, func)) for keyword, func in [
         ('and', SequenceAnd),
         ('or', SequenceOr),
         ('->', SequenceThen),

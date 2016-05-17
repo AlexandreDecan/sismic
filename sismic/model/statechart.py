@@ -1,6 +1,6 @@
 from sismic.exceptions import StatechartError
 from .elements import CompositeStateMixin, \
-    CompoundState, HistoryStateMixin, StateMixin, Transition, TransitionStateMixin, BasicState
+    CompoundState, HistoryStateMixin, StateMixin, Transition, TransitionStateMixin
 from copy import deepcopy
 from typing import Optional, Dict, List, Union, cast, Iterable, Callable
 
@@ -23,7 +23,7 @@ class Statechart:
 
         self._states = {}  # type: Dict[str, StateMixin]
         self._parent = {}  # type: Dict[str, str]
-        self._children = {}  # type: Dict[str, List[str]]
+        self._children = {}  # type: Dict[Optional[str], List[str]]
         self._transitions = []  # type: List[Transition]
 
         self._children[None] = []  # Root state
@@ -526,22 +526,22 @@ class Statechart:
         if len(self.children_for(replace)) > 0:
             raise StatechartError('State {} cannot be replaced while it has children.'.format(replace))
 
-        statechart = deepcopy(statechart)  # type: Statechart
+        statechart_copy = deepcopy(statechart)  # type: Statechart
 
         # Rename and copy states
-        statechart.rename_state(source, replace)
+        statechart_copy.rename_state(source, replace)
         source_name = replace  # For lisibility
-        self._states[replace] = statechart.state_for(source_name)
-        for name in statechart.descendants_for(source_name):
+        self._states[replace] = statechart_copy.state_for(source_name)
+        for name in statechart_copy.descendants_for(source_name):
             new_name = renaming_func(name)
             # May raise a StatechartError if names collides in source statechart.
             # Possible workaround: first rename all states to uid, then rename to new names
-            statechart.rename_state(name, new_name)
-            self.add_state(statechart.state_for(new_name), statechart.parent_for(new_name))
+            statechart_copy.rename_state(name, new_name)
+            self.add_state(statechart_copy.state_for(new_name), statechart_copy.parent_for(new_name))
 
         # Copy transitions
-        for name in [source_name] + statechart.descendants_for(source_name):
-            transitions = set(statechart.transitions_from(name) + statechart.transitions_to(name))
+        for name in [source_name] + statechart_copy.descendants_for(source_name):
+            transitions = set(statechart_copy.transitions_from(name) + statechart_copy.transitions_to(name))
             for transition in transitions:
                 try:
                     self.add_transition(transition)
