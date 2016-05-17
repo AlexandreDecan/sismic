@@ -23,7 +23,7 @@ class Event:
     def __getattr__(self, attr):
         try:
             return self.data[attr]
-        except:
+        except KeyError:
             raise AttributeError('{} has no attribute {}'.format(self, attr))
 
     def __hash__(self):
