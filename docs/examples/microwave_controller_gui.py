@@ -14,7 +14,6 @@ from sismic.model import Event
 
 ####################################################
 
-
 # Create a tiny GUI
 class MicrowaveApplication(tk.Frame):
     def __init__(self, master=None):
@@ -37,9 +36,9 @@ class MicrowaveApplication(tk.Frame):
         self.interpreter.execute()
 
         # Update the widget that contains the list of active states.
-        self.w_states['text'] = 'active states: \n\n' + '\n'.join(self.interpreter.configuration)
-        self.w_timer['text'] = 'timer: %d' % self.interpreter._evaluator.context_for('controller')['timer']
-        self.w_power['text'] = 'power: %d' % self.interpreter.context['POWER_VALUES'][self.interpreter._evaluator.context_for('controller')['power']]
+        self.w_states['text'] = '\n'.join(self.interpreter.configuration)
+        self.w_timer['text'] = 'M.timer: %d' % self.interpreter._evaluator.context_for('controller')['timer']
+        self.w_power['text'] = 'M.power: %d' % self.interpreter.context['POWER_VALUES'][self.interpreter._evaluator.context_for('controller')['power']]
 
     def create_widgets(self):
         self.pack(fill=tk.BOTH)
@@ -49,11 +48,11 @@ class MicrowaveApplication(tk.Frame):
 
         # Input frame
         input_frame = tk.LabelFrame(left_frame, text='INPUT BUTTONS')
-        input_frame.pack(side=tk.LEFT, fill=tk.BOTH)
+        input_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(8, 8))
 
         # Sensor frame
         sensors_frame = tk.LabelFrame(left_frame, text='SENSORS')
-        sensors_frame.pack(side=tk.LEFT, fill=tk.BOTH)
+        sensors_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(8, 8))
 
         # Add buttons
         self.w_input_power_inc = tk.Button(input_frame, text='power +', command=partial(self.send_event, event_name='input_power_inc'))
@@ -80,24 +79,23 @@ class MicrowaveApplication(tk.Frame):
         self.w_input_power_dec.pack(side=tk.TOP, fill=tk.X)
         self.w_input_power_reset.pack(side=tk.TOP, fill=tk.X)
 
-        self.w_input_timer_inc.pack(side=tk.TOP, fill=tk.X)
+        self.w_input_timer_inc.pack(side=tk.TOP, fill=tk.X, pady=(8, 0))
         self.w_input_timer_dec.pack(side=tk.TOP, fill=tk.X)
         self.w_input_timer_reset.pack(side=tk.TOP, fill=tk.X)
 
-        self.w_input_cooking_start.pack(side=tk.TOP, fill=tk.X)
+        self.w_input_cooking_start.pack(side=tk.TOP, fill=tk.X, pady=(8, 0))
         self.w_input_cooking_stop.pack(side=tk.TOP, fill=tk.X)
 
         self.w_tick.pack(side=tk.TOP, fill=tk.X)
 
-        self.w_item_placed.pack(side=tk.TOP, fill=tk.X)
+        self.w_item_placed.pack(side=tk.TOP, fill=tk.X, pady=(8, 0))
         self.w_item_removed.pack(side=tk.TOP, fill=tk.X)
 
-        self.w_door_opened.pack(side=tk.TOP, fill=tk.X)
+        self.w_door_opened.pack(side=tk.TOP, fill=tk.X, pady=(8, 0))
         self.w_door_closed.pack(side=tk.TOP, fill=tk.X)
 
-
-        right_frame = tk.Frame(self)
-        right_frame.pack(side=tk.LEFT, fill=tk.BOTH)
+        right_frame = tk.LabelFrame(self, text='COMPONENTS')
+        right_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(8, 8))
 
 
         # Display component
@@ -133,11 +131,11 @@ class MicrowaveApplication(tk.Frame):
         self.w_turntable.pack(side=tk.TOP)
 
         # Statechart status
-        statechart_frame = tk.LabelFrame(right_frame, text='Statechart')
+        statechart_frame = tk.LabelFrame(right_frame, text='Controller')
         statechart_frame.pack(side=tk.TOP, fill=tk.BOTH)
 
         self.w_states = tk.Label(statechart_frame)
-        self.w_states.pack(side=tk.BOTTOM, fill=tk.X)
+        self.w_states.pack(side=tk.BOTTOM, fill=tk.X, pady=(8, 0))
 
         self.w_timer = tk.Label(statechart_frame)
         self.w_timer.pack(side=tk.BOTTOM, fill=tk.X)
@@ -155,7 +153,7 @@ class MicrowaveApplication(tk.Frame):
         elif name == 'display_set':
             self.w_display['text'] = event.text
         elif name == 'display_clear':
-            self.w_display['text'] = '-'
+            self.w_display['text'] = ''
         elif name == 'heating_set_power':
             self.w_heating_power['text'] = event.power
         elif name == 'heating_on':
