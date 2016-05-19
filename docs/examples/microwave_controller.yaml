@@ -34,7 +34,7 @@ statechart:
     name: controller
     initial: door closed
     on entry: |
-      power = 0
+      power = POWER_DEFAULT
       timer = 0
     transitions:
       - event: input_cooking_stop
@@ -50,6 +50,7 @@ statechart:
               - event: door_opened
                 target: opened without item
           - name: closed with item
+            initial: program mode
             on exit: send('display_clear')
             transitions:
               - event: door_opened
@@ -129,4 +130,4 @@ statechart:
               - event: item_removed
                 target: opened without item
               - event: door_closed
-                target: program mode
+                target: closed with item
