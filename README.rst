@@ -19,12 +19,14 @@ Statecharts are a well-known visual language for modeling the executable behavio
 The Sismic library for Python >= 3.4 provides a set of tools to define, validate, simulate, execute and debug statecharts.
 More specifically, Sismic provides:
 
+
 - An easy way to define and to import statecharts, based on the human-friendly YAML markup language
 - A statechart interpreter offering a discrete, step-by-step, and fully observable simulation engine
 - Synchronous and asynchronous simulation, in real time or simulated time
 - Support for communication between statecharts and co-simulation
-- Built-in support for expressing actions and guards using regular Python code
-- Design-by-contract and behavior-driven development approaches for statecharts
+- Built-in support for expressing actions and guards using regular Python code, can be easily extended to other programming languages
+- A design-by-contract approach for statecharts: contracts can be specified to express invariants, sequential conditions, pre- and postconditions on states and transitions
+- Predefined step definitions and utilities (including test coverage) to support behavior-driven development
 - A unit testing framework for statecharts, including generation of test scenarios
 
 
@@ -59,9 +61,7 @@ Credits
 -------
 
 The Sismic library for Python
-is developed at the `Software Engineering Lab <http://informatique.umons.ac.be/genlog>`_
-of the `University of Mons <http://www.umons.ac.be>`_
-as part of an ongoing software modeling research project.
+is mainly developed by Alexandre Decan at the `University of Mons <http://www.umons.ac.be>`_.
 
 Sismic is released publicly under the `GNU Lesser General Public Licence version 3.0 (LGPLv3)
 <http://www.gnu.org/licenses/lgpl-3.0.html>`_.

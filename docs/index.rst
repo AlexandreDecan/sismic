@@ -23,9 +23,8 @@ About
 *Sismic* is a recursive acronym that stands for *Sismic Interactive Statechart Model Interpreter and Checker*.
 
 The Sismic library for Python (version 3.4 or higher)
-is developed at the `Software Engineering Lab <http://informatique.umons.ac.be/genlog>`_
-of the `University of Mons <http://www.umons.ac.be>`_
-as part of an ongoing software modeling research project.
+is mainly developed by Alexandre Decan at the `University of Mons <http://www.umons.ac.be>`_.
+
 Sismic is released publicly under the `GNU Lesser General Public Licence version 3.0 (LGPLv3)
 <http://www.gnu.org/licenses/lgpl-3.0.html>`_.
 
@@ -43,25 +42,20 @@ Sismic provides the following features:
 - A statechart interpreter offering a discrete, step-by-step, and fully observable simulation engine
 - Synchronous and asynchronous simulation, in real time or simulated time
 - Support for communication between statecharts and co-simulation
-- Built-in support for expressing actions and guards using regular Python code
-- A design-by-contract approach for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions.
-- Predefined step definitions and utilities (including test coverage) to support behavior-driven development.
+- Built-in support for expressing actions and guards using regular Python code, can be easily extended to other programming languages
+- A design-by-contract approach for statecharts: contracts can be specified to express invariants, sequential conditions, pre- and postconditions on states and transitions
+- Predefined step definitions and utilities (including test coverage) to support behavior-driven development
 - A unit testing framework for statecharts, including generation of test scenarios
 
+The semantics of the statechart interpreter is based on the specification of the SCXML semantics (with a few exceptions),
+but can be easily tuned to other semantics.
 Sismic statecharts provides full support for the majority of the UML 2 statechart concepts:
 
 - simple states, composite states, orthogonal (parallel) states, initial and final states, shallow and deep history states
 - state transitions, guarded transitions, automatic (eventless) transitions, internal transitions
-- statechart variables and their initialisation
+- statechart (scoped) variables and their initialisation
 - state entry and exit actions, transition actions
-- internal and external events, parametrized events, timed events
-
-The Sismic library is written in a modular way:
-
-- The semantics of the statechart interpreter is based on the specification of the SCXML semantics (with a few exceptions), but can be easily tuned to other semantics.
-- Guards, actions and contracts are expressed using a Python evaluator
-- Statecharts can invoke Python code defined in their environment
-- Statecharts can communicate with one another by sending events
+- internal and external parametrized events
 
 
 .. toctree::
