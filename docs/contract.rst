@@ -9,6 +9,7 @@ Several other programming languages also provide support for DbC.
 The main idea is that the specification of a software component (e.g., a method, function or class) is
 extended with a so-called *contract* that needs to be respected when using this component.
 Typically, the contract is expressed in terms of preconditions, postconditions and invariants.
+We have additionally added so-called sequential conditions on top of this.
 
     Design by contract (DbC), also known as contract programming, programming by contract and
     design-by-contract programming, is an approach for designing software. It prescribes that
@@ -26,27 +27,28 @@ DbC for statechart models
 While DbC has gained some amount of acceptance at the programming level,
 there is hardly any support for it at the modeling level.
 
-Sismic aims to change this, by integrating support for Design by Contract for statechart models!
-The basic idea is that contracts can be defined for statechart componnents,
+Sismic aims to change this, by integrating support for Design by Contract for statecharts.
+The basic idea is that contracts can be defined on statechart componnents (states or transitions),
 by specifying preconditions, postconditions, invariants and sequential conditions (i.e. conditions that must be
 sequentially satisfied) on them.
 At runtime, Sismic will verify the conditions specified by the constracts.
 If a condition is not satisfied, a :py:exc:`~sismic.exceptions.ContractError` will be raised.
-More specifically, one of :py:exc:`~sismic.exceptions.PreconditionError`, :py:exc:`~sismic.exceptions.PostconditionError`,
-:py:exc:`~sismic.exceptions.InvariantError`, or :py:exc:`~sismic.exceptions.SequentialConditionError` will be raised.
+More specifically, one of the following 4 error types wil be raised: :py:exc:`~sismic.exceptions.PreconditionError`,
+:py:exc:`~sismic.exceptions.PostconditionError`, :py:exc:`~sismic.exceptions.InvariantError`,
+or :py:exc:`~sismic.exceptions.SequentialConditionError`.
 
-Contracts can be specified at two levels: for any state contained in the statechart, and for any transition contained in the statechart.
-At state level, a contract can contain preconditions, postconditions, invariants and/or sequential conditions.
+Contracts can be specified for any state contained in the statechart, and for any transition contained in the statechart.
+A state contract can contain preconditions, postconditions, invariants and/or sequential conditions.
 At transition level, sequential conditions are not allowed.
-The semantics is straightforward:
+The semantics for evaluating a contract is as follows:
 
  - For states:
-    - the preconditions are checked before the state is entered (i.e., **before** executing *on entry*).
-    - the postconditions are checked after the state is exited (i.e., **after** executing *on exit*).
-    - the invariants are checked at the end of each *macro step*. The state must be in the active configuration.
-    - the sequential conditions are initialized after a state is entered (i.e., **after** executing *on entry*), and
+    - state preconditions are checked before the state is entered (i.e., **before** executing *on entry*), in the order of occurrence of the preconditions.
+    - state postconditions are checked after the state is exited (i.e., **after** executing *on exit*), in the order of occurrence of the postconditions.
+    - state invariants are checked at the end of each *macro step*, in the order of occurrence of the invariants. The state must be in the active configuration.
+    - sequential conditions on a state are initialized after a state is entered (i.e., **after** executing *on entry*), and
       evaluated before the state is exited (i.e., **before** executing *on exit*).
-      The sequential condition is updated at each step as long as the state is in the active configuration.
+      The evaluation of the sequential condition is updated at each step as long as the state remains in the active configuration.
  - For transitions:
     - the preconditions are checked before starting the process of the transition (and **before** executing the optional transition action).
     - the postconditions are checked after finishing the process of the transition (and **after** executing the optional transition action).
@@ -118,12 +120,12 @@ See the documentation of :py:class:`~sismic.code.PythonEvaluator` for more infor
 Sequential conditions
 *********************
 
-Sequential conditions can be used to describe what should happen and in which order.
+Sequential conditions can be used to describe what should happen when residing in a particular state, and in which order.
 A sequential condition makes use of some logical and temporal operators, and of *classical* conditions that
 will be evaluated by an :py:class:`~sismic.code.Evaluator` instance (by default, a :py:class:`~sismic.code.PythonEvaluator` one).
 
 Refer to the documentation of :py:func:`~sismic.code.sequence.build_sequence` for more information about the
-supported operators. You will never call this function directly, but the documentation explain the implemented
+supported operators. You will never call this function directly, but the documentation explains the implemented
 mini-language and the supported operators and their semantics.
 
 .. autofunction:: sismic.code.sequence.build_sequence
