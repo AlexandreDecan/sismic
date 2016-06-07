@@ -216,8 +216,9 @@ def build_sequence(expression: str, evaluation_function: Callable[[str], bool]=e
      - binary operators:
          - A and B: logical and
          - A or B: logical or
-         - A -> B: this is equivalent to "A next sometimes B" in linear temporal logic, i.e. B has to be true
-         (strictly) after A.
+         - A -> B: this is equivalent to "A next B" in linear temporal logic, i.e. B has to be true
+         (strictly) after A holds. Notice that, due to the "satisfied once" semantics of the atoms, this is merely
+         equivalent to "sometimes (A next (sometimes B))", which means A needs to be true strictly before B.
 
     Keywords are case-insensitive. Parentheses can be used to group sub expressions.
     Unary operators have precedence over binary ones (e.g. "A and never B" is equivalent to "A and (never B)").
