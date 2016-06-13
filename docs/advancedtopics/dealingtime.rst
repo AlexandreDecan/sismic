@@ -213,49 +213,7 @@ Notice from previous example that using a loop makes it impossible to send event
 For convenience, sismic provides a :py:func:`sismic.interpreter.helpers.run_in_background`
 function that run an interpreter in a thread, and does the job of synchronizing the clock for you.
 
-.. testcode:: thread
 
-    import time
-    from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter
-    from sismic.interpreter.helpers import run_in_background
-    from sismic.model import Event
-
-    with open('examples/microwave.yaml') as f:
-        interpreter = Interpreter(import_from_yaml(f))
-
-    run_in_background(interpreter, delay=0.01)
-
-    print('Initial:', interpreter.configuration)
-
-    # Open door
-    interpreter.queue(Event('toggledoor'))
-
-    time.sleep(0.05)
-    print('Toggledoor:', interpreter.configuration)
-
-
-    # Wait 200ms and close the door
-    time.sleep(0.200)
-    interpreter.queue(Event('toggledoor'))
-
-    time.sleep(0.05)
-    print('Toggledoor:', interpreter.configuration)
-
-
-    # Wait 200ms and unplug
-    time.sleep(0.200)
-    interpreter.queue(Event('unplug'))
-
-    time.sleep(0.05)
-    print('Final:', interpreter.configuration)
-
-.. testoutput:: thread
-
-    Initial: ['root', 'plugged', 'door', 'heating', 'lamp', 'turntable', 'door.close', 'heating.off', 'lamp.off', 'turntable.off']
-    Toggledoor: ['root', 'plugged', 'door', 'heating', 'lamp', 'turntable', 'door.open', 'heating.off', 'lamp.on', 'turntable.off']
-    Toggledoor: ['root', 'plugged', 'door', 'heating', 'lamp', 'turntable', 'door.close', 'heating.off', 'lamp.off', 'turntable.off']
-    Final: []
 
 .. note:: An optional argument ``callback`` can be passed to :py:func:`~sismic.interpreter.helpers.run_in_background`.
     It must be a callable that accepts the (possibly empty) list of :py:class:`~sismic.model.MacroStep` returned by 
