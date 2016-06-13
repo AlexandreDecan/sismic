@@ -232,11 +232,13 @@ is included containing two methods ``open()`` and ``close()`` and a boolean vari
 Microwave
 ~~~~~~~~~
 
-The Microwave statechart contains 4 parallel states *door*, *heating*, *turntable* and *lamp*.
+The microwave statechart defines and relies on a set of supported events (events that are expected to be received during its execution)
+and on a set of sendable events (events that will be fired by this statechart during execution).
+Those events are defined in the ``description`` field of the YAML file, for documentation purpose only.
 
-Notice the use of the ``description`` field in the YAML specification given below. This field will be ignored when imported into Sismic, but can be used to provide additional information about the statechart to the user.
+Typically, this statechart will be executed jointly with other components (keyboard, doors, lamp, heating, ...).
 
-.. literalinclude:: /examples/microwave.yaml
+.. literalinclude:: /examples/microwave_controller.yaml
     :language: yaml
 
 
