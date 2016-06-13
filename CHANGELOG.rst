@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.22.0 (2016-06-13)
+-------------------
 
 - (Added) Support for sequential conditions in contracts (see documentation for more information).
 - (Added) Python code evaluator: *after* and *idle* are now available in postconditions and invariants.
@@ -12,11 +12,12 @@ Unreleased
 - (Added) ``Interpreter.raise_event`` to send events from within the statechart.
 - (Added) A ``copy_from_statechart`` method for a ``Statechart`` instance that allows to copy (part of) a statechart
   into a state.
+- (Added) Microwave controller example (see *docs/examples/microwave.[yaml|py]*).
 - (Changed) Events sent by a code evaluator are now returned by the ``execute_*`` methods instead of being
   automatically added to the interpreter's queue.
 - (Changed) Moved ``run_in_background`` and ``log_trace`` from ``sismic.interpreter`` to the newly added
   ``sismic.interpreter.helpers``.
-- (Changed) Internal API changes: rename `self.__x` to `self._x` to avoid (mostly) useless name mangling.
+- (Changed) Internal API changes: rename ``self.__x`` to ``self._x`` to avoid (mostly) useless name mangling.
 
 
 0.21.0 (2016-04-22)
