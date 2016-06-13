@@ -204,29 +204,38 @@ def build_sequence(expression: str, evaluation_function: Callable[[str], bool]=e
     Parse an expression and return the corresponding sequence according to the following mini-language:
 
      - atom:
-         - "code" or 'code': a piece of code that should evaluate to true or false (e.g. Python code).
-           The semantic is "satisfied once": as soon as the code is satisfied, the truth value of this
-           expression remains true.
+         - "code" or 'code': a fragment of code (e.g. Python code) representing a Boolean expression that
+           evaluates to true or false. The semantics is "satisfied once": as soon as the code evaluates to true once,
+           the truth value of the expression remains true. This is equivalent as "sometimes 'code'" in linear
+           temporal logic.
      - constants:
-         - failure: always false
-         - success: always true
+         - failure: this constant always evaluates to false.
+         - success: this constant always evaluates to true.
      - unary operators:
-         - never A: false as soon as nested expression A becomes true
+         - never A: this expression evaluates to false as soon as expression A evaluates to true.
      - binary operators:
          - A and B: logical and
          - A or B: logical or
-         - A -> B: expects B after A (~ conditional delayed "and")
+         - A -> B: this is equivalent to "(next always B) since A" in linear temporal logic, i.e. B has to be true
+         (strictly) since A holds. Notice that, due to the "satisfied once" semantics of the atoms, if A and B are atoms,
+         this is merely equivalent to "(A and next (sometimes B))", which means A needs to be true strictly before B or,
+         in other words, A must be satisfied once, then B must be holds once.
 
-    Unary operators have precedence over binary ones. Unary operators are right associative while
-    binary operators are left associative. The binary operators are listed in decreasing priority.
-    Parentheses can be used to group sub expressions. Keywords are case-insensitive.
+    Keywords are case-insensitive. Parentheses can be used to group sub expressions.
+    Unary operators have precedence over binary ones (e.g. "A and never B" is equivalent to "A and (never B)").
+    Unary operators are right associative while binary operators are left associative (e.g. "A and B and C" is
+    equivalent to "(A and B) and C").
+    The binary operators are listed in decreasing priority (e.g. "A or B and C" is equivalent to "A or (B and C)",
+    and "A and B -> C or D" is equivalent to "(A and B) -> (C or D)").
 
     Examples (assuming that expressions between quotes can be evaluated to true or false):
 
      - "put water" -> "put coffee": ensures water is put before coffee.
-     - "put water" and "put coffee": ensures water and coffee are put, no matter the order.
-     - (never "put water") or ("put water" -> "put coffee"): ensures coffee is put if some water was put.
-     - never ("put water" -> "put water"): never put water twice.
+     - "put water" and "put coffee": ensures water and coffee are put. Due to the "satisfied once" semantics of the
+       atoms, the order in which items are put does not matter.
+     - (never "put water") or ("put water" -> "put coffee"): if water is put, then coffee must be put too.
+     - never ("put water" -> "put water"): the condition will fail if water is put twice (but will succeed if water
+       is put once or never put).
      - "put water" -> (never "put water"): put water exactly once.
 
     :param expression: an expression to parse
