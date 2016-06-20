@@ -11,6 +11,8 @@ class Event:
     :param data: additional data (mapping, dict-like)
     """
 
+    __slots__ = ['name', 'data']
+
     def __init__(self, name: str, **additional_parameters: Any) -> None:
         self.name = name
         self.data = additional_parameters

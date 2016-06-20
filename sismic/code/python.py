@@ -18,6 +18,7 @@ class FrozenContext(collections.Mapping):
     A shallow copy of a context. The keys of the underlying context are
     exposed as attributes.
     """
+    __slots__ = ['__frozencontext']
 
     def __init__(self, context: Mapping) -> None:
         self.__frozencontext = {k: copy.copy(v) for k, v in context.items()}
@@ -47,6 +48,8 @@ class Context(collections.MutableMapping):
     :param data: Optional initial dict
     :param parent: Parent context, if any
     """
+
+    __slots__ = ['parent', 'map', 'maps']
 
     def __init__(self, data: Mapping = None, parent: 'Context' = None) -> None:
         self.parent = parent

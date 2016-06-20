@@ -49,6 +49,8 @@ class ContractError(SismicError):
     :param context: the context in which the condition failed
     """
 
+    __slots__ = ['_configuration', '_step', '_obj', '_assertion', '_context']
+
     def __init__(self, configuration=None, step=None, obj=None, assertion=None, context=None):
         super().__init__(self)
         self._configuration = configuration

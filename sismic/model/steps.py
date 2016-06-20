@@ -21,6 +21,8 @@ class MicroStep:
     :param exited_states: possibly empty list of exited states
     """
 
+    __slots__ = ['event', 'transition', 'entered_states', 'exited_states']
+
     def __init__(self, event: Event=None, transition: Transition=None,
                  entered_states: List[str]=None, exited_states: List[str]=None) -> None:
         self.event = event
@@ -40,6 +42,8 @@ class MacroStep:
     :param time: the time at which this step was executed
     :param steps: a list of *MicroStep* instances
     """
+
+    __slots__ = ['_time', '_steps']
 
     def __init__(self, time: float, steps: List[MicroStep]) -> None:
         self._time = time
