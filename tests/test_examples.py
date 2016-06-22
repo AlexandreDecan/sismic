@@ -102,3 +102,31 @@ class RemoteElevatorTests(unittest.TestCase):
         self.elevator.execute()
 
         self.assertEqual(self.elevator.context['current'], 0)
+
+
+class MicrowaveTests(unittest.TestCase):
+    def setUp(self):
+        with open('docs/examples/microwave.yaml') as f:
+            sc = io.import_from_yaml(f)
+        self.microwave = Interpreter(sc)
+
+    def test_lamp_on(self):
+        self.microwave.execute_once()
+        self.microwave.queue(Event('door_opened'))
+        step = self.microwave.execute_once()
+        self.microwave.execute_once()
+        self.assertEqual(step.sent_events[0].name, 'lamp_switch_on')
+
+    def test_heating_on(self):
+        self.microwave.execute_once()
+        self.microwave.queue(Event('door_opened'))
+        self.microwave.queue(Event('item_placed'))
+        self.microwave.queue(Event('door_closed'))
+        self.microwave.queue(Event('input_timer_inc'))
+        self.microwave.execute()
+        self.microwave.queue(Event('input_cooking_start'))
+        step = self.microwave.execute_once()
+        self.assertIn(Event('heating_on'), step.sent_events)
+        self.assertIn(Event('lamp_switch_on'), step.sent_events)
+        self.assertIn(Event('turntable_start'), step.sent_events)
+

@@ -4,7 +4,7 @@ Changelog
 Unreleased
 ----------
 - (Added) A *event {event_name} should not be fired* steps for BDD.
-
+- (Added) A ``MacroStep`` now has a list ``sent_events`` of events that were sent during the step.
 
 0.22.0 (2016-06-13)
 -------------------

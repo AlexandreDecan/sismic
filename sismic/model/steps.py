@@ -43,11 +43,12 @@ class MacroStep:
     :param steps: a list of *MicroStep* instances
     """
 
-    __slots__ = ['_time', '_steps']
+    __slots__ = ['_time', '_steps', '_sent']
 
-    def __init__(self, time: float, steps: List[MicroStep]) -> None:
+    def __init__(self, time: float, steps: List[MicroStep], sent_events: List[Event]=None) -> None:
         self._time = time
         self._steps = steps
+        self._sent = sent_events if sent_events else []  # type: List[Event]
 
     @property
     def steps(self) -> List[MicroStep]:
@@ -99,6 +100,13 @@ class MacroStep:
         for step in self._steps:
             states += step.exited_states
         return states
+
+    @property
+    def sent_events(self) -> List[Event]:
+        """
+        List of events that were sent during this step.
+        """
+        return self._sent
 
     def __repr__(self):
         return 'MacroStep@{}({}, {}, >{}, <{})'.format(round(self.time, 3), self.event, self.transitions,

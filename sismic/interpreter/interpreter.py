@@ -1,3 +1,4 @@
+from functools import partial
 from itertools import combinations
 
 from collections import deque
@@ -212,6 +213,10 @@ class Interpreter:
                 )
                 computed_steps = self._create_steps(event, transitions)
 
+        # Record sent events
+        sent_events = []  # type: List[Event]
+        self.bind(partial(list.append, sent_events))
+
         # Execute the steps
         self._evaluator.on_step_starts(event)
 
@@ -221,7 +226,10 @@ class Interpreter:
             executed_steps.append(step)
             executed_steps.extend(self._stabilize())
 
-        macro_step = model.MacroStep(time=self.time, steps=executed_steps)
+        # Unbind sent_events
+        self._bound.pop()
+
+        macro_step = model.MacroStep(time=self.time, steps=executed_steps, sent_events=sent_events)
 
         # Check state invariants
         for name in self._configuration:

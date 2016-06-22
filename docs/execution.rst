@@ -200,6 +200,8 @@ A :py:class:`~sismic.model.MacroStep` exposes the consumed :py:attr:`~sismic.mod
 empty) list :py:attr:`~sismic.model.MacroStep.transitions` of :py:class:`~sismic.model.Transition` instances,
 and two aggregated ordered sequences of state names, :py:attr:`~sismic.model.MacroStep.entered_states` and
 :py:attr:`~sismic.model.MacroStep.exited_states`.
+In addition, a :py:class:`~sismic.model.MacroStep` exposes the list :py:attr:`~sismic.model.MacroStep.sent_events` of
+events that were fired by the statechart during the considered step.
 The order of states in those lists determines the order in which their *on entry* and *on exit* actions were processed.
 As transitions are atomically processed, this means that they could exit a state in
 :py:attr:`~sismic.model.MacroStep.entered_states` that is entered before some state in
