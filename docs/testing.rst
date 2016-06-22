@@ -57,6 +57,8 @@ In particular, the following events are generated:
   the name of the state is available through the *state* attribute.
 - each time a step ends, a *step ended* event is created.
 - A *execution stopped* event is sent at the end.
+- each time an event is fired from within the statechart, a *sent event* is created.
+  the sent event is available through the *event* attribute.
 
 The sequence does follow the interpretation order:
 
@@ -68,6 +70,7 @@ The sequence does follow the interpretation order:
        c. states are entered
        d. statechart is stabilized (some states are exited and/or entered)
 
+    3. A (possibly empty) list of events are sent by the statechart
 
 Using statechart to check properties on a trace
 -----------------------------------------------

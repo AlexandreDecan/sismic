@@ -25,6 +25,9 @@ def _teststory_from_macrostep(macrostep: MacroStep) -> Story:
         for state in microstep.entered_states:
             story.append(Event('state entered', state=state))
 
+    for event in macrostep.sent_events:
+        story.append(Event('event sent', event=event))
+
     story.append(Event('step ended'))
     return story
 
