@@ -232,13 +232,14 @@ class Interpreter:
         macro_step = model.MacroStep(time=self.time, steps=executed_steps, sent_events=sent_events)
 
         # Check state invariants
-        for name in self._configuration:
+        configuration = self.configuration  # Use self.configuration to benefit from the sorting by depth
+        for name in configuration:
             state = self._statechart.state_for(name)
             self._evaluate_contract_conditions(state, 'invariants', macro_step)
 
         # Check state sequential conditions
         if not self._ignore_contract:
-            for name in self._configuration:
+            for name in configuration:
                 state = self._statechart.state_for(name)
                 for condition in self._evaluator.update_sequential_conditions(state):
                     raise SequentialConditionError(configuration=self.configuration, step=macro_step, obj=state,
