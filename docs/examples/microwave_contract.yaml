@@ -1,0 +1,145 @@
+statechart:
+  name: Microwave controller with contracts
+  description: |
+    in:
+     input_power_inc
+     input_power_dec
+     input_power_reset
+     input_timer_inc
+     input_timer_dec
+     input_timer_reset
+     input_cooking_start
+     input_cooking_stop
+     timer_tick
+     item_placed
+     item_removed
+     door_opened
+     door_closed
+
+    out:
+     lamp_switch_on
+     lamp_switch_off
+     display_set(text:str)
+     display_clear
+     heating_set_power(power:int)
+     heating_on
+     heating_off
+     beep(number:int)
+     turntable_start
+     turntable_stop
+  preamble: |
+    POWER_VALUES = [600, 700, 800, 900, 1000, 1100, 1200]
+    POWER_DEFAULT = 3
+  root state:
+    name: controller
+    initial: door closed
+    on entry: |
+      power = POWER_DEFAULT
+      timer = 0
+    transitions:
+      - event: input_cooking_stop
+        action: |
+          power = POWER_DEFAULT
+          timer = 0
+    contract:
+      - always: 0 <= power < len(POWER_VALUES)
+      - always: timer >= 0
+      - always: not sent('heating_on') or active('cooking mode')  # Never start heating outside of 'cooking mode' state
+    states:
+      - name: door closed
+        initial: closed without item
+        contract:
+          - always: not received('item_placed')   # This should never happen since door is closed!
+          - always: not received('item_removed')
+        states:
+          - name: closed without item
+            transitions:
+              - event: door_opened
+                target: opened without item
+          - name: closed with item
+            initial: program mode
+            on exit: send('display_clear')
+            transitions:
+              - event: door_opened
+                target: opened with item
+              - event: input_timer_inc
+                action: |
+                  timer = timer + 1
+                  send('display_set', text='TIMER: %d' % timer)
+              - event: input_timer_dec
+                action: |
+                  timer = max(0, timer - 1)
+                  send('display_set', text='TIMER: %d' % timer)
+              - event: input_timer_reset
+                action: |
+                  timer = 0
+                  send('display_set', text='TIMER: %d' % timer)
+            states:
+              - name: program mode
+                initial: not ready
+                transitions:
+                  - event: input_power_reset
+                    action: |
+                      power = POWER_DEFAULT
+                      send('display_set', text='POWER: %d' % POWER_VALUES[power])
+                  - event: input_power_inc
+                    action: |
+                      power = min(len(POWER_VALUES) - 1, power + 1)
+                      send('display_set', text='POWER: %d' % POWER_VALUES[power])
+                  - event: input_power_dec
+                    action: |
+                      power = max(0, power - 1)
+                      send('display_set', text='POWER: %d' % POWER_VALUES[power])
+                states:
+                  - name: not ready
+                    transitions:
+                      - guard: timer > 0
+                        target: ready
+                  - name: ready
+                    transitions:
+                      - guard: timer == 0
+                        target: not ready
+                      - event: input_cooking_start
+                        target: cooking mode
+              - name: cooking mode
+                on entry: |
+                  send('heating_set_power', power=POWER_VALUES[power])
+                  send('heating_on')
+                  send('lamp_switch_on')
+                  send('turntable_start')
+                on exit: |
+                  send('heating_off')
+                  send('lamp_switch_off')
+                  send('turntable_stop')
+                contract:
+                  - sequentially: |  # Ensure heating_on is always followed by an heating_off, and never sent again.
+                      "sent('heating_on')" -> "sent('heating_off')" -> never "sent('heating_on')"
+                  - sequentially: |  # Ensure door_opened is quicly followed by an exit of this state (ie. tick is never received)
+                      never ("received('door_opened')" -> "received('timer_tick')")
+                transitions:
+                  - guard: timer == 0
+                    target: program mode
+                    action: |
+                      send('beep', number=3)
+                      send('display_set', text='DONE')
+                  - event: timer_tick
+                    action: |
+                      timer -= 1
+                      send('display_set', text='REMAINING: %d' % timer)
+      - name: door opened
+        on entry: send('lamp_switch_on')
+        on exit: send('lamp_switch_off')
+        initial: opened without item
+        states:
+          - name: opened without item
+            transitions:
+              - event: door_closed
+                target: closed without item
+              - event: item_placed
+                target: opened with item
+          - name: opened with item
+            transitions:
+              - event: item_removed
+                target: opened without item
+              - event: door_closed
+                target: closed with item
