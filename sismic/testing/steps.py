@@ -159,6 +159,13 @@ def event_is_received(context, event_name, parameter=None, value=None):
     assert False, 'No matching event fired for {} with {} in {}'.format(event_name, parameters, context._events)
 
 
+@then('event {event_name} should not be fired')
+def event_is_not_received(context, event_name):
+    for event in context._events:
+        if event.name == event_name:
+            assert False, 'Event {} was raised'.format(event)
+
+
 @then('no event should be fired')
 def no_event_received(context):
     assert len(context._events) == 0, 'Sent events: {}'.format(context._events)

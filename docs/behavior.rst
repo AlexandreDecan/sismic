@@ -213,6 +213,9 @@ Then event {event_name} should be fired with {parameter}={value}
     with given *value*, evaluated as Python code.
     Additional parameters can be specified using a table.
 
+Then event {event_name} should not be fired
+    Assert that no event of given name was fired during the last execution.
+
 Then no event should be fired
     Assert that no event was fired by the statechart during the last execution.
 

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased
+----------
+- (Added) A *event {event_name} should not be fired* steps for BDD.
+
+
 0.22.0 (2016-06-13)
 -------------------
 
