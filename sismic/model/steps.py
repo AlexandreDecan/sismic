@@ -19,16 +19,18 @@ class MicroStep:
     :param transition: a *Transition* or None if no processed transition
     :param entered_states: possibly empty list of entered states
     :param exited_states: possibly empty list of exited states
+    :param sent_events: a possibly empty list of events that are sent during the step
     """
 
-    __slots__ = ['event', 'transition', 'entered_states', 'exited_states']
+    __slots__ = ['event', 'transition', 'entered_states', 'exited_states', 'sent_events']
 
-    def __init__(self, event: Event=None, transition: Transition=None,
-                 entered_states: List[str]=None, exited_states: List[str]=None) -> None:
+    def __init__(self, event: Event=None, transition: Transition=None, entered_states: List[str]=None,
+                 exited_states: List[str]=None, sent_events: List[Event]=None) -> None:
         self.event = event
         self.transition = transition
         self.entered_states = entered_states if entered_states else []  # type: List[str]
         self.exited_states = exited_states if exited_states else []  # type: List[str]
+        self.sent_events = sent_events if sent_events else []  # type: List[Event]
 
     def __repr__(self):
         return 'MicroStep({}, {}, >{}, <{})'.format(self.event, self.transition,
@@ -43,12 +45,11 @@ class MacroStep:
     :param steps: a list of *MicroStep* instances
     """
 
-    __slots__ = ['_time', '_steps', '_sent']
-
-    def __init__(self, time: float, steps: List[MicroStep], sent_events: List[Event]=None) -> None:
+    def __init__(self, time: float, steps: List[MicroStep]) -> None:
         self._time = time
         self._steps = steps
-        self._sent = sent_events if sent_events else []  # type: List[Event]
+
+    __slots__ = ['_time', '_steps']
 
     @property
     def steps(self) -> List[MicroStep]:
@@ -106,7 +107,11 @@ class MacroStep:
         """
         List of events that were sent during this step.
         """
-        return self._sent
+        events = []
+        for step in self._steps:
+            for event in step.sent_events:
+                events.append(event)
+        return events
 
     def __repr__(self):
         return 'MacroStep@{}({}, {}, >{}, <{})'.format(round(self.time, 3), self.event, self.transitions,

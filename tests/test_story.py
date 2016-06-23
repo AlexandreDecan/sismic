@@ -65,10 +65,10 @@ class StoryFromTraceTests(unittest.TestCase):
 
     def test_events(self):
         trace = [
-            MacroStep(0, [MicroStep(Event('a'))]),
-            MacroStep(0, [MicroStep(Event('b'))]),
-            MacroStep(0, [MicroStep(Event('c'))]),
-            MacroStep(0, [MicroStep(Event('d'))]),
+            MacroStep(0, [MicroStep(event=Event('a'))]),
+            MacroStep(0, [MicroStep(event=Event('b'))]),
+            MacroStep(0, [MicroStep(event=Event('c'))]),
+            MacroStep(0, [MicroStep(event=Event('d'))]),
         ]
         self.assertListEqual(story_from_trace(trace), [
             Event('a'), Event('b'), Event('c'), Event('d')
@@ -91,10 +91,10 @@ class StoryFromTraceTests(unittest.TestCase):
 
     def test_events_and_pauses(self):
         trace = [
-            MacroStep(2, [MicroStep(Event('a'))]),
-            MacroStep(5, [MicroStep(Event('b'))]),
-            MacroStep(9, [MicroStep(Event('c'))]),
-            MacroStep(14, [MicroStep(Event('d'))]),
+            MacroStep(2, [MicroStep(event=Event('a'))]),
+            MacroStep(5, [MicroStep(event=Event('b'))]),
+            MacroStep(9, [MicroStep(event=Event('c'))]),
+            MacroStep(14, [MicroStep(event=Event('d'))]),
         ]
         self.assertListEqual(story_from_trace(trace), [
             Pause(2), Event('a'), Pause(3), Event('b'), Pause(4), Event('c'), Pause(5), Event('d')
@@ -102,10 +102,10 @@ class StoryFromTraceTests(unittest.TestCase):
 
     def test_ignore_internal_events(self):
         trace = [
-            MacroStep(2, [MicroStep(Event('a'))]),
-            MacroStep(5, [MicroStep(Event('b'))]),
-            MacroStep(9, [MicroStep(InternalEvent('c'))]),
-            MacroStep(14, [MicroStep(Event('d'))]),
+            MacroStep(2, [MicroStep(event=Event('a'))]),
+            MacroStep(5, [MicroStep(event=Event('b'))]),
+            MacroStep(9, [MicroStep(event=InternalEvent('c'))]),
+            MacroStep(14, [MicroStep(event=Event('d'))]),
         ]
         self.assertListEqual(story_from_trace(trace), [
             Pause(2), Event('a'), Pause(3), Event('b'), Pause(4), Pause(5), Event('d')

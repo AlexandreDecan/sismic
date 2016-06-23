@@ -63,14 +63,13 @@ In particular, the following events are generated:
 The sequence does follow the interpretation order:
 
     1. an event is possibly consumed
-    2. For each transition
+    2. For each matching transition
 
        a. states are exited
        b. transition is processed
        c. states are entered
-       d. statechart is stabilized (some states are exited and/or entered)
-
-    3. A (possibly empty) list of events are sent by the statechart
+       d. internal events are sent
+       d. statechart is stabilized (some states are exited and/or entered, some events are sent)
 
 Using statechart to check properties on a trace
 -----------------------------------------------

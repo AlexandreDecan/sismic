@@ -4,8 +4,10 @@ Changelog
 Unreleased
 ----------
 - (Added) A *event {event_name} should not be fired* steps for BDD.
-- (Added) A ``MacroStep`` has a list ``sent_events`` of events that were sent during the step.
+- (Added) Both ``MicroStep`` and ``MacroStep`` have a list ``sent_events`` of events that were sent during the step.
 - (Added) Property statecharts receive a ``event sent`` event when an event is sent by the statechart under test.
+- (Changed) Events fired from within the statechart are now collected and sent at the end of the current micro step,
+  instead of being immediately sent.
 - (Changed) Invariants and sequential contracts are now evaluated ordered by their state's depth
 
 

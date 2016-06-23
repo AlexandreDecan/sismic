@@ -213,23 +213,15 @@ class Interpreter:
                 )
                 computed_steps = self._create_steps(event, transitions)
 
-        # Record sent events
-        sent_events = []  # type: List[Event]
-        self.bind(partial(list.append, sent_events))
-
         # Execute the steps
         self._evaluator.on_step_starts(event)
 
         executed_steps = []
         for step in computed_steps:
-            self._apply_step(step)
-            executed_steps.append(step)
+            executed_steps.append(self._apply_step(step))
             executed_steps.extend(self._stabilize())
 
-        # Unbind sent_events
-        self._bound.pop()
-
-        macro_step = model.MacroStep(time=self.time, steps=executed_steps, sent_events=sent_events)
+        macro_step = model.MacroStep(time=self.time, steps=executed_steps)
 
         # Check state invariants
         configuration = self.configuration  # Use self.configuration to benefit from the sorting by depth
@@ -361,7 +353,7 @@ class Interpreter:
         for transition in transitions:
             # Internal transition
             if transition.target is None:
-                returned_steps.append(model.MicroStep(event, transition, [], []))
+                returned_steps.append(model.MicroStep(event=event, transition=transition))
                 continue
 
             lca = self._statechart.least_common_ancestor(transition.source, transition.target)
@@ -395,7 +387,8 @@ class Interpreter:
                     break
                 entered_states.insert(0, state)
 
-            returned_steps.append(model.MicroStep(event, transition, entered_states, exited_states))
+            returned_steps.append(model.MicroStep(event=event, transition=transition,
+                                                  entered_states=entered_states, exited_states=exited_states))
 
         return returned_steps
 
@@ -435,16 +428,19 @@ class Interpreter:
             elif isinstance(leaf, model.CompoundState) and leaf.initial:
                 return model.MicroStep(entered_states=[leaf.initial])
 
-    def _apply_step(self, step: model.MicroStep) -> None:
+    def _apply_step(self, step: model.MicroStep) -> model.MicroStep:
         """
         Apply given *MicroStep* on this statechart
 
         :param step: *MicroStep* instance
+        :return: a new MicroStep, completed with sent events
         """
         entered_states = list(map(self._statechart.state_for, step.entered_states))
         exited_states = list(map(self._statechart.state_for, step.exited_states))
 
         active_configuration = set(self._configuration)  # Copy
+
+        sent_events = []  # type: List[model.Event]
 
         # Exit states
         for state in exited_states:
@@ -455,8 +451,7 @@ class Interpreter:
                                                    assertion=condition, context=self.context)
 
             # Execute exit action
-            for event in self._evaluator.execute_onexit(state):
-                self.raise_event(event)
+            sent_events.extend(self._evaluator.execute_onexit(state))
 
             # Postconditions
             self._evaluate_contract_conditions(state, 'postconditions', step)
@@ -486,8 +481,7 @@ class Interpreter:
             self._evaluate_contract_conditions(step.transition, 'preconditions', step)
             self._evaluate_contract_conditions(step.transition, 'invariants', step)
 
-            for event in self._evaluator.execute_action(step.transition, step.event):
-                self.raise_event(event)
+            sent_events.extend(self._evaluator.execute_action(step.transition, step.event))
 
             # Postconditions and invariants
             self._evaluate_contract_conditions(step.transition, 'postconditions', step)
@@ -499,8 +493,7 @@ class Interpreter:
             self._evaluate_contract_conditions(state, 'preconditions', step)
 
             # Execute entry action
-            for event in self._evaluator.execute_onentry(state):
-                self.raise_event(event)
+            sent_events.extend(self._evaluator.execute_onentry(state))
 
             # Sequential conditions
             if not self._ignore_contract:
@@ -512,18 +505,25 @@ class Interpreter:
             # Update configuration
             self._configuration.add(state.name)
 
+        # Send events
+        for event in sent_events:
+            self.raise_event(event)
+
+        return model.MicroStep(event=step.event, transition=step.transition,
+                               entered_states=step.entered_states, exited_states=step.exited_states,
+                               sent_events=sent_events)
+
     def _stabilize(self) -> List[model.MicroStep]:
         """
         Compute, apply and return stabilization steps.
 
-        :return: A list of *MicroStep* instances
+        :return: A list of applied  *MicroStep* instances,
         """
         # Stabilization
         steps = []
         step = self._create_stabilization_step(self._configuration)
-        while step:
-            steps.append(step)
-            self._apply_step(step)
+        while step is not None:
+            steps.append(self._apply_step(step))
             step = self._create_stabilization_step(self._configuration)
         return steps
 

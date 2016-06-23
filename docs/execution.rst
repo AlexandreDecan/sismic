@@ -200,7 +200,7 @@ A :py:class:`~sismic.model.MacroStep` exposes the consumed :py:attr:`~sismic.mod
 empty) list :py:attr:`~sismic.model.MacroStep.transitions` of :py:class:`~sismic.model.Transition` instances,
 and two aggregated ordered sequences of state names, :py:attr:`~sismic.model.MacroStep.entered_states` and
 :py:attr:`~sismic.model.MacroStep.exited_states`.
-In addition, a :py:class:`~sismic.model.MacroStep` exposes the list :py:attr:`~sismic.model.MacroStep.sent_events` of
+In addition, a :py:class:`~sismic.model.MacroStep` exposes a list :py:attr:`~sismic.model.MacroStep.sent_events` of
 events that were fired by the statechart during the considered step.
 The order of states in those lists determines the order in which their *on entry* and *on exit* actions were processed.
 As transitions are atomically processed, this means that they could exit a state in
@@ -208,8 +208,8 @@ As transitions are atomically processed, this means that they could exit a state
 :py:attr:`~sismic.model.MacroStep.exited_states` is exited.
 The exact order in which states are exited and entered is indirectly available through the
 :py:attr:`~sismic.model.MacroStep.steps` attribute that is a list of all the :py:class:`~sismic.model.MicroStep`
-that were executed. Each of them contains the states that were exited and entered during its execution.
-
+that were executed. Each of them contains the states that were exited and entered during its execution, and the a list
+of events that were sent during the step.
 
 A *micro step* is the smallest, atomic step that a statechart can execute.
 A :py:class:`~sismic.model.MacroStep` instance thus can be viewed (and is!) an aggregate of
