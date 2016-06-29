@@ -1,8 +1,10 @@
 Changelog
 =========
 
-Unreleased
-----------
+
+0.22.1 (2016-06-29)
+-------------------
+
 - (Added) A *event {event_name} should not be fired* steps for BDD.
 - (Added) Both ``MicroStep`` and ``MacroStep`` have a list ``sent_events`` of events that were sent during the step.
 - (Added) Property statecharts receive a ``event sent`` event when an event is sent by the statechart under test.
