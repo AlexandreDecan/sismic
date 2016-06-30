@@ -28,6 +28,14 @@ class Event:
         except KeyError:
             raise AttributeError('{} has no attribute {}'.format(self, attr))
 
+    def __getstate__(self):
+        # For pickle and implicitly for multiprocessing
+        return (self.name, self.data)
+
+    def __setstate__(self, state):
+        # For pickle and implicitly for multiprocessing
+        self.name, self.data = state
+
     def __hash__(self):
         return hash(self.name)
 

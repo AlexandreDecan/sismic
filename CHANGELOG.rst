@@ -1,6 +1,9 @@
 Changelog
 =========
 
+Unreleased
+----------
+- (Added) ``model.Event`` is now correctly pickled, meaning that Sismic can be used in a multiprocessing environment.
 
 0.22.1 (2016-06-29)
 -------------------
