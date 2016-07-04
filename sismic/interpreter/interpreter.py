@@ -1,4 +1,3 @@
-from functools import partial
 from itertools import combinations
 
 from collections import deque
