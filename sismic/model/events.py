@@ -7,6 +7,8 @@ class Event:
     Unless the attribute already exists, each key from *data* is exposed as an attribute
     of this class.
 
+    The list of defined attributes can be obtained using *dir(event)*.
+
     :param name: Name of the event
     :param data: additional data (mapping, dict-like)
     """
@@ -38,6 +40,9 @@ class Event:
 
     def __hash__(self):
         return hash(self.name)
+
+    def __dir__(self):
+        return ['name'] + list(self.data.keys())
 
     def __repr__(self):
         if self.data:
