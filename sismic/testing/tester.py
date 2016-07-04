@@ -136,7 +136,7 @@ class ExecutionWatcher:
         return step
 
 
-def teststory_from_trace(trace: list) -> Story:
+def teststory_from_trace(trace: List[MacroStep]) -> Story:
     """
     Return a test story based on the given *trace*, a list of macro steps.
     See documentation to see which are the events that are generated.
@@ -148,7 +148,7 @@ def teststory_from_trace(trace: list) -> Story:
     """
     story = Story()
     story.append(Event('execution started'))
-    time = 0
+    time = 0  # type: float
 
     for macrostep in trace:
         if macrostep.time > time:
