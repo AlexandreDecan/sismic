@@ -208,7 +208,7 @@ class PythonEvaluator(Evaluator):
 
     def on_step_starts(self, event: Event = None) -> None:
         """
-        Called each time the interpreter starts a step.
+        Called each time the interpreter starts a macro step.
 
         :param event: Optional processed event
         """
