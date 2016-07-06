@@ -139,19 +139,18 @@ class PythonEvaluator(Evaluator):
         - A *send(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
           raises an internal event with it.
         - If the code is related to a transition, the *event: Event* that fires the transition is exposed.
-    - On code evaluation:
+    - On guard or contract evaluation:
         - If the code is related to a transition, the *event: Event* that fires the transition is exposed.
-    - On guard evaluation:
+    - On guard or contract (except preconditions) evaluation:
         - An *after(sec: float) -> bool* Boolean function that returns *True* if and only if the source state
           was entered more than *sec* seconds ago. The time is evaluated according to Interpreter's clock.
         - A *idle(sec: float) -> bool* Boolean function that returns *True* if and only if the source state
           did not fire a transition for more than *sec* ago. The time is evaluated according to Interpreter's clock.
-    - On postcondition, invariant and sequential condition evaluation:
-        - *after(sec: float) -> bool* and *idle(sec: float) -> bool*.
+    - On contract (except preconditions) evaluation:
         - A variable *__old__* that has an attribute *x* for every *x* in the context when either the state
           was entered (if the condition involves a state) or the transition was processed (if the condition
           involves a transition). The value of *__old__.x* is a shallow copy of *x* at that time.
-    - On invariant and sequential condition evaluation:
+    - On contract evaluation:
         - A *sent(name: str) -> bool* function that takes an event name and return True if an event with the same name
           was sent during the current step.
         - A *received(name: str) -> bool* function  that takes an event name and return True if an event with the
@@ -411,6 +410,10 @@ class PythonEvaluator(Evaluator):
         context = self._contexts[state_name]
 
         additional_context = {'event': event} if isinstance(obj, Transition) else {}
+        additional_context.update({
+            'received': self._received,
+            'sent': self._sent
+        })
 
         # Only needed if there is an invariant, a postcondition or a sequential condition
         if len(getattr(obj, 'invariants', [])) > 0 or len(getattr(obj, 'postconditions', [])) > 0 or len(
@@ -465,6 +468,8 @@ class PythonEvaluator(Evaluator):
             '__old__': self._memory.get(id(obj), None),
             'after': partial(self._after, state_name),
             'idle': partial(self._idle, state_name),
+            'received': self._received,
+            'sent': self._sent,
         })
 
         return filter(

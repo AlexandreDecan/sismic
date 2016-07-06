@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.22.3 (2016-07-06)
+-------------------
+
+- (Added) ``sent`` and ``received`` are also available in preconditions and postconditions.
+
+
 0.22.2 (2016-07-01)
 -------------------
 
