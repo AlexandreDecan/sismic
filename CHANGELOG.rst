@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- (Changed) Reorganisation of ``docs/examples``.
+
+
 0.22.3 (2016-07-06)
 -------------------
 
