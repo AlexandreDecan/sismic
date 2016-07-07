@@ -5,6 +5,10 @@ Feature: No heating if door is opened
     And I execute the statechart
     Then event heating_on should not be fired
 
+  Scenario: No heating when I open the door
+    When I send event door_opened
+    Then event heating_on should not be fired
+
   Scenario: No heating when item is placed
     Given I send event door_opened
     When I send event item_placed

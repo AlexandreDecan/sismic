@@ -101,7 +101,7 @@ and display as summary of all executed scenarios and encountered errors:
     Took 0m0.027s
 
 Coverage data, including the states that were visited and the transitions that were processed, can be displayed
-using the ``--coverage`` argument, as in ``sismic-behave statechart.yaml --feature tests.feature --coverage``:
+using the ``--coverage`` argument, as in ``sismic-behave statechart.yaml --features tests.feature --coverage``:
 
 .. code::
 
@@ -115,6 +115,12 @@ using the ``--coverage`` argument, as in ``sismic-behave statechart.yaml --featu
 
     [...]
 
+Sismic comes with several predefined steps (see below), but you can easily create your own steps.
+``sismic-behave`` supports a parameter ``--steps`` which takes a list of Python files containing your own steps.
+For example, the features in `heating_human.feature <https://github.com/AlexandreDecan/sismic/blob/master/docs/examples/microwave/heating_human.feature>`__
+make use of steps defined in `heating_steps.py <https://github.com/AlexandreDecan/sismic/blob/master/docs/examples/microwave/heating_steps.py>`__, and
+can be tested using ``sismic-behave microwave.yaml --features heating_human.feature --steps heating_steps.py``
+from the *docs/examples/microwave* directory.
 
 
 "Given" and "when" steps
@@ -230,8 +236,7 @@ Then the statechart is in a final configuration
 
 
 .. warning:: The list of steps documented hereabove could be incomplete or contain slight variations.
-    An up-to-date list of all the available steps can be found using the ``--steps`` arguments,
-    as in ``sismic-behave elevator.yaml --features elevator.feature --steps``.
+    An up-to-date list of all the available steps can be found using the ``--steps`` arguments of behave.
 
 .. note:: If you do not want to rely on Sismic and want to use *behave* command-line interface, you can easily
     import the predefined steps using ``from sismic.testing.steps import *``.

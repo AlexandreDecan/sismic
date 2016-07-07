@@ -4,7 +4,7 @@ Changelog
 Unreleased
 ----------
 
-- (Added) ``sismic-behave`` CLI now accepts a ``--steps`` parameter, which is a list of filepaths containing the steps
+- (Added) ``sismic-behave`` CLI now accepts a ``--steps`` parameter, which is a list of file paths containing the steps
   implementation.
 - (Changed) Reorganisation of ``docs/examples``.
 - (Fixed) Coverage data for ``sismic-behave`` takes the initialization step into account (regression
