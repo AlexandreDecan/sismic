@@ -24,7 +24,7 @@ def states_coverage(states, entered):
     entered_stats = Counter(entered)
     coverage_stat = len(entered_stats.keys()) / len(states)
 
-    print('State coverage: {:.2f}%'.format(100 * coverage_stat))
+    print('State coverage: {:.2%}'.format(coverage_stat))
     print('Entered states:', ' | '.join(('{} ({})'.format(k, v) for k, v in entered_stats.most_common())))
     print('Remaining states:', ' | '.join((str(s) for s in sorted(set(states).difference(entered_stats.keys())))))
 

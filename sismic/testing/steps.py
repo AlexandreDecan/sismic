@@ -1,6 +1,7 @@
 from behave import given, when, then  # type: ignore
 from sismic.io import import_from_yaml
 from sismic.interpreter import Interpreter
+from sismic.interpreter.helpers import log_trace
 from sismic.model import Event
 
 
@@ -38,12 +39,9 @@ def repeat_step(context, step, repeat):
 def _execute_statechart(context, force_execution=False, execute_once=False):
     if context._automatic_execution or force_execution:
         if execute_once:
-            steps = [context._interpreter.execute_once()]
+            context._interpreter.execute_once()
         else:
-            steps = context._interpreter.execute()
-
-        for step in steps:
-            context._steps.append(step)
+            context._interpreter.execute()
 
 
 @given('I disable automatic execution')
@@ -62,10 +60,13 @@ def load_statechart(context, path):
     with open(path) as f:
         context._statechart = import_from_yaml(f)
     context._interpreter = Interpreter(context._statechart)
-    context._steps = []
-    context._events = []
+    context._steps = log_trace(context._interpreter)
+
     context._automatic_execution = True
+
+    context._events = []
     context._interpreter.bind(context._events.append)
+
     _execute_statechart(context, force_execution=True, execute_once=True)
 
 
