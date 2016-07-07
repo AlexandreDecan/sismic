@@ -74,7 +74,6 @@ statechart:
             states:
               - name: program mode
                 initial: not ready
-                on entry: send('heating_set_power', power=POWER_VALUES[power])
                 transitions:
                   - event: input_power_reset
                     action: |
@@ -114,6 +113,7 @@ statechart:
                 contract:
                   - before: timer > 0
                   - always: timer >= 0
+                  - always: power == __old__.power
                   - after: received('door_opened') or timer == 0
                 transitions:
                   - guard: timer == 0
