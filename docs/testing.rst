@@ -69,7 +69,8 @@ The sequence does follow the interpretation order:
        b. transition is processed
        c. states are entered
        d. internal events are sent
-       d. statechart is stabilized (some states are exited and/or entered, some events are sent)
+       e. statechart is stabilized (some states are exited and/or entered, some events are sent)
+
 
 Using statechart to check properties on a trace
 -----------------------------------------------
@@ -108,7 +109,7 @@ This *property statechart* ensures that the 7th floor is never reached.
 It stores the current floor based on the number of times the elevator goes up
 and goes down.
 
-.. literalinclude:: /examples/tester_elevator_7th_floor_never_reached.yaml
+.. literalinclude:: /examples/elevator/tester_elevator_7th_floor_never_reached.yaml
    :language: yaml
 
 It can be tested as follows:
@@ -128,7 +129,7 @@ This *property statechart* checks that the elevator automatically moves after so
 the ground floor. The test sets a timeout of 12 seconds, but it should work for any number strictly greater than
 10 seconds.
 
-.. literalinclude:: /examples/tester_elevator_moves_after_10s.yaml
+.. literalinclude:: /examples/elevator/tester_elevator_moves_after_10s.yaml
    :language: yaml
 
 We check this tester using several stories, as follows:
@@ -166,7 +167,7 @@ Destination should be reached
 
 This *property statechart* ensures that every chosen destination is finally reached.
 
-.. literalinclude:: /examples/tester_elevator_destination_reached.yaml
+.. literalinclude:: /examples/elevator/tester_elevator_destination_reached.yaml
    :language: yaml
 
 It can be tested as follows:
@@ -179,9 +180,9 @@ It can be tested as follows:
     from sismic.model import Event
 
     # Load statecharts
-    with open('examples/elevator.yaml') as f:
+    with open('examples/elevator/elevator.yaml') as f:
         elevator_statechart = import_from_yaml(f)
-    with open('examples/tester_elevator_destination_reached.yaml') as f:
+    with open('examples/elevator/tester_elevator_destination_reached.yaml') as f:
         tester_statechart = import_from_yaml(f)
 
     # Create the interpreter and the watcher

@@ -40,7 +40,7 @@ First, one should load the statechart and initialize the interpreter:
     from sismic.interpreter import Interpreter
     from sismic.model import Event
 
-    with open('examples/elevator.yaml') as f:
+    with open('examples/elevator/elevator.yaml') as f:
         statechart = import_from_yaml(f)
 
     interpreter = Interpreter(statechart)
@@ -110,7 +110,7 @@ Let us first initialize an interpreter using one of our statechart example, the 
     from sismic.interpreter import Interpreter
     from sismic.model import Event
 
-    with open('examples/elevator.yaml') as f:
+    with open('examples/elevator/elevator.yaml') as f:
         statechart = import_from_yaml(f)
 
     interpreter = Interpreter(statechart)

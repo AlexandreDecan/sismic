@@ -1,0 +1,21 @@
+statechart:
+  name: Heating does not start if door is opened
+  root state: 
+    name: root
+    initial: door is closed
+    states:
+      - name: door is closed
+        transitions:
+          - target: door is opened
+            event: event consumed
+            guard: event.event.name == 'door_opened'
+      - name: door is opened
+        transitions:
+          - target: door is closed
+            event: event consumed
+            guard: event.event.name == 'door_closed'
+          - target: failure
+            event: event sent
+            guard: event.event.name == 'heating_on'
+      - name: failure
+        type: final

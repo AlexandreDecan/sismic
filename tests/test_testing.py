@@ -171,7 +171,7 @@ class AtomicStoryFromTraceTests(unittest.TestCase):
 
 class ElevatorStoryTests(unittest.TestCase):
     def setUp(self):
-        with open('docs/examples/elevator.yaml') as f:
+        with open('docs/examples/elevator/elevator.yaml') as f:
             sc = io.import_from_yaml(f)
         self.tested = Interpreter(sc)
 
@@ -181,7 +181,7 @@ class ElevatorStoryTests(unittest.TestCase):
 
         test_story = teststory_from_trace(trace)
 
-        with open('docs/examples/tester_elevator_7th_floor_never_reached.yaml') as f:
+        with open('docs/examples/elevator/tester_elevator_7th_floor_never_reached.yaml') as f:
             tester = Interpreter(io.import_from_yaml(f))
         test_story.tell(tester)
         self.assertFalse(tester.final)
@@ -192,7 +192,7 @@ class ElevatorStoryTests(unittest.TestCase):
 
         test_story = teststory_from_trace(trace)
 
-        with open('docs/examples/tester_elevator_7th_floor_never_reached.yaml') as f:
+        with open('docs/examples/elevator/tester_elevator_7th_floor_never_reached.yaml') as f:
             tester = Interpreter(io.import_from_yaml(f))
         test_story.tell(tester)
         self.assertTrue(tester.final)
@@ -210,13 +210,13 @@ class ElevatorStoryTests(unittest.TestCase):
         for story in stories:
             with self.subTest(story=story):
                 # Reopen because we need to reset it
-                with open('docs/examples/elevator.yaml') as f:
+                with open('docs/examples/elevator/elevator.yaml') as f:
                     sc = io.import_from_yaml(f)
                 tested = Interpreter(sc)
 
                 test_story = teststory_from_trace(story.tell(tested))
 
-                with open('docs/examples/tester_elevator_moves_after_10s.yaml') as f:
+                with open('docs/examples/elevator/tester_elevator_moves_after_10s.yaml') as f:
                     tester = Interpreter(io.import_from_yaml(f))
                 test_story.tell(tester)
                 self.assertFalse(tester.final)
@@ -224,13 +224,13 @@ class ElevatorStoryTests(unittest.TestCase):
 
 class WatchElevatorTests(unittest.TestCase):
     def setUp(self):
-        with open('docs/examples/elevator.yaml') as f:
+        with open('docs/examples/elevator/elevator.yaml') as f:
             sc = io.import_from_yaml(f)
         self.tested = Interpreter(sc)
         self.watcher = ExecutionWatcher(self.tested)
 
     def test_7th_floor_never_reached(self):
-        with open('docs/examples/tester_elevator_7th_floor_never_reached.yaml') as f:
+        with open('docs/examples/elevator/tester_elevator_7th_floor_never_reached.yaml') as f:
             tester_sc = io.import_from_yaml(f)
 
         tester = self.watcher.watch_with(tester_sc)
@@ -242,7 +242,7 @@ class WatchElevatorTests(unittest.TestCase):
         self.assertFalse(tester.final)
 
     def test_7th_floor_never_reached_fails(self):
-        with open('docs/examples/tester_elevator_7th_floor_never_reached.yaml') as f:
+        with open('docs/examples/elevator/tester_elevator_7th_floor_never_reached.yaml') as f:
             tester_sc = io.import_from_yaml(f)
 
         tester = self.watcher.watch_with(tester_sc)
@@ -254,7 +254,7 @@ class WatchElevatorTests(unittest.TestCase):
         self.assertTrue(tester.final)
 
     def test_destination_reached(self):
-        with open('docs/examples/tester_elevator_destination_reached.yaml') as f:
+        with open('docs/examples/elevator/tester_elevator_destination_reached.yaml') as f:
             tester_statechart = io.import_from_yaml(f)
 
         # Create the interpreter and the watcher

@@ -1,0 +1,41 @@
+statechart: 
+  name: Heating must not occur if/when door is opened
+  description: Combines heating_on_property and heating_off_property
+  root state:
+    name: root
+    initial: door is closed and is heating off
+    states:
+      - name: door is closed and is heating off
+        transitions:
+          - target: door is opened and heating is off
+            event: event consumed
+            guard: event.event.name == 'door_opened'
+          - target: door is closed and heating is on
+            event: event sent
+            guard: event.event.name == 'heating_on'
+      - name: door is opened and heating is off
+        transitions:
+          - target: door is closed and is heating off
+            event: event consumed
+            guard: event.event.name == 'door_closed'
+          - target: failure
+            event: event sent
+            guard: event.event.name == 'heating_on'
+      - name: door is closed and heating is on 
+        transitions:
+          - target: door is closed and is heating off
+            event: event sent
+            guard: event.event.name == 'heating_off'
+          - target: door opened and heating on
+            event: event consumed
+            guard: event.event.name == 'door_opened'
+      - name: door opened and heating on
+        transitions:
+          - target: door is opened and heating is off
+            event : event sent
+            guard: event.event.name == 'heating_off'
+          - target: failure
+            event: event consumed
+            guard: event.event.name == 'timer_tick'
+      - name: failure
+        type: final

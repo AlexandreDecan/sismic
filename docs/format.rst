@@ -220,13 +220,13 @@ Elevator
 
 The Elevator statechart is one of the running examples in this documentation. Its visual description (currently not supported by Sismic) could look as follows:
 
-.. image:: /images/elevator.png
+.. image:: /examples/elevator/elevator.png
     :align: center
 
 The corresponding YAML description is given below. To make the statechart self-contained, a Python class ``Doors``
 is included containing two methods ``open()`` and ``close()`` and a boolean variable ``opened``. Upon entering in the *active* state, a ``doors`` object of this class will be created and initialised by setting the value of ``opened`` to ``True``.
 
-.. literalinclude:: /examples/elevator.yaml
+.. literalinclude:: /examples/elevator/elevator.yaml
    :language: yaml
 
 Microwave
@@ -238,7 +238,7 @@ Those events are defined in the ``description`` field of the YAML file, for docu
 
 Typically, this statechart will be executed jointly with other components (keyboard, doors, lamp, heating, ...).
 
-.. literalinclude:: /examples/microwave_controller.yaml
+.. literalinclude:: /examples/microwave/microwave.yaml
     :language: yaml
 
 
@@ -260,7 +260,7 @@ For example:
 
     from sismic import io, model
 
-    with open('examples/elevator.yaml') as f:
+    with open('examples/elevator/elevator.yaml') as f:
         statechart = io.import_from_yaml(f)
         assert isinstance(statechart, model.Statechart)
 

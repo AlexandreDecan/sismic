@@ -3,7 +3,7 @@ import tkinter as tk
 # The two following lines are NOT needed in a typical environment.
 # These lines make sismic available in our testing environment
 import sys
-sys.path.append('../..')
+sys.path.append('../../..')
 
 from functools import partial
 

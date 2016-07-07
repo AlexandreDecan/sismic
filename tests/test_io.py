@@ -13,8 +13,8 @@ class ImportFromYamlTests(unittest.TestCase):
                     io.import_from_yaml(f)
 
     def test_examples(self):
-        files = ['elevator', 'elevator_contract', 'microwave', 'tester_elevator_7th_floor_never_reached',
-                 'tester_elevator_moves_after_10s', 'writer_options']
+        files = ['elevator/elevator', 'elevator/elevator_contract', 'microwave/microwave',
+                 'elevator/tester_elevator_7th_floor_never_reached', 'elevator/tester_elevator_moves_after_10s', 'writer_options']
         for filename in files:
             with self.subTest(filename=filename):
                 with open(os.path.join('docs', 'examples', filename + '.yaml')) as f:
@@ -75,8 +75,8 @@ class ExportToDictYAMLTests(unittest.TestCase):
     def setUp(self):
         files_t = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',
                    'nondeterministic', 'parallel', 'simple', 'timer']
-        files_e = ['elevator', 'elevator_contract', 'microwave', 'tester_elevator_7th_floor_never_reached',
-                   'tester_elevator_moves_after_10s', 'writer_options']
+        files_e = ['elevator/elevator', 'elevator/elevator_contract', 'microwave/microwave',
+                   'elevator/tester_elevator_7th_floor_never_reached', 'elevator/tester_elevator_moves_after_10s', 'writer_options']
 
         self.files = []
         for filename in files_t:

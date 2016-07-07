@@ -6,7 +6,7 @@ from sismic.model import Event
 
 class ElevatorTests(unittest.TestCase):
     def setUp(self):
-        with open('docs/examples/elevator.yaml') as f:
+        with open('docs/examples/elevator/elevator.yaml') as f:
             self.sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(self.sc)
         # Stabilization
@@ -34,7 +34,7 @@ class ElevatorTests(unittest.TestCase):
 
 class ElevatorContractTests(ElevatorTests):
     def setUp(self):
-        with open('docs/examples/elevator_contract.yaml') as f:
+        with open('docs/examples/elevator/elevator_contract.yaml') as f:
             self.sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(self.sc)
         # Stabilization
@@ -69,9 +69,9 @@ class WriterExecutionTests(unittest.TestCase):
 
 class RemoteElevatorTests(unittest.TestCase):
     def setUp(self):
-        with open('docs/examples/elevator.yaml') as f:
+        with open('docs/examples/elevator/elevator.yaml') as f:
             elevator = io.import_from_yaml(f)
-        with open('docs/examples/elevator_buttons.yaml') as f:
+        with open('docs/examples/elevator/elevator_buttons.yaml') as f:
             buttons = io.import_from_yaml(f)
 
         self.elevator = Interpreter(elevator)
@@ -106,7 +106,7 @@ class RemoteElevatorTests(unittest.TestCase):
 
 class MicrowaveTests(unittest.TestCase):
     def setUp(self):
-        with open('docs/examples/microwave.yaml') as f:
+        with open('docs/examples/microwave/microwave.yaml') as f:
             sc = io.import_from_yaml(f)
         self.microwave = Interpreter(sc)
 

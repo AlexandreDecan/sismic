@@ -1,0 +1,32 @@
+statechart:
+  name: Heating must stop when door is opened
+  description: |
+    Heating must quickly stop when door is opened. 
+    Here, "quickly" means before next timer_tick event.
+  root state:
+    name: root
+    initial: heating is off
+    states:
+      - name: heating is off
+        transitions:
+          - target: heating is on
+            event: event sent
+            guard: event.event.name == 'heating_on'
+      - name: heating is on
+        transitions:
+          - target: heating is off
+            event: event sent
+            guard: event.event.name == 'heating_off'
+          - target: heating is on while door is opened
+            event: event consumed
+            guard: event.event.name == 'door_opened'
+      - name: heating is on while door is opened
+        transitions:
+          - target: heating is off
+            event: event sent
+            guard: event.event.name == 'heating_off'
+          - target: failure
+            event: event consumed
+            guard: event.event.name == 'timer_tick'
+      - name: failure
+        type: final

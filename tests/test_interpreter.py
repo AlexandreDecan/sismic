@@ -9,7 +9,7 @@ from sismic.model import Event, InternalEvent
 
 class LogTraceTests(unittest.TestCase):
     def setUp(self):
-        with open('docs/examples/elevator.yaml') as f:
+        with open('docs/examples/elevator/elevator.yaml') as f:
             sc = io.import_from_yaml(f)
         self.tested = Interpreter(sc)
         self.steps = log_trace(self.tested)

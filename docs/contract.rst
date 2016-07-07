@@ -137,9 +137,9 @@ Example
 *******
 
 The following example shows some contract specifications added
-to the `Elevator example <https://github.com/AlexandreDecan/sismic/blob/master/examples/elevator.yaml>`__.
+to the `Elevator example <https://github.com/AlexandreDecan/sismic/blob/master/examples/elevator/elevator.yaml>`__.
 
-.. literalinclude:: /examples/elevator_contract.yaml
+.. literalinclude:: /examples/elevator/elevator_contract.yaml
    :language: yaml
 
 
@@ -157,7 +157,7 @@ at runtime (as explained above) and may raise a subclass of :py:exc:`~sismic.exc
     from sismic.interpreter import Interpreter
     from sismic.io import import_from_yaml
 
-    with open('examples/elevator_contract.yaml') as f:
+    with open('examples/elevator/elevator_contract.yaml') as f:
         statechart = import_from_yaml(f)
 
         # Make the run fails

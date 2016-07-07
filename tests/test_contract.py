@@ -7,7 +7,7 @@ from sismic.exceptions import PreconditionError, PostconditionError, InvariantEr
 
 class ElevatorContractTests(unittest.TestCase):
     def setUp(self):
-        with open('docs/examples/elevator.yaml') as f:
+        with open('docs/examples/elevator/elevator.yaml') as f:
             self.sc = io.import_from_yaml(f)
         self.interpreter = Interpreter(self.sc)
 

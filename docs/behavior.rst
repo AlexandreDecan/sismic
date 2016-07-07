@@ -72,7 +72,7 @@ By convention, this file has the extension *.feature*, but this is not mandatory
 The example illustrates that Sismic provides a set of predefined steps (e.g., `given`, `when`, `then`) to describe
 common statechart behavior without having to write a single line of Python code.
 
-.. literalinclude:: examples/elevator.feature
+.. literalinclude:: examples/elevator/elevator.feature
     :language: gherkin
 
 Let us save this file as *elevator.feature* in the same directory as the statechart description, *elevator.yaml*.
@@ -126,7 +126,7 @@ Given/when I do nothing
 Given/when I reproduce "{scenario}"
     Allows to reproduce the steps of given scenario.
 
-    .. literalinclude:: examples/elevator.feature
+    .. literalinclude:: examples/elevator/elevator.feature
       :language: gherkin
       :lines: 7-10, 18-23
       :emphasize-lines: 6
@@ -166,7 +166,7 @@ Given/when I send event {event_name} with {parameter}={value}
     The statechart is executed after this step.
     Additional parameters can be specified using a table, as follows.
 
-    .. literalinclude:: examples/elevator.feature
+    .. literalinclude:: examples/elevator/elevator.feature
       :language: gherkin
       :lines: 11-16
       :emphasize-lines: 3-5
@@ -179,11 +179,6 @@ Given/when I wait {seconds} seconds
 Given/when I wait {seconds} seconds {repeat} times
     Repeatedly increment the internal clock of the statechart,
     and execute the statechart after each increment.
-
-    .. literalinclude:: examples/microwave.feature
-      :language: gherkin
-      :lines: 14-18
-      :emphasize-lines: 3
 
 Given I set variable {variable} to {value}
     Set the value of a variable in the internal context of a statechart.
@@ -200,12 +195,12 @@ Then state {state_name} should not be active
     Assert that a given state *state_name* is inactive.
 
 Then event {event_name} should be fired
-    Assert that a given event *event_name* is the most recently fired event.
+    Assert that a given event *event_name* was fired during the last execution.
 
-    .. literalinclude:: examples/microwave.feature
+    .. literalinclude:: examples/microwave/heating.feature
       :language: gherkin
-      :lines: 27-30
-      :emphasize-lines: 3
+      :lines: 19-25
+      :emphasize-lines: 7
 
 Then event {event_name} should be fired with {parameter}={value}
     Assert that a given event *event_name* was fired during the last execution,

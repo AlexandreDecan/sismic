@@ -1,5 +1,5 @@
 statechart:
-  name: Microwave controller with contracts
+  name: Microwave controller
   description: |
     in:
      input_power_inc
@@ -36,21 +36,18 @@ statechart:
     on entry: |
       power = POWER_DEFAULT
       timer = 0
+    contract:
+      - always: not sent('heating_on') or active('cooking mode')
+      - always: timer >= 0
+      - always: 0 <= power < len(POWER_VALUES)
     transitions:
       - event: input_cooking_stop
         action: |
           power = POWER_DEFAULT
           timer = 0
-    contract:
-      - always: 0 <= power < len(POWER_VALUES)
-      - always: timer >= 0
-      - always: not sent('heating_on') or active('cooking mode')  # Never start heating outside of 'cooking mode' state
     states:
       - name: door closed
         initial: closed without item
-        contract:
-          - always: not received('item_placed')   # This should never happen since door is closed!
-          - always: not received('item_removed')
         states:
           - name: closed without item
             transitions:
@@ -96,6 +93,8 @@ statechart:
                       - guard: timer > 0
                         target: ready
                   - name: ready
+                    contract:
+                      - always: timer > 0
                     transitions:
                       - guard: timer == 0
                         target: not ready
@@ -112,10 +111,9 @@ statechart:
                   send('lamp_switch_off')
                   send('turntable_stop')
                 contract:
-                  - sequentially: |  # Ensure heating_on is always followed by an heating_off, and never sent again.
-                      "sent('heating_on')" -> "sent('heating_off')" -> never "sent('heating_on')"
-                  - sequentially: |  # Ensure door_opened is quicly followed by an exit of this state (ie. tick is never received)
-                      never ("received('door_opened')" -> "received('timer_tick')")
+                  - before: timer > 0
+                  - always: timer >= 0
+                  - after: received('door_opened') or timer == 0
                 transitions:
                   - guard: timer == 0
                     target: program mode

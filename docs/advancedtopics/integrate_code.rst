@@ -28,7 +28,7 @@ The example represents a simple stopwatch, i.e., a timer than can be started, st
 split time feature and a display of the elapsed time. A button-controlled GUI of such a stopwatch looks as follows
 (inactive buttons are greyed out):
 
-.. image:: /images/stopwatch_gui.png
+.. image:: /examples/stopwatch/stopwatch_gui.png
     :align: center
 
 Essentially, the stopwatch simply displays a value, representing the elapsed time (expressed in seconds), which is
@@ -39,7 +39,7 @@ Clicking on *unsplit* while continue to display the actual elapsed time. *reset*
 The idea is that the buttons will trigger state changes and actions carried out by an underlying statechart.
 Taking abstraction of the concrete implementation, the statechart would essentially look as follows, with one main *active* state containing two parallel substates *timer* and *display*.
 
-.. image:: /images/stopwatch_overview.png
+.. image:: /examples/stopwatch/stopwatch_overview.png
     :align: center
 
 Controlling a statechart from within the environment
@@ -51,12 +51,12 @@ Conversely, the statechart itself can send events back to the source code to upd
 
 This statechart looks as follows:
 
-.. image:: /images/stopwatch_with_logic.png
+.. image:: /examples/stopwatch/stopwatch_with_logic.png
     :align: center
 
 Here is the YAML file containing the  textual description of this statechart:
 
-.. literalinclude:: /examples/stopwatch.yaml
+.. literalinclude:: /examples/stopwatch/stopwatch.yaml
     :language: yaml
 
 We observe that the statechart contains an ``elapsed_time`` variable, that is updated every second while the stopwatch is in the *running* state.
@@ -71,7 +71,7 @@ method. The  ``event_handler`` passed to it allows the Python source code to rec
 In particular, the ``w_timer`` field of the GUI will be updated with a new value of the time whenever the statechart sends a *refresh* event.
 The ``run`` method, which is put in Tk's mainloop, updates the internal clock of the interpreter and executes the interpreter.
 
-.. literalinclude:: /examples/stopwatch_gui.py
+.. literalinclude:: /examples/stopwatch/stopwatch_gui.py
     :language: python
 
 
@@ -87,7 +87,7 @@ the methods it needs to call in this code.
 
 An example of the Python code that is controlled by the statechart is given below:
 
-.. literalinclude:: /examples/stopwatch.py
+.. literalinclude:: /examples/stopwatch/stopwatch.py
     :pyobject: Stopwatch
 
 The statechart expects such a ``Stopwatch`` instance to be created and provided in its initial context.
@@ -97,14 +97,14 @@ In this example, ``initial_context={'stopwatch': Stopwatch()}``.
 The statechart is simpler than in the previous example: one parallel region handles the
 running status of the stopwatch, and a second one handles its split features.
 
-.. image:: /images/stopwatch_with_object.png
+.. image:: /examples/stopwatch/stopwatch_with_object.png
     :align: center
 
-.. literalinclude:: /examples/stopwatch_external.yaml
+.. literalinclude:: /examples/stopwatch/stopwatch_external.yaml
     :language: yaml
 
 The Python code of the GUI no longer needs to *listen* to the events sent by the interpreter. It should, of course, continue to send events (corresponding to button presses) to the statechart using ``send``.
 The *binding* between the statechart and the GUI is now achieved differently, by simply passing the ``stopwatch`` object to the :py:class:`~sismic.interpreter.Interpreter` as its ``initial_context``.
 
-.. literalinclude:: /examples/stopwatch_gui_external.py
+.. literalinclude:: /examples/stopwatch/stopwatch_gui_external.py
     :language: python
