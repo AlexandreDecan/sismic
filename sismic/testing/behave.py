@@ -66,7 +66,7 @@ def after_feature(context, feature):
 """
 
 
-def execute_behave(statechart, features, coverage, parameters) -> None:
+def execute_behave(statechart, features, steps, coverage, parameters) -> None:
     # Create temporary directory
     with tempfile.TemporaryDirectory() as tempdir:
         # Move statechart inside
@@ -89,8 +89,13 @@ def execute_behave(statechart, features, coverage, parameters) -> None:
         os.mkdir(os.path.join(tempdir, 'steps'))
 
         # Create steps file
-        with open(os.path.join(tempdir, 'steps', 'steps.py'), 'w') as step:
+        with open(os.path.join(tempdir, 'steps', '__steps.py'), 'w') as step:
             step.write(DEFAULT_STEPS_CONTENT)
+
+        # Copy steps files
+        for step in steps if steps else []:
+            _, filename = os.path.split(step)
+            shutil.copy(step, os.path.join(tempdir, 'steps', filename))
 
         # Execute behave
         # subprocess.call(['behave'] + parameters, cwd=tempdir)
@@ -109,11 +114,13 @@ def main() -> None:
                         help='A YAML file describing a statechart')
     parser.add_argument('--features', metavar='features', nargs='+', type=str,
                         help='A list of files containing features')
+    parser.add_argument('--steps', metavar='steps', nargs='+', type=str,
+                        help='A list of files containing steps implementation')
     parser.add_argument('--coverage', action='store_true', default=False,
                         help='Display coverage data')
 
     args, parameters = parser.parse_known_args()
-    execute_behave(args.statechart, args.features, args.coverage, parameters)
+    execute_behave(args.statechart, args.features, args.steps, args.coverage, parameters)
 
 
 if __name__ == '__main__':
