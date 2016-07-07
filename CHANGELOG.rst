@@ -5,6 +5,8 @@ Unreleased
 ----------
 
 - (Changed) Reorganisation of ``docs/examples``.
+- (Fixed) Coverage data for ``sismic-behave`` takes the initialization step into account (regression
+  introduced in 0.21.0).
 
 
 0.22.3 (2016-07-06)
