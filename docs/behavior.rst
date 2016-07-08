@@ -122,6 +122,10 @@ make use of steps defined in `heating_steps.py <https://github.com/AlexandreDeca
 can be tested using ``sismic-behave microwave.yaml --features heating_human.feature --steps heating_steps.py``
 from the *docs/examples/microwave* directory.
 
+All remaining parameters that are provided to ``sismic-behave`` are passed to ``behave``. Notice that ``behave`` CLI also
+supports a ``--steps`` parameter which list the currently needed steps for the given features files).
+While this ``--steps`` parameter is overridden by ``sismic-behave``, Sismic provides a ``--show-steps`` parameter
+that does exactly the same job.
 
 "Given" and "when" steps
 ------------------------

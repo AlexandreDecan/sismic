@@ -1,6 +1,7 @@
 import tempfile
 import shutil
 import os
+import sys
 import argparse
 from behave import __main__ as behave_main  # type: ignore
 
@@ -101,8 +102,9 @@ def execute_behave(statechart, features, steps, coverage, parameters) -> None:
         # subprocess.call(['behave'] + parameters, cwd=tempdir)
         cwd = os.getcwd()
         os.chdir(tempdir)
-        behave_main.main(parameters)
+        exit_code = behave_main.main(parameters)
         os.chdir(cwd)
+        return exit_code
 
 
 def main() -> None:
@@ -118,10 +120,14 @@ def main() -> None:
                         help='A list of files containing steps implementation')
     parser.add_argument('--coverage', action='store_true', default=False,
                         help='Display coverage data')
+    parser.add_argument('--show-steps', action='store_true', default=False,
+                        help='Display a list of steps (equivalent to Behave\'s --steps parameter')
 
     args, parameters = parser.parse_known_args()
-    execute_behave(args.statechart, args.features, args.steps, args.coverage, parameters)
+    if args.show_steps:
+        parameters.append('--steps')
+    return execute_behave(args.statechart, args.features, args.steps, args.coverage, parameters)
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

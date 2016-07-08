@@ -16,8 +16,8 @@ To overcome this, Sismic provides a module :py:mod:`sismic.testing` that makes i
 statecharts using statecharts themselves!
 
 
-Using stories to write tests
-----------------------------
+Using statecharts to encode (un)desirable properties
+----------------------------------------------------
 
 **Remark**: in the following, the term *statechart under test* refers to the statechart that is to be tested,
 while the term *property statechart* refers to a statechart that expresses conditions or

@@ -1,11 +1,14 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.22.4 (2016-07-08)
+-------------------
 
 - (Added) ``sismic-behave`` CLI now accepts a ``--steps`` parameter, which is a list of file paths containing the steps
   implementation.
+- (Added) ``sismic-behave`` CLI now accepts a ``--show-steps`` parameter, which list the steps (equivalent to
+  Behave's overriden ``--steps`` parameter).
+- (Added) ``sismic-behave`` now returns an appropiate exit code.
 - (Changed) Reorganisation of ``docs/examples``.
 - (Fixed) Coverage data for ``sismic-behave`` takes the initialization step into account (regression
   introduced in 0.21.0).
