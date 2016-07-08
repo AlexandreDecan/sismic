@@ -114,14 +114,14 @@ def main() -> None:
 
     parser.add_argument('statechart', metavar='statechart', type=str,
                         help='A YAML file describing a statechart')
-    parser.add_argument('--features', metavar='features', nargs='+', type=str,
+    parser.add_argument('--features', metavar='features', nargs='+', type=str, required=True,
                         help='A list of files containing features')
     parser.add_argument('--steps', metavar='steps', nargs='+', type=str,
                         help='A list of files containing steps implementation')
     parser.add_argument('--coverage', action='store_true', default=False,
                         help='Display coverage data')
     parser.add_argument('--show-steps', action='store_true', default=False,
-                        help='Display a list of steps (equivalent to Behave\'s --steps parameter')
+                        help='Display a list of available steps (equivalent to Behave\'s --steps parameter')
 
     args, parameters = parser.parse_known_args()
     if args.show_steps:

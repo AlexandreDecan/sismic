@@ -123,7 +123,7 @@ can be tested using ``sismic-behave microwave.yaml --features heating_human.feat
 from the *docs/examples/microwave* directory.
 
 All remaining parameters that are provided to ``sismic-behave`` are passed to ``behave``. Notice that ``behave`` CLI also
-supports a ``--steps`` parameter which list the currently needed steps for the given features files).
+supports a ``--steps`` parameter which list the steps that are available).
 While this ``--steps`` parameter is overridden by ``sismic-behave``, Sismic provides a ``--show-steps`` parameter
 that does exactly the same job.
 
