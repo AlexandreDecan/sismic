@@ -1,8 +1,8 @@
 Installation
 ============
 
-From PyPi using pip
--------------------
+Using pip
+---------
 
 Sismic can be installed using ``pip`` as usual: ``pip install sismic``.
 This will install the latest stable version.
@@ -13,6 +13,9 @@ You can isolate Sismic installation by using virtual environments:
 2. Create the environment: ``virtualenv -p python3.4 env``
 3. Jump into: ``source env/bin/activate``
 4. Install Sismic: ``pip install sismic``
+
+The development version can also be installed directly from its git repository:
+``pip install git+git://github.com/AlexandreDecan/sismic.git@devel``
 
 From GitHub
 -----------
