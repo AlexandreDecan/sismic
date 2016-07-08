@@ -209,7 +209,7 @@ Then event {event_name} should be fired
 
     .. literalinclude:: examples/microwave/heating.feature
       :language: gherkin
-      :lines: 19-25
+      :lines: 23-29
       :emphasize-lines: 7
 
 Then event {event_name} should be fired with {parameter}={value}
@@ -240,7 +240,8 @@ Then the statechart is in a final configuration
 
 
 .. warning:: The list of steps documented hereabove could be incomplete or contain slight variations.
-    An up-to-date list of all the available steps can be found using the ``--steps`` arguments of behave.
+    An up-to-date list of all the available steps can be found using the ``--steps`` arguments of ``behave``, or
+    using the ``--show-steps`` argument of ``sismic-behave``.
 
 .. note:: If you do not want to rely on Sismic and want to use *behave* command-line interface, you can easily
     import the predefined steps using ``from sismic.testing.steps import *``.
