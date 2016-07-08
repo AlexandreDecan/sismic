@@ -80,9 +80,9 @@ that was told to the interpreter, and the result of calling :py:meth:`~sismic.in
 
 .. testoutput::
 
-    0 Event(floorSelected, floor=4) 4
+    0 Event('floorSelected', floor=4) 4
     5 Pause(5) 4
-    5 Event(floorSelected, floor=2) 2
+    5 Event('floorSelected', floor=2) 2
     15 Pause(10) 0
 
 

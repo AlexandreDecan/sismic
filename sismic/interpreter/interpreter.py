@@ -551,5 +551,5 @@ class Interpreter:
                                   assertion=condition, context=self.context)
 
     def __repr__(self):
-        return '{}[{}]({})'.format(self.__class__.__name__, self._statechart, ', '.join(self.configuration))
+        return '{}({!r})'.format(self.__class__.__name__, self._statechart)
 

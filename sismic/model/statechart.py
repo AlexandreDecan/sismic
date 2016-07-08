@@ -44,6 +44,9 @@ class Statechart:
         """
         return self._preamble
 
+    def __repr__(self):
+        return '{}({!r})'.format(self.__class__.__name__, self.name)
+
     # ######### STATES ##########
 
     @property

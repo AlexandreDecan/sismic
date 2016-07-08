@@ -33,8 +33,18 @@ class MicroStep:
         self.sent_events = sent_events if sent_events else []  # type: List[Event]
 
     def __repr__(self):
-        return 'MicroStep({}, {}, >{}, <{})'.format(self.event, self.transition,
-                                                    self.entered_states, self.exited_states)
+        params = []
+        if self.event:
+            params.append('event={!r}'.format(self.event))
+        if self.transition:
+            params.append('transition={!r}'.format(self.transition))
+        if self.entered_states:
+            params.append('entered_states={!r}'.format(self.entered_states))
+        if self.exited_states:
+            params.append('exited_states={!r}'.format(self.exited_states))
+        if self.sent_events:
+            params.append('sent_events={!r}'.format(self.sent_events))
+        return '{}({})'.format(self.__class__.__name__, ', '.join(params))
 
 
 class MacroStep:
@@ -114,5 +124,8 @@ class MacroStep:
         return events
 
     def __repr__(self):
-        return 'MacroStep@{}({}, {}, >{}, <{})'.format(round(self.time, 3), self.event, self.transitions,
-                                                       self.entered_states, self.exited_states)
+        return '{}({!r}, {!r})'.format(self.__class__.__name__, self.time, self._steps)
+
+    def __str__(self):
+        return 'Step@{}({}, {}, >{}, <{})'.format(round(self.time, 3), self.event, self.transitions,
+                                                  self.entered_states, self.exited_states)

@@ -89,9 +89,9 @@ is sent both to ``interpreter_1`` and ``interpreter_2``.
 
 .. testoutput:: bind
 
-    Events for interpreter_1: Event(test)
-    Events for interpreter_2: Event(test)
-    Events for interpreter_3: InternalEvent(test)
+    Events for interpreter_1: Event('test')
+    Events for interpreter_2: Event('test')
+    Events for interpreter_3: InternalEvent('test')
 
 Example
 -------
@@ -142,9 +142,9 @@ are automatically propagated to ``elevator``:
 .. testoutput:: buttons
 
     Awaiting events in buttons: []
-    Awaiting events in buttons: [Event(button_2_pushed)]
-    Awaiting events in buttons: [InternalEvent(floorSelected, floor=2)]
-    Awaiting events in elevator: [Event(floorSelected, floor=2)]
+    Awaiting events in buttons: [Event('button_2_pushed')]
+    Awaiting events in buttons: [InternalEvent('floorSelected', floor=2)]
+    Awaiting events in elevator: [Event('floorSelected', floor=2)]
 
 The execution of bound statecharts does not differ from the execution of unbound statecharts:
 

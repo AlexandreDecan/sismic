@@ -33,7 +33,7 @@ class StateMixin(metaclass=ABCMeta):
         return self._name
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, self.name)
+        return '{}({!r})'.format(self.__class__.__name__, self.name)
 
     def __eq__(self, other):
         return isinstance(other, StateMixin) and self.name == other.name
@@ -234,7 +234,7 @@ class Transition(ContractMixin):
                 self.action == other.action)
 
     def __repr__(self):
-        return 'Transition({0}, {1}, {2})'.format(self.source, self.target, self.event)
+        return 'Transition({!r}, {!r}, event={!r})'.format(self.source, self.target, self.event)
 
     def __str__(self):
         return '{} [{}] -> {}'.format(self.source, self.event, self.target if self.target else '')
