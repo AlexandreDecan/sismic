@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.22.5 (2016-08-03)
+-------------------
 
 - (Changed) ``Event``, ``MacroStep``, ``MicroStep``, ``StateMixin``, ``Transition``, ``Statechart`` and
   ``Interpreter``'s ``__repr__`` returns a valid Python expression.
