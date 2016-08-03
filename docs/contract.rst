@@ -175,16 +175,17 @@ The exception displays some relevant information to help debug:
 
     Traceback (most recent call last):
      ...
-    sismic.exceptions.PreconditionError: Precondition not satisfied!
-    Object: BasicState(movingUp)
+    sismic.exceptions.PreconditionError: PreconditionError
+    Object: BasicState('movingUp')
     Assertion: current > destination
-    Configuration: ['active', 'floorListener', 'movingElevator', 'floorSelecting']
-    Step: MicroStep(None, doorsClosed -> movingUp, >['moving', 'movingUp'], <['doorsClosed'])
-    Evaluation context:
-     - destination = 4
-     - doors = <Doors object at ...>
+    Configuration: ['active', 'floorListener', 'movingElevator', 'floorSelecting', 'moving']
+    Step: MicroStep(transition=Transition('doorsClosed', 'movingUp', event=None), entered_states=['moving', 'movingUp'], exited_states=['doorsClosed'])
+    Context:
      - current = 0
-     - Doors = <class 'Doors'>
+     - destination = 4
+     - doors_open = False
+
+
 
 
 If you do not want the execution to be interrupted by such exceptions, you can set the ``ignore_contract``

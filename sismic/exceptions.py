@@ -80,7 +80,7 @@ class ContractError(SismicError):
         return self._context
 
     def __str__(self):  # pragma: no cover
-        message = ['{}'.format(self.__class__.__name__.replace('Failed', ''))]
+        message = ['{}'.format(self.__class__.__name__)]
         if self._obj:
             message.append('Object: {}'.format(self._obj))
         if self._assertion:
@@ -91,7 +91,7 @@ class ContractError(SismicError):
             message.append('Step: {}'.format(self._step))
         if self._context:
             message.append('Context:')
-            for key, value in self._context.items():
+            for key, value in sorted(self._context.items(), key=lambda t: t[0]):
                 message.append(' - {key} = {value}'.format(key=key, value=value))
 
         return '\n'.join(message)
