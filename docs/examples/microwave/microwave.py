@@ -4,7 +4,7 @@ import tkinter as tk
 # These lines make sismic available in our testing environment
 import sys
 
-sys.path.append('../..')
+sys.path.append('../../..')
 
 from functools import partial
 
@@ -24,7 +24,7 @@ class MicrowaveApplication(tk.Frame):
         self.create_widgets()
 
         # Create a Stopwatch interpreter
-        with open('microwave-tom.yaml') as f:
+        with open('microwave.yaml') as f:
             statechart = import_from_yaml(f)
         self.interpreter = Interpreter(statechart)
 
@@ -38,8 +38,9 @@ class MicrowaveApplication(tk.Frame):
 
         # Update the widget that contains the list of active states.
         self.w_states['text'] = '\n'.join(self.interpreter.configuration)
-        self.w_timer['text'] = 'M.timer: %d' % self.interpreter._evaluator.context_for('controller')['timer']
-        self.w_power['text'] = 'M.power: %d' % self.interpreter._evaluator.context_for('controller')['power']
+
+        self.w_timer['text'] = 'M.timer: %d' % self.interpreter.context['controller.timer']
+        self.w_power['text'] = 'M.power: %d' % self.interpreter.context['controller.power']
 
     def create_widgets(self):
         self.pack(fill=tk.BOTH)
@@ -53,31 +54,31 @@ class MicrowaveApplication(tk.Frame):
         input_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(8, 8))
 
         self.w_power_inc = tk.Button(input_frame, text='power +',
-                                     command=partial(self.send_event, event_name='power_inc'))
+                                     command=partial(self.send_event, event_name='input_power_inc'))
         self.w_power_dec = tk.Button(input_frame, text='power -',
-                                     command=partial(self.send_event, event_name='power_dec'))
+                                     command=partial(self.send_event, event_name='input_power_dec'))
         self.w_power_reset = tk.Button(input_frame, text='power reset',
-                                       command=partial(self.send_event, event_name='power_reset'))
+                                       command=partial(self.send_event, event_name='input_power_reset'))
 
         self.w_power_inc.pack(side=tk.TOP, fill=tk.X)
         self.w_power_dec.pack(side=tk.TOP, fill=tk.X)
         self.w_power_reset.pack(side=tk.TOP, fill=tk.X)
 
         self.w_timer_inc = tk.Button(input_frame, text='timer +',
-                                     command=partial(self.send_event, event_name='timer_inc'))
+                                     command=partial(self.send_event, event_name='input_timer_inc'))
         self.w_timer_dec = tk.Button(input_frame, text='timer -',
-                                     command=partial(self.send_event, event_name='timer_dec'))
+                                     command=partial(self.send_event, event_name='input_timer_dec'))
         self.w_timer_reset = tk.Button(input_frame, text='timer 0',
-                                       command=partial(self.send_event, event_name='timer_reset'))
+                                       command=partial(self.send_event, event_name='input_timer_reset'))
 
         self.w_timer_inc.pack(side=tk.TOP, fill=tk.X, pady=(8, 0))  # leave some space before first button
         self.w_timer_dec.pack(side=tk.TOP, fill=tk.X)
         self.w_timer_reset.pack(side=tk.TOP, fill=tk.X)
 
         self.w_cooking_start = tk.Button(input_frame, text='start',
-                                         command=partial(self.send_event, event_name='cooking_start'))
+                                         command=partial(self.send_event, event_name='input_cooking_start'))
         self.w_cooking_stop = tk.Button(input_frame, text='stop',
-                                        command=partial(self.send_event, event_name='cooking_stop'))
+                                        command=partial(self.send_event, event_name='input_cooking_stop'))
 
         self.w_cooking_start.pack(side=tk.TOP, fill=tk.X, pady=(8, 0))  # leave some space before first button
         self.w_cooking_stop.pack(side=tk.TOP, fill=tk.X)
@@ -179,9 +180,9 @@ class MicrowaveApplication(tk.Frame):
     def event_handler(self, event):
         name = event.name
 
-        if name == 'lamp_on':
+        if name == 'lamp_switch_on':
             self.w_lamp['text'] = 'on'
-        elif name == 'lamp_off':
+        elif name == 'lamp_switch_off':
             self.w_lamp['text'] = 'off'
         elif name == 'display_set':
             self.w_display['text'] = event.text

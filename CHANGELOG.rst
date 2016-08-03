@@ -6,6 +6,9 @@ Unreleased
 
 - (Changed) ``Event``, ``MacroStep``, ``MicroStep``, ``StateMixin``, ``Transition``, ``Statechart`` and
   ``Interpreter``'s ``__repr__`` returns a valid Python expression.
+- (Changed) The context returned by a ``PythonEvaluator`` (and thus by the default ``Interpreter``) exhibits
+  nested variables (the ones that are not defined in the preamble of a statechart). Those variables are prefixed by
+  the name of the state in which they are declared, to avoid name clashing.
 
 
 0.22.4 (2016-07-08)

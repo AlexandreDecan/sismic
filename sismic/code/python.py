@@ -204,8 +204,12 @@ class PythonEvaluator(Evaluator):
         self._received_event = None  # type: Event
 
     @property
-    def context(self) -> Context:
-        return self._context
+    def context(self) -> Mapping:
+        context = dict(self._context)
+        for state, mapping in self._contexts.items():
+            for key, value in mapping.map.items():
+                context['{}.{}'.format(state, key)] = value
+        return context
 
     def on_step_starts(self, event: Event = None) -> None:
         """
@@ -268,7 +272,7 @@ class PythonEvaluator(Evaluator):
         """
         return self._interpreter.time - seconds >= self._idle_time[name]
 
-    def _evaluate_code(self, code: str, *, additional_context: Mapping = None, context: Context = None) -> bool:
+    def _evaluate_code(self, code: str, *, additional_context: Mapping = None, context: Mapping = None) -> bool:
         """
         Evaluate given code using Python.
 
@@ -297,7 +301,7 @@ class PythonEvaluator(Evaluator):
         except Exception as e:
             raise CodeEvaluationError('The above exception occurred while evaluating:\n{}'.format(code)) from e
 
-    def _execute_code(self, code: str, *, additional_context: Mapping = None, context: Context = None) -> List[Event]:
+    def _execute_code(self, code: str, *, additional_context: Mapping = None, context: Mapping = None) -> List[Event]:
         """
         Execute given code using Python.
 

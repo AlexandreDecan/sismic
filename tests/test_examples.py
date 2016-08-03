@@ -129,4 +129,3 @@ class MicrowaveTests(unittest.TestCase):
         self.assertIn(Event('heating_on'), step.sent_events)
         self.assertIn(Event('lamp_switch_on'), step.sent_events)
         self.assertIn(Event('turntable_start'), step.sent_events)
-
