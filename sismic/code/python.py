@@ -219,6 +219,7 @@ class PythonEvaluator(Evaluator):
     def context_for(self, name: str) -> Context:
         """
         Context object for given state name.
+
         :param name: State name
         :return: Context object
         """
