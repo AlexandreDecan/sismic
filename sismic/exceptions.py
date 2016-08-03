@@ -90,7 +90,7 @@ class ContractError(SismicError):
         if self._step:
             message.append('Step: {}'.format(self._step))
         if self._context:
-            message.append('Evaluation context:')
+            message.append('Context:')
             for key, value in self._context.items():
                 message.append(' - {key} = {value}'.format(key=key, value=value))
 
