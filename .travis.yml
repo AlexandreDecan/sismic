@@ -23,3 +23,6 @@ deploy:
   on:
     branch: master
     python: '3.4'
+matrix:
+  allow_failures:
+    - python: nightly
