@@ -1,6 +1,7 @@
 import threading
 from functools import wraps
-from typing import Callable, List, Any
+from typing import Callable, List, Any,Tuple
+from collections import Counter
 
 from .interpreter import Interpreter
 from sismic import model
@@ -64,3 +65,25 @@ def run_in_background(interpreter: Interpreter,
 
     thread.start()
     return thread
+
+
+def coverage_from_trace(trace: List[model.MacroStep]) -> Tuple[Counter, Counter]:
+    """
+    Given a list of macro steps considered as the trace of a statechart execution, return a 2-uple
+    of *Counter* objects. The first one counts the states (as strings) that were visited, and the second one
+    counts the transitions (as *Transition* objects) that were visited.
+
+    :param trace: A list of macro steps
+    :return: A 2-uple of Counter objects
+    """
+    visited_states = []
+    visited_transitions = []
+
+    for macrostep in trace:
+        for microstep in macrostep.steps:
+            visited_states.extend(microstep.entered_states)
+            if microstep.transition:
+                visited_transitions.append(microstep.transition)
+
+    return Counter(visited_states), Counter(visited_transitions)
+

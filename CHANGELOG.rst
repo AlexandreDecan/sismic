@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- (Added) An new helper ``coverage_from_trace`` that returns coverage information (in absolute numbers) from a trace.
+
+
 0.22.6 (2016-08-03)
 -------------------
 

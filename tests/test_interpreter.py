@@ -1,10 +1,12 @@
 import unittest
 from sismic import io
 from sismic.interpreter import Interpreter
-from sismic.interpreter.helpers import run_in_background, log_trace
+from sismic.interpreter.helpers import run_in_background, log_trace, coverage_from_trace
 from sismic import exceptions
 from sismic.code import DummyEvaluator
-from sismic.model import Event, InternalEvent
+from sismic.model import Event, InternalEvent, MacroStep, MicroStep, Transition
+
+from collections import Counter
 
 
 class LogTraceTests(unittest.TestCase):
@@ -37,6 +39,31 @@ class RunInBackgroundTests(unittest.TestCase):
         interpreter.queue(Event('goto final'))
         task.join()
         self.assertTrue(interpreter.final)
+
+
+class CoverageFromTraceTests(unittest.TestCase):
+    def test_empty_trace(self):
+        self.assertEqual(coverage_from_trace([]), (Counter(), Counter()))
+
+    def test_single_step(self):
+        trace = [MacroStep(0, steps=[
+            MicroStep(entered_states=['a', 'b', 'c'], transition=Transition('x')),
+            MicroStep(entered_states=['a', 'b'], transition=Transition('x')),
+            MicroStep(entered_states=['a']),
+            MicroStep(entered_states=[])
+        ])]
+        self.assertEqual(coverage_from_trace(trace), (Counter(a=3, b=2, c=1), Counter({Transition('x'): 2})))
+
+    def test_multiple_steps(self):
+        trace = [MacroStep(0, steps=[
+            MicroStep(entered_states=['a', 'b', 'c'], transition=Transition('x')),
+            MicroStep(entered_states=['a', 'b'], transition=Transition('x')),
+            MicroStep(entered_states=['a']),
+            MicroStep(entered_states=[])
+        ])]
+
+        trace.extend(trace)
+        self.assertEqual(coverage_from_trace(trace), (Counter(a=6, b=4, c=2), Counter({Transition('x'): 4})))
 
 
 class SimulatorSimpleTests(unittest.TestCase):
