@@ -36,7 +36,7 @@ class StateMixin(metaclass=ABCMeta):
         return '{}({!r})'.format(self.__class__.__name__, self.name)
 
     def __eq__(self, other):
-        return isinstance(other, StateMixin) and self.name == other.name
+        return self.name == other.name if isinstance(other, StateMixin) else NotImplemented
 
     def __hash__(self):
         return hash(self.name)
@@ -226,12 +226,14 @@ class Transition(ContractMixin):
         return self.event is None
 
     def __eq__(self, other):
-        return (isinstance(other, Transition) and
-                self.source == other.source and
-                self.target == other.target and
-                self.event == other.event and
-                self.guard == other.guard and
-                self.action == other.action)
+        if not isinstance(other, Transition):
+            return NotImplemented
+        else:
+            return (self.source == other.source and
+                    self.target == other.target and
+                    self.event == other.event and
+                    self.guard == other.guard and
+                    self.action == other.action)
 
     def __repr__(self):
         return 'Transition({!r}, {!r}, event={!r})'.format(self.source, self.target, self.event)

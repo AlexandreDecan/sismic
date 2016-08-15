@@ -5,6 +5,9 @@ Unreleased
 ----------
 
 - (Added) An new helper ``coverage_from_trace`` that returns coverage information (in absolute numbers) from a trace.
+- (Changed) ``StateMixin``, ``Transition`` and ``Event``'s ``__eq__`` method returns a ``NotImplemented`` object
+  if the other object involved in the comparison is not an instance of the same class, meaning that ``Event('a') == 1``
+  now raises a ``NotImplementedError`` instead of being ``False``.
 
 
 0.22.6 (2016-08-03)
