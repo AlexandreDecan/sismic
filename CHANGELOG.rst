@@ -1,10 +1,13 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.22.7 (2016-08-19)
+-------------------
 
 - (Added) An new helper ``coverage_from_trace`` that returns coverage information (in absolute numbers) from a trace.
+- (Added) Parameter ``fails_fast`` (default is ``False``, behavior preserved) for ``ExecutionWatcher.watch_with``
+  methods. This parameter allows the watcher to raise an ``AssertionError`` as soon as the added watcher reaches a
+  final configuration.
 - (Changed) ``StateMixin``, ``Transition`` and ``Event``'s ``__eq__`` method returns a ``NotImplemented`` object
   if the other object involved in the comparison is not an instance of the same class, meaning that ``Event('a') == 1``
   now raises a ``NotImplementedError`` instead of being ``False``.

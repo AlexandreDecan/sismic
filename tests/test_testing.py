@@ -253,6 +253,20 @@ class WatchElevatorTests(unittest.TestCase):
         self.watcher.stop()
         self.assertTrue(tester.final)
 
+
+    def test_7th_floor_never_reached_fails_fast(self):
+        with open('docs/examples/elevator/tester_elevator_7th_floor_never_reached.yaml') as f:
+            tester_sc = io.import_from_yaml(f)
+
+        tester = self.watcher.watch_with(tester_sc, fails_fast=True)
+        self.watcher.start()
+
+        # Send elevator to 7th
+        with self.assertRaises(AssertionError) as cm:
+            self.tested.queue(Event('floorSelected', floor=7)).execute()
+        self.assertTrue(tester.final)
+
+
     def test_destination_reached(self):
         with open('docs/examples/elevator/tester_elevator_destination_reached.yaml') as f:
             tester_statechart = io.import_from_yaml(f)

@@ -51,6 +51,7 @@ class ExecutionWatcher:
     def __init__(self, tested_interpreter: Interpreter) -> None:
         self._tested = tested_interpreter
         self._testers = []  # type: List[Interpreter]
+        self._failsfast = []  # type: List[bool]
         self._started = False
 
         self._tested_execute_once_function = tested_interpreter.execute_once
@@ -69,6 +70,7 @@ class ExecutionWatcher:
             return None
 
     def watch_with(self, property_statechart: Statechart,
+                   fails_fast: bool=False,
                    interpreter_klass: Callable[..., Interpreter]=Interpreter,
                    **kwargs) -> Interpreter:
         """
@@ -78,6 +80,8 @@ class ExecutionWatcher:
         any additional parameters provided to this method. This callable must return an *Interpreter* instance
 
         :param property_statechart: a property statechart (instance of *Statechart*)
+        :param fails_fast: If True (default is False), the execution of the statechart under test will raise an AssertionError
+            as soon as given property statechart reaches a final state.
         :param interpreter_klass: a callable that accepts a *Statechart* instance, an *initial_context* and any
             additional (optional) parameters provided to this method.
         :return: the interpreter instance that wraps given property statechart.
@@ -88,6 +92,7 @@ class ExecutionWatcher:
 
         tester = interpreter_klass(property_statechart, initial_context=context, **kwargs)
         self._testers.append(tester)
+        self._failsfast.append(fails_fast)
 
         return tester
 
@@ -129,9 +134,11 @@ class ExecutionWatcher:
         story = _teststory_from_macrostep(step) if step else Story()
 
         # Send to testers
-        for tester in self._testers:
+        for fails_fast, tester in zip(self._failsfast, self._testers):
             tester.time = time
             story.tell(tester)
+            if fails_fast and tester.final:
+                raise AssertionError('Property statechart "{}" is in a final state'.format(tester.statechart.name))
 
         return step
 
