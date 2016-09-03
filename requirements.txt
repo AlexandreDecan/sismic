@@ -1,8 +1,4 @@
-pyyaml>=3.11
-pykwalify>=1.5.1
-behave>=1.2.5
-typing>=3.5.1
-pyparsing>=2.1.1
+-e .
 
 Sphinx>=1.4.1
 sphinx-autodoc-typehints>=1.0.4
