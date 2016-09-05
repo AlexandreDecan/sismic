@@ -1,0 +1,13 @@
+statechart:
+  name: Test that constants are not parsed into something else than a str
+  root state:
+    name: s1
+    initial state: s2
+    states:
+    - name: 1
+    - name: 1.0
+    - name: True
+    - name: yes
+    - name: [1]
+    - name: {1:1}
+

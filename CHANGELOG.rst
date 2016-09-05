@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased
+----------
+- (Fixed) YAML values like "1", "1.0", "yes", "True" are converted to strings, not to in, float and bool respectively.
+
+
 0.22.7 (2016-08-19)
 -------------------
 

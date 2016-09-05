@@ -23,7 +23,7 @@ def import_from_yaml(statechart: Iterable[str], ignore_schema: bool=False, ignor
     :param ignore_validation: set to *True* to disable statechart validation.
     :return: a *Statechart* instance
     """
-    data = yaml.load(statechart)  # type: dict
+    data = yaml.load(statechart, Loader=yaml.BaseLoader)  # type: dict
     if not ignore_schema:
         checker = Core(source_data=data, schema_files=[SCHEMA_PATH])
         checker.validate(raise_exception=True)

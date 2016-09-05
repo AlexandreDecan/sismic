@@ -1,6 +1,39 @@
 import os
 import unittest
 from sismic import io, exceptions
+from pykwalify.core import SchemaError
+
+
+class ImportFromYamlParserTests(unittest.TestCase):
+    def check_type(self, name):
+        yaml = ('statechart:'
+                '\n  name: ' + str(name) +
+                '\n  preamble: Nothing'
+                '\n  root state:'
+                '\n    name: s1')
+
+        item = io.import_from_yaml(yaml).name
+        self.assertIsInstance(item, str, msg=type(item))
+
+    def test_parser_conversion(self):
+        self.check_type(1)
+        self.check_type(-1)
+        self.check_type(1.0)
+        self.check_type('yes')
+        self.check_type('True')
+        self.check_type('no')
+
+        with self.assertRaises(SchemaError):
+            self.check_type([])
+
+        with self.assertRaises(SchemaError):
+            self.check_type([1, 2])
+
+        with self.assertRaises(SchemaError):
+            self.check_type({})
+
+        with self.assertRaises(SchemaError):
+            self.check_type({1: 1})
 
 
 class ImportFromYamlTests(unittest.TestCase):
