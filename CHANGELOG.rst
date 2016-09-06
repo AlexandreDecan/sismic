@@ -6,6 +6,10 @@ Unreleased
 
 - (Fixed) YAML values like "1", "1.0", "yes", "True" are converted to strings, not to in, float and bool respectively.
 - (Changed) ``ruamel.yaml`` replaces ``pyyaml`` as supported YAML parser.
+- (Changed) Use ``schema`` instead of ``pykwalify`` (which unfortunately freezes its dependencies versions)
+  to validate (the structure of) YAML files.
+- (Changed) ``import_from_yaml`` raises ``StatechartError`` instead of ``SchemaError`` if it cannot validate given
+  YAML against the predefined schema.
 
 
 0.22.7 (2016-08-19)

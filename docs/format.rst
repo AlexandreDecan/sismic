@@ -264,8 +264,8 @@ For example:
         statechart = io.import_from_yaml(f)
         assert isinstance(statechart, model.Statechart)
 
-The parser performs an automatic validation against the YAML schema of the next subsection.
-It also does several other checks using its :py:class:`~sismic.model.Statechart.validate` method.
+The parser performs an automatic validation against some kind of YAML schema to prevent erroneous keys (see below).
+It also does several other checks using statechart's :py:class:`~sismic.model.Statechart.validate` method.
 
 .. seealso:: While statecharts can be defined in YAML, they can be defined in pure
     Python too. Moreover, :py:class:`~sismic.model.Statechart` instances exhibit several methods to query and
@@ -277,8 +277,9 @@ It also does several other checks using its :py:class:`~sismic.model.Statechart.
 YAML validation schema
 **********************
 
-See `pykwalify <https://github.com/Grokzen/pykwalify/>`__ for more information about the semantic.
+See `schema library <https://pypi.python.org/pypi/schema>`__ for more information about the semantic.
 
-.. literalinclude:: ../sismic/io/schema.yaml
-    :language: yaml
+.. literalinclude:: ../sismic/io/yaml.py
+    :language: python
+    :pyobject: SCHEMA
 

@@ -1,7 +1,7 @@
 import os
 import unittest
 from sismic import io, exceptions
-from pykwalify.core import SchemaError
+from schema import SchemaError
 
 
 class ImportFromYamlParserTests(unittest.TestCase):
@@ -22,19 +22,12 @@ class ImportFromYamlParserTests(unittest.TestCase):
         self.check_type('yes')
         self.check_type('True')
         self.check_type('no')
-        self.check_type('False')
+        self.check_type('')
 
-        with self.assertRaises(SchemaError):
-            self.check_type([])
-
-        with self.assertRaises(SchemaError):
-            self.check_type([1, 2])
-
-        with self.assertRaises(SchemaError):
-            self.check_type({})
-
-        with self.assertRaises(SchemaError):
-            self.check_type({1: 1})
+        self.check_type([])
+        self.check_type([1, 2])
+        self.check_type({})
+        self.check_type({1: 1})
 
 
 class ImportFromYamlTests(unittest.TestCase):
