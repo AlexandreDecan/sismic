@@ -22,6 +22,7 @@ class ImportFromYamlParserTests(unittest.TestCase):
         self.check_type('yes')
         self.check_type('True')
         self.check_type('no')
+        self.check_type('False')
 
         with self.assertRaises(SchemaError):
             self.check_type([])

@@ -24,7 +24,7 @@ notation (the alternative of using something like SCXML was discarded because it
 really "human-readable".)
 
 .. seealso:: This section explains how the elements that compose a valid statechart in Sismic can be defined using YAML.
-    If you are not familiar with YAML, have a look at `YAML official documentation <http://yaml.org/spec/1.1/>`__.
+    If you are not familiar with YAML, have a look at `YAML official documentation <http://www.yaml.org/spec/1.2/spec.html>`__.
 
 Statechart
 **********

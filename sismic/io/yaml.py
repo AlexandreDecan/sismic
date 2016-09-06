@@ -1,4 +1,4 @@
-import yaml  # type: ignore
+import ruamel.yaml as yaml  # type: ignore
 import os
 from typing import Iterable
 
