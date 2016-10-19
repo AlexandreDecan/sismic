@@ -4,7 +4,7 @@ Changelog
 0.22.8 (2016-10-19)
 -------------------
 
-- (Fixed) YAML values like "1", "1.0", "yes", "True" are converted to strings, not to in, float and bool respectively.
+- (Fixed) YAML values like "1", "1.0", "yes", "True" are converted to strings, not to int, float and bool respectively.
 - (Changed) ``ruamel.yaml`` replaces ``pyyaml`` as supported YAML parser.
 - (Changed) Use ``schema`` instead of ``pykwalify`` (which unfortunately freezes its dependencies versions)
   to validate (the structure of) YAML files.
