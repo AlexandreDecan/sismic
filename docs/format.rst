@@ -223,8 +223,7 @@ The Elevator statechart is one of the running examples in this documentation. It
 .. image:: /examples/elevator/elevator.png
     :align: center
 
-The corresponding YAML description is given below. To make the statechart self-contained, a Python class ``Doors``
-is included containing two methods ``open()`` and ``close()`` and a boolean variable ``opened``. Upon entering in the *active* state, a ``doors`` object of this class will be created and initialised by setting the value of ``opened`` to ``True``.
+The corresponding YAML description is given below.
 
 .. literalinclude:: /examples/elevator/elevator.yaml
    :language: yaml
