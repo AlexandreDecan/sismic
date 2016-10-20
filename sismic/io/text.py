@@ -1,6 +1,7 @@
-from sismic.model import Statechart
 import itertools
 from typing import List
+
+from sismic.model import Statechart
 
 __all__ = ['export_to_tree']
 

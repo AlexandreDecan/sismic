@@ -1,12 +1,11 @@
 from collections import OrderedDict
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, cast
 
-from sismic.model import Transition, Statechart, BasicState, CompoundState, OrthogonalState, ShallowHistoryState, \
-    DeepHistoryState, FinalState, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin
 from sismic.exceptions import StatechartError
-from typing import Any, cast, Mapping, MutableMapping
-
-from typing import Tuple, List, Optional
-
+from sismic.model import (ActionStateMixin, BasicState, CompositeStateMixin,
+                          CompoundState, DeepHistoryState, FinalState,
+                          OrthogonalState, ShallowHistoryState, Statechart,
+                          StateMixin, Transition, TransitionStateMixin)
 
 __all__ = ['import_from_dict', 'export_to_dict']
 

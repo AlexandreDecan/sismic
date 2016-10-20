@@ -1,7 +1,7 @@
-from behave import given, when, then  # type: ignore
-from sismic.io import import_from_yaml
+from behave import given, then, when  # type: ignore
 from sismic.interpreter import Interpreter
 from sismic.interpreter.helpers import log_trace
+from sismic.io import import_from_yaml
 from sismic.model import Event
 
 

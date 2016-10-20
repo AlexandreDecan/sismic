@@ -1,8 +1,10 @@
-from sismic.exceptions import StatechartError
-from .elements import CompositeStateMixin, \
-    CompoundState, HistoryStateMixin, StateMixin, Transition, TransitionStateMixin
 from copy import deepcopy
-from typing import Optional, Dict, List, Union, cast, Iterable, Callable
+from typing import Callable, Dict, Iterable, List, Optional, Union, cast
+
+from sismic.exceptions import StatechartError
+
+from .elements import (CompositeStateMixin, CompoundState, HistoryStateMixin,
+                       StateMixin, Transition, TransitionStateMixin)
 
 __all__ = ['Statechart']
 

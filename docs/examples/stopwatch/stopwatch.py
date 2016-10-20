@@ -39,4 +39,3 @@ class Stopwatch:
         # Update internal timer of ``delta`` seconds
         if self.running:
             self.elapsed_time += delta
-

@@ -1,12 +1,12 @@
 import unittest
-from sismic import io
-from sismic.interpreter import Interpreter
-from sismic.interpreter.helpers import run_in_background, log_trace, coverage_from_trace
-from sismic import exceptions
-from sismic.code import DummyEvaluator
-from sismic.model import Event, InternalEvent, MacroStep, MicroStep, Transition
-
 from collections import Counter
+
+from sismic import exceptions, io
+from sismic.code import DummyEvaluator
+from sismic.interpreter import Interpreter
+from sismic.interpreter.helpers import (coverage_from_trace, log_trace,
+                                        run_in_background)
+from sismic.model import Event, InternalEvent, MacroStep, MicroStep, Transition
 
 
 class LogTraceTests(unittest.TestCase):

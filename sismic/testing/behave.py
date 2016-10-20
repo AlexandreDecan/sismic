@@ -1,9 +1,11 @@
-import tempfile
-import shutil
-import os
-import sys
 import argparse
+import os
+import shutil
+import sys
+import tempfile
+
 from behave import __main__ as behave_main  # type: ignore
+
 
 DEFAULT_STEPS_CONTENT = """
 from sismic.testing.steps import *

@@ -1,7 +1,6 @@
 import unittest
-from sismic import io
-from sismic import model
-from sismic import exceptions
+
+from sismic import exceptions, io, model
 
 
 class EventTests(unittest.TestCase):
@@ -640,4 +639,3 @@ class CopyFromStatechartTests(unittest.TestCase):
         with self.assertRaises(exceptions.StatechartError) as cm:
             self.sc2.copy_from_statechart(self.sc1, 'sc1_root', replace='s1a')
         self.assertIn('already exists', str(cm.exception))
-

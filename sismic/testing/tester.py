@@ -1,9 +1,9 @@
-from sismic.stories import Story, Pause
-from sismic.model import Event, Statechart, MacroStep
-from sismic.interpreter import Interpreter
-from sismic import exceptions
+from typing import Callable, List
 
-from typing import List, Callable
+from sismic import exceptions
+from sismic.interpreter import Interpreter
+from sismic.model import Event, MacroStep, Statechart
+from sismic.stories import Pause, Story
 
 __all__ = ['ExecutionWatcher', 'teststory_from_trace']
 

@@ -1,6 +1,7 @@
+from behave import given, then, when
 from sismic.testing import steps
-from behave import given, when, then
-  
+
+
 @given('I open the door')
 @when('I open the door')
 def open_the_door(context):

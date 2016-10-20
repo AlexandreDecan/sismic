@@ -1,12 +1,13 @@
-from itertools import combinations
-
 from collections import deque
+from itertools import combinations
+from typing import (Any, Callable, Dict, Iterable, List, Mapping, Optional,
+                    Set, Union, cast)
 
 from sismic import model
 from sismic.code import Evaluator, PythonEvaluator
-from sismic.exceptions import InvariantError, PreconditionError, PostconditionError, SequentialConditionError
-from sismic.exceptions import NonDeterminismError, ConflictingTransitionsError
-from typing import Optional, List, Dict, Set, Union, Callable, Any, cast, Iterable, Mapping
+from sismic.exceptions import (ConflictingTransitionsError, InvariantError,
+                               NonDeterminismError, PostconditionError,
+                               PreconditionError, SequentialConditionError)
 
 __all__ = ['Interpreter']
 
@@ -552,4 +553,3 @@ class Interpreter:
 
     def __repr__(self):
         return '{}({!r})'.format(self.__class__.__name__, self._statechart)
-

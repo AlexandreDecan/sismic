@@ -1,14 +1,17 @@
-from types import CodeType
-from functools import partial
-from typing import Dict, Iterator, cast, Any, Mapping, MutableMapping, List, Callable
-from itertools import chain
 import collections
 import copy
+from functools import partial
+from itertools import chain
+from types import CodeType
+from typing import (Any, Callable, Dict, Iterator, List, Mapping,
+                    MutableMapping, cast)
+
+from sismic.exceptions import CodeEvaluationError
+from sismic.model import (Event, InternalEvent, Statechart, StateMixin,
+                          Transition)
 
 from .evaluator import Evaluator
-from sismic.model import Event, InternalEvent, Transition, StateMixin, Statechart
-from sismic.exceptions import CodeEvaluationError
-from .sequence import build_sequence, Sequence
+from .sequence import Sequence, build_sequence
 
 __all__ = ['PythonEvaluator']
 

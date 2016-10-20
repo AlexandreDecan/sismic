@@ -1,8 +1,7 @@
-from .elements import Transition
-from .events import Event
-
 from typing import List
 
+from .elements import Transition
+from .events import Event
 
 __all__ = ['MicroStep', 'MacroStep']
 

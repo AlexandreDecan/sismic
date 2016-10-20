@@ -1,11 +1,11 @@
+from typing import Iterable
+
 import ruamel.yaml as yaml
 import schema
-
-from typing import Iterable
-from sismic.model import Statechart
 from sismic.exceptions import StatechartError
-from .datadict import import_from_dict, export_to_dict
+from sismic.model import Statechart
 
+from .datadict import export_to_dict, import_from_dict
 
 __all__ = ['import_from_yaml', 'export_to_yaml']
 
@@ -80,4 +80,3 @@ def export_to_yaml(statechart: Statechart) -> str:
     """
     return yaml.dump(export_to_dict(statechart, ordered=False),
                      width=1000, default_flow_style=False, default_style='"')
-

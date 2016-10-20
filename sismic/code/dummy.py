@@ -1,6 +1,8 @@
-from .evaluator import Evaluator
-from typing import Mapping, List
+from typing import List, Mapping
+
 from sismic.model import Event
+
+from .evaluator import Evaluator
 
 __all__ = ['DummyEvaluator']
 

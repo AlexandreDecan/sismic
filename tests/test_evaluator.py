@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import MagicMock
+
 from sismic import code
-from sismic.model import Event, InternalEvent
 from sismic.code.python import Context, FrozenContext
 from sismic.exceptions import CodeEvaluationError, SequentialConditionError
-
-from sismic.io import import_from_yaml
 from sismic.interpreter import Interpreter
+from sismic.io import import_from_yaml
+from sismic.model import Event, InternalEvent
 
 
 class DummyEvaluatorTests(unittest.TestCase):
@@ -267,4 +267,3 @@ class PythonEvaluatorSequenceConditionTests(unittest.TestCase):
         self.intp.queue(Event('end'))
         with self.assertRaises(SequentialConditionError):
             self.intp.execute()
-

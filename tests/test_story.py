@@ -1,8 +1,10 @@
 import unittest
+
 from sismic import io
 from sismic.interpreter import Interpreter
-from sismic.model import MacroStep, MicroStep, Event, InternalEvent
-from sismic.stories import Story, random_stories_generator, story_from_trace, Pause
+from sismic.model import Event, InternalEvent, MacroStep, MicroStep
+from sismic.stories import (Pause, Story, random_stories_generator,
+                            story_from_trace)
 
 
 class StoryTests(unittest.TestCase):

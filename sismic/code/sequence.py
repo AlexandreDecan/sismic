@@ -1,9 +1,9 @@
-from functools import reduce, partial
-from sismic.exceptions import StatechartError
-
 import abc
+from functools import partial, reduce
+from typing import Callable, List, Optional
+
 import pyparsing  # type: ignore
-from typing import Callable, Optional, List
+from sismic.exceptions import StatechartError
 
 
 class Sequence(metaclass=abc.ABCMeta):

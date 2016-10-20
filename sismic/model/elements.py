@@ -1,5 +1,5 @@
-from typing import List
 from abc import ABCMeta
+from typing import List
 
 __all__ = ['ContractMixin', 'StateMixin', 'ActionStateMixin', 'TransitionStateMixin', 'CompositeStateMixin',
            'HistoryStateMixin', 'BasicState', 'CompoundState', 'OrthogonalState', 'ShallowHistoryState',

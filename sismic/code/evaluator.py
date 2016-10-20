@@ -1,8 +1,10 @@
 import abc
+from typing import Any, Dict, Iterable, List, Mapping, cast
+
+from sismic.model import (ActionStateMixin, Event, Statechart, StateMixin,
+                          Transition)
+
 from .sequence import Sequence, build_sequence
-from sismic.model import ActionStateMixin
-from sismic.model import Event, Transition, StateMixin, Statechart
-from typing import cast, Iterable, Mapping, List, Dict, Any
 
 __all__ = ['Evaluator']
 

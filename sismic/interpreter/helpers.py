@@ -1,10 +1,11 @@
 import threading
-from functools import wraps
-from typing import Callable, List, Any,Tuple
 from collections import Counter
+from functools import wraps
+from typing import Any, Callable, List, Tuple
+
+from sismic import model
 
 from .interpreter import Interpreter
-from sismic import model
 
 __all__ = ['log_trace', 'run_in_background']
 
@@ -86,4 +87,3 @@ def coverage_from_trace(trace: List[model.MacroStep]) -> Tuple[Counter, Counter]
                 visited_transitions.append(microstep.transition)
 
     return Counter(visited_states), Counter(visited_transitions)
-

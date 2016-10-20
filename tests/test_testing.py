@@ -1,8 +1,9 @@
 import unittest
+
 from sismic import io
-from sismic.model import MacroStep, MicroStep, Transition
 from sismic.interpreter import Interpreter
-from sismic.stories import Story, Pause, Event
+from sismic.model import MacroStep, MicroStep, Transition
+from sismic.stories import Event, Pause, Story
 from sismic.testing import teststory_from_trace
 from sismic.testing.tester import ExecutionWatcher
 

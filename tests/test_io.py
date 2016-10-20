@@ -1,7 +1,8 @@
 import os
 import unittest
-from sismic import io, exceptions
+
 from schema import SchemaError
+from sismic import exceptions, io
 
 
 class ImportFromYamlParserTests(unittest.TestCase):

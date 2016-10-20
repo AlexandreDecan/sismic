@@ -1,4 +1,5 @@
 import unittest
+
 from sismic.code.sequence import *
 
 

@@ -1,8 +1,10 @@
 import unittest
+
 from sismic import io
+from sismic.exceptions import (InvariantError, PostconditionError,
+                               PreconditionError)
 from sismic.interpreter import Interpreter
-from sismic.model import Event, Transition, StateMixin
-from sismic.exceptions import PreconditionError, PostconditionError, InvariantError
+from sismic.model import Event, StateMixin, Transition
 
 
 class ElevatorContractTests(unittest.TestCase):
@@ -59,4 +61,3 @@ class ElevatorContractTests(unittest.TestCase):
         transitions[0].postconditions.append('False')
         self.interpreter.queue(Event('floorSelected', floor=4))
         self.interpreter.execute()
-
