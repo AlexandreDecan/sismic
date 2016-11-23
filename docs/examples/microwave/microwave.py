@@ -1,6 +1,3 @@
-# The two following lines are NOT needed in a typical environment.
-# These lines make sismic available in our testing environment
-import sys
 import tkinter as tk
 from functools import partial
 
@@ -8,6 +5,9 @@ from sismic.interpreter import Interpreter
 from sismic.io import import_from_yaml
 from sismic.model import Event
 
+# The two following lines are NOT needed in a typical environment.
+# These lines make sismic available in our testing environment
+import sys
 sys.path.append('../../..')
 
 
@@ -39,8 +39,8 @@ class MicrowaveApplication(tk.Frame):
         # Update the widget that contains the list of active states.
         self.w_states['text'] = '\n'.join(self.interpreter.configuration)
 
-        self.w_timer['text'] = 'M.timer: %d' % self.interpreter.context['controller.timer']
-        self.w_power['text'] = 'M.power: %d' % self.interpreter.context['controller.power']
+        self.w_timer['text'] = 'M.timer: %d' % self.interpreter.context.get('controller.timer', 'undefined')
+        self.w_power['text'] = 'M.power: %d' % self.interpreter.context.get('controller.power', 'undefined')
 
     def create_widgets(self):
         self.pack(fill=tk.BOTH)

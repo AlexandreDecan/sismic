@@ -1,6 +1,3 @@
-# The two following lines are NOT needed in a typical environment.
-# These lines make sismic available in our testing environment
-import sys
 import time
 import tkinter as tk
 
@@ -9,6 +6,10 @@ from sismic.io import import_from_yaml
 from sismic.model import Event
 from stopwatch import Stopwatch
 
+
+# The two following lines are NOT needed in a typical environment.
+# These lines make sismic available in our testing environment
+import sys
 sys.path.append('../../..')
 
 

@@ -15,7 +15,7 @@ Changelog
 0.22.7 (2016-08-19)
 -------------------
 
-- (Added) An new helper ``coverage_from_trace`` that returns coverage information (in absolute numbers) from a trace.
+- (Added) A new helper ``coverage_from_trace`` that returns coverage information (in absolute numbers) from a trace.
 - (Added) Parameter ``fails_fast`` (default is ``False``, behavior preserved) for ``ExecutionWatcher.watch_with``
   methods. This parameter allows the watcher to raise an ``AssertionError`` as soon as the added watcher reaches a
   final configuration.
