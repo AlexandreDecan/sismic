@@ -119,8 +119,10 @@ using the ``--coverage`` argument, as in ``sismic-behave statechart.yaml --featu
 While BDD can be convenient to identify errors, it is usually not easy to identify where the error occured.
 ``sismic-behave`` accepts an additional parameter, namely ``--debug-on-error`` that drops in a ``ipdb`` (or the default
 ``pdb`` if ``ipdb`` is not available).
+The current statechart interpreter is exposed through ``_interpreter`` while the trace and additional information
+are available in the ``_context`` object.
 Please consult ``pdb``'s `documentation <https://docs.python.org/3.4/library/pdb.html#debugger-commands>`__ for more
-information.
+information on how to use the debugger.
 
 Sismic comes with several predefined steps (see below), but you can easily create your own steps.
 ``sismic-behave`` supports a parameter ``--steps`` which takes a list of Python files containing your own steps.
