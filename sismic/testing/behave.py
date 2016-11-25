@@ -68,8 +68,19 @@ def after_feature(context, feature):
     print()
 """
 
+DEBUG_ON_ERROR = """
+def after_step(context, step):
+    if step.status == 'failed':
+        try:
+            import ipdb
+            ipdb.post_mortem(step.exc_traceback)
+        except ImportError:
+            import pdb
+            pdb.post_mortem(step.exc_traceback)
+"""
 
-def execute_behave(statechart, features, steps, coverage, parameters) -> None:
+
+def execute_behave(statechart, features, steps, coverage, debug_on_error, parameters) -> None:
     # Create temporary directory
     with tempfile.TemporaryDirectory() as tempdir:
         # Move statechart inside
@@ -86,6 +97,8 @@ def execute_behave(statechart, features, steps, coverage, parameters) -> None:
             content = DEFAULT_ENVIRONMENT_CONTENT
             if coverage:
                 content += COVERAGE_ENVIRONMENT_CONTENT
+            if debug_on_error:
+                content += DEBUG_ON_ERROR
             environment.write(content.replace('{{path}}', os.path.join(tempdir, statechart_filename)))
 
         # Create a steps subdirectory
@@ -124,11 +137,13 @@ def main() -> None:
                         help='Display coverage data')
     parser.add_argument('--show-steps', action='store_true', default=False,
                         help='Display a list of available steps (equivalent to Behave\'s --steps parameter')
+    parser.add_argument('--debug-on-error', action='store_true', default=False,
+                        help='Drop in a debugger in case of step failure (ipdb if available)')
 
     args, parameters = parser.parse_known_args()
     if args.show_steps:
         parameters.append('--steps')
-    return execute_behave(args.statechart, args.features, args.steps, args.coverage, parameters)
+    return execute_behave(args.statechart, args.features, args.steps, args.coverage, args.debug_on_error, parameters)
 
 
 if __name__ == '__main__':
