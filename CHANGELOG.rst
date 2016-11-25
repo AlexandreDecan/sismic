@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.22.9 (2016-11-25)
+-------------------
+
+- (Fixed) Behave step "Event x should be fired" now checks that the event was fired during the last execution.
+
+
 0.22.8 (2016-10-19)
 -------------------
 

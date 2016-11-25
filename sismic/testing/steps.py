@@ -38,6 +38,10 @@ def repeat_step(context, step, repeat):
 # #################### CONFIGURATION
 def _execute_statechart(context, force_execution=False, execute_once=False):
     if context._automatic_execution or force_execution:
+        # Remove events
+        while len(context._events) > 0:
+            context._events.pop()
+
         if execute_once:
             context._interpreter.execute_once()
         else:
