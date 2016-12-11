@@ -136,8 +136,8 @@ supports a ``--steps`` parameter which list the steps that are available).
 While this ``--steps`` parameter is overridden by ``sismic-behave``, Sismic provides a ``--show-steps`` parameter
 that does exactly the same job.
 
-"Given" and "when" steps
-------------------------
+Built-in "Given" and "when" steps
+---------------------------------
 
 Given/when I do nothing
     This step should be used to explicitly state that nothing is done.
@@ -204,8 +204,8 @@ Given I set variable {variable} to {value}
     The value will be evaluated as Python code.
 
 
-"Then" steps
-------------
+Built-in "Then" steps
+---------------------
 
 Then state {state_name} should be active
     Assert that a given state *state_name* is active.

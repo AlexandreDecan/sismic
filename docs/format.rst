@@ -228,17 +228,11 @@ The corresponding YAML description is given below.
 .. literalinclude:: /examples/elevator/elevator.yaml
    :language: yaml
 
-Microwave
-~~~~~~~~~
+Other examples
+~~~~~~~~~~~~~~
 
-The microwave statechart defines and relies on a set of supported events (events that are expected to be received during its execution)
-and on a set of sendable events (events that will be fired by this statechart during execution).
-Those events are defined in the ``description`` field of the YAML file, for documentation purpose only.
-
-Typically, this statechart will be executed jointly with other components (keyboard, doors, lamp, heating, ...).
-
-.. literalinclude:: /examples/microwave/microwave.yaml
-    :language: yaml
+Some other examples can be found in the Git repository of the project, in
+`docs/examples <https://github.com/AlexandreDecan/sismic/tree/devel/docs/examples>`__.
 
 
 Importing and validating statecharts
