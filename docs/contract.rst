@@ -98,11 +98,11 @@ Here is an example of a contracts defined at state level:
 
     statechart:
       name: example
-      initial state:
+      root state:
         name: root
         contract:
          - always: x >= 0
-         - always: not active('initial') or x > 0
+         - always: not active('other state') or x > 0
 
 If the default :py:class:`~sismic.code.PythonEvaluator` is used,
 it is possible to refer to the old value of some variable used in the statechart, by prepending ``__old__``.
