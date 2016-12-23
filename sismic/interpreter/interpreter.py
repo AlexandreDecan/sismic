@@ -177,7 +177,7 @@ class Interpreter:
             macro_step = self.execute_once()
         return returned_steps
 
-    def execute_once(self) -> model.MacroStep:
+    def execute_once(self) -> Optional[model.MacroStep]:
         """
         Processes a transition based on the oldest queued event (or no event if an eventless transition
         can be processed), and stabilizes the interpreter in a stable situation (ie. processes initial states,

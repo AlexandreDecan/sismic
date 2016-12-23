@@ -4,6 +4,7 @@ import shutil
 import sys
 import tempfile
 
+from typing import List
 from behave import __main__ as behave_main  # type: ignore
 
 
@@ -80,7 +81,7 @@ def after_step(context, step):
 """
 
 
-def execute_behave(statechart, features, steps, coverage, debug_on_error, parameters) -> None:
+def execute_behave(statechart: str, features: List[str], steps: List[str], coverage: bool, debug_on_error: bool, parameters: List[str]) -> int:
     # Create temporary directory
     with tempfile.TemporaryDirectory() as tempdir:
         # Move statechart inside
@@ -105,8 +106,8 @@ def execute_behave(statechart, features, steps, coverage, debug_on_error, parame
         os.mkdir(os.path.join(tempdir, 'steps'))
 
         # Create steps file
-        with open(os.path.join(tempdir, 'steps', '__steps.py'), 'w') as step:
-            step.write(DEFAULT_STEPS_CONTENT)
+        with open(os.path.join(tempdir, 'steps', '__steps.py'), 'w') as f_step:
+            f_step.write(DEFAULT_STEPS_CONTENT)
 
         # Copy steps files
         for step in steps if steps else []:
@@ -122,7 +123,7 @@ def execute_behave(statechart, features, steps, coverage, debug_on_error, parame
         return exit_code
 
 
-def main() -> None:
+def main() -> int:
     parser = argparse.ArgumentParser(prog='sismic-behave',
                                      description='Command-line utility to execute Gherkin feature files using Behave.\n'
                                                  'Additional parameters will be passed to Behave.')

@@ -21,7 +21,7 @@ class SCHEMA:
         schema.Optional('contract'): [contract],
     }
 
-    state = dict()
+    state = dict()  # type: Dict
     state.update({
         'name': schema.Use(str),
         schema.Optional('type'): schema.Or('final', 'shallow history', 'deep history'),

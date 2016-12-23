@@ -205,10 +205,11 @@ class Statechart:
         :raise StatechartError:
         """
         # Check that source state is known
-        if transition.source not in self._states:
-            raise StatechartError('Unknown source state for {}'.format(transition))
+        try:
+            from_state = self.state_for(transition.source)
+        except StatechartError as e:
+            raise StatechartError('Unknown source state for {}'.format(transition)) from e
 
-        from_state = self.state_for(transition.source)
         # Check that source state is a TransactionStateMixin
         if not isinstance(from_state, TransitionStateMixin):
             raise StatechartError('Cannot add {} on {}'.format(transition, from_state))
@@ -384,7 +385,7 @@ class Statechart:
         """
         Remove given state.
 
-        The transitions that involve this state will be removed too.
+        The transitions that involve this state will also be removed.
         If the state is the target of an *initial* or *memory* property, their value will be set to None.
         If the state has children, they will be removed too.
 
