@@ -37,7 +37,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.doctest',
-    'sphinx_autodoc_typehints',
+    # 'sphinx_autodoc_typehints',
 ]
 
 intersphinx_mapping = {'python': ('https://docs.python.org/3.4', None)}
