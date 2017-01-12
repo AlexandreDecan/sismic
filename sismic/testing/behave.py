@@ -100,7 +100,7 @@ def execute_behave(statechart: str, features: List[str], steps: List[str], cover
                 content += COVERAGE_ENVIRONMENT_CONTENT
             if debug_on_error:
                 content += DEBUG_ON_ERROR
-            environment.write(content.replace('{{path}}', os.path.join(tempdir, statechart_filename)))
+            environment.write(content.replace('{{path}}', os.path.join(tempdir, statechart_filename).replace('\\', '\\\\')))
 
         # Create a steps subdirectory
         os.mkdir(os.path.join(tempdir, 'steps'))

@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.22.11 (2017-01-12)
+--------------------
+
+- (Fixed) Path error when using ``sismic-behave`` on Windows.
+
+
 0.22.10 (2016-11-25)
 --------------------
 
