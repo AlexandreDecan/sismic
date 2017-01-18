@@ -114,11 +114,10 @@ class Interpreter:
         :return: *self* so it can be chained
         """
         if isinstance(interpreter_or_callable, Interpreter):
-            bound_callable = interpreter_or_callable.queue
+            self._bound.append(interpreter_or_callable.queue)
         else:
-            bound_callable = interpreter_or_callable
+            self._bound.append(interpreter_or_callable)
 
-        self._bound.append(bound_callable)
         return self
 
     def raise_event(self, event: model.Event) -> None:
