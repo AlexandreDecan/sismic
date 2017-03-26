@@ -1,5 +1,5 @@
 -e .
 
 Sphinx>=1.4.1
-sphinx-autodoc-typehints>=1.2.0
+-e git://github.com/agronholm/sphinx-autodoc-typehints.git@1.2.0#egg=sphinx-autodoc-typehints
 sphinx-rtd-theme>=0.1.9
