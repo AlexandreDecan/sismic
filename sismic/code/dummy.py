@@ -1,6 +1,6 @@
 from typing import List, Mapping
 
-from sismic.model import Event
+from ..model import Event
 
 from .evaluator import Evaluator
 

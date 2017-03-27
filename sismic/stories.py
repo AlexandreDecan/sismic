@@ -1,9 +1,9 @@
 import random
 from typing import Generator, Iterable, List, Sequence, Tuple, Union
 
-from sismic.interpreter import Interpreter
-from sismic.model import Event, InternalEvent
-from sismic.model.steps import MacroStep
+from .interpreter import Interpreter
+from .model import Event, InternalEvent
+from .model.steps import MacroStep
 
 __all__ = ['Pause', 'Story', 'random_stories_generator', 'story_from_trace']
 

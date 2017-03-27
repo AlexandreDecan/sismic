@@ -2,8 +2,8 @@ from typing import Iterable
 
 import ruamel.yaml as yaml
 import schema
-from sismic.exceptions import StatechartError
-from sismic.model import Statechart
+from ..exceptions import StatechartError
+from ..model import Statechart
 
 from .datadict import export_to_dict, import_from_dict
 

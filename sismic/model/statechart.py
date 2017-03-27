@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import Callable, Dict, Iterable, List, Optional, Union, cast
 
-from sismic.exceptions import StatechartError
+from ..exceptions import StatechartError
 
 from .elements import (CompositeStateMixin, CompoundState, HistoryStateMixin,
                        StateMixin, Transition, TransitionStateMixin)

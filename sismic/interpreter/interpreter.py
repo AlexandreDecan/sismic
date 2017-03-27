@@ -3,11 +3,11 @@ from itertools import combinations
 from typing import (Any, Callable, Dict, Iterable, List, Mapping, Optional,
                     Set, Union, cast)
 
-from sismic import model
-from sismic.code import Evaluator, PythonEvaluator
-from sismic.exceptions import (ConflictingTransitionsError, InvariantError,
-                               NonDeterminismError, PostconditionError,
-                               PreconditionError, SequentialConditionError)
+from .. import model
+from ..code import Evaluator, PythonEvaluator
+from ..exceptions import (ConflictingTransitionsError, InvariantError,
+                          NonDeterminismError, PostconditionError,
+                          PreconditionError, SequentialConditionError)
 
 __all__ = ['Interpreter']
 
@@ -26,9 +26,9 @@ class Interpreter:
     """
 
     def __init__(self, statechart: model.Statechart, *,
-                 evaluator_klass: Callable[['Interpreter'], Evaluator]=PythonEvaluator,
-                 initial_context: Mapping[str, Any]=None,
-                 ignore_contract: bool=False) -> None:
+                 evaluator_klass: Callable[['Interpreter'], Evaluator] = PythonEvaluator,
+                 initial_context: Mapping[str, Any] = None,
+                 ignore_contract: bool = False) -> None:
         # Internal variables
         self._ignore_contract = ignore_contract
         self._statechart = statechart
@@ -152,7 +152,7 @@ class Interpreter:
             raise ValueError('{} is not an Event instance'.format(event))
         return self
 
-    def execute(self, max_steps: int=-1) -> List[model.MacroStep]:
+    def execute(self, max_steps: int = -1) -> List[model.MacroStep]:
         """
         Repeatedly calls *execute_once* and return a list containing
         the returned values of *execute_once*.
@@ -253,7 +253,7 @@ class Interpreter:
         else:
             return None
 
-    def _select_transitions(self, event: model.Event=None) -> List[model.Transition]:
+    def _select_transitions(self, event: model.Event = None) -> List[model.Transition]:
         """
         Return a list of transitions that can be triggered according to the given event, or eventless
         transition if *event* is None.
@@ -326,11 +326,11 @@ class Interpreter:
                     # Target must be a descendant (or self) of this state
                     if (transition.target and
                             (transition.target not in
-                             [last_before_lca] + self._statechart.descendants_for(last_before_lca))):
+                                     [last_before_lca] + self._statechart.descendants_for(last_before_lca))):
                         raise ConflictingTransitionsError(
                             'Conflicting transitions: {t1} and {t2}'
                             '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
-                            .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2)
+                                .format(c=self.configuration, e=t1.event, t=transitions, t1=t1, t2=t2)
                         )
 
             # Define an arbitrary order based on the depth and the name of source states.
@@ -528,7 +528,7 @@ class Interpreter:
 
     def _evaluate_contract_conditions(self, obj: Union[model.Transition, model.StateMixin],
                                       cond_type: str,
-                                      step: Union[model.MacroStep, model.MicroStep]=None) -> None:
+                                      step: Union[model.MacroStep, model.MicroStep] = None) -> None:
         """
         Evaluate the conditions for given object.
 

@@ -1,8 +1,8 @@
 from behave import given, then, when  # type: ignore
-from sismic.interpreter import Interpreter
-from sismic.interpreter.helpers import log_trace
-from sismic.io import import_from_yaml
-from sismic.model import Event
+from ..interpreter import Interpreter
+from ..interpreter.helpers import log_trace
+from ..io import import_from_yaml
+from ..model import Event
 
 
 # #################### GENERAL PURPOSE

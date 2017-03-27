@@ -1,7 +1,7 @@
 import abc
 from typing import Any, Dict, Iterable, List, Mapping, cast
 
-from sismic.model import (ActionStateMixin, Event, Statechart, StateMixin,
+from ..model import (ActionStateMixin, Event, Statechart, StateMixin,
                           Transition)
 
 from .sequence import Sequence, build_sequence

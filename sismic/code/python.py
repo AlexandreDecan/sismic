@@ -6,8 +6,8 @@ from types import CodeType
 from typing import (Any, Callable, Dict, Iterator, List, Mapping,
                     MutableMapping, cast)
 
-from sismic.exceptions import CodeEvaluationError
-from sismic.model import (Event, InternalEvent, Statechart, StateMixin,
+from ..exceptions import CodeEvaluationError
+from ..model import (Event, InternalEvent, Statechart, StateMixin,
                           Transition)
 
 from .evaluator import Evaluator

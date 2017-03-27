@@ -3,7 +3,7 @@ from functools import partial, reduce
 from typing import Callable, List, Optional
 
 import pyparsing  # type: ignore
-from sismic.exceptions import StatechartError
+from ..exceptions import StatechartError
 
 
 class Sequence(metaclass=abc.ABCMeta):

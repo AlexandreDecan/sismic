@@ -3,7 +3,7 @@ from collections import Counter
 from functools import wraps
 from typing import Any, Callable, List, Tuple
 
-from sismic import model
+from .. import model
 
 from .interpreter import Interpreter
 

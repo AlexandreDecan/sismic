@@ -1,9 +1,9 @@
 from typing import Callable, List
 
-from sismic import exceptions
-from sismic.interpreter import Interpreter
-from sismic.model import Event, MacroStep, Statechart
-from sismic.stories import Pause, Story
+from .. import exceptions
+from ..interpreter import Interpreter
+from ..model import Event, MacroStep, Statechart
+from ..stories import Pause, Story
 
 __all__ = ['ExecutionWatcher', 'teststory_from_trace']
 
