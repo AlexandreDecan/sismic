@@ -7,8 +7,7 @@ from typing import (Any, Callable, Dict, Iterator, List, Mapping,
                     MutableMapping, cast)
 
 from ..exceptions import CodeEvaluationError
-from ..model import (Event, InternalEvent, Statechart, StateMixin,
-                          Transition)
+from ..model import Event, InternalEvent, Statechart, StateMixin, Transition
 
 from .evaluator import Evaluator
 from .sequence import Sequence, build_sequence

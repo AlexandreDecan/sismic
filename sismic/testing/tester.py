@@ -80,8 +80,8 @@ class ExecutionWatcher:
         any additional parameters provided to this method. This callable must return an *Interpreter* instance
 
         :param property_statechart: a property statechart (instance of *Statechart*)
-        :param fails_fast: If True (default is False), the execution of the statechart under test will raise an AssertionError
-            as soon as given property statechart reaches a final state.
+        :param fails_fast: If True (default is False), the execution of the statechart under test will raise an
+            AssertionError as soon as given property statechart reaches a final state.
         :param interpreter_klass: a callable that accepts a *Statechart* instance, an *initial_context* and any
             additional (optional) parameters provided to this method.
         :return: the interpreter instance that wraps given property statechart.

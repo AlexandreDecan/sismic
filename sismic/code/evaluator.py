@@ -2,7 +2,7 @@ import abc
 from typing import Any, Dict, Iterable, List, Mapping, cast
 
 from ..model import (ActionStateMixin, Event, Statechart, StateMixin,
-                          Transition)
+                     Transition)
 
 from .sequence import Sequence, build_sequence
 
@@ -24,6 +24,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         is expected to be an *Interpreter* instance
     :param initial_context: an optional dictionary to populate the context
     """
+
     @abc.abstractmethod
     def __init__(self, interpreter=None, *, initial_context: Mapping[str, Any]=None) -> None:
         self._condition_sequences = {}  # type: Dict[str, Dict[str, Sequence]]
@@ -37,7 +38,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
-    def on_step_starts(self, event: Event=None) -> None:
+    def on_step_starts(self, event: Event = None) -> None:
         """
         Called each time the interpreter starts a macro step.
 
@@ -133,7 +134,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         else:
             return []
 
-    def evaluate_preconditions(self, obj, event: Event=None) -> Iterable[str]:
+    def evaluate_preconditions(self, obj, event: Event = None) -> Iterable[str]:
         """
         Evaluate the preconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -147,7 +148,7 @@ class Evaluator(metaclass=abc.ABCMeta):
             lambda c: not self._evaluate_code(c, additional_context=event_d), getattr(obj, 'preconditions', [])
         )
 
-    def evaluate_invariants(self, obj, event: Event=None) -> Iterable[str]:
+    def evaluate_invariants(self, obj, event: Event = None) -> Iterable[str]:
         """
         Evaluate the invariants for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -161,7 +162,7 @@ class Evaluator(metaclass=abc.ABCMeta):
             lambda c: not self._evaluate_code(c, additional_context=event_d), getattr(obj, 'invariants', [])
         )
 
-    def evaluate_postconditions(self, obj, event: Event=None) -> Iterable[str]:
+    def evaluate_postconditions(self, obj, event: Event = None) -> Iterable[str]:
         """
         Evaluate the postconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
