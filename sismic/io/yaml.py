@@ -56,7 +56,11 @@ def import_from_yaml(statechart: Iterable[str], ignore_schema: bool=False, ignor
     :param ignore_validation: set to *True* to disable statechart validation.
     :return: a *Statechart* instance
     """
-    data = yaml.load(statechart, Loader=yaml.BaseLoader)  # type: dict
+    if yaml.version_info < (0, 15):
+        data = yaml.safe_load(statechart)  # type: dict
+    else:
+        yml = yaml.YAML(typ='safe', pure=True)
+        data = yml.load(statechart)  # type: dict
 
     if not ignore_schema:
         try:
