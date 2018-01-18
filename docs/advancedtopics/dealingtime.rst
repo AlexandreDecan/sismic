@@ -166,7 +166,7 @@ And *voilà*!
 
 As it is not very convenient to manually set the clock each time you want to execute something, it is best to
 put it in a loop. To avoid the use of a ``starttime`` variable, you can set the initial time of an interpreter
-using the ``initial_time`` parameter of its constructor.
+right after its initialization.
 This is illustrated in the following example.
 
 .. code:: python
