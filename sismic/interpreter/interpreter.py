@@ -6,8 +6,7 @@ from typing import (Any, Callable, Dict, Iterable, List, Mapping, Optional,
 from .. import model
 from ..code import Evaluator, PythonEvaluator
 from ..exceptions import (ConflictingTransitionsError, InvariantError,
-                          NonDeterminismError, PostconditionError,
-                          PreconditionError, SequentialConditionError)
+                          NonDeterminismError, PostconditionError, PreconditionError)
 
 __all__ = ['Interpreter']
 

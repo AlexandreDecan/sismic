@@ -116,10 +116,3 @@ class InvariantError(ContractError):
     An invariant is not satisfied.
     """
     pass
-
-
-class SequentialConditionError(ContractError):
-    """
-    A sequential condition is not satisfied.
-    """
-    pass
