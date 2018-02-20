@@ -452,9 +452,6 @@ class Interpreter:
             # Execute exit action
             sent_events.extend(self._evaluator.execute_onexit(state))
 
-            # Postconditions
-            self._evaluate_contract_conditions(state, 'postconditions', step)
-
             # Deal with history
             if isinstance(state, model.CompoundState):
                 # Look for an HistoryStateMixin among its children
@@ -473,6 +470,9 @@ class Interpreter:
 
             # Remove state from active configuration
             self._configuration.remove(state.name)
+
+            # Postconditions
+            self._evaluate_contract_conditions(state, 'postconditions', step)
 
         # Execute transition
         if step.transition:

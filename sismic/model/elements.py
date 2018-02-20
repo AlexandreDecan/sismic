@@ -3,7 +3,7 @@ from typing import List
 
 __all__ = ['ContractMixin', 'StateMixin', 'ActionStateMixin', 'TransitionStateMixin', 'CompositeStateMixin',
            'HistoryStateMixin', 'BasicState', 'CompoundState', 'OrthogonalState', 'ShallowHistoryState',
-           'DeepHistoryState']
+           'DeepHistoryState', 'FinalState', 'Transition']
 
 
 class ContractMixin(metaclass=ABCMeta):

@@ -40,36 +40,36 @@ In the case of an *undesirable* property, this means that the test failed.
 The run of such a *property statechart* is driven by a specific sequence of events and pauses, which represents
 what happens during the execution of a *statechart under test*.
 
-For example, such a sequence contains *event consumed* events, *state entered* events, *state exited* events, ...
+For example, such a sequence contains ``event consumed`` events, ``state entered`` events, ``state exited`` events, ...
 In particular, the following events are generated:
 
-- A *execution started* event is sent at the beginning.
-- each time a step begins, a *step started* event is created.
-- each time an event is consumed, a *event consumed* event is created.
-  the consumed event is available through the *event* attribute.
-- each time a state is exited, an *state exited* event is created.
-  the name of the state is available through the *state* attribute.
-- each time a transition is processed, a *transition processed* event is created.
+- A ``execution started`` event is sent at the beginning.
+- each time a step begins, a ``step started`` event is created.
+- each time an event is consumed, a ``event consumed`` event is created.
+  the consumed event is available through the ``event`` attribute.
+- each time a state is exited, an ``state exited`` event is created.
+  the name of the state is available through the ``state`` attribute.
+- each time a transition is processed, a ``transition processed`` event is created.
   the source state name and the target state name (if any) are available respectively through
-  the *source* and *target* attributes.
-  The event processed by the transition is available through the *event* attribute.
-- each time a state is entered, an *state entered* event is created.
-  the name of the state is available through the *state* attribute.
-- each time a step ends, a *step ended* event is created.
-- A *execution stopped* event is sent at the end.
-- each time an event is fired from within the statechart, a *sent event* is created.
-  the sent event is available through the *event* attribute.
+  the ``source`` and ``target`` attributes.
+  The event processed by the transition is available through the ``event`` attribute.
+- each time a state is entered, a ``state entered`` event is created.
+  the name of the state is available through the ``state`` attribute.
+- each time a step ends, a ``step ended`` event is created.
+- An ``execution stopped`` event is sent at the end.
+- each time an event is fired from within the statechart, a ``event sent`` is created.
+  the sent event is available through the ``event`` attribute.
 
 The sequence does follow the interpretation order:
 
     1. an event is possibly consumed
-    2. For each matching transition
+    2. For a matching transition
 
        a. states are exited
        b. transition is processed
        c. states are entered
        d. internal events are sent
-       e. statechart is stabilized (some states are exited and/or entered, some events are sent)
+       e. statechart is stabilized (starts 2. again)
 
 
 Using statechart to check properties on a trace

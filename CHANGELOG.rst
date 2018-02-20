@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.22.12 (2018-02-20)
+--------------------
+
+- (Fixed) An exited state is removed from the current configuration before its postconditions are checked.
+
+
 0.22.11 (2017-01-12)
 --------------------
 
