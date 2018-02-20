@@ -4,8 +4,6 @@ from typing import Any, Dict, Iterable, List, Mapping, cast
 from ..model import (ActionStateMixin, Event, Statechart, StateMixin,
                      Transition)
 
-from .sequence import Sequence, build_sequence
-
 __all__ = ['Evaluator']
 
 
@@ -175,48 +173,3 @@ class Evaluator(metaclass=abc.ABCMeta):
         return filter(
             lambda c: not self._evaluate_code(c, additional_context=event_d), getattr(obj, 'postconditions', [])
         )
-
-    def initialize_sequential_conditions(self, state: StateMixin) -> None:
-        """
-        Initialize sequential conditions.
-
-        :param state: for given state.
-        """
-        condition_mapping = {}  # type: Dict[str, Sequence]
-
-        for condition in getattr(state, 'sequences', []):
-            condition_mapping[condition] = build_sequence(condition, self._evaluate_code)
-
-        self._condition_sequences[state.name] = condition_mapping
-
-    def update_sequential_conditions(self, state: StateMixin) -> Iterable[str]:
-        """
-        Update sequential conditions, and return a list of already unsatisfied conditions.
-
-        :param state: for given state
-        :return: a list of already unsatisfied conditions.
-        """
-        returned_conditions = []  # type: List[str]
-
-        for condition, sequence in self._condition_sequences[state.name].items():
-            value = sequence.evaluate()
-            if value is False:
-                returned_conditions.append(condition)
-        return returned_conditions
-
-    def evaluate_sequential_conditions(self, state: StateMixin) -> Iterable[str]:
-        """
-        Evaluate sequential conditions, and return a list of unsatisfied conditions.
-
-        :param state: for given state
-        :return: a list of unsatisfied conditions.
-        """
-        returned_conditions = []  # type: List[str]
-
-        for condition, sequence in self._condition_sequences[state.name].items():
-            value = sequence.evaluate(force=True)
-            if value is False:
-                returned_conditions.append(condition)
-        del self._condition_sequences[state.name]
-
-        return returned_conditions

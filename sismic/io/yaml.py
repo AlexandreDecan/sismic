@@ -11,7 +11,7 @@ __all__ = ['import_from_yaml', 'export_to_yaml']
 
 
 class SCHEMA:
-    contract = {schema.Or('before', 'after', 'always', 'sequentially'): schema.Use(str)}
+    contract = {schema.Or('before', 'after', 'always'): schema.Use(str)}
 
     transition = {
         schema.Optional('target'): schema.Use(str),

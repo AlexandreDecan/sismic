@@ -10,7 +10,6 @@ from ..exceptions import CodeEvaluationError
 from ..model import Event, InternalEvent, Statechart, StateMixin, Transition
 
 from .evaluator import Evaluator
-from .sequence import Sequence, build_sequence
 
 __all__ = ['PythonEvaluator']
 
@@ -484,29 +483,3 @@ class PythonEvaluator(Evaluator):
             lambda c: not self._evaluate_code(c, context=context, additional_context=additional_context),
             getattr(obj, 'postconditions', [])
         )
-
-    def _evaluate_sequential_conditions_for_state(self, state: StateMixin, code: str) -> bool:
-        context = self._contexts[state.name]
-
-        additional_context = {
-            '__old__': self._memory.get(id(state), None),
-            'after': partial(self._after, state.name),
-            'idle': partial(self._idle, state.name),
-            'received': self._received,
-            'sent': self._sent,
-        }
-        return self._evaluate_code(code, context=context, additional_context=additional_context)
-
-    def initialize_sequential_conditions(self, state: StateMixin) -> None:
-        """
-        Initialize sequential conditions.
-
-        :param state: for given state.
-        """
-        condition_mapping = {}  # type: Dict[str, Sequence]
-        func = cast(Callable[[str], bool], partial(self._evaluate_sequential_conditions_for_state, state))
-
-        for condition in getattr(state, 'sequences', []):
-            condition_mapping[condition] = build_sequence(condition, func)
-
-        self._condition_sequences[state.name] = condition_mapping

@@ -29,8 +29,7 @@ there is hardly any support for it at the modeling level.
 
 Sismic aims to change this, by integrating support for Design by Contract for statecharts.
 The basic idea is that contracts can be defined on statechart componnents (states or transitions),
-by specifying preconditions, postconditions, invariants and sequential conditions (i.e. conditions that must be
-sequentially satisfied) on them.
+by specifying preconditions, postconditions, and invariants on them.
 At runtime, Sismic will verify the conditions specified by the constracts.
 If a condition is not satisfied, a :py:exc:`~sismic.exceptions.ContractError` will be raised.
 More specifically, one of the following 4 error types wil be raised: :py:exc:`~sismic.exceptions.PreconditionError`,
@@ -38,17 +37,13 @@ More specifically, one of the following 4 error types wil be raised: :py:exc:`~s
 or :py:exc:`~sismic.exceptions.SequentialConditionError`.
 
 Contracts can be specified for any state contained in the statechart, and for any transition contained in the statechart.
-A state contract can contain preconditions, postconditions, invariants and/or sequential conditions.
-At transition level, sequential conditions are not allowed.
+A state contract can contain preconditions, postconditions, and/or invariants.
 The semantics for evaluating a contract is as follows:
 
  - For states:
     - state preconditions are checked before the state is entered (i.e., **before** executing *on entry*), in the order of occurrence of the preconditions.
     - state postconditions are checked after the state is exited (i.e., **after** executing *on exit*), in the order of occurrence of the postconditions.
     - state invariants are checked at the end of each *macro step*, in the order of occurrence of the invariants. The state must be in the active configuration.
-    - sequential conditions on a state are initialized after a state is entered (i.e., **after** executing *on entry*), and
-      evaluated before the state is exited (i.e., **before** executing *on exit*).
-      The evaluation of the sequential condition is updated at each step as long as the state remains in the active configuration.
  - For transitions:
     - the preconditions are checked before starting the process of the transition (and **before** executing the optional transition action).
     - the postconditions are checked after finishing the process of the transition (and **after** executing the optional transition action).
@@ -59,9 +54,9 @@ Defining contracts in YAML
 --------------------------
 
 Contracts can easily be added to the YAML definition of a statechart (see :ref:`yaml_statecharts`) through the use of the *contract* property.
-Preconditions, postconditions, invariants and sequential conditions are defined as nested items of the *contract* property.
+Preconditions, postconditions, and invariants are defined as nested items of the *contract* property.
 The name of these optional contractual conditions is respectively *before* (for preconditions), *after* (for postconditions),
-*always* (for invariants), and *sequentially* (for sequential conditions):
+and *always* (for invariants):
 
 .. code:: yaml
 
@@ -69,7 +64,6 @@ The name of these optional contractual conditions is respectively *before* (for 
      - before: ...
      - after: ...
      - always: ...
-     - sequentially: ...
 
 Obviously, more than one condition of each type can be specified:
 
@@ -115,32 +109,6 @@ This is particularly useful when specifying postconditions and invariants:
       after: (x - __old__.x) < d
 
 See the documentation of :py:class:`~sismic.code.PythonEvaluator` for more information.
-
-
-Sequential conditions
-*********************
-
-Sequential conditions can be used to describe what should happen when residing in a particular state, and in which order.
-A sequential condition makes use of some logical and temporal operators, and of *classical* conditions that
-will be evaluated by an :py:class:`~sismic.code.Evaluator` instance (by default, a :py:class:`~sismic.code.PythonEvaluator` one).
-
-Refer to the documentation of :py:func:`~sismic.code.sequence.build_sequence` for more information about the
-supported operators. You will never call this function directly, but the documentation explains the implemented
-mini-language and the supported operators and their semantics.
-
-.. autofunction:: sismic.code.sequence.build_sequence
-
-Please be warned: the syntax allowed in sequential conditions may conflict with YAML's one.
-Protect your sequential conditions by using quotes or by using the multi-line marker "|".
-
-Example
-*******
-
-The following example shows some contract specifications added
-to the `Elevator example <https://github.com/AlexandreDecan/sismic/blob/master/examples/elevator/elevator.yaml>`__.
-
-.. literalinclude:: /examples/elevator/elevator_contract.yaml
-   :language: yaml
 
 
 Executing statecharts containing contracts

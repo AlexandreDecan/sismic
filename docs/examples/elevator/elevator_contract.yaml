@@ -39,11 +39,6 @@ statechart:
               - before: destination != current  # Move only if destination is not reached
               - after: destination == current  # Destination should be reached
               - after: current != __old__.current  # Current changed (redundant given the two last conditions)
-              - sequentially: |
-                  (
-                    ("destination > current" -> "current > __old__.current")
-                    or ("destination < current" -> "current < __old__.current")
-                  ) -> "destination == current"
             transitions:
               - target: doorsOpen
                 guard: destination == current
@@ -72,8 +67,6 @@ statechart:
                     guard: destination < current
       - name: floorListener
         initial: floorSelecting
-        contract:
-          - sequentially: "'received(\"floorSelected\")' -> 'current == destination' or ('current != destination' -> 'current == destination')"
         states:
           - name: floorSelecting
             transitions:

@@ -228,14 +228,6 @@ class Interpreter:
             state = self._statechart.state_for(name)
             self._evaluate_contract_conditions(state, 'invariants', macro_step)
 
-        # Check state sequential conditions
-        if not self._ignore_contract:
-            for name in configuration:
-                state = self._statechart.state_for(name)
-                for condition in self._evaluator.update_sequential_conditions(state):
-                    raise SequentialConditionError(configuration=self.configuration, step=macro_step, obj=state,
-                                                   assertion=condition, context=self.context)
-
         return macro_step
 
     def _select_event(self) -> Optional[model.Event]:
@@ -443,12 +435,6 @@ class Interpreter:
 
         # Exit states
         for state in exited_states:
-            # Sequential conditions
-            if not self._ignore_contract:
-                for condition in self._evaluator.evaluate_sequential_conditions(state):
-                    raise SequentialConditionError(configuration=self.configuration, step=step, obj=state,
-                                                   assertion=condition, context=self.context)
-
             # Execute exit action
             sent_events.extend(self._evaluator.execute_onexit(state))
 
@@ -493,13 +479,6 @@ class Interpreter:
 
             # Execute entry action
             sent_events.extend(self._evaluator.execute_onentry(state))
-
-            # Sequential conditions
-            if not self._ignore_contract:
-                self._evaluator.initialize_sequential_conditions(state)
-                for condition in self._evaluator.update_sequential_conditions(state):
-                    raise SequentialConditionError(configuration=self.configuration, step=step, obj=state,
-                                                   assertion=condition, context=self.context)
 
             # Update configuration
             self._configuration.add(state.name)

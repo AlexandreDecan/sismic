@@ -1,10 +1,11 @@
 Changelog
 =========
 
-0.22.12 (2018-02-20)
---------------------
+0.23.0 (2018-02-20)
+-------------------
 
 - (Fixed) An exited state is removed from the current configuration before its postconditions are checked.
+- (Removed) Sequential conditions that were introduced in 0.22.0.
 
 
 0.22.11 (2017-01-12)
