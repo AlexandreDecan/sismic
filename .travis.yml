@@ -8,7 +8,6 @@ install:
 - pip install pip -U
 - pip install coveralls coverage wheel
 - pip install -r requirements.txt
-- pip install -e .
 script:
 - coverage run --source sismic -m unittest discover
 - coverage run -a --source sismic -m sismic.testing.behave docs/examples/elevator/elevator_contract.yaml --features docs/examples/elevator/elevator.feature --coverage
