@@ -23,8 +23,15 @@ without requiring the implementation of a visual notation, statecharts are expre
 notation (the alternative of using something like SCXML was discarded because its notation is too verbose and not
 really "human-readable".)
 
+.. seealso:: While statecharts can be defined in YAML, they can be defined in pure
+    Python too. Moreover, :py:class:`~sismic.model.Statechart` instances exhibit several methods to query and
+    manipulate statecharts (e.g.: :py:meth:`~sismic.model.Statechart.rename_state`,
+    :py:meth:`~sismic.model.Statechart.rotate_transition`, :py:meth:`~sismic.model.Statechart.copy_from_statechart`, etc.).
+    Consider looking at :py:class:`~sismic.model.Statechart` API for more information.
+
 .. seealso:: This section explains how the elements that compose a valid statechart in Sismic can be defined using YAML.
     If you are not familiar with YAML, have a look at `YAML official documentation <http://www.yaml.org/spec/1.2/spec.html>`__.
+
 
 Statechart
 **********
@@ -210,6 +217,7 @@ Notice that such a transition does not trigger the *on entry* and *on exit* of i
 to model an *internal action*.
 
 
+
 Statechart examples
 *******************
 
@@ -257,22 +265,27 @@ For example:
         statechart = io.import_from_yaml(f)
         assert isinstance(statechart, model.Statechart)
 
-The parser performs an automatic validation against some kind of YAML schema to prevent erroneous keys (see below).
-It also does several other checks using statechart's :py:class:`~sismic.model.Statechart.validate` method.
-
-.. seealso:: While statecharts can be defined in YAML, they can be defined in pure
-    Python too. Moreover, :py:class:`~sismic.model.Statechart` instances exhibit several methods to query and
-    manipulate statecharts (e.g.: :py:meth:`~sismic.model.Statechart.rename_state`,
-    :py:meth:`~sismic.model.Statechart.rotate_transition`, :py:meth:`~sismic.model.Statechart.copy_from_statechart`, etc.).
-    Consider looking at :py:class:`~sismic.model.Statechart` API for more information.
-
-
-YAML validation schema
-**********************
-
+The parser performs several checks using statechart's :py:class:`~sismic.model.Statechart.validate` method.
+It also does an automatic validation against some kind of schema to prevent erroneous keys.
 See `schema library <https://pypi.python.org/pypi/schema>`__ for more information about the semantic.
 
 .. literalinclude:: ../sismic/io/yaml.py
     :language: python
     :pyobject: SCHEMA
+
+
+.. seealso:: Consider having a look at the `feature branches of Sismic repository <https://github.com/AlexandreDecan/sismic/issues?q=is%3Aopen+is%3Aissue+label%3A%22feature+branch%22>`__
+    to get more information about the various statechart formats that are currently (experimentally)
+    supported but not yet released in Sismic.
+
+Visualising statecharts
+-----------------------
+
+Sismic is not bundle with any graphical tool that can be used to edit or even view a statechart.
+Module :py:mod:`sismic.io` contains routines that can be used to (import and) export statecharts to other format,
+some of them being used by third-party tools that support visualising (or editing) statecharts.
+
+Notably, module :py:mod:`sismic.io.plantuml` contains a function that export a given statechart to
+`PlantUML <http://plantuml.com/>`__, a tool based on graphviz that can automatically render statecharts (to some extent).
+An online version of PlantUML can be found `here <www.plantuml.com/plantuml/>`__.
 
