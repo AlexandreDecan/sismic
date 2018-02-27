@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Unreleased (2018-02-27)
+-----------------------
+
+- (Added) ``sismic.io.plantuml`` contains a ``export_to_plantuml`` function to export a statechart to PlantUML.
+- (Changed) ``sismic.io.export_to_yaml`` accepts an additional ``filepath`` argument.
+
 0.23.1 (2018-02-20)
 -------------------
 
