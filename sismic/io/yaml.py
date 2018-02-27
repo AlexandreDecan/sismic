@@ -75,12 +75,19 @@ def import_from_yaml(statechart: Iterable[str], ignore_schema: bool=False, ignor
     return sc
 
 
-def export_to_yaml(statechart: Statechart) -> str:
+def export_to_yaml(statechart: Statechart, filepath: str=None) -> str:
     """
     Export given *Statechart* instance to YAML
 
-    :param statechart:
+    :param statechart: statechart to export
+    :param filepath: save output to given filepath, if provided
     :return: A textual YAML representation
     """
-    return yaml.dump(export_to_dict(statechart, ordered=False),
-                     width=1000, default_flow_style=False, default_style='"')
+    output = yaml.dump(export_to_dict(statechart, ordered=False),
+                       width=1000, default_flow_style=False, default_style='"')
+
+    if filepath:
+        with open(filepath, 'w') as f:
+            f.write(output)
+
+    return output

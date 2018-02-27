@@ -1,13 +1,13 @@
 from ..model import (
-    BasicState, CompoundState, DeepHistoryState, FinalState,
+    DeepHistoryState, FinalState,
     OrthogonalState, ShallowHistoryState, Statechart,
-    ActionStateMixin, ContractMixin, Transition, HistoryStateMixin)
+    ActionStateMixin, ContractMixin, HistoryStateMixin)
 
 
 __all__ = ['export_to_plantuml']
 
 
-class _Exporter:
+class PlantUMLExporter:
     def __init__(
             self,
             statechart: Statechart, *,
@@ -37,7 +37,7 @@ class _Exporter:
     def deindent(self):
         self._indent -= 2
 
-    def concat(self, text, *, wrap=''):
+    def output(self, text, *, wrap=''):
         lines = text.strip().split('\n')
 
         for line in lines:
@@ -52,22 +52,23 @@ class _Exporter:
                 )
             )
 
-    def state_id(self, name):
+    @staticmethod
+    def state_id(name):
         return ''.join(filter(str.isalnum, name))
 
     def export_statechart(self):
         if self.statechart_name and self.statechart.name:
-            self.concat('title {}'.format(self.statechart.name))
+            self.output('title {}'.format(self.statechart.name))
 
         if self.statechart_description and self.statechart.description:
-            self.concat('caption {}'.format(self.statechart.description.replace('\n', '\\n')))
+            self.output('caption {}'.format(self.statechart.description.replace('\n', '\\n')))
 
         if self.statechart_preamble and self.statechart.preamble:
-            self.concat('note top of {}'.format(self.state_id(self.statechart.root)))
+            self.output('note top of {}'.format(self.state_id(self.statechart.root)))
             self.indent()
-            self.concat(self.statechart.preamble)
+            self.output(self.statechart.preamble)
             self.deindent()
-            self.concat('end note')
+            self.output('end note')
 
     def export_state(self, name: str):
         state = self.statechart.state_for(name)
@@ -80,11 +81,11 @@ class _Exporter:
             return
 
         if isinstance(state, ShallowHistoryState):
-            self.concat('state "H" as {} {{'.format(self.state_id(name)))
+            self.output('state "H" as {} {{'.format(self.state_id(name)))
         elif isinstance(state, DeepHistoryState):
-            self.concat('state "H*" as {} {{'.format(self.state_id(name)))
+            self.output('state "H*" as {} {{'.format(self.state_id(name)))
         else:
-            self.concat('state "{}" as {} {{'.format(name, self.state_id(name)))
+            self.output('state "{}" as {} {{'.format(name, self.state_id(name)))
 
         self.indent()
 
@@ -95,13 +96,13 @@ class _Exporter:
             # On entry, on exit
             if state.on_entry:
                 has_actions = True
-                self.concat('{} : **entry**:\\n{}'.format(
+                self.output('{} : **entry**:\\n{}'.format(
                     self.state_id(name),
                     state.on_entry.strip().replace('\n', '\\n')
                 ))
             if state.on_exit:
                 has_actions = True
-                self.concat('{} : **exit**:\\n{}'.format(
+                self.output('{} : **exit**:\\n{}'.format(
                     self.state_id(name),
                     state.on_exit.strip().replace('\n', '\\n')
                 ))
@@ -117,7 +118,7 @@ class _Exporter:
                     if transition.guard:
                         text.append('[{}]'.format(transition.guard))
 
-                    self.concat('{} : {}:\\n{}'.format(
+                    self.output('{} : {}:\\n{}'.format(
                         self.state_id(name),
                         ''.join(text),
                         transition.action.strip().replace('\n', '\\n'),
@@ -127,34 +128,34 @@ class _Exporter:
         if isinstance(state, ContractMixin) and self.state_contracts and (
                 state.preconditions or state.invariants or state.postconditions):
             if has_actions:
-                self.concat('{} : '.format(self.state_id(name)))
+                self.output('{} : '.format(self.state_id(name)))
 
             for cond in state.preconditions:
-                self.concat('{} : **pre:** {}'.format(self.state_id(name), cond))
+                self.output('{} : **pre:** {}'.format(self.state_id(name), cond))
             for cond in state.invariants:
-                self.concat('{} : **inv:** {}'.format(self.state_id(name), cond))
+                self.output('{} : **inv:** {}'.format(self.state_id(name), cond))
             for cond in state.postconditions:
-                self.concat('{} : **post:** {}'.format(self.state_id(name), cond))
+                self.output('{} : **post:** {}'.format(self.state_id(name), cond))
 
         # Nested states
         for i, child in enumerate(self.statechart.children_for(name)):
             if i != 0 and isinstance(state, OrthogonalState):
-                self.concat('--')
+                self.output('--')
             self.export_state(child)
 
         # Initial state
         if hasattr(state, 'initial') and state.initial:
-            self.concat('[*] --> {}'.format(self.state_id(state.initial)))
+            self.output('[*] --> {}'.format(self.state_id(state.initial)))
 
         self.deindent()
-        self.concat('}')
+        self.output('}')
 
     def export_transitions(self, source_name):
         state = self.statechart.state_for(source_name)
 
         # History state
         if isinstance(state, HistoryStateMixin) and state.memory:
-            self.concat('{} --> {}'.format(self.state_id(source_name), self.state_id(state.memory)))
+            self.output('{} --> {}'.format(self.state_id(source_name), self.state_id(state.memory)))
 
         # Transitions (except internal ones)
         transitions = filter(lambda t: not t.internal, self.statechart.transitions_from(source_name))
@@ -193,15 +194,14 @@ class _Exporter:
             for cond in transition.postconditions:
                 text.append('post: {}\n'.format(cond))
 
-        self.concat('{source} --> {target} : {text}'.format(
+        self.output('{source} --> {target} : {text}'.format(
             source=self.state_id(transition.source),
             target=target_name,
             text=''.join(text),
         ))
 
-
-    def export_all(self):
-        self.concat('@startuml')
+    def export(self):
+        self.output('@startuml')
 
         self.export_statechart()
         self.export_state(self.statechart.root)
@@ -209,13 +209,14 @@ class _Exporter:
         for name in self.statechart.states:
             self.export_transitions(name)
 
-        self.concat('@enduml')
+        self.output('@enduml')
 
         return '\n'.join(self._output)
 
 
 def export_to_plantuml(
-        statechart: Statechart, *,
+        statechart: Statechart,
+        filepath: str=None, *,
         statechart_name=True,
         statechart_description=True,
         statechart_preamble=True,
@@ -227,6 +228,7 @@ def export_to_plantuml(
     Export given statechart to plantUML (see http://plantuml/plantuml).
 
     :param statechart: statechart to export
+    :param filepath: save output to given filepath, if provided
     :param statechart_name: include the name of the statechart
     :param statechart_description: include the description of the statechart
     :param statechart_preamble: include the preamble of the statechart
@@ -237,7 +239,7 @@ def export_to_plantuml(
     :return: textual representation using plantuml
     """
 
-    exporter = _Exporter(
+    exporter = PlantUMLExporter(
         statechart,
         statechart_name=statechart_name,
         statechart_description=statechart_description,
@@ -248,4 +250,10 @@ def export_to_plantuml(
         transition_action=transition_action,
     )
 
-    return exporter.export_all()
+    output = exporter.export()
+
+    if filepath:
+        with open(filepath, 'w') as f:
+            f.write(output)
+
+    return output
