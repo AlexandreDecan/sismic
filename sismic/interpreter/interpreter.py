@@ -195,10 +195,10 @@ class Interpreter:
             # Look for eventless transitions first
             transitions = self._select_transitions(event=None)
             if len(transitions) == 0:
-                # Look for evented transitions
+                # Look for transitions with event
                 event = self._select_event()
                 if event is None:
-                    return None  # No event means no step!
+                    return None  # No event implies no step!
                 transitions = self._select_transitions(event=event)
 
             # No transition? Empty step!

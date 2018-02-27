@@ -46,6 +46,7 @@ Sismic provides the following features:
 - A design-by-contract approach for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions
 - Predefined step definitions and utilities (including test coverage) to support behavior-driven development
 - A unit testing framework for statecharts, including generation of test scenarios
+- Visualize statecharts using `PlantUML <http://www.plantuml.com/plantuml>`__
 
 The semantics of the statechart interpreter is based on the specification of the SCXML semantics (with a few exceptions),
 but can be easily tuned to other semantics.

@@ -28,6 +28,7 @@ More specifically, Sismic provides:
 - A design-by-contract approach for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions
 - Predefined step definitions and utilities (including test coverage) to support behavior-driven development
 - A unit testing framework for statecharts, including generation of test scenarios
+- Visualize statecharts using `PlantUML <http://www.plantuml.com/plantuml>`__
 
 
 Installation
@@ -46,9 +47,9 @@ Documentation
 
 The documentation for the latest distributed version is available on `sismic.readthedocs.io <http://sismic.readthedocs.io/>`_.
 
-Many examples are available in `docs/examples <https://github.com/AlexandreDecan/sismic/tree/master/docs/examples>`_.
+Many examples are available in `docs/examples <https://github.com/AlexandreDecan/sismic/tree/devel/docs/examples>`_.
 
-The documentation can also be directly built from the `docs <https://github.com/AlexandreDecan/sismic/tree/master/docs>`_ directory using Sphinx.
+The documentation can also be directly built from the `docs <https://github.com/AlexandreDecan/sismic/tree/devel/docs>`_ directory using Sphinx.
 
 
 Changelog
