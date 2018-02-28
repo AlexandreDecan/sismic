@@ -1,3 +1,5 @@
+.. _property_statecharts:
+
 Testing statecharts
 ===================
 

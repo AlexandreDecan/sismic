@@ -1,7 +1,7 @@
 Behavior-Driven Development (BDD)
 =================================
 
-This introduction is inspired by the documentation of `Behave <http://pythonhosted.org/behave/philosophy.html>`__, a Python
+This introduction is inspired by the documentation of `Behave <http://behave.readthedocs.io/en/latest/philosophy.html>`__, a Python
 library for Behavior-Driven Development (BDD).
 BDD is an agile software development technique that encourages collaboration between developers,
 QA and non-technical or business participants in a software project.
@@ -63,7 +63,7 @@ statechart users to be able to describe the intended behavior in terms of
 feature and scenario descriptions. 
 While it is possible to manually integrate the BDD process with any library or software,
 Sismic is bundled with a command-line utility ``sismic-behave`` that automates the integration of BDD.
-``sismic-behave`` relies on `Behave <http://pythonhosted.org/behave>`__,
+``sismic-behave`` relies on `Behave <http://behave.readthedocs.io/en/latest/>`__,
 a Python library for BDD with full support of the Gherkin language.
 
 As an illustrative example, let us define the desired behavior of our elevator statechart.
@@ -84,7 +84,7 @@ We can then instruct ``sismic-behave``  to run on this statechart the scenarios 
 
 .. note:: ``sismic-behave`` allows to specify the path to each file, so it is not mandatory to put all of them
     in the same directory. It also accepts multiple files for the ``--features`` parameter, and supports
-    all the `command-line parameters of Behave <http://pythonhosted.org/behave/behave.html#command-line-arguments>`__.
+    all the `command-line parameters of Behave <http://behave.readthedocs.io/en/latest/behave.html#command-line-arguments>`__.
 
 ``sismic-behave`` will translate the feature file into executable code,
 compute the outcomes of the scenarios,
@@ -115,10 +115,11 @@ using the ``--coverage`` argument, as in ``sismic-behave statechart.yaml --featu
 
     [...]
 
+
 ``sismic-behave`` also allows one to check property statecharts while the scenarios are being executed.
 To do so, provide a list of YAML filepath containing property statecharts using the ``--properties`` argument.
 The property statecharts defined in these YAML will be checked at runtime following a fail fast approach
-(see :py:class:`~sismic.testing.ExecutionWatcher` and :doc:`testing.rst` for more information).
+(see :py:class:`~sismic.testing.ExecutionWatcher` and :ref:`property_statecharts` for more information).
 
 
 While BDD can be convenient to identify errors, it is usually not easy to identify where the error occured.
@@ -172,15 +173,15 @@ Given/when I import a statechart from {path}
 
 Given I create an execution watcher
    Create and associate an instance of :py:class:`~sismic.testing.ExecutionWatcher`.
-   This step is implicitly executed when using ``--properties`` with ``sismic-behave``.
+   This step is implicitly executed when providing ``--properties`` to ``sismic-behave``.
 
 Given I watch the statechart with property statechart {path}
    Import a (property) statechart from a `yaml` file, and pass it to the execution watcher.
-   This step is implicitly executed when using ``--properties`` with ``sismic-behave``.
+   This step is implicitly executed when providing ``--properties`` to ``sismic-behave``.
 
 Given I start the execution watcher
    Start the execution watcher (in a fail fasts mode).
-   This step is implicitly executed when using ``--properties`` with ``sismic-behave``.
+   This step is implicitly executed when providing ``--properties`` to ``sismic-behave``.
 
 Given/when I execute the statechart
     This step executes the statechart.
@@ -272,4 +273,4 @@ Then the statechart is in a final configuration
 .. note:: If you do not want to rely on Sismic and want to use *behave* command-line interface, you can easily
     import the predefined steps using ``from sismic.testing.steps import *``.
     This will also import *behave* and all the needed objects to define and use new steps.
-    See `Python Step Implementations <http://pythonhosted.org/behave/tutorial.html#python-step-implementations>`__ for more information.
+    See `Python Step Implementations <http://behave.readthedocs.io/en/latest/tutorial.html#python-step-implementations>`__ for more information.
