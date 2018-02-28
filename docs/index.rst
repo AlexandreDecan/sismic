@@ -6,16 +6,16 @@
 Sismic user manual
 ==================
 
-.. image:: https://travis-ci.org/AlexandreDecan/sismic.svg?branch=master
+.. image:: https://travis-ci.org/AlexandreDecan/sismic.svg?branch=devel
     :target: https://travis-ci.org/AlexandreDecan/sismic
-.. image:: https://coveralls.io/repos/AlexandreDecan/sismic/badge.svg?branch=master&service=github
-    :target: https://coveralls.io/github/AlexandreDecan/sismic?branch=master
+.. image:: https://coveralls.io/repos/AlexandreDecan/sismic/badge.svg?branch=devel&service=github
+    :target: https://coveralls.io/github/AlexandreDecan/sismic?branch=devel
 .. image:: https://api.codacy.com/project/badge/grade/10d0a71b01c144859db571ddf17bb7d4
     :target: https://www.codacy.com/app/alexandre-decan/sismic
 .. image:: https://badge.fury.io/py/sismic.svg
     :target: https://pypi.python.org/pypi/sismic
 .. image:: https://readthedocs.org/projects/sismic/badge/?version=master
-    :target: https://sismic.readthedocs.org/
+    :target: https://sismic.readthedocs.io/s
 
 About
 -----

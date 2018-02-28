@@ -3,7 +3,7 @@ import unittest
 
 from sismic import exceptions, io
 from sismic.io import import_from_yaml
-from sismic.io.plantuml import export_to_plantuml
+from sismic.io import export_to_plantuml
 
 
 class ImportFromYamlParserTests(unittest.TestCase):

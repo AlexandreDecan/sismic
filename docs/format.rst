@@ -285,7 +285,7 @@ Sismic is not bundle with any graphical tool that can be used to edit or even vi
 Module :py:mod:`sismic.io` contains routines that can be used to (import and) export statecharts to other format,
 some of them being used by third-party tools that support visualising (or editing) statecharts.
 
-Notably, module :py:mod:`sismic.io.plantuml` contains a function that export a given statechart to
+Notably, module :py:mod:`sismic.io` contains a function :py:func:`~sismic.io.export_to_plantuml` that export a given statechart to
 `PlantUML <http://plantuml.com/>`__, a tool based on graphviz that can automatically render statecharts (to some extent).
 An online version of PlantUML can be found `here <www.plantuml.com/plantuml/>`__.
 
