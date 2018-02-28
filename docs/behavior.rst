@@ -115,6 +115,11 @@ using the ``--coverage`` argument, as in ``sismic-behave statechart.yaml --featu
 
     [...]
 
+``sismic-behave`` also allows one to check property statecharts while the scenarios are being executed.
+To do so, provide a list of YAML filepath containing property statecharts using the ``--properties`` argument.
+The property statecharts defined in these YAML will be checked at runtime following a fail fast approach
+(see :py:class:`~sismic.testing.ExecutionWatcher` and :doc:`testing.rst` for more information).
+
 
 While BDD can be convenient to identify errors, it is usually not easy to identify where the error occured.
 ``sismic-behave`` accepts an additional parameter, namely ``--debug-on-error`` that drops in a ``ipdb`` (or the default
@@ -164,6 +169,18 @@ Given/when I import a statechart from {path}
     Import a statechart from a `yaml` file.
     This step is implicitly executed when using ``sismic-behave``.
     It is only needed when calling ``behave`` directly.
+
+Given I create an execution watcher
+   Create and associate an instance of :py:class:`~sismic.testing.ExecutionWatcher`.
+   This step is implicitly executed when using ``--properties`` with ``sismic-behave``.
+
+Given I watch the statechart with property statechart {path}
+   Import a (property) statechart from a `yaml` file, and pass it to the execution watcher.
+   This step is implicitly executed when using ``--properties`` with ``sismic-behave``.
+
+Given I start the execution watcher
+   Start the execution watcher (in a fail fasts mode).
+   This step is implicitly executed when using ``--properties`` with ``sismic-behave``.
 
 Given/when I execute the statechart
     This step executes the statechart.

@@ -1,6 +1,7 @@
 from behave import given, then, when  # type: ignore
 from ..interpreter import Interpreter
 from ..interpreter.helpers import log_trace
+from ..testing import ExecutionWatcher
 from ..io import import_from_yaml
 from ..model import Event
 
@@ -72,6 +73,22 @@ def load_statechart(context, path):
     context._interpreter.bind(context._events.append)
 
     _execute_statechart(context, force_execution=True, execute_once=True)
+
+
+@given('I create an execution watcher')
+def create_execution_watcher(context):
+    context._execution_watcher = ExecutionWatcher(context._interpreter)
+
+
+@given('I watch the statechart with property statechart {path}')
+def load_property_statechart(context, path):
+    with open(path) as f:
+        context._execution_watcher.watch_with(import_from_yaml(f), fails_fast=True)
+
+
+@given('I start the execution watcher')
+def start_execution_watcher(context):
+    context._execution_watcher.start()
 
 
 @given('I execute the statechart')

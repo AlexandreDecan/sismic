@@ -98,7 +98,7 @@ class ExecutionWatcher:
 
     def start(self) -> None:
         """
-        Send a *started* event to the statechart properties, and starts watching the execution of
+        Send an *execution started* event to the statechart properties, and starts watching the execution of
         the statechart under test.
         """
         if self._started:
@@ -113,7 +113,7 @@ class ExecutionWatcher:
 
     def stop(self) -> None:
         """
-        Send a *stopped* event to the statechart properties, and stops watching the execution of the
+        Send an *execution stopped* event to the statechart properties, and stops watching the execution of the
         statechart under test.
         """
         if not self._started:
