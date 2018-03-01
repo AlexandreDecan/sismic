@@ -96,15 +96,15 @@ class PlantUMLExporter:
             # On entry, on exit
             if state.on_entry:
                 has_actions = True
-                self.output('{} : **entry**:\\n{}'.format(
+                self.output('{} : **entry** / {}'.format(
                     self.state_id(name),
-                    state.on_entry.strip().replace('\n', '\\n')
+                    state.on_entry.strip().replace('\n', '; ')
                 ))
             if state.on_exit:
                 has_actions = True
-                self.output('{} : **exit**:\\n{}'.format(
+                self.output('{} : **exit** / {}'.format(
                     self.state_id(name),
-                    state.on_exit.strip().replace('\n', '\\n')
+                    state.on_exit.strip().replace('\n', '; ')
                 ))
 
             # Internal actions
@@ -114,14 +114,14 @@ class PlantUMLExporter:
                 for transition in transitions:
                     text = []
                     if transition.event:
-                        text.append('**{}**'.format(transition.event))
+                        text.append('**{}** '.format(transition.event))
                     if transition.guard:
-                        text.append('[{}]'.format(transition.guard))
+                        text.append('[{}] '.format(transition.guard))
 
-                    self.output('{} : {}:\\n{}'.format(
+                    self.output('{} : {}/ {}'.format(
                         self.state_id(name),
                         ''.join(text),
-                        transition.action.strip().replace('\n', '\\n'),
+                        transition.action.strip().replace('\n', '; '),
                     ))
 
         # Contracts
@@ -177,11 +177,11 @@ class PlantUMLExporter:
 
         text = []
         if transition.event:
-            text.append(transition.event)
+            text.append(transition.event + ' ')
         if transition.guard:
-            text.append('[{}]'.format(transition.guard))
+            text.append('[{}] '.format(transition.guard))
         if transition.action and self.transition_action:
-            text.append(' / {}'.format(transition.action.replace('\n', '; ')))
+            text.append('/ {}'.format(transition.action.replace('\n', '; ')))
 
         if self.transition_contracts and (
                 transition.preconditions or transition.invariants or transition.postconditions):
