@@ -1,13 +1,14 @@
 Changelog
 =========
 
-0.24.1 (2018-02-27)
+0.24.2 (2018-02-27)
 -------------------
 
 - (Added) ``sismic.io`` contains an ``export_to_plantuml`` function to export a statechart to PlantUML.
 - (Added) ``sismic-behave`` accepts a ``--properties`` argument, pointing to a list of YAML files containing
   property statecharts that will be checked during execution (in a fail fast mode).
 - (Changed) ``sismic.io.export_to_yaml`` accepts an additional ``filepath`` argument.
+- (Fix) Whitespaces in strings are trimmed when using ``import_from_dict`` (and hence, using ``import_from_yaml``).
 
 
 0.23.1 (2018-02-20)

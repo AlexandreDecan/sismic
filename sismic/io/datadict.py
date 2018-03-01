@@ -70,17 +70,25 @@ def _import_transition_from_dict(state_name: str, transition_d: Mapping[str, Any
     :return: an instance of Transition
     """
     event = transition_d.get('event', None)
-    transition = Transition(state_name, transition_d.get('target', None), event,
-                            transition_d.get('guard', None), transition_d.get('action', None))
+    guard = transition_d.get('guard', None)
+    action = transition_d.get('action', None)
+
+    transition = Transition(
+        state_name,
+        transition_d.get('target', None),
+        event.strip() if event else None,
+        guard.strip() if guard else None,
+        action.strip() if action else None,
+    )
 
     # Preconditions, postconditions and invariants
     for condition in transition_d.get('contract', []):
         if condition.get('before', None):
-            transition.preconditions.append(condition['before'])
+            transition.preconditions.append(condition['before'].strip())
         elif condition.get('after', None):
-            transition.postconditions.append(condition['after'])
+            transition.postconditions.append(condition['after'].strip())
         elif condition.get('always', None):
-            transition.invariants.append(condition['always'])
+            transition.invariants.append(condition['always'].strip())
 
     return transition
 
@@ -94,8 +102,11 @@ def _import_state_from_dict(state_d: Mapping[str, Any]) -> StateMixin:
     """
     name = state_d.get('name')
     stype = state_d.get('type', None)
+
     on_entry = state_d.get('on entry', None)
+    on_entry = on_entry.strip() if on_entry else None
     on_exit = state_d.get('on exit', None)
+    on_exit = on_exit.strip() if on_exit else None
 
     if stype == 'final':
         state = FinalState(name, on_entry=on_entry, on_exit=on_exit)  # type: Any
@@ -121,11 +132,11 @@ def _import_state_from_dict(state_d: Mapping[str, Any]) -> StateMixin:
     # Preconditions, postconditions and invariants
     for condition in state_d.get('contract', []):
         if condition.get('before', None):
-            state.preconditions.append(condition['before'])
+            state.preconditions.append(condition['before'].strip())
         elif condition.get('after', None):
-            state.postconditions.append(condition['after'])
+            state.postconditions.append(condition['after'].strip())
         elif condition.get('always', None):
-            state.invariants.append(condition['always'])
+            state.invariants.append(condition['always'].strip())
     return state
 
 

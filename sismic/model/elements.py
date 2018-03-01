@@ -238,7 +238,7 @@ class Transition(ContractMixin):
         return 'Transition({!r}, {!r}, event={!r})'.format(self.source, self.target, self.event)
 
     def __str__(self):
-        return '{} [{}] -> {}'.format(self.source, self.event, self.target if self.target else '')
+        return '{} -> {} [{}] -> {}'.format(self.source, self.event, self.guard, self.target if self.target else '')
 
     def __hash__(self):
         return hash(self.source)
