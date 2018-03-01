@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.24.0 (2018-02-27)
+0.24.1 (2018-02-27)
 -------------------
 
 - (Added) ``sismic.io`` contains an ``export_to_plantuml`` function to export a statechart to PlantUML.
