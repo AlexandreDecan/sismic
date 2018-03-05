@@ -21,7 +21,11 @@ Defining statecharts in YAML
 Because Sismic is supposed to be independent of a particular visual modeling tool, and easy to integrate in other programs
 without requiring the implementation of a visual notation, statecharts are expressed using YAML, a human-friendly textual
 notation (the alternative of using something like SCXML was discarded because its notation is too verbose and not
-really "human-readable".)
+really "human-readable").
+
+This section explains how the elements that compose a valid statechart in Sismic can be defined using YAML.
+If you are not familiar with YAML, have a look at `YAML official documentation <http://www.yaml.org/spec/1.2/spec.html>`__.
+
 
 .. seealso:: While statecharts can be defined in YAML, they can be defined in pure
     Python too. Moreover, :py:class:`~sismic.model.Statechart` instances exhibit several methods to query and
@@ -29,8 +33,11 @@ really "human-readable".)
     :py:meth:`~sismic.model.Statechart.rotate_transition`, :py:meth:`~sismic.model.Statechart.copy_from_statechart`, etc.).
     Consider looking at :py:class:`~sismic.model.Statechart` API for more information.
 
-.. seealso:: This section explains how the elements that compose a valid statechart in Sismic can be defined using YAML.
-    If you are not familiar with YAML, have a look at `YAML official documentation <http://www.yaml.org/spec/1.2/spec.html>`__.
+
+.. sealso:: Experimental import/export support for AMOLA specifications of statecharts is available in
+    a dedicated feature branch available, as explained `here <https://github.com/AlexandreDecan/sismic/issues/63>`__.
+    AMOLA is notably used in `ASEME IDE <http://aseme.tuc.gr/>`__, which can be used to graphically create, edit
+    and visualize statecharts.
 
 
 Statechart
@@ -277,6 +284,7 @@ See `schema library <https://pypi.python.org/pypi/schema>`__ for more informatio
 .. seealso:: Consider having a look at the `feature branches of Sismic repository <https://github.com/AlexandreDecan/sismic/issues?q=is%3Aopen+is%3Aissue+label%3A%22feature+branch%22>`__
     to get more information about the various statechart formats that are currently (experimentally)
     supported but not yet released in Sismic.
+
 
 Visualising statecharts
 -----------------------
