@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- (Removed) Unused dependency on ``pyparsing``.
+
 0.24.2 (2018-02-27)
 -------------------
 

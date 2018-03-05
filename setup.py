@@ -76,7 +76,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['ruamel.yaml>=0.12.10', 'schema>=0.6.2', 'behave>=1.2.5', 'typing>=3.5.1', 'pyparsing>=2.1.1'],
+    install_requires=['ruamel.yaml>=0.12.10', 'schema>=0.6.2', 'behave>=1.2.5', 'typing>=3.5.1'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
