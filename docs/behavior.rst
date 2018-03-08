@@ -183,6 +183,10 @@ Given I start the execution watcher
    Start the execution watcher (in a fail fasts mode).
    This step is implicitly executed when providing ``--properties`` to ``sismic-behave``.
 
+Given I stop the execution watcher
+   Stop the execution watcher.
+   This step is implicitly executed when providing ``--properties`` to ``sismic-behave``.
+
 Given/when I execute the statechart
     This step executes the statechart.
     It is equivalent to :py:meth:`~sismic.interpreter.Interpreter.execute`.
