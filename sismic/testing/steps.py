@@ -91,6 +91,11 @@ def start_execution_watcher(context):
     context._execution_watcher.start()
 
 
+@given('I stop the execution watcher')
+def stop_execution_watcher(context):
+    context._execution_watcher.stop()
+
+
 @given('I execute the statechart')
 @when('I execute the statechart')
 def execute_statechart(context):

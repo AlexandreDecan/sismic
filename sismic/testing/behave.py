@@ -15,73 +15,16 @@ DEFAULT_STEPS_CONTENT = """
 from sismic.testing.steps import *
 """
 
-DEFAULT_ENVIRONMENT_CONTENT = """
-from behave.model import Step
-
-def before_scenario(context, scenario):
-    context.execute_steps('Given I import a statechart from {{path}}')
-"""
-
-COVERAGE_ENVIRONMENT_CONTENT = """
-from itertools import chain
-from collections import Counter
-
-
-def states_coverage(states, entered):
-    entered_stats = Counter(entered)
-    coverage_stat = len(entered_stats.keys()) / len(states)
-
-    print('State coverage: {:.2%}'.format(coverage_stat))
-    print('Entered states:', ' | '.join(('{} ({})'.format(k, v) for k, v in entered_stats.most_common())))
-    print('Remaining states:', ' | '.join((str(s) for s in sorted(set(states).difference(entered_stats.keys())))))
-
-
-def transitions_coverage(transitions, processed):
-    processed_stats = Counter(processed)
-    coverage_stat = len(processed_stats.keys()) / len(transitions)
-
-    print('Transition coverage: {:.2%}'.format(coverage_stat))
-    print('Processed transitions:', ' | '.join(('{} ({})'.format(k, v) for k, v in processed_stats.most_common())))
-
-
-def after_scenario(context, scenario):
-    trace = context._steps
-    context._traces.append(trace)
-
-    print()
-    states_coverage(context._interpreter.statechart.states,
-                    chain.from_iterable([step.entered_states for step in trace]))
-    transitions_coverage(context._interpreter.statechart.transitions,
-                         chain.from_iterable(([step.transitions for step in trace])))
-    print()
-
-
-def before_feature(context, feature):
-    context._traces = []
-
-
-def after_feature(context, feature):
-    trace = list(chain.from_iterable(context._traces))
-    print()
-    print('Aggregated coverage data')
-    print('------------------------')
-    states_coverage(context._interpreter.statechart.states,
-                    chain.from_iterable([step.entered_states for step in trace]))
-    transitions_coverage(context._interpreter.statechart.transitions,
-                         chain.from_iterable(([step.transitions for step in trace])))
-    print()
-"""
-
-DEBUG_ON_ERROR = """
-def after_step(context, step):
-    if step.status == 'failed':
-        try:
-            import ipdb
-            ipdb.post_mortem(step.exc_traceback)
-        except ImportError:
-            import pdb
-            pdb.post_mortem(step.exc_traceback)
-"""
+ENVIRONMENT = {
+    'import': [],
+    'before_scenario': [],
+    'after_scenario': [],
+    'before_feature': [],
+    'after_feature': [],
+    'before_step': [],
+    'after_step': [],
+    'content': [],
+}
 
 
 def execute_behave(statechart: str,
@@ -107,25 +50,93 @@ def execute_behave(statechart: str,
             _, property_filename = os.path.split(property)
             shutil.copy(property, os.path.join(tempdir, property_filename))
 
+        ENVIRONMENT['import'].append('from behave.model import Step')
+        ENVIRONMENT['before_scenario'].append(
+            "context.execute_steps('Given I import a statechart from {{path}}')"
+            .replace('{{path}}', os.path.join(tempdir, statechart_filename).replace('\\', '\\\\'))
+        )
+
+        if properties:
+            ENVIRONMENT['before_scenario'].append("context.execute_steps('Given I create an execution watcher')")
+            for property_sc in properties:
+                line = "context.execute_steps('Given I watch the statechart with property statechart {{path}}')\n"
+                _, property_filename = os.path.split(property_sc)
+                line = line.replace('{{path}}', os.path.join(tempdir, property_filename).replace('\\', '\\\\'))
+                ENVIRONMENT['before_scenario'].append(line)
+            ENVIRONMENT['before_scenario'].append("context.execute_steps('Given I start the execution watcher')")
+            ENVIRONMENT['after_scenario'].append("context.execute_steps('Given I stop the execution watcher')")
+
+        if coverage:
+            ENVIRONMENT['import'].append('from itertools import chain')
+            ENVIRONMENT['import'].append('from collections import Counter')
+
+            ENVIRONMENT['content'].append("""
+def states_coverage(states, entered):
+    entered_stats = Counter(entered)
+    coverage_stat = len(entered_stats.keys()) / len(states)
+
+    print('State coverage: {:.2%}'.format(coverage_stat))
+    print('Entered states:',
+          ' | '.join(('{} ({})'.format(k, v) for k, v in entered_stats.most_common())))
+    print('Remaining states:',
+          ' | '.join((str(s) for s in sorted(set(states).difference(entered_stats.keys())))))
+
+def transitions_coverage(transitions, processed):
+    processed_stats = Counter(processed)
+    coverage_stat = len(processed_stats.keys()) / len(transitions)
+
+    print('Transition coverage: {:.2%}'.format(coverage_stat))
+    print('Processed transitions:', ' | '.join(('{} ({})'.format(k, v) for k, v in processed_stats.most_common())))
+
+""")
+
+            ENVIRONMENT['after_scenario'].extend([
+                'trace = context._steps',
+                'context._traces.append(trace)',
+                'print()',
+                'states_coverage(context._interpreter.statechart.states, chain.from_iterable([step.entered_states for step in trace]))',
+                'transitions_coverage(context._interpreter.statechart.transitions, chain.from_iterable(([step.transitions for step in trace])))',
+                'print()',
+            ])
+
+            ENVIRONMENT['before_feature'].append('context._traces = []')
+
+            ENVIRONMENT['after_feature'].extend([
+                'trace = list(chain.from_iterable(context._traces))',
+                'print()',
+                'print("Aggregated coverage data")',
+                'print("------------------------")',
+                'states_coverage(context._interpreter.statechart.states, chain.from_iterable([step.entered_states for step in trace]))',
+                'transitions_coverage(context._interpreter.statechart.transitions, chain.from_iterable(([step.transitions for step in trace])))',
+                'print()',
+            ])
+
+        if debug_on_error:
+            ENVIRONMENT['after_step'].extend([
+                'if step.status == "failed":',
+                '    try:',
+                '        import ipdb',
+                '        ipdb.post_mortem(step.exc_traceback)',
+                '    except ImportError:',
+                '        import pdb',
+                '        pdb.post_mortem(step.exc_traceback)',
+            ])
+
         # Create an environment file
         with open(os.path.join(tempdir, 'environment.py'), 'w') as environment:
-            content = DEFAULT_ENVIRONMENT_CONTENT
+            environment.write('\n'.join(ENVIRONMENT['import']))
+            environment.write('\n')
 
-            if properties:
-                content += "    context.execute_steps('Given I create an execution watcher')\n"
-                for property_sc in properties:
-                    line = "    context.execute_steps('Given I watch the statechart with property statechart {{path}}')\n"
-                    _, property_filename = os.path.split(property_sc)
-                    line = line.replace('{{path}}', os.path.join(tempdir, property_filename).replace('\\', '\\\\'))
-                    content += line
-                content += "    context.execute_steps('Given I start the execution watcher')\n"
+            environment.write('\n'.join(ENVIRONMENT['content']))
+            environment.write('\n')
 
-            if coverage:
-                content += COVERAGE_ENVIRONMENT_CONTENT
-
-            if debug_on_error:
-                content += DEBUG_ON_ERROR
-            environment.write(content.replace('{{path}}', os.path.join(tempdir, statechart_filename).replace('\\', '\\\\')))
+            for key in ['before_scenario', 'after_scenario', 'before_feature', 'after_feature', 'before_step', 'after_step']:
+                content = ENVIRONMENT[key]
+                if len(content) > 0:
+                    param_name = key.split('_')[-1]
+                    environment.write('def {}(context, {}):\n'.format(key, param_name))
+                    environment.write('\n'.join(['    ' + line for line in content]))
+                    environment.write('\n')
 
         # Create a steps subdirectory
         os.mkdir(os.path.join(tempdir, 'steps'))

@@ -1,10 +1,13 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.24.3 (2018-03-08)
+-------------------
 
+- (Fixed) ``ExecutionWatcher.stop()`` was not called at the end of the execution when ``sismic-behave`` was
+  called with ``--properties``.
 - (Removed) Unused dependency on ``pyparsing``.
+
 
 0.24.2 (2018-02-27)
 -------------------
@@ -13,7 +16,7 @@ Unreleased
 - (Added) ``sismic-behave`` accepts a ``--properties`` argument, pointing to a list of YAML files containing
   property statecharts that will be checked during execution (in a fail fast mode).
 - (Changed) ``sismic.io.export_to_yaml`` accepts an additional ``filepath`` argument.
-- (Fix) Whitespaces in strings are trimmed when using ``import_from_dict`` (and hence, using ``import_from_yaml``).
+- (Fixed) Whitespaces in strings are trimmed when using ``import_from_dict`` (and hence, using ``import_from_yaml``).
 
 
 0.23.1 (2018-02-20)
