@@ -34,7 +34,7 @@ If you are not familiar with YAML, have a look at `YAML official documentation <
     Consider looking at :py:class:`~sismic.model.Statechart` API for more information.
 
 
-.. sealso:: Experimental import/export support for AMOLA specifications of statecharts is available in
+.. seealso:: Experimental import/export support for AMOLA specifications of statecharts is available in
     a dedicated feature branch available, as explained `here <https://github.com/AlexandreDecan/sismic/issues/63>`__.
     AMOLA is notably used in `ASEME IDE <http://aseme.tuc.gr/>`__, which can be used to graphically create, edit
     and visualize statecharts.
