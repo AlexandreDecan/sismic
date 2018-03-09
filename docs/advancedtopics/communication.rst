@@ -60,12 +60,11 @@ We define a bidirectional communication between the two first interpreters:
     interpreter_2.bind(interpreter_1)
 
 We also bind the third interpreters with the two first ones.
-Notice that :py:meth:`~sismic.interpreter.Interpreter.bind` returns the current interpreter, so multiple calls
-can be chained:
 
 .. testcode:: bind
 
-    interpreter_3.bind(interpreter_1).bind(interpreter_2)
+    interpreter_3.bind(interpreter_1)
+    interpreter_3.bind(interpreter_2)
 
 When an internal event is sent by an interpreter, the bound interpreters also receive this event as an external
 event.
