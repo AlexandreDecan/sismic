@@ -380,7 +380,7 @@ class PythonEvaluator(Evaluator):
                                   context=self._contexts[transition.source].new_child(),
                                   additional_context={'event': event})
 
-    def execute_onentry(self, state: StateMixin) -> List[Event]:
+    def execute_on_entry(self, state: StateMixin) -> List[Event]:
         """
         Execute the on entry action for given state.
         This method is called for every state that is entered, even those with no *on_entry*.
@@ -393,7 +393,7 @@ class PythonEvaluator(Evaluator):
 
         return self._execute_code(getattr(state, 'on_entry', None), context=self._contexts[state.name])
 
-    def execute_onexit(self, state: StateMixin) -> List[Event]:
+    def execute_on_exit(self, state: StateMixin) -> List[Event]:
         """
         Execute the on exit action for given state.
         This method is called for every state that is exited, even those with no *on_exit*.
@@ -419,7 +419,7 @@ class PythonEvaluator(Evaluator):
         additional_context.update({
             'received': self._received,
             'sent': self._sent
-        })
+        })  # type: ignore
 
         # Only needed if there is an invariant, a postcondition or a sequential condition
         if len(getattr(obj, 'invariants', [])) > 0 or len(getattr(obj, 'postconditions', [])) > 0 or len(

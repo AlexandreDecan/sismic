@@ -5,6 +5,7 @@ Unreleased
 ----------
 
 - (Added) Full equality comparison (``__eq__``) for states and transitions (including all relevant attributes).
+- (Changed) ``Evaluator.execute_onentry`` and ``execute_onexit`` become ``execute_on_entry`` and ``execute_on_exit``.
 
 
 0.25.0 (2018-03-09)

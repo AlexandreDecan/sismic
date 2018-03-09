@@ -16,7 +16,6 @@ class ContractMixin(metaclass=ABCMeta):
         self.postconditions = []  # type: List[str]
         self.invariants = []  # type: List[str]
 
-
     def __eq__(self, other):
         if isinstance(other, ContractMixin):
             return (

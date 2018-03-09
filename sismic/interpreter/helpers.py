@@ -7,7 +7,7 @@ from .. import model
 
 from .interpreter import Interpreter
 
-__all__ = ['log_trace', 'run_in_background']
+__all__ = ['log_trace', 'run_in_background', 'coverage_from_trace']
 
 
 def log_trace(interpreter: Interpreter) -> List[model.MacroStep]:

@@ -1,7 +1,7 @@
 from collections import deque
 from itertools import combinations
 from typing import (Any, Callable, Dict, Iterable, List, Mapping, Optional,
-                    Set, Union, cast)
+                    Set, Union, cast, Deque)
 
 from .. import model
 from ..code import Evaluator, PythonEvaluator
@@ -25,7 +25,7 @@ class Interpreter:
     """
 
     def __init__(self, statechart: model.Statechart, *,
-                 evaluator_klass: Callable[['Interpreter'], Evaluator]=PythonEvaluator,
+                 evaluator_klass: Callable[..., Evaluator]=PythonEvaluator,
                  initial_context: Mapping[str, Any]=None,
                  ignore_contract: bool=False) -> None:
         # Internal variables
@@ -44,10 +44,10 @@ class Interpreter:
         self._configuration = set()  # type: Set[str]
 
         # External events queue
-        self._external_events = deque()  # type: deque[model.Event]
+        self._external_events = deque()  # type: Deque[model.Event]
 
         # Internal events queue
-        self._internal_events = deque()  # type: deque[model.InternalEvent]
+        self._internal_events = deque()  # type: Deque[model.InternalEvent]
 
         # Bound callables
         self._bound = []  # type: List[Callable[[model.Event], Any]]
@@ -300,11 +300,11 @@ class Interpreter:
         for property_statechart in self._bound_properties:
             property_statechart.execute()
 
-    def _check_properties(self, macro_step: model.MacroStep):
+    def _check_properties(self, macro_step: Optional[model.MacroStep]):
         """
         Check property statecharts for failure (ie. final state is reached).
 
-        :param macro_step: latest processed macro step
+        :param macro_step: current macro step being processed
         """
         for property_statechart in self._bound_properties:
             # Check for failure
@@ -464,7 +464,7 @@ class Interpreter:
 
         return returned_steps
 
-    def _create_stabilization_step(self, names: Iterable[str]) -> model.MicroStep:
+    def _create_stabilization_step(self, names: Iterable[str]) -> Optional[model.MicroStep]:
         """
         Return a stabilization step, ie. a step that lead to a more stable situation
         for the current statechart. Stabilization means:
@@ -500,6 +500,8 @@ class Interpreter:
             elif isinstance(leaf, model.CompoundState) and leaf.initial:
                 return model.MicroStep(entered_states=[leaf.initial])
 
+        return None
+
     def _apply_step(self, step: model.MicroStep) -> model.MicroStep:
         """
         Apply given *MicroStep* on this statechart
@@ -517,7 +519,7 @@ class Interpreter:
         # Exit states
         for state in exited_states:
             # Execute exit action
-            sent_events.extend(self._evaluator.execute_onexit(state))
+            sent_events.extend(self._evaluator.execute_on_exit(state))
 
             # Deal with history
             if isinstance(state, model.CompoundState):
@@ -570,7 +572,7 @@ class Interpreter:
             self._evaluate_contract_conditions(state, 'preconditions', step)
 
             # Execute entry action
-            sent_events.extend(self._evaluator.execute_onentry(state))
+            sent_events.extend(self._evaluator.execute_on_entry(state))
 
             # Update configuration
             self._configuration.add(state.name)

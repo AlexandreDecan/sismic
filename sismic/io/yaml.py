@@ -21,7 +21,7 @@ class SCHEMA:
         schema.Optional('contract'): [contract],
     }
 
-    state = dict()  # type: Dict
+    state = dict()  # type: ignore
     state.update({
         'name': schema.Use(str),
         schema.Optional('type'): schema.Or('final', 'shallow history', 'deep history'),
@@ -60,7 +60,7 @@ def import_from_yaml(statechart: Iterable[str], ignore_schema: bool=False, ignor
         data = yaml.safe_load(statechart)  # type: dict
     else:
         yml = yaml.YAML(typ='safe', pure=True)
-        data = yml.load(statechart)  # type: dict
+        data = yml.load(statechart)
 
     if not ignore_schema:
         try:

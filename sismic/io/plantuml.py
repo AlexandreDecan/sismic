@@ -1,5 +1,6 @@
+from typing import Mapping, List
 from ..model import (
-    DeepHistoryState, FinalState,
+    DeepHistoryState, FinalState, Transition, CompoundState,
     OrthogonalState, ShallowHistoryState, Statechart,
     ActionStateMixin, ContractMixin, HistoryStateMixin)
 
@@ -11,13 +12,13 @@ class PlantUMLExporter:
     def __init__(
             self,
             statechart: Statechart, *,
-            statechart_name=True,
-            statechart_description=True,
-            statechart_preamble=True,
-            state_contracts=True,
-            state_actions=True,
-            transition_contracts=True,
-            transition_action=True):
+            statechart_name: bool=True,
+            statechart_description: bool=True,
+            statechart_preamble: bool=True,
+            state_contracts: bool=True,
+            state_actions: bool=True,
+            transition_contracts: bool=True,
+            transition_action: bool=True) -> None:
         self.statechart = statechart
         self.statechart_name = statechart_name
         self.statechart_description = statechart_description
@@ -27,8 +28,8 @@ class PlantUMLExporter:
         self.transition_contracts = transition_contracts
         self.transition_action = transition_action
 
-        self._states_id = {}
-        self._output = []
+        self._states_id = dict()  # type: Mapping[str, str]
+        self._output = []  # type: List[str]
         self._indent = 0
 
     def indent(self):
@@ -37,7 +38,7 @@ class PlantUMLExporter:
     def deindent(self):
         self._indent -= 2
 
-    def output(self, text, *, wrap=''):
+    def output(self, text: str, *, wrap: str='') -> None:
         lines = text.strip().split('\n')
 
         for line in lines:
@@ -53,7 +54,7 @@ class PlantUMLExporter:
             )
 
     @staticmethod
-    def state_id(name):
+    def state_id(name: str) -> str:
         return ''.join(filter(str.isalnum, name))
 
     def export_statechart(self):
@@ -70,7 +71,7 @@ class PlantUMLExporter:
             self.deindent()
             self.output('end note')
 
-    def export_state(self, name: str):
+    def export_state(self, name: str) -> None:
         state = self.statechart.state_for(name)
 
         # Special case for final state
@@ -144,13 +145,13 @@ class PlantUMLExporter:
             self.export_state(child)
 
         # Initial state
-        if hasattr(state, 'initial') and state.initial:
+        if isinstance(state, CompoundState) and state.initial:
             self.output('[*] --> {}'.format(self.state_id(state.initial)))
 
         self.deindent()
         self.output('}')
 
-    def export_transitions(self, source_name):
+    def export_transitions(self, source_name: str) -> None:
         state = self.statechart.state_for(source_name)
 
         # History state
@@ -167,7 +168,7 @@ class PlantUMLExporter:
 
             self.export_transition(transition)
 
-    def export_transition(self, transition):
+    def export_transition(self, transition: Transition) -> None:
         target = self.statechart.state_for(transition.target)
 
         if isinstance(target, FinalState):
@@ -200,7 +201,7 @@ class PlantUMLExporter:
             text=''.join(text),
         ))
 
-    def export(self):
+    def export(self) -> str:
         self.output('@startuml')
 
         self.export_statechart()

@@ -4,7 +4,7 @@ import shutil
 import sys
 import tempfile
 
-from typing import List
+from typing import List, Mapping
 from behave import __main__ as behave_main  # type: ignore
 
 
@@ -24,7 +24,7 @@ ENVIRONMENT = {
     'before_step': [],
     'after_step': [],
     'content': [],
-}
+}  # type: Mapping[str, List[str]]
 
 
 def execute_behave(statechart: str,
@@ -46,9 +46,9 @@ def execute_behave(statechart: str,
             shutil.copy(feature, os.path.join(tempdir, feature_filename))
 
         # Move property statecharts inside, if any
-        for property in properties if properties else []:
-            _, property_filename = os.path.split(property)
-            shutil.copy(property, os.path.join(tempdir, property_filename))
+        for prop in properties if properties else []:
+            _, property_filename = os.path.split(prop)
+            shutil.copy(prop, os.path.join(tempdir, property_filename))
 
         ENVIRONMENT['import'].append('from behave.model import Step')
         ENVIRONMENT['before_scenario'].append(

@@ -38,6 +38,7 @@ class Statechart:
         for name, parent in self._parent.items():
             if parent is None:
                 return name
+        return None
 
     @property
     def preamble(self):
@@ -147,7 +148,7 @@ class Statechart:
         ancestors = self.ancestors_for(name)
         return len(ancestors) + 1
 
-    def least_common_ancestor(self, name_first: str, name_second: str) -> str:
+    def least_common_ancestor(self, name_first: str, name_second: str) -> Optional[str]:
         """
         Return the deepest common ancestor for *s1* and *s2*, or *None* if
         there is no common ancestor except root (top-level) state.
@@ -165,6 +166,7 @@ class Statechart:
         for state in s1_anc:
             if state in s2_anc:
                 return state
+        return None
 
     def leaf_for(self, names: Iterable[str]) -> List[str]:
         """

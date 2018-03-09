@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Dict, Iterable, List, Mapping, cast
+from typing import Any, Optional, Iterable, List, Mapping, cast
 
 from ..model import (ActionStateMixin, Event, Statechart, StateMixin,
                      Transition)
@@ -26,7 +26,7 @@ class Evaluator(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def __init__(self, interpreter=None, *, initial_context: Mapping[str, Any]=None) -> None:
-        self._condition_sequences = {}  # type: Dict[str, Dict[str, Sequence]]
+        pass
 
     @property
     @abc.abstractmethod
@@ -81,7 +81,7 @@ class Evaluator(metaclass=abc.ABCMeta):
             if len(events) > 0:
                 raise CodeEvaluationError('Events cannot be raised by statechart preamble')
 
-    def evaluate_guard(self, transition: Transition, event: Event) -> bool:
+    def evaluate_guard(self, transition: Transition, event: Event) -> Optional[bool]:
         """
         Evaluate the guard for given transition.
 
@@ -91,6 +91,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         """
         if transition.guard:
             return self._evaluate_code(transition.guard, additional_context={'event': event})
+        return None
 
     def execute_action(self, transition: Transition, event: Event) -> List[Event]:
         """
@@ -106,7 +107,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         else:
             return []
 
-    def execute_onentry(self, state: StateMixin) -> List[Event]:
+    def execute_on_entry(self, state: StateMixin) -> List[Event]:
         """
         Execute the on entry action for given state.
         This method is called for every state that is entered, even those with no *on_entry*.
@@ -119,7 +120,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         else:
             return []
 
-    def execute_onexit(self, state: StateMixin) -> List[Event]:
+    def execute_on_exit(self, state: StateMixin) -> List[Event]:
         """
         Execute the on exit action for given state.
         This method is called for every state that is exited, even those with no *on_exit*.
