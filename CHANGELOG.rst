@@ -6,6 +6,7 @@ Changelog
 
 - (Added) Full equality comparison (``__eq__``) for states and transitions (including all relevant attributes).
 - (Added) ``Interpreter.queue`` also accepts an event name in addition to an ``Event`` instance.
+- (Added) ``Interpreter.queue`` accepts more than one event (or name) at once.
 - (Changed) ``Evaluator.execute_onentry`` and ``execute_onexit`` become ``execute_on_entry`` and ``execute_on_exit``.
 - (Changed) Many type annotations were added or fixed.
 - (Changed) ``Interpreter.bind`` can no longer be chained.

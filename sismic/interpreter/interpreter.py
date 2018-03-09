@@ -159,19 +159,22 @@ class Interpreter:
 
     def queue(self, event_or_name: Union[str, model.Event], *events_or_names: Union[str, model.Event]) -> 'Interpreter':
         """
-        Queue an event to the interpreter.
+        Queue one or more events to the interpreter external queue.
 
         :param event_or_name: an *Event* instance, or the name of an event.
         :param events_or_names: additional *Event* instances, or names of events.
         :return: *self* so it can be chained.
         """
+        if len(events_or_names) == 0:
+            events_or_names = tuple()
 
-        if isinstance(event_or_name, model.Event):
-            self._external_events.append(event_or_name)
-        elif isinstance(event_or_name, str):
-            self._external_events.append(model.Event(event_or_name))
-        else:
-            raise ValueError('{} is not a string nor an Event instance.'.format(event_or_name))
+        for item in [event_or_name] + list(events_or_names):
+            if isinstance(item, model.Event):
+                self._external_events.append(item)
+            elif isinstance(item, str):
+                self._external_events.append(model.Event(item))
+            else:
+                raise ValueError('{} is not a string nor an Event instance.'.format(item))
 
         return self
 

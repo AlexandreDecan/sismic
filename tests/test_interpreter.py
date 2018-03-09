@@ -91,11 +91,26 @@ class SimulatorSimpleTests(unittest.TestCase):
         self.interpreter.queue(Event('e1'))
         self.assertEqual(self.interpreter._select_event(), Event('e1'))
 
-        self.interpreter.queue(InternalEvent('e1'))
-        self.assertEqual(self.interpreter._select_event(), InternalEvent('e1'))
+        self.interpreter.queue(InternalEvent('e2'))
+        self.assertEqual(self.interpreter._select_event(), InternalEvent('e2'))
 
-        self.interpreter.queue('e1')
-        self.assertEqual(self.interpreter._select_event(), Event('e1'))
+        # Internal events are handled as external events, and thus have no priority
+        self.interpreter.queue(Event('external'))
+        self.interpreter.queue(InternalEvent('internal'))
+        self.assertEqual(self.interpreter._select_event(), Event('external'))
+        self.assertEqual(self.interpreter._select_event(), InternalEvent('internal'))
+
+        self.interpreter.queue('e3')
+        self.assertEqual(self.interpreter._select_event(), Event('e3'))
+
+        self.interpreter.queue('e4').queue('e5')
+        self.assertEqual(self.interpreter._select_event(), Event('e4'))
+        self.assertEqual(self.interpreter._select_event(), Event('e5'))
+
+        self.interpreter.queue('e6', 'e7', Event('e8'))
+        self.assertEqual(self.interpreter._select_event(), Event('e6'))
+        self.assertEqual(self.interpreter._select_event(), Event('e7'))
+        self.assertEqual(self.interpreter._select_event(), Event('e8'))
 
     def test_simple_configuration(self):
         self.interpreter.execute_once()  # Should do nothing!

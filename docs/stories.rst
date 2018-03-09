@@ -1,10 +1,12 @@
+.. _stories:
+
 Reproducible scenarios
 ======================
 
 While events can be sent to an interpreter using its :py:meth:`~sismic.interpreter.Interpreter.queue` method, it can be very convenient
 to define and store scenarios, ie. sequences or traces of events, that can control the execution of a statechart.
 
-Such scenarios are called *stories* in sismic, and can be used to accurately reproduce the execution of a statechart.
+Such scenarios are called *stories* in Sismic, and can be used to accurately reproduce the execution of a statechart.
 They are also very instrumental for testing statecharts.
 
 Writing stories

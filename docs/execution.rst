@@ -127,13 +127,23 @@ This method accepts either an :py:class:`~sismic.model.Event` instance, or the n
     interpreter.queue('clack')  # An event name can be provided as well
     interpreter.execute_once()  # Process the "clack" event
 
-For convenience, :py:meth:`~sismic.interpreter.Interpreter.queue` returns ``self`` and thus can be chained.
-We will see later that Sismic also provides a way to express scenarios, in order to avoid repeated calls to
-:py:meth:`~sismic.interpreter.Interpreter.queue`.
+More than one event can be passed to the :py:meth:`sismic.interpreter.Interpreter.queue` method at once:
 
 .. testcode:: interpreter
 
-    interpreter.queue('click').queue('clack').execute_once()
+    interpreter.queue('click', 'clack')
+    interpreter.execute_once()  # Process "click"
+    interpreter.execute_once()  # Process "clack"
+
+
+We will see later that Sismic also provides a more specific way to express and execute reproducible scenarios
+including events and pauses (see :ref:`stories`).
+
+For convenience, :py:meth:`~sismic.interpreter.Interpreter.queue` returns the interpreter and thus can be chained:
+
+.. testcode:: interpreter
+
+    interpreter.queue('click', 'clack').execute_once()
 
 Notice that :py:meth:`~sismic.interpreter.Interpreter.execute_once` consumes at most one event at a time.
 In this example, the *clack* event is not processed.
