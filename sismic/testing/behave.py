@@ -60,7 +60,7 @@ def execute_behave(statechart: str,
             for property_sc in properties:
                 _, property_filename = os.path.split(property_sc)
                 ENVIRONMENT['before_scenario'].append(
-                    "context.execute_steps('I bind property statechart {path}')\n"
+                    "context.execute_steps('Given I bind property statechart {path}')"
                     .format(path=os.path.join(tempdir, property_filename).replace('\\', '\\\\'))
                 )
 
