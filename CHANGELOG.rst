@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.25.0 (2018-03-09)
+-------------------
 
 Property statecharts do not require anymore the use of an ``ExecutionWatcher`` and are now directly supported
 by the interpreter. The documentation contains a new page, *Monitoring properties*, that explains how to monitor
