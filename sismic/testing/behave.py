@@ -57,7 +57,6 @@ def execute_behave(statechart: str,
         )
 
         if properties:
-            ENVIRONMENT['before_scenario'].append("context.execute_steps('Given I create an execution watcher')")
             for property_sc in properties:
                 _, property_filename = os.path.split(property_sc)
                 ENVIRONMENT['before_scenario'].append(
