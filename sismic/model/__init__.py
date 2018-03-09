@@ -4,4 +4,4 @@ from .elements import BasicState, CompoundState, OrthogonalState, ShallowHistory
 from .elements import Transition
 from .statechart import Statechart
 from .steps import MicroStep, MacroStep
-from .events import Event, InternalEvent
+from .events import Event, InternalEvent, MetaEvent

@@ -52,19 +52,18 @@ def execute_behave(statechart: str,
 
         ENVIRONMENT['import'].append('from behave.model import Step')
         ENVIRONMENT['before_scenario'].append(
-            "context.execute_steps('Given I import a statechart from {{path}}')"
-            .replace('{{path}}', os.path.join(tempdir, statechart_filename).replace('\\', '\\\\'))
+            "context.execute_steps('Given I import a statechart from {path}')"
+            .format(path=os.path.join(tempdir, statechart_filename).replace('\\', '\\\\'))
         )
 
         if properties:
             ENVIRONMENT['before_scenario'].append("context.execute_steps('Given I create an execution watcher')")
             for property_sc in properties:
-                line = "context.execute_steps('Given I watch the statechart with property statechart {{path}}')\n"
                 _, property_filename = os.path.split(property_sc)
-                line = line.replace('{{path}}', os.path.join(tempdir, property_filename).replace('\\', '\\\\'))
-                ENVIRONMENT['before_scenario'].append(line)
-            ENVIRONMENT['before_scenario'].append("context.execute_steps('Given I start the execution watcher')")
-            ENVIRONMENT['after_scenario'].append("context.execute_steps('Given I stop the execution watcher')")
+                ENVIRONMENT['before_scenario'].append(
+                    "context.execute_steps('I bind property statechart {path}')\n"
+                    .format(path=os.path.join(tempdir, property_filename).replace('\\', '\\\\'))
+                )
 
         if coverage:
             ENVIRONMENT['import'].append('from itertools import chain')

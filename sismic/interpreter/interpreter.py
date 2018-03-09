@@ -5,8 +5,8 @@ from typing import (Any, Callable, Dict, Iterable, List, Mapping, Optional,
 
 from .. import model
 from ..code import Evaluator, PythonEvaluator
-from ..exceptions import (ConflictingTransitionsError, InvariantError,
-                          NonDeterminismError, PostconditionError, PreconditionError)
+from ..exceptions import (ConflictingTransitionsError, InvariantError, PropertyStatechartError,
+                          ExecutionError, NonDeterminismError, PostconditionError, PreconditionError)
 
 __all__ = ['Interpreter']
 
@@ -52,6 +52,9 @@ class Interpreter:
         # Bound callables
         self._bound = []  # type: List[Callable[[model.Event], Any]]
 
+        # Bound property statecharts
+        self._bound_properties = []  # type: List[Interpreter]
+
         # Evaluator
         self._evaluator = evaluator_klass(self, initial_context=initial_context)  # type: ignore
         self._evaluator.execute_statechart(statechart)
@@ -70,7 +73,13 @@ class Interpreter:
 
         :param value: time value (in seconds)
         """
+        if self._time > value:
+            raise ExecutionError('Time must be monotonic, cannot set time to {} from {}'.format(value, self._time))
         self._time = value
+
+        # Update bound properties
+        for property_statechart in self._bound_properties:
+            property_statechart.time = self._time
 
     @property
     def configuration(self) -> List[str]:
@@ -117,6 +126,37 @@ class Interpreter:
             self._bound.append(interpreter_or_callable)
 
         return self
+
+    def bind_property(self, statechart_or_interpreter: Union[model.Statechart, 'Interpreter']):
+        """
+        Bind a property statechart to the current interpreter.
+        A property statechart receives meta-events from the current interpreter depending on what happens:
+
+         - step started: when a macro step starts.
+         - step ended: when a macro step ends.
+         - event consumed: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
+         - event sent: when an event is sent. The sent event is exposed through the ``event`` attribute.
+         - state exited: when a state is exited. The exited state is exposed through the ``state`` attribute.
+         - state entered: when a state is entered. The entered state is exposed through the ``state`` attribute.
+         - transition processed: when a transition is processed. The source state, target state and the event are
+           exposed respectively through the ``source``, ``target`` and ``event`` attribute.
+
+        The internal clock of all property statecharts will be synched with the one of the current interpreter.
+        As soon as a property statechart reaches a final state, a PropertyStatechartError will be raised.
+
+        :param statechart_or_interpreter: A property statechart or an interpreter over a property statechart.
+        """
+        # Create interpreter if required
+        if isinstance(statechart_or_interpreter, model.Statechart):
+            interpreter = Interpreter(statechart_or_interpreter)
+        else:
+            interpreter = statechart_or_interpreter
+
+        # Sync clock
+        interpreter.time = self.time
+
+        # Add to the list of properties
+        self._bound_properties.append(interpreter)
 
     def queue(self, event: model.Event) -> 'Interpreter':
         """
@@ -178,7 +218,10 @@ class Interpreter:
                 # Look for transitions with event
                 event = self._select_event()
                 if event is None:
-                    return None  # No event implies no step!
+                    # No event implies no step!
+                    # However, we need to check properties
+                    self._check_properties(None)
+                    return None
                 transitions = self._select_transitions(event=event)
 
             # No transition? Empty step!
@@ -190,6 +233,11 @@ class Interpreter:
                     self._filter_transitions(transitions)
                 )
                 computed_steps = self._create_steps(event, transitions)
+
+        # Notify properties
+        self._notify_properties('step started')
+        if event:
+            self._notify_properties('event consumed', event=event)
 
         # Execute the steps
         self._evaluator.on_step_starts(event)
@@ -206,6 +254,10 @@ class Interpreter:
         for name in configuration:
             state = self._statechart.state_for(name)
             self._evaluate_contract_conditions(state, 'invariants', macro_step)
+
+        # End step and check for property statechart violations
+        self._notify_properties('step ended')
+        self._check_properties(macro_step)
 
         return macro_step
 
@@ -227,6 +279,36 @@ class Interpreter:
                 bound_callable(external_event)
         else:
             raise ValueError('Only InternalEvent instances are supported, not {}.'.format(type(event)))
+
+    def _notify_properties(self, event_name: str, **kwargs):
+        """
+        Notify the property statecharts bound to this interpreter.
+
+        :param event_name: name of the event
+        :param kwargs: additional parameters that should be made available as event parameters
+        """
+
+        # Create meta-event
+        event = model.MetaEvent(event_name, **kwargs)
+
+        # Send meta-event to the bound properties
+        for property_statechart in self._bound_properties:
+            property_statechart.queue(event)
+
+        # Execute property statecharts
+        for property_statechart in self._bound_properties:
+            property_statechart.execute()
+
+    def _check_properties(self, macro_step: model.MacroStep):
+        """
+        Check property statecharts for failure (ie. final state is reached).
+
+        :param macro_step: latest processed macro step
+        """
+        for property_statechart in self._bound_properties:
+            # Check for failure
+            if property_statechart.final:
+                raise PropertyStatechartError(property_statechart, self.configuration, macro_step, self.context)
 
     def _select_event(self) -> Optional[model.Event]:
         """
@@ -458,6 +540,9 @@ class Interpreter:
             # Postconditions
             self._evaluate_contract_conditions(state, 'postconditions', step)
 
+            # Notify properties
+            self._notify_properties('state exited', state=state.name)
+
         # Execute transition
         if step.transition:
             # Preconditions and invariants
@@ -470,6 +555,14 @@ class Interpreter:
             self._evaluate_contract_conditions(step.transition, 'postconditions', step)
             self._evaluate_contract_conditions(step.transition, 'invariants', step)
 
+            # Notify properties
+            self._notify_properties(
+                'transition processed',
+                source=step.transition.source,
+                target=step.transition.target,
+                event=step.event
+            )
+
         # Enter states
         for state in entered_states:
             # Preconditions
@@ -481,9 +574,15 @@ class Interpreter:
             # Update configuration
             self._configuration.add(state.name)
 
+            # Notify properties
+            self._notify_properties('state entered', state=state.name)
+
         # Send events
         for event in sent_events:
             self._raise_event(event)
+
+            # Notify properties
+            self._notify_properties('event sent', event=event)
 
         return model.MicroStep(event=step.event, transition=step.transition,
                                entered_states=step.entered_states, exited_states=step.exited_states,

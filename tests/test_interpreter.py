@@ -78,6 +78,15 @@ class SimulatorSimpleTests(unittest.TestCase):
         self.assertEqual(self.interpreter.configuration, ['root', 's1'])
         self.assertFalse(self.interpreter.final)
 
+    def test_time(self):
+        self.assertEqual(self.interpreter.time, 0)
+        self.interpreter.time += 10
+        self.assertEqual(self.interpreter.time, 10)
+        self.interpreter.time = 20
+        self.assertEqual(self.interpreter.time, 20)
+        with self.assertRaises(exceptions.ExecutionError):
+            self.interpreter.time = 10
+
     def test_queue(self):
         self.interpreter.queue(Event('e1'))
         self.assertEqual(self.interpreter._select_event(), Event('e1'))

@@ -4,9 +4,21 @@ Changelog
 Unreleased
 ----------
 
-- (Changed) ``Interpreter.raise_event`` is now ``Interpreter._raise_event`` as it's not supposed to be part of the public API.
-- (Changed) A statechart preamble cannot be used to send events.
+Property statecharts do not require anymore the use of an ``ExecutionWatcher`` and are now directly supported
+by the interpreter. The documentation contains a new page, *Monitoring properties*, that explains how to monitor
+properties at runtime and provides some examples of property statecharts.
 
+- (Added) Property statechart can be bound to an interpreter with ``interpreter.bound_property`` method, that accepts
+  either a ``Statechart`` or an ``Interpreter`` instance.
+- (Added) A ``PropertyStatechartError`` that is raised when a property statechart reaches a final state.
+- (Added) A ``MetaEvent`` class to represent meta-events sent by the interpreter for property statechart checking.
+- (Added) ``Interpreter._notify_property(event_name, **kwargs)`` and ``Interpreter._check_properties(macro_step)`` that
+  are used internally to respectively send meta-events to bound properties, and to check these properties.
+- (Changed) ``Interpreter.raise_event`` is now ``Interpreter._raise_event`` as it's not supposed to be part of the public API.
+- (Removed) ``sismic.testing`` module was removed (including the ``ExecutionWatcher`` and ``TestStoryFromTrace``).
+- (Removed) BDD steps related to the execution watcher, in ``sismic.testing.steps``.
+- (Fixed) ``Interpreter.time`` cannot be set to a lower value than the current one (ie. time is monotonic).
+- (Fixed) A statechart preamble cannot be used to send events.
 
 0.24.3 (2018-03-08)
 -------------------

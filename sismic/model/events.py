@@ -56,3 +56,10 @@ class InternalEvent(Event):
     Subclass of Event that represents an internal event.
     """
     pass
+
+
+class MetaEvent(Event):
+    """
+    Subclass of Event that represents a MetaEvent, as used in property statecharts.
+    """
+    pass

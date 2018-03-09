@@ -75,25 +75,10 @@ def load_statechart(context, path):
     _execute_statechart(context, force_execution=True, execute_once=True)
 
 
-@given('I create an execution watcher')
-def create_execution_watcher(context):
-    context._execution_watcher = ExecutionWatcher(context._interpreter)
-
-
-@given('I watch the statechart with property statechart {path}')
+@given('I bind property statechart {path}')
 def load_property_statechart(context, path):
     with open(path) as f:
-        context._execution_watcher.watch_with(import_from_yaml(f), fails_fast=True)
-
-
-@given('I start the execution watcher')
-def start_execution_watcher(context):
-    context._execution_watcher.start()
-
-
-@given('I stop the execution watcher')
-def stop_execution_watcher(context):
-    context._execution_watcher.stop()
+        context._interpreter.bind_property(import_from_yaml(f))
 
 
 @given('I execute the statechart')

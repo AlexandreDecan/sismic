@@ -171,20 +171,8 @@ Given/when I import a statechart from {path}
     This step is implicitly executed when using ``sismic-behave``.
     It is only needed when calling ``behave`` directly.
 
-Given I create an execution watcher
-   Create and associate an instance of :py:class:`~sismic.testing.ExecutionWatcher`.
-   This step is implicitly executed when providing ``--properties`` to ``sismic-behave``.
-
-Given I watch the statechart with property statechart {path}
-   Import a (property) statechart from a `yaml` file, and pass it to the execution watcher.
-   This step is implicitly executed when providing ``--properties`` to ``sismic-behave``.
-
-Given I start the execution watcher
-   Start the execution watcher (in a fail fasts mode).
-   This step is implicitly executed when providing ``--properties`` to ``sismic-behave``.
-
-Given I stop the execution watcher
-   Stop the execution watcher.
+Given I bind property statechart {path}
+   Import a (property) statechart from a `yaml` file, and bind it to the interpreter.
    This step is implicitly executed when providing ``--properties`` to ``sismic-behave``.
 
 Given/when I execute the statechart

@@ -44,9 +44,10 @@ Sismic provides the following features:
 - Support for communication between statecharts and co-simulation
 - Built-in support for expressing actions and guards using regular Python code, can be easily extended to other programming languages
 - A design-by-contract approach for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions
+- Runtime checking of behavioral properties expressed as statecharts.
 - Predefined step definitions and utilities (including test coverage) to support behavior-driven development
 - A unit testing framework for statecharts, including generation of test scenarios
-- Visualize statecharts using `PlantUML <http://www.plantuml.com/plantuml>`__
+- Statechart visualization using `PlantUML <http://www.plantuml.com/plantuml>`__
 
 Some experimental features are also available as `feature branches <https://github.com/AlexandreDecan/sismic/issues?q=is%3Aopen+is%3Aissue+label%3A%22feature+branch%22>`__.
 
@@ -72,7 +73,7 @@ Sismic statecharts provides full support for the majority of the UML 2 statechar
     stories
     contract
     behavior
-    testing
+    properties
 
 
 .. toctree::
