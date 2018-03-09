@@ -141,10 +141,11 @@ class Interpreter:
          - transition processed: when a transition is processed. The source state, target state and the event are
            exposed respectively through the ``source``, ``target`` and ``event`` attribute.
 
-        The internal clock of all property statecharts will be synched with the one of the current interpreter.
-        As soon as a property statechart reaches a final state, a PropertyStatechartError will be raised.
+        The internal clock of all property statecharts will be synced with the one of the current interpreter.
+        As soon as a property statechart reaches a final state, a ``PropertyStatechartError`` will be raised, 
+        implicitly meaning that the property expressed by the corresponding property statechart is not satisfied.
 
-        :param statechart_or_interpreter: A property statechart or an interpreter over a property statechart.
+        :param statechart_or_interpreter: A property statechart or an interpreter of a property statechart.
         """
         # Create interpreter if required
         if isinstance(statechart_or_interpreter, model.Statechart):
