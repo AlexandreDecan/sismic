@@ -55,7 +55,7 @@ class Interpreter:
         # Evaluator
         self._evaluator = evaluator_klass(self, initial_context=initial_context)  # type: ignore
         for event in self._evaluator.execute_statechart(statechart):
-            self.raise_event(event)
+            self._raise_event(event)
 
     @property
     def time(self) -> float:
@@ -118,25 +118,6 @@ class Interpreter:
             self._bound.append(interpreter_or_callable)
 
         return self
-
-    def raise_event(self, event: model.Event) -> None:
-        """
-        Raise an event from the statechart.
-        Events are propagated to bound interpreters as non-internal events, and added to the internal queue of the
-        current interpreter.
-
-        :param event: raised event.
-        """
-        if isinstance(event, model.InternalEvent):
-            # Propagate event to bound callable as an "external" event
-            external_event = model.Event(event.name, **event.data)
-            for bound_callable in self._bound:
-                bound_callable(external_event)
-
-            # Add to current interpreter's internal queue
-            self._internal_events.append(event)
-        else:
-            raise ValueError('Only InternalEvent instances are supported, not {}.'.format(type(event)))
 
     def queue(self, event: model.Event) -> 'Interpreter':
         """
@@ -228,6 +209,25 @@ class Interpreter:
             self._evaluate_contract_conditions(state, 'invariants', macro_step)
 
         return macro_step
+
+    def _raise_event(self, event: model.Event) -> None:
+        """
+        Raise an event from the statechart.
+        Events are propagated to bound interpreters as non-internal events, and added to the internal queue of the
+        current interpreter.
+
+        :param event: raised event.
+        """
+        if isinstance(event, model.InternalEvent):
+            # Propagate event to bound callable as an "external" event
+            external_event = model.Event(event.name, **event.data)
+            for bound_callable in self._bound:
+                bound_callable(external_event)
+
+            # Add to current interpreter's internal queue
+            self._internal_events.append(event)
+        else:
+            raise ValueError('Only InternalEvent instances are supported, not {}.'.format(type(event)))
 
     def _select_event(self) -> Optional[model.Event]:
         """
@@ -484,7 +484,7 @@ class Interpreter:
 
         # Send events
         for event in sent_events:
-            self.raise_event(event)
+            self._raise_event(event)
 
         return model.MicroStep(event=step.event, transition=step.transition,
                                entered_states=step.entered_states, exited_states=step.exited_states,

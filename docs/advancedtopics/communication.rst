@@ -81,7 +81,7 @@ is sent both to ``interpreter_1`` and ``interpreter_2``.
     from sismic.model import InternalEvent, Event
 
     # Manually create and raise an internal event
-    interpreter_3.raise_event(InternalEvent('test'))
+    interpreter_3._raise_event(InternalEvent('test'))
 
     print('Events for interpreter_1:', interpreter_1._external_events.pop())
     print('Events for interpreter_2:', interpreter_2._external_events.pop())

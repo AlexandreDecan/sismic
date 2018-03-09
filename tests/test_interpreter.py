@@ -423,7 +423,7 @@ class BindTests(unittest.TestCase):
         self.interpreter.bind(other_interpreter)
         self.assertIn(other_interpreter.queue, self.interpreter._bound)
 
-        self.interpreter.raise_event(InternalEvent('test'))
+        self.interpreter._raise_event(InternalEvent('test'))
         self.assertTrue(self.interpreter._internal_events.pop(), Event('test'))
         self.assertTrue(other_interpreter._external_events.pop(), Event('test'))
 
@@ -435,6 +435,6 @@ class BindTests(unittest.TestCase):
         self.interpreter.bind(other_interpreter.queue)
         self.assertIn(other_interpreter.queue, self.interpreter._bound)
 
-        self.interpreter.raise_event(InternalEvent('test'))
+        self.interpreter._raise_event(InternalEvent('test'))
         self.assertTrue(self.interpreter._internal_events.pop(), Event('test'))
         self.assertTrue(other_interpreter._external_events.pop(), Event('test'))
