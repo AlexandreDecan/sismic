@@ -54,8 +54,7 @@ class Interpreter:
 
         # Evaluator
         self._evaluator = evaluator_klass(self, initial_context=initial_context)  # type: ignore
-        for event in self._evaluator.execute_statechart(statechart):
-            self._raise_event(event)
+        self._evaluator.execute_statechart(statechart)
 
     @property
     def time(self) -> float:
@@ -219,13 +218,13 @@ class Interpreter:
         :param event: raised event.
         """
         if isinstance(event, model.InternalEvent):
+            # Add to current interpreter's internal queue
+            self._internal_events.append(event)
+
             # Propagate event to bound callable as an "external" event
             external_event = model.Event(event.name, **event.data)
             for bound_callable in self._bound:
                 bound_callable(external_event)
-
-            # Add to current interpreter's internal queue
-            self._internal_events.append(event)
         else:
             raise ValueError('Only InternalEvent instances are supported, not {}.'.format(type(event)))
 

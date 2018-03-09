@@ -3,6 +3,7 @@ from typing import Any, Dict, Iterable, List, Mapping, cast
 
 from ..model import (ActionStateMixin, Event, Statechart, StateMixin,
                      Transition)
+from ..exceptions import CodeEvaluationError
 
 __all__ = ['Evaluator']
 
@@ -68,18 +69,17 @@ class Evaluator(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
-    def execute_statechart(self, statechart: Statechart) -> List[Event]:
+    def execute_statechart(self, statechart: Statechart):
         """
         Execute the initial code of a statechart.
         This method is called at the very beginning of the execution.
 
         :param statechart: statechart to consider
-        :return: a list of sent events
         """
         if statechart.preamble:
-            return self._execute_code(statechart.preamble)
-        else:
-            return []
+            events = self._execute_code(statechart.preamble)
+            if len(events) > 0:
+                raise CodeEvaluationError('Events cannot be raised by statechart preamble')
 
     def evaluate_guard(self, transition: Transition, event: Event) -> bool:
         """

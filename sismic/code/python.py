@@ -336,18 +336,17 @@ class PythonEvaluator(Evaluator):
         except Exception as e:
             raise CodeEvaluationError('The above exception occurred while executing:\n{}'.format(code)) from e
 
-    def execute_statechart(self, statechart: Statechart) -> List[Event]:
+    def execute_statechart(self, statechart: Statechart):
         """
         Execute the initial code of a statechart.
         This method is called at the very beginning of the execution.
 
         :param statechart: statechart to consider
-        :return: a list of sent events
         """
         if statechart.preamble:
-            return self._execute_code(statechart.preamble, context=self._context)
-        else:
-            return []
+            events = self._execute_code(statechart.preamble, context=self._context)
+            if len(events) > 0:
+                raise CodeEvaluationError('Events cannot be raised by statechart preamble')
 
     def evaluate_guard(self, transition: Transition, event: Event) -> bool:
         """

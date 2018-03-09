@@ -153,6 +153,11 @@ class PythonEvaluatorTests(unittest.TestCase):
         events = self.evaluator._execute_code('send("hello")')
         self.assertEqual(events, [InternalEvent('hello')])
 
+    def test_no_event_raised_by_preamble(self):
+        self.interpreter.statechart.preamble = 'send("test")'
+        with self.assertRaises(CodeEvaluationError):
+            self.evaluator.execute_statechart(self.interpreter.statechart)
+
     def test_add_variable_in_context(self):
         self.evaluator._execute_code('a = 1\nassert a == 1', context=self.evaluator.context)
         self.assertTrue(self.evaluator._evaluate_code('a == 1', context={'a': 1}))

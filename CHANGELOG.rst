@@ -5,6 +5,7 @@ Unreleased
 ----------
 
 - (Changed) ``Interpreter.raise_event`` is now ``Interpreter._raise_event`` as it's not supposed to be part of the public API.
+- (Changed) A statechart preamble cannot be used to send events.
 
 
 0.24.3 (2018-03-08)
