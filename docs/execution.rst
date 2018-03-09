@@ -92,7 +92,6 @@ Consider the following example.
 .. testcode:: interpreter
 
     from sismic.interpreter import Interpreter
-    from sismic.model import Event
 
     interpreter = Interpreter(my_statechart)
 
@@ -116,22 +115,28 @@ configuration:
     Before: []
     After: ['active', 'floorListener', 'movingElevator', 'doorsOpen', 'floorSelecting']
 
-One can send events to the statechart using its :py:meth:`sismic.interpreter.Interpreter.queue` methods.
+One can send events to the statechart using its :py:meth:`sismic.interpreter.Interpreter.queue` method.
+This method accepts either an :py:class:`~sismic.model.Event` instance, or the name of an event.
 
 .. testcode:: interpreter
 
+    from sismic.model import Event
     interpreter.queue(Event('click'))
-    interpreter.execute_once()  # Process the event
+    interpreter.execute_once()  # Process the "click" event
+
+    interpreter.queue('clack')  # An event name can be provided as well
+    interpreter.execute_once()  # Process the "clack" event
 
 For convenience, :py:meth:`~sismic.interpreter.Interpreter.queue` returns ``self`` and thus can be chained.
-We will see later that Sismic also provides a way to express scenarios, in order to avoid repeated calls to ``queue``.
+We will see later that Sismic also provides a way to express scenarios, in order to avoid repeated calls to
+:py:meth:`~sismic.interpreter.Interpreter.queue`.
 
 .. testcode:: interpreter
 
-    interpreter.queue(Event('click')).queue(Event('click')).execute_once()
+    interpreter.queue('click').queue('clack').execute_once()
 
 Notice that :py:meth:`~sismic.interpreter.Interpreter.execute_once` consumes at most one event at a time.
-In this example, the second *click* event is not processed.
+In this example, the *clack* event is not processed.
 
 To process all events *at once*, repeatedly call :py:meth:`~sismic.interpreter.Interpreter.execute_once` until
 it returns a ``None`` value. For instance:
@@ -217,7 +222,7 @@ A :py:class:`~sismic.model.MacroStep` instance thus can be viewed (and is!) an a
 
 This way, a complete *run* of a statechart can be summarized as an ordered list of
 :py:class:`~sismic.model.MacroStep` instances,
-and details of such a run can be obtained using the :py:class:`~sismic.model.MicroStep` list of a
+and details can be obtained using the :py:class:`~sismic.model.MicroStep` list of a
 :py:class:`~sismic.model.MacroStep`.
 
 
@@ -235,4 +240,4 @@ that can be used to see what happens. In particular:
  - The context of the execution is available using :py:attr:`~sismic.interpreter.Interpreter.context`
    (see :ref:`code_evaluation`).
  - It is possible to bind a callable that will be called each time an event is sent by the statechart using
-   the :py:attr:`~sismic.interpreter.Interpreter.bind` method of an interpreter (see :ref:`communication`).
+   the :py:meth:`~sismic.interpreter.Interpreter.bind` method of an interpreter (see :ref:`communication`).

@@ -94,8 +94,8 @@ class SimulatorSimpleTests(unittest.TestCase):
         self.interpreter.queue(InternalEvent('e1'))
         self.assertEqual(self.interpreter._select_event(), InternalEvent('e1'))
 
-        with self.assertRaises(ValueError):
-            self.interpreter.queue('e1')
+        self.interpreter.queue('e1')
+        self.assertEqual(self.interpreter._select_event(), Event('e1'))
 
     def test_simple_configuration(self):
         self.interpreter.execute_once()  # Should do nothing!

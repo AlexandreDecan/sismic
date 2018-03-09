@@ -1,11 +1,14 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.25.1 (2018-03-09)
+-------------------
 
 - (Added) Full equality comparison (``__eq__``) for states and transitions (including all relevant attributes).
+- (Added) ``Interpreter.queue`` also accepts an event name in addition to an ``Event`` instance.
 - (Changed) ``Evaluator.execute_onentry`` and ``execute_onexit`` become ``execute_on_entry`` and ``execute_on_exit``.
+- (Changed) Many type annotations were added or fixed.
+- (Changed) ``Interpreter.bind`` can no longer be chained.
 
 
 0.25.0 (2018-03-09)
@@ -26,6 +29,7 @@ properties at runtime and provides some examples of property statecharts.
 - (Removed) BDD steps related to the execution watcher, in ``sismic.testing.steps``.
 - (Fixed) ``Interpreter.time`` cannot be set to a lower value than the current one (ie. time is monotonic).
 - (Fixed) A statechart preamble cannot be used to send events.
+
 
 0.24.3 (2018-03-08)
 -------------------

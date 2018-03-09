@@ -110,7 +110,7 @@ class Interpreter:
         """
         return self._statechart
 
-    def bind(self, interpreter_or_callable: Union['Interpreter', Callable[[model.Event], Any]]) -> 'Interpreter':
+    def bind(self, interpreter_or_callable: Union['Interpreter', Callable[[model.Event], Any]]) -> None:
         """
         Bind an interpreter or a callable to the current interpreter.
         Each time an internal event is sent by this interpreter, any bound object will be called
@@ -125,9 +125,7 @@ class Interpreter:
         else:
             self._bound.append(interpreter_or_callable)
 
-        return self
-
-    def bind_property(self, statechart_or_interpreter: Union[model.Statechart, 'Interpreter']):
+    def bind_property(self, statechart_or_interpreter: Union[model.Statechart, 'Interpreter']) -> None:
         """
         Bind a property statechart to the current interpreter.
         A property statechart receives meta-events from the current interpreter depending on what happens:
@@ -159,17 +157,22 @@ class Interpreter:
         # Add to the list of properties
         self._bound_properties.append(interpreter)
 
-    def queue(self, event: model.Event) -> 'Interpreter':
+    def queue(self, event_or_name: Union[str, model.Event], *events_or_names: Union[str, model.Event]) -> 'Interpreter':
         """
         Queue an event to the interpreter.
 
-        :param event: an *Event* instance.
+        :param event_or_name: an *Event* instance, or the name of an event.
+        :param events_or_names: additional *Event* instances, or names of events.
         :return: *self* so it can be chained.
         """
-        if isinstance(event, model.Event):
-            self._external_events.append(event)
+
+        if isinstance(event_or_name, model.Event):
+            self._external_events.append(event_or_name)
+        elif isinstance(event_or_name, str):
+            self._external_events.append(model.Event(event_or_name))
         else:
-            raise ValueError('{} is not an Event instance'.format(event))
+            raise ValueError('{} is not a string nor an Event instance.'.format(event_or_name))
+
         return self
 
     def execute(self, max_steps: int = -1) -> List[model.MacroStep]:
