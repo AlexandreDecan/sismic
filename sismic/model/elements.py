@@ -17,6 +17,17 @@ class ContractMixin(metaclass=ABCMeta):
         self.invariants = []  # type: List[str]
 
 
+    def __eq__(self, other):
+        if isinstance(other, ContractMixin):
+            return (
+                self.preconditions == other.preconditions
+                and self.postconditions == other.postconditions
+                and self.invariants == other.invariants
+            )
+        else:
+            return NotImplemented
+
+
 class StateMixin(metaclass=ABCMeta):
     """
     State element with a name.
@@ -35,7 +46,10 @@ class StateMixin(metaclass=ABCMeta):
         return '{}({!r})'.format(self.__class__.__name__, self.name)
 
     def __eq__(self, other):
-        return self.name == other.name if isinstance(other, StateMixin) else NotImplemented
+        if isinstance(other, StateMixin):
+            return self.name == other.name
+        else:
+            return NotImplemented
 
     def __hash__(self):
         return hash(self.name)
@@ -53,19 +67,32 @@ class ActionStateMixin(metaclass=ABCMeta):
         self.on_entry = on_entry
         self.on_exit = on_exit
 
+    def __eq__(self, other):
+        if isinstance(other, ActionStateMixin):
+            return (
+                self.on_entry == other.on_exit
+                and self.on_exit == other.on_exit
+            )
+        else:
+            return NotImplemented
+
 
 class TransitionStateMixin(metaclass=ABCMeta):
     """
     A simple state can host transitions
     """
-    pass
+
+    def __eq__(self, other):
+        return isinstance(other, TransitionStateMixin)
 
 
 class CompositeStateMixin(metaclass=ABCMeta):
     """
     Composite state can have children states.
     """
-    pass
+
+    def __eq__(self, other):
+        return isinstance(other, CompositeStateMixin)
 
 
 class HistoryStateMixin(metaclass=ABCMeta):
@@ -77,6 +104,12 @@ class HistoryStateMixin(metaclass=ABCMeta):
 
     def __init__(self, memory: str=None) -> None:
         self.memory = memory
+
+    def __eq__(self, other):
+        if isinstance(other, HistoryStateMixin):
+            return self.memory == other.memory
+        else:
+            return NotImplemented
 
 
 class BasicState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMixin):
@@ -93,6 +126,17 @@ class BasicState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMix
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
         TransitionStateMixin.__init__(self)
+
+    def __eq__(self, other):
+        if isinstance(other, BasicState):
+            return (
+                ContractMixin.__eq__(self, other)
+                and StateMixin.__eq__(self, other)
+                and ActionStateMixin.__eq__(self, other)
+                and TransitionStateMixin.__eq__(self, other)
+            )
+        else:
+            return NotImplemented
 
 
 class CompoundState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin):
@@ -113,6 +157,18 @@ class CompoundState(ContractMixin, StateMixin, ActionStateMixin, TransitionState
         CompositeStateMixin.__init__(self)
         self.initial = initial
 
+    def __eq__(self, other):
+        if isinstance(other, CompoundState):
+            return (
+                ContractMixin.__eq__(self, other)
+                and StateMixin.__eq__(self, other)
+                and ActionStateMixin.__eq__(self, other)
+                and TransitionStateMixin.__eq__(self, other)
+                and CompositeStateMixin.__eq__(self, other)
+            )
+        else:
+            return NotImplemented
+
 
 class OrthogonalState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin):
     """
@@ -129,6 +185,18 @@ class OrthogonalState(ContractMixin, StateMixin, ActionStateMixin, TransitionSta
         ActionStateMixin.__init__(self, on_entry, on_exit)
         TransitionStateMixin.__init__(self)
         CompositeStateMixin.__init__(self)
+
+    def __eq__(self, other):
+        if isinstance(other, OrthogonalState):
+            return (
+                ContractMixin.__eq__(self, other)
+                and StateMixin.__eq__(self, other)
+                and ActionStateMixin.__eq__(self, other)
+                and TransitionStateMixin.__eq__(self, other)
+                and CompositeStateMixin.__eq__(self, other)
+            )
+        else:
+            return NotImplemented
 
 
 class ShallowHistoryState(ContractMixin, StateMixin, ActionStateMixin, HistoryStateMixin):
@@ -147,6 +215,17 @@ class ShallowHistoryState(ContractMixin, StateMixin, ActionStateMixin, HistorySt
         ActionStateMixin.__init__(self, on_entry, on_exit)
         HistoryStateMixin.__init__(self, memory)
 
+    def __eq__(self, other):
+        if isinstance(other, ShallowHistoryState):
+            return (
+                ContractMixin.__eq__(self, other)
+                and StateMixin.__eq__(self, other)
+                and ActionStateMixin.__eq__(self, other)
+                and HistoryStateMixin.__eq__(self, other)
+            )
+        else:
+            return NotImplemented
+
 
 class DeepHistoryState(ContractMixin, StateMixin, ActionStateMixin, HistoryStateMixin):
     """
@@ -164,6 +243,17 @@ class DeepHistoryState(ContractMixin, StateMixin, ActionStateMixin, HistoryState
         ActionStateMixin.__init__(self, on_entry, on_exit)
         HistoryStateMixin.__init__(self, memory)
 
+    def __eq__(self, other):
+        if isinstance(other, DeepHistoryState):
+            return (
+                ContractMixin.__eq__(self, other)
+                and StateMixin.__eq__(self, other)
+                and ActionStateMixin.__eq__(self, other)
+                and HistoryStateMixin.__eq__(self, other)
+            )
+        else:
+            return NotImplemented
+
 
 class FinalState(ContractMixin, StateMixin, ActionStateMixin):
     """
@@ -178,6 +268,16 @@ class FinalState(ContractMixin, StateMixin, ActionStateMixin):
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
+
+    def __eq__(self, other):
+        if isinstance(other, FinalState):
+            return (
+                ContractMixin.__eq__(self, other)
+                and StateMixin.__eq__(self, other)
+                and ActionStateMixin.__eq__(self, other)
+            )
+        else:
+            return NotImplemented
 
 
 class Transition(ContractMixin):
@@ -225,14 +325,17 @@ class Transition(ContractMixin):
         return self.event is None
 
     def __eq__(self, other):
-        if not isinstance(other, Transition):
-            return NotImplemented
+        if isinstance(other, Transition):
+            return (
+                ContractMixin.__eq__(self, other)
+                and self.source == other.source
+                and self.target == other.target
+                and self.event == other.event
+                and self.guard == other.guard
+                and self.action == other.action
+            )
         else:
-            return (self.source == other.source and
-                    self.target == other.target and
-                    self.event == other.event and
-                    self.guard == other.guard and
-                    self.action == other.action)
+            return NotImplemented
 
     def __repr__(self):
         return 'Transition({!r}, {!r}, event={!r})'.format(self.source, self.target, self.event)

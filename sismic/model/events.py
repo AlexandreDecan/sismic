@@ -30,7 +30,7 @@ class Event:
 
     def __getstate__(self):
         # For pickle and implicitly for multiprocessing
-        return (self.name, self.data)
+        return self.name, self.data
 
     def __setstate__(self, state):
         # For pickle and implicitly for multiprocessing

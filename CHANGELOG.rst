@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- (Added) Full equality comparison (``__eq__``) for states and transitions (including all relevant attributes).
+
+
 0.25.0 (2018-03-09)
 -------------------
 

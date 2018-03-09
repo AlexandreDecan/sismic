@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from .elements import Transition
 from .events import Event
@@ -75,7 +75,7 @@ class MacroStep:
         return self._time
 
     @property
-    def event(self) -> Event:
+    def event(self) -> Optional[Event]:
         """
         Event (or *None*) that was consumed.
         """
