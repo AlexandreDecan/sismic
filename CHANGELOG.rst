@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- (Removed) Module ``stories``, not really required anymore.
+
+
 0.25.1 (2018-03-09)
 -------------------
 
