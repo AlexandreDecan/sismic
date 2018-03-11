@@ -127,6 +127,14 @@ This method accepts either an :py:class:`~sismic.model.Event` instance, or the n
     interpreter.queue('clack')  # An event name can be provided as well
     interpreter.execute_once()  # Process the "clack" event
 
+Keywords arguments can be used to parametrize an :py:class:`~sismic.model.Event`.
+These parameters can be accessed by action code and guards in the statechart.
+
+.. testcode:: interpreter
+
+    e = Event('click', number_of_click=3)
+    assert e.number_of_click == 3
+
 More than one event can be passed to the :py:meth:`sismic.interpreter.Interpreter.queue` method at once:
 
 .. testcode:: interpreter
@@ -134,7 +142,6 @@ More than one event can be passed to the :py:meth:`sismic.interpreter.Interprete
     interpreter.queue('click', 'clack')
     interpreter.execute_once()  # Process "click"
     interpreter.execute_once()  # Process "clack"
-
 
 We will see later that Sismic also provides a more specific way to express and execute reproducible scenarios
 including events and pauses (see :ref:`stories`).
