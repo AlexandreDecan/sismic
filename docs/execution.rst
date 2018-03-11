@@ -82,25 +82,23 @@ This callable must accept an interpreter and an initial execution context as inp
 If not specified, a :py:class:`~sismic.code.PythonEvaluator` will be used.
 This default evaluator can parse and interpret Python code in statecharts.
 
-Consider the following example.
+Consider the following example:
 
 .. testsetup:: interpreter
 
     from sismic.io import import_from_yaml
-    my_statechart = import_from_yaml(open('examples/elevator/elevator.yaml'))
-
-.. testcode:: interpreter
-
     from sismic.interpreter import Interpreter
 
-    interpreter = Interpreter(my_statechart)
+    # Load statechart from yaml file
+    with open('examples/elevator/elevator.yaml') as f:
+        elevator = import_from_yaml(f)
 
-The method :py:meth:`~sismic.interpreter.Interpreter.execute_once` returns information about what happened
-during the execution, including the transitions that were processed, the event that was consumed and the
-sequences of entered and exited states (see :ref:`steps`).
+    # Create an interpreter for this statechart
+    interpreter = Interpreter(elevator)
 
-The first call to :py:meth:`~sismic.interpreter.Interpreter.execute_once` puts the statechart in its initial
-configuration:
+When an interpreter is built, the statechart is not yet in an initial configuration.
+To put the statechart in its initial configuration (and to further execute the statechart),
+call :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
 
 .. testcode:: interpreter
 
@@ -115,29 +113,37 @@ configuration:
     Before: []
     After: ['active', 'floorListener', 'movingElevator', 'doorsOpen', 'floorSelecting']
 
+The method :py:meth:`~sismic.interpreter.Interpreter.execute_once` returns information about what happened
+during the execution, including the transitions that were processed, the event that was consumed and the
+sequences of entered and exited states (see :ref:`steps` and :py:class:`sismic.model.MacroStep`).
+
+.. testcode:: interpreter
+
+    for attribute in ['event', 'transitions', 'entered_states', 'exited_states', 'sent_events']:
+        print('{}: {}'.format(attribute, getattr(step, attribute)))
+
+.. testoutput:: interpreter
+
+    event: None
+    transitions: []
+    entered_states: ['active', ...]
+    exited_states: []
+    sent_events: []
+
+
 One can send events to the statechart using its :py:meth:`sismic.interpreter.Interpreter.queue` method.
 This method accepts either an :py:class:`~sismic.model.Event` instance, or the name of an event.
+Multiple events (or names) can be provided at once.
 
 .. testcode:: interpreter
 
     from sismic.model import Event
+
     interpreter.queue(Event('click'))
     interpreter.execute_once()  # Process the "click" event
 
     interpreter.queue('clack')  # An event name can be provided as well
     interpreter.execute_once()  # Process the "clack" event
-
-Keywords arguments can be used to parametrize an :py:class:`~sismic.model.Event`.
-These parameters can be accessed by action code and guards in the statechart.
-
-.. testcode:: interpreter
-
-    e = Event('click', number_of_click=3)
-    assert e.number_of_click == 3
-
-More than one event can be passed to the :py:meth:`sismic.interpreter.Interpreter.queue` method at once:
-
-.. testcode:: interpreter
 
     interpreter.queue('click', 'clack')
     interpreter.execute_once()  # Process "click"
@@ -155,55 +161,87 @@ For convenience, :py:meth:`~sismic.interpreter.Interpreter.queue` returns the in
 Notice that :py:meth:`~sismic.interpreter.Interpreter.execute_once` consumes at most one event at a time.
 In this example, the *clack* event is not processed.
 
-To process all events *at once*, repeatedly call :py:meth:`~sismic.interpreter.Interpreter.execute_once` until
-it returns a ``None`` value. For instance:
+To process all events **at once**, one can repeatedly call :py:meth:`~sismic.interpreter.Interpreter.execute_once` until
+it returns a ``None`` value, meaning that nothing happened during the last call. For instance:
 
 .. testcode:: interpreter
 
     while interpreter.execute_once():
       pass
 
-
-As a shortcut, the :py:meth:`~sismic.interpreter.Interpreter.execute` method will return a list of
-:py:class:`sismic.model.MacroStep` instances obtained by repeatedly calling
-:py:meth:`~sismic.interpreter.Interpreter.execute_once`:
-
+For convenience, an interpreter has a :py:meth:`~sismic.interpreter.Interpreter.execute` method that repeatedly
+call :py:meth:`~sismic.interpreter.Interpreter.execute_once` and that returns a list of its output (a list of
+:py:class:`sismic.model.MacroStep`).
 
 .. testcode:: interpreter
 
     from sismic.model import MacroStep
 
-    steps = interpreter.execute()
-    for step in steps:
+    interpreter.queue('click', 'clack')
+
+    for step in interpreter.execute():
       assert isinstance(step, MacroStep)
 
 Notice that a call to :py:meth:`~sismic.interpreter.Interpreter.execute` first computes the list and **then** returns
 it, meaning that all the steps are already processed when the call returns.
-
 As a call to :py:meth:`~sismic.interpreter.Interpreter.execute` could lead to an infinite execution
 (see for example `simple/infinite.yaml <https://github.com/AlexandreDecan/sismic/blob/master/tests/yaml/infinite.yaml>`__),
 an additional parameter ``max_steps`` can be specified to limit the number of steps that are computed
-and executed by the method.
+and executed by the method. By default, this parameter is set to ``-1``, meaning there is no limit on the number
+of calls to :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
 
 .. testcode:: interpreter
 
-    assert len(interpreter.execute(max_steps=10)) <= 10
+    interpreter.queue('click', 'clack', 'clock')
+    assert len(interpreter.execute(max_steps=2)) <= 2
+
+    # 'clock' is not yet processed
+    assert len(interpreter.execute()) == 1
+
+In these examples, none of *click*, *clack* or *clock* are expected to be received by the statechart.
+The statechart was not written to react to those events, and thus sending them has no effect on the active
+configuration.
 
 For convenience, a :py:class:`~sismic.model.Statechart` has an :py:meth:`~sismic.model.Statechart.events_for` method
-that returns the list of all possible events that can be interpreted by this statechart (other events will
-be consumed and ignored).
-This method also accepts a state name or a list of state names to restrict the list of returned events,
-and is thus commonly used to get a list of the "interesting" events:
+that returns the list of all possible events that are expected by this statechart.
 
 .. testcode:: interpreter
 
-    print(my_statechart.events_for(interpreter.configuration))
+    print(elevator.events_for(interpreter.configuration))
 
 .. testoutput:: interpreter
-    :hide:
 
     ['floorSelected']
 
+The *elevator* statechart, the one used for this example, only reacts to *floorSelected* events.
+Moreover, it assumes that *floorSelected* events have an additional parameter named ``floor``.
+These events are *parametrized* events, and can be created by providing keyword arguments when
+instanciating :py:class:`~sismic.model.Event`.
+
+.. testcode:: interpreter
+
+    selecting_floor = Event('floorSelected', floor=1)
+
+These parameters can be accessed by action code and guards in the statechart.
+For example, the *floorSelecting* state of the *elevator* example has a transition
+``floorSelected / destination = event.floor``.
+
+Executing the statechart will make the elevator reaching first floor:
+
+.. testcode:: interpreter
+
+    print('Current floor is', interpreter.context['current'])
+
+    interpreter.queue(selecting_floor).execute()
+    print('Current floor is', interpreter.context['current'])
+
+.. testoutput:: interpreter
+
+    Current floor is 0
+    Current floor is 1
+
+Notice how we can access to the current values of *internal variables* by use of ``context``.
+This attribute is a mapping between internal variable names and their current value.
 
 
 .. _steps:
