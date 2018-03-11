@@ -3,6 +3,7 @@ import unittest
 from sismic import exceptions, io, model
 from sismic.interpreter import Event
 
+
 class EventTests(unittest.TestCase):
     def test_creation(self):
         self.assertEqual(Event(name='hello'), Event('hello'))

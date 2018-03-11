@@ -1,11 +1,10 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.25.2 (2018-03-11)
+-------------------
 
-- (Changed) Move ``MacroStep`` and ``MicroStep`` from ``model`` to ``interpreter``.
-- (Changed) Move ``Event``, ``InternalEvent`` and ``MetaEvent`` from ``model`` to ``interpreter``.
+- (Added) Make ``Event``, ``InternalEvent`` and ``MetaEvent`` available from ``interpreter`` as well.
 - (Changed) Move ``helpers`` from ``sismic.interpreter.helpers`` to ``sismic.helpers``.
 - (Removed) Remove module ``stories``, not really required anymore.
 

@@ -3,7 +3,8 @@ from collections import Counter
 from functools import wraps
 from typing import Any, Callable, List, Tuple
 
-from .interpreter import Interpreter, MacroStep
+from .interpreter import Interpreter
+from .model import MacroStep
 
 __all__ = ['log_trace', 'run_in_background', 'coverage_from_trace']
 
