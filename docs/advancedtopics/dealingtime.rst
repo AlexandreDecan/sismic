@@ -37,8 +37,7 @@ First, one should load the statechart and initialize the interpreter:
 .. testcode:: clock
 
     from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter
-    from sismic.model import Event
+    from sismic.interpreter import Interpreter, Event
 
     with open('examples/elevator/elevator.yaml') as f:
         statechart = import_from_yaml(f)
@@ -107,8 +106,7 @@ Let us first initialize an interpreter using one of our statechart example, the 
 .. testcode:: realclock
 
     from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter
-    from sismic.model import Event
+    from sismic.interpreter import Interpreter, Event
 
     with open('examples/elevator/elevator.yaml') as f:
         statechart = import_from_yaml(f)
@@ -172,8 +170,7 @@ This is illustrated in the following example.
 .. code:: python
 
     from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter
-    from sismic.model import Event
+    from sismic.interpreter import Interpreter, import Event
 
     import time
 
@@ -210,11 +207,11 @@ Asynchronous execution
 ----------------------
 
 Notice from previous example that using a loop makes it impossible to send events to the interpreter.
-For convenience, sismic provides a :py:func:`sismic.interpreter.helpers.run_in_background`
+For convenience, sismic provides a :py:func:`sismic.helpers.run_in_background`
 function that run an interpreter in a thread, and does the job of synchronizing the clock for you.
 
 
 
 .. note:: An optional argument ``callback`` can be passed to :py:func:`~sismic.interpreter.helpers.run_in_background`.
-    It must be a callable that accepts the (possibly empty) list of :py:class:`~sismic.model.MacroStep` returned by 
+    It must be a callable that accepts the (possibly empty) list of :py:class:`~sismic.interpreter.MacroStep` returned by
     the underlying call to :py:meth:`~sismic.interpreter.Interpreter.execute`. 

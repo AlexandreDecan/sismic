@@ -3,7 +3,13 @@ from itertools import combinations
 from typing import (Any, Callable, Dict, Iterable, List, Mapping, Optional,
                     Set, Union, cast, Deque)
 
-from .. import model
+from ..model import (
+    MacroStep, MicroStep, Event, InternalEvent, MetaEvent,
+    Statechart, Transition,
+    StateMixin, HistoryStateMixin,
+    FinalState, OrthogonalState, CompoundState, DeepHistoryState, ShallowHistoryState,
+)
+
 from ..code import Evaluator, PythonEvaluator
 from ..exceptions import (ConflictingTransitionsError, InvariantError, PropertyStatechartError,
                           ExecutionError, NonDeterminismError, PostconditionError, PreconditionError)
@@ -24,7 +30,7 @@ class Interpreter:
     :param ignore_contract: set to True to ignore contract checking during the execution.
     """
 
-    def __init__(self, statechart: model.Statechart, *,
+    def __init__(self, statechart: Statechart, *,
                  evaluator_klass: Callable[..., Evaluator]=PythonEvaluator,
                  initial_context: Mapping[str, Any]=None,
                  ignore_contract: bool=False) -> None:
@@ -44,13 +50,13 @@ class Interpreter:
         self._configuration = set()  # type: Set[str]
 
         # External events queue
-        self._external_events = deque()  # type: Deque[model.Event]
+        self._external_events = deque()  # type: Deque[Event]
 
         # Internal events queue
-        self._internal_events = deque()  # type: Deque[model.InternalEvent]
+        self._internal_events = deque()  # type: Deque[InternalEvent]
 
         # Bound callables
-        self._bound = []  # type: List[Callable[[model.Event], Any]]
+        self._bound = []  # type: List[Callable[[Event], Any]]
 
         # Bound property statecharts
         self._bound_properties = []  # type: List[Interpreter]
@@ -104,13 +110,13 @@ class Interpreter:
         return self._initialized and len(self._configuration) == 0
 
     @property
-    def statechart(self) -> model.Statechart:
+    def statechart(self) -> Statechart:
         """
         Embedded statechart
         """
         return self._statechart
 
-    def bind(self, interpreter_or_callable: Union['Interpreter', Callable[[model.Event], Any]]) -> None:
+    def bind(self, interpreter_or_callable: Union['Interpreter', Callable[[Event], Any]]) -> None:
         """
         Bind an interpreter or a callable to the current interpreter.
         Each time an internal event is sent by this interpreter, any bound object will be called
@@ -125,7 +131,7 @@ class Interpreter:
         else:
             self._bound.append(interpreter_or_callable)
 
-    def bind_property(self, statechart_or_interpreter: Union[model.Statechart, 'Interpreter']) -> None:
+    def bind_property(self, statechart_or_interpreter: Union[Statechart, 'Interpreter']) -> None:
         """
         Bind a property statechart to the current interpreter.
         A property statechart receives meta-events from the current interpreter depending on what happens:
@@ -146,7 +152,7 @@ class Interpreter:
         :param statechart_or_interpreter: A property statechart or an interpreter of a property statechart.
         """
         # Create interpreter if required
-        if isinstance(statechart_or_interpreter, model.Statechart):
+        if isinstance(statechart_or_interpreter, Statechart):
             interpreter = Interpreter(statechart_or_interpreter)
         else:
             interpreter = statechart_or_interpreter
@@ -157,7 +163,7 @@ class Interpreter:
         # Add to the list of properties
         self._bound_properties.append(interpreter)
 
-    def queue(self, event_or_name: Union[str, model.Event], *events_or_names: Union[str, model.Event]) -> 'Interpreter':
+    def queue(self, event_or_name: Union[str, Event], *events_or_names: Union[str, Event]) -> 'Interpreter':
         """
         Queue one or more events to the interpreter external queue.
 
@@ -169,16 +175,16 @@ class Interpreter:
             events_or_names = tuple()
 
         for item in [event_or_name] + list(events_or_names):
-            if isinstance(item, model.Event):
+            if isinstance(item, Event):
                 self._external_events.append(item)
             elif isinstance(item, str):
-                self._external_events.append(model.Event(item))
+                self._external_events.append(Event(item))
             else:
                 raise ValueError('{} is not a string nor an Event instance.'.format(item))
 
         return self
 
-    def execute(self, max_steps: int = -1) -> List[model.MacroStep]:
+    def execute(self, max_steps: int = -1) -> List[MacroStep]:
         """
         Repeatedly calls *execute_once* and return a list containing
         the returned values of *execute_once*.
@@ -202,7 +208,7 @@ class Interpreter:
             macro_step = self.execute_once()
         return returned_steps
 
-    def execute_once(self) -> Optional[model.MacroStep]:
+    def execute_once(self) -> Optional[MacroStep]:
         """
         Processes a transition based on the oldest queued event (or no event if an eventless transition
         can be processed), and stabilizes the interpreter in a stable situation (ie. processes initial states,
@@ -212,11 +218,11 @@ class Interpreter:
 
         :return: a macro step or *None* if nothing happened
         """
-        event = None  # type: Optional[model.Event]
+        event = None  # type: Optional[Event]
 
         # Initialization
         if not self._initialized:
-            computed_steps = [model.MicroStep(entered_states=[self._statechart.root])]
+            computed_steps = [MicroStep(entered_states=[self._statechart.root])]
             self._initialized = True
         else:
             # Look for eventless transitions first
@@ -233,7 +239,7 @@ class Interpreter:
 
             # No transition? Empty step!
             if len(transitions) == 0:
-                computed_steps = [model.MicroStep(event=event)]
+                computed_steps = [MicroStep(event=event)]
             else:
                 # Select the transitions that will be performed
                 transitions = self._sort_transitions(
@@ -254,7 +260,7 @@ class Interpreter:
             executed_steps.append(self._apply_step(step))
             executed_steps.extend(self._stabilize())
 
-        macro_step = model.MacroStep(time=self.time, steps=executed_steps)
+        macro_step = MacroStep(time=self.time, steps=executed_steps)
 
         # Check state invariants
         configuration = self.configuration  # Use self.configuration to benefit from the sorting by depth
@@ -268,7 +274,7 @@ class Interpreter:
 
         return macro_step
 
-    def _raise_event(self, event: model.Event) -> None:
+    def _raise_event(self, event: Event) -> None:
         """
         Raise an event from the statechart.
         Events are propagated to bound interpreters as non-internal events, and added to the internal queue of the
@@ -276,12 +282,12 @@ class Interpreter:
 
         :param event: raised event.
         """
-        if isinstance(event, model.InternalEvent):
+        if isinstance(event, InternalEvent):
             # Add to current interpreter's internal queue
             self._internal_events.append(event)
 
             # Propagate event to bound callable as an "external" event
-            external_event = model.Event(event.name, **event.data)
+            external_event = Event(event.name, **event.data)
             for bound_callable in self._bound:
                 bound_callable(external_event)
         else:
@@ -296,7 +302,7 @@ class Interpreter:
         """
 
         # Create meta-event
-        event = model.MetaEvent(event_name, **kwargs)
+        event = MetaEvent(event_name, **kwargs)
 
         # Send meta-event to the bound properties
         for property_statechart in self._bound_properties:
@@ -306,7 +312,7 @@ class Interpreter:
         for property_statechart in self._bound_properties:
             property_statechart.execute()
 
-    def _check_properties(self, macro_step: Optional[model.MacroStep]):
+    def _check_properties(self, macro_step: Optional[MacroStep]):
         """
         Check property statecharts for failure (ie. final state is reached).
 
@@ -317,7 +323,7 @@ class Interpreter:
             if property_statechart.final:
                 raise PropertyStatechartError(property_statechart, self.configuration, macro_step, self.context)
 
-    def _select_event(self) -> Optional[model.Event]:
+    def _select_event(self) -> Optional[Event]:
         """
         Return (and consume!) the next available event if any.
         This method prioritizes internal events over external ones.
@@ -332,7 +338,7 @@ class Interpreter:
         else:
             return None
 
-    def _select_transitions(self, event: model.Event = None) -> List[model.Transition]:
+    def _select_transitions(self, event: Event = None) -> List[Transition]:
         """
         Return a list of transitions that can be triggered according to the given event, or eventless
         transition if *event* is None.
@@ -349,7 +355,7 @@ class Interpreter:
                 transitions.append(transition)
         return transitions
 
-    def _filter_transitions(self, transitions: List[model.Transition]) -> List[model.Transition]:
+    def _filter_transitions(self, transitions: List[Transition]) -> List[Transition]:
         """
         Given a list of transitions, return a filtered list of transitions with respect to the
         inner-first/source-state semantic.
@@ -367,7 +373,7 @@ class Interpreter:
 
         return list(set(transitions).difference(removed_transitions))
 
-    def _sort_transitions(self, transitions: List[model.Transition]) -> List[model.Transition]:
+    def _sort_transitions(self, transitions: List[Transition]) -> List[Transition]:
         """
         Given a list of triggered transitions, return a list of transitions in an order that represents
         the order in which they have to be processed.
@@ -386,7 +392,7 @@ class Interpreter:
                 lca_state = self._statechart.state_for(lca)
 
                 # Their LCA must be an orthogonal state!
-                if not isinstance(lca_state, model.OrthogonalState):
+                if not isinstance(lca_state, OrthogonalState):
                     raise NonDeterminismError(
                         'Non-determinist choice between transitions {t1} and {t2}'
                         '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
@@ -417,8 +423,8 @@ class Interpreter:
 
         return transitions
 
-    def _create_steps(self, event: model.Event,
-                      transitions: Iterable[model.Transition]) -> List[model.MicroStep]:
+    def _create_steps(self, event: Event,
+                      transitions: Iterable[Transition]) -> List[MicroStep]:
         """
         Return a (possibly empty) list of micro steps. Each micro step corresponds to the process of a transition
         matching given event.
@@ -431,7 +437,7 @@ class Interpreter:
         for transition in transitions:
             # Internal transition
             if transition.target is None:
-                returned_steps.append(model.MicroStep(event=event, transition=transition))
+                returned_steps.append(MicroStep(event=event, transition=transition))
                 continue
 
             lca = self._statechart.least_common_ancestor(transition.source, transition.target)
@@ -465,12 +471,12 @@ class Interpreter:
                     break
                 entered_states.insert(0, state)
 
-            returned_steps.append(model.MicroStep(event=event, transition=transition,
+            returned_steps.append(MicroStep(event=event, transition=transition,
                                                   entered_states=entered_states, exited_states=exited_states))
 
         return returned_steps
 
-    def _create_stabilization_step(self, names: Iterable[str]) -> Optional[model.MicroStep]:
+    def _create_stabilization_step(self, names: Iterable[str]) -> Optional[MicroStep]:
         """
         Return a stabilization step, ie. a step that lead to a more stable situation
         for the current statechart. Stabilization means:
@@ -489,26 +495,26 @@ class Interpreter:
                         key=lambda s: (-self._statechart.depth_for(s.name), s.name))
 
         # Final states?
-        if len(leaves) > 0 and all([isinstance(s, model.FinalState) for s in leaves]):
+        if len(leaves) > 0 and all([isinstance(s, FinalState) for s in leaves]):
             # Leave all states
             exited_states = sorted(self._configuration, key=lambda s: (-self._statechart.depth_for(s), s))
-            return model.MicroStep(exited_states=exited_states)
+            return MicroStep(exited_states=exited_states)
 
         # Otherwise, develop history, compound and orthogonal states.
         for leaf in leaves:
-            name = cast(model.StateMixin, leaf).name
-            if isinstance(leaf, model.HistoryStateMixin):
+            name = cast(StateMixin, leaf).name
+            if isinstance(leaf, HistoryStateMixin):
                 states_to_enter = self._memory.get(name, [leaf.memory])
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_for(x), x))
-                return model.MicroStep(entered_states=states_to_enter, exited_states=[name])
-            elif isinstance(leaf, model.OrthogonalState) and self._statechart.children_for(leaf.name):
-                return model.MicroStep(entered_states=sorted(self._statechart.children_for(leaf.name)))
-            elif isinstance(leaf, model.CompoundState) and leaf.initial:
-                return model.MicroStep(entered_states=[leaf.initial])
+                return MicroStep(entered_states=states_to_enter, exited_states=[name])
+            elif isinstance(leaf, OrthogonalState) and self._statechart.children_for(leaf.name):
+                return MicroStep(entered_states=sorted(self._statechart.children_for(leaf.name)))
+            elif isinstance(leaf, CompoundState) and leaf.initial:
+                return MicroStep(entered_states=[leaf.initial])
 
         return None
 
-    def _apply_step(self, step: model.MicroStep) -> model.MicroStep:
+    def _apply_step(self, step: MicroStep) -> MicroStep:
         """
         Apply given *MicroStep* on this statechart
 
@@ -520,7 +526,7 @@ class Interpreter:
 
         active_configuration = set(self._configuration)  # Copy
 
-        sent_events = []  # type: List[model.Event]
+        sent_events = []  # type: List[Event]
 
         # Exit states
         for state in exited_states:
@@ -528,16 +534,16 @@ class Interpreter:
             sent_events.extend(self._evaluator.execute_on_exit(state))
 
             # Deal with history
-            if isinstance(state, model.CompoundState):
+            if isinstance(state, CompoundState):
                 # Look for an HistoryStateMixin among its children
                 for child_name in self._statechart.children_for(state.name):
                     child = self._statechart.state_for(child_name)
-                    if isinstance(child, model.DeepHistoryState):
+                    if isinstance(child, DeepHistoryState):
                         # This MUST contain at least one element!
                         active = active_configuration.intersection(self._statechart.descendants_for(state.name))
                         assert len(active) >= 1
                         self._memory[child.name] = list(active)
-                    elif isinstance(child, model.ShallowHistoryState):
+                    elif isinstance(child, ShallowHistoryState):
                         # This MUST contain exactly one element!
                         active = active_configuration.intersection(self.statechart.children_for(state.name))
                         assert len(active) == 1
@@ -593,11 +599,11 @@ class Interpreter:
             # Notify properties
             self._notify_properties('event sent', event=event)
 
-        return model.MicroStep(event=step.event, transition=step.transition,
+        return MicroStep(event=step.event, transition=step.transition,
                                entered_states=step.entered_states, exited_states=step.exited_states,
                                sent_events=sent_events)
 
-    def _stabilize(self) -> List[model.MicroStep]:
+    def _stabilize(self) -> List[MicroStep]:
         """
         Compute, apply and return stabilization steps.
 
@@ -611,9 +617,9 @@ class Interpreter:
             step = self._create_stabilization_step(self._configuration)
         return steps
 
-    def _evaluate_contract_conditions(self, obj: Union[model.Transition, model.StateMixin],
+    def _evaluate_contract_conditions(self, obj: Union[Transition, StateMixin],
                                       cond_type: str,
-                                      step: Union[model.MacroStep, model.MicroStep]=None) -> None:
+                                      step: Union[MacroStep, MicroStep]=None) -> None:
         """
         Evaluate the conditions for given object.
 

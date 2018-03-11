@@ -4,9 +4,8 @@ from unittest.mock import MagicMock
 from sismic import code
 from sismic.code.python import Context, FrozenContext
 from sismic.exceptions import CodeEvaluationError
-from sismic.interpreter import Interpreter
+from sismic.interpreter import Interpreter, Event, InternalEvent
 from sismic.io import import_from_yaml
-from sismic.model import Event, InternalEvent
 
 
 class DummyEvaluatorTests(unittest.TestCase):

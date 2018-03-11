@@ -1,24 +1,24 @@
 import unittest
 
 from sismic import exceptions, io, model
-
+from sismic.interpreter import Event
 
 class EventTests(unittest.TestCase):
     def test_creation(self):
-        self.assertEqual(model.Event(name='hello'), model.Event('hello'))
+        self.assertEqual(Event(name='hello'), Event('hello'))
         with self.assertRaises(TypeError):
-            model.Event()
+            Event()
 
     def test_with_parameters(self):
-        event = model.Event('test', a=1, b=2, c=3)
+        event = Event('test', a=1, b=2, c=3)
         self.assertEqual(event.data, {'a': 1, 'b': 2, 'c': 3})
 
     def test_parameter_name(self):
         with self.assertRaises(TypeError):
-            model.Event('test', name='fail')
+            Event('test', name='fail')
 
     def test_parameters_access(self):
-        event = model.Event('test', a=1, b=2, c=3)
+        event = Event('test', a=1, b=2, c=3)
         self.assertEqual(event.a, 1)
         self.assertEqual(event.b, 2)
         self.assertEqual(event.c, 3)

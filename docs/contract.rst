@@ -121,8 +121,7 @@ at runtime (as explained above) and may raise a subclass of :py:exc:`~sismic.exc
 
 .. testcode::
 
-    from sismic.model import Event
-    from sismic.interpreter import Interpreter
+    from sismic.interpreter import Interpreter, Event
     from sismic.io import import_from_yaml
 
     with open('examples/elevator/elevator_contract.yaml') as f:

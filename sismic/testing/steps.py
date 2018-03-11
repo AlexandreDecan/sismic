@@ -1,8 +1,7 @@
 from behave import given, then, when  # type: ignore
-from ..interpreter import Interpreter
-from ..interpreter.helpers import log_trace
+from ..interpreter import Interpreter, Event
+from ..helpers import log_trace
 from ..io import import_from_yaml
-from ..model import Event
 
 
 # #################### GENERAL PURPOSE

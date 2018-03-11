@@ -1,9 +1,8 @@
 import time
 import tkinter as tk
 
-from sismic.interpreter import Interpreter
+from sismic.interpreter import Interpreter, Event
 from sismic.io import import_from_yaml
-from sismic.model import Event
 from stopwatch import Stopwatch
 
 

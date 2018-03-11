@@ -48,27 +48,16 @@ of its source state.
 .. note:: While you have full access to an ancestor's context, the converse is not true: every variable that
     is defined in a context is NOT visible by any other context, except the ones that are nested.
 
-When a :py:class:`~sismic.code.PythonEvaluator` instance is initialized, an initial context can be specified:
+When a :py:class:`~sismic.code.PythonEvaluator` instance is initialized, an initial context can be specified.
+For convenience, the initial context can be directly provided to the constructor of
+an :py:class:`~sismic.interpreter.Interpreter`.
 
-.. testcode::
 
-    from sismic.code import PythonEvaluator
-    import math as my_favorite_module
-
-    evaluator = PythonEvaluator(initial_context={'x': 1, 'math': my_favorite_module})
-
-For convenience, the initial context can be directly provided to the constructor of an :py:class:`~sismic.interpreter.Interpreter`.
-
-.. note:: The initial context is evaluated *before* any code contained in the statechart.
-    As a consequence, this implies that if a same variable name is used both in the initial context and
-    in the YAML, the value set in the initial context will be overridden by the value set in the YAML definition.
-
-.. testsetup:: variable_override
+.. testcode:: variable_override
 
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter
-
-.. testcode:: variable_override
+    import math as my_favorite_module
 
     yaml = """statechart:
       name: example
@@ -79,17 +68,26 @@ For convenience, the initial context can be directly provided to the constructor
     """
 
     statechart = import_from_yaml(yaml)
-    interpreter = Interpreter(statechart, initial_context={'x': 2})
+    context = {
+        'x': 2,
+        'math': my_favorite_module
+    }
+
+    interpreter = Interpreter(statechart, initial_context=context)
+
     print(interpreter.context['x'])
+
+.. testoutput:: variable_override
+
+    1
+
+The initial context is evaluated *before* any code contained in the statechart.
+As a consequence, this implies that if a same variable name is used both in the initial context and
+in the YAML, the value set in the initial context will be overridden by the value set in the YAML definition.
 
 In this example, the value of ``x`` in the statechart is set to ``1`` while the initial context sets its
 value to ``2``. However, as the initial context is evaluated before the statechart, the value of
 ``x`` is ``1``.
-
-.. testoutput:: variable_override
-    :hide:
-
-    1
 
 This is a perfectly normal, expected behavior.
 If you want to define variables in your statechart that can be overridden by an initial context, you should

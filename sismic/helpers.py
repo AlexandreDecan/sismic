@@ -3,14 +3,12 @@ from collections import Counter
 from functools import wraps
 from typing import Any, Callable, List, Tuple
 
-from .. import model
-
-from .interpreter import Interpreter
+from .interpreter import Interpreter, MacroStep
 
 __all__ = ['log_trace', 'run_in_background', 'coverage_from_trace']
 
 
-def log_trace(interpreter: Interpreter) -> List[model.MacroStep]:
+def log_trace(interpreter: Interpreter) -> List[MacroStep]:
     """
     Return a list that will be populated by each value returned by the *execute_once* method
     of given interpreter.
@@ -18,7 +16,7 @@ def log_trace(interpreter: Interpreter) -> List[model.MacroStep]:
     :param interpreter: an *Interpreter* instance
     :return: a list of *MacroStep*
     """
-    func = interpreter.execute_once  # type: Callable[[], model.MacroStep]
+    func = interpreter.execute_once  # type: Callable[[], MacroStep]
     trace = []
 
     @wraps(func)
@@ -34,7 +32,7 @@ def log_trace(interpreter: Interpreter) -> List[model.MacroStep]:
 
 def run_in_background(interpreter: Interpreter,
                       delay: float=0.05,
-                      callback: Callable[[List[model.MacroStep]], Any]=None) -> threading.Thread:
+                      callback: Callable[[List[MacroStep]], Any]=None) -> threading.Thread:
     """
     Run given interpreter in background. The time is updated according to
     *time.time() - starttime*. The interpreter is ran until it reaches a final configuration.
@@ -68,7 +66,7 @@ def run_in_background(interpreter: Interpreter,
     return thread
 
 
-def coverage_from_trace(trace: List[model.MacroStep]) -> Tuple[Counter, Counter]:
+def coverage_from_trace(trace: List[MacroStep]) -> Tuple[Counter, Counter]:
     """
     Given a list of macro steps considered as the trace of a statechart execution, return a 2-uple
     of *Counter* objects. The first one counts the states (as strings) that were visited, and the second one

@@ -2,6 +2,7 @@ from typing import Iterable
 
 import ruamel.yaml as yaml
 import schema
+
 from ..exceptions import StatechartError
 from ..model import Statechart
 

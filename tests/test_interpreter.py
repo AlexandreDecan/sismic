@@ -3,10 +3,9 @@ from collections import Counter
 
 from sismic import exceptions, io
 from sismic.code import DummyEvaluator
-from sismic.interpreter import Interpreter
-from sismic.interpreter.helpers import (coverage_from_trace, log_trace,
-                                        run_in_background)
-from sismic.model import Event, InternalEvent, MacroStep, MicroStep, Transition
+from sismic.interpreter import Interpreter, Event, InternalEvent, MacroStep, MicroStep
+from sismic.helpers import coverage_from_trace, log_trace, run_in_background
+from sismic.model import Transition
 
 
 class LogTraceTests(unittest.TestCase):

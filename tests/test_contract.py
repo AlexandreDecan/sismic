@@ -3,8 +3,8 @@ import unittest
 from sismic import io
 from sismic.exceptions import (InvariantError, PostconditionError,
                                PreconditionError)
-from sismic.interpreter import Interpreter
-from sismic.model import Event, StateMixin, Transition
+from sismic.interpreter import Interpreter, Event
+from sismic.model import StateMixin, Transition
 
 
 class ElevatorContractTests(unittest.TestCase):

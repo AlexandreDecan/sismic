@@ -1,8 +1,7 @@
 from typing import List, Mapping
 
-from ..model import Event
-
 from .evaluator import Evaluator
+from ..model import Event
 
 __all__ = ['DummyEvaluator']
 

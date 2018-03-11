@@ -2,8 +2,7 @@ import unittest
 from unittest.mock import MagicMock
 
 from sismic.io import import_from_yaml
-from sismic.interpreter import Interpreter
-from sismic.model import Event, MetaEvent, InternalEvent
+from sismic.interpreter import Interpreter, Event, MetaEvent, InternalEvent
 from sismic.exceptions import PropertyStatechartError
 
 

@@ -55,7 +55,7 @@ documentation of the :py:meth:`~sismic.interpreter.Interpreter.bind_property` me
 If a property statechart reaches a final state during its execution, then the property is considered as not
 satisfied, and a :py:class:`~sismic.exceptions.PropertyStatechartError` is raised.
 This exception provides access to the interpreter that executed the property, the active configuration of statechart
-being executed, the latest executed :py:class:`~sismic.model.MacroStep` and the current context of the interpreter.
+being executed, the latest executed :py:class:`~sismic.interpreter.MacroStep` and the current context of the interpreter.
 
 
 Examples

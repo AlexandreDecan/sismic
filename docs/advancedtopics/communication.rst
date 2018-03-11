@@ -77,7 +77,7 @@ is sent both to ``interpreter_1`` and ``interpreter_2``.
 
 .. testcode:: bind
 
-    from sismic.model import InternalEvent, Event
+    from sismic.interpreter import InternalEvent, Event
 
     # Manually create and raise an internal event
     interpreter_3._raise_event(InternalEvent('test'))
@@ -115,8 +115,7 @@ We bind our panel with our elevator, such that the panel can control the elevato
 .. testcode:: buttons
 
     from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter
-    from sismic.model import Event, InternalEvent
+    from sismic.interpreter import Interpreter, Event, InternalEvent
 
     elevator = Interpreter(import_from_yaml(open('examples/elevator/elevator.yaml')))
     buttons = Interpreter(import_from_yaml(open('examples/elevator/elevator_buttons.yaml')))

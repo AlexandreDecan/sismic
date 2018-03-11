@@ -115,7 +115,7 @@ call :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
 
 The method :py:meth:`~sismic.interpreter.Interpreter.execute_once` returns information about what happened
 during the execution, including the transitions that were processed, the event that was consumed and the
-sequences of entered and exited states (see :ref:`steps` and :py:class:`sismic.model.MacroStep`).
+sequences of entered and exited states (see :ref:`steps` and :py:class:`sismic.interpreter.MacroStep`).
 
 .. testcode:: interpreter
 
@@ -132,12 +132,12 @@ sequences of entered and exited states (see :ref:`steps` and :py:class:`sismic.m
 
 
 One can send events to the statechart using its :py:meth:`sismic.interpreter.Interpreter.queue` method.
-This method accepts either an :py:class:`~sismic.model.Event` instance, or the name of an event.
+This method accepts either an :py:class:`~sismic.interpreter.Event` instance, or the name of an event.
 Multiple events (or names) can be provided at once.
 
 .. testcode:: interpreter
 
-    from sismic.model import Event
+    from sismic.interpreter import Event
 
     interpreter.queue(Event('click'))
     interpreter.execute_once()  # Process the "click" event
@@ -148,9 +148,6 @@ Multiple events (or names) can be provided at once.
     interpreter.queue('click', 'clack')
     interpreter.execute_once()  # Process "click"
     interpreter.execute_once()  # Process "clack"
-
-We will see later that Sismic also provides a more specific way to express and execute reproducible scenarios
-including events and pauses (see :ref:`stories`).
 
 For convenience, :py:meth:`~sismic.interpreter.Interpreter.queue` returns the interpreter and thus can be chained:
 
@@ -171,11 +168,11 @@ it returns a ``None`` value, meaning that nothing happened during the last call.
 
 For convenience, an interpreter has a :py:meth:`~sismic.interpreter.Interpreter.execute` method that repeatedly
 call :py:meth:`~sismic.interpreter.Interpreter.execute_once` and that returns a list of its output (a list of
-:py:class:`sismic.model.MacroStep`).
+:py:class:`sismic.interpreter.MacroStep`).
 
 .. testcode:: interpreter
 
-    from sismic.model import MacroStep
+    from sismic.interpreter import MacroStep
 
     interpreter.queue('click', 'clack')
 
@@ -216,7 +213,7 @@ that returns the list of all possible events that are expected by this statechar
 The *elevator* statechart, the one used for this example, only reacts to *floorSelected* events.
 Moreover, it assumes that *floorSelected* events have an additional parameter named ``floor``.
 These events are *parametrized* events, and can be created by providing keyword arguments when
-instanciating :py:class:`~sismic.model.Event`.
+instanciating :py:class:`~sismic.interpreter.Event`.
 
 .. testcode:: interpreter
 
@@ -251,34 +248,34 @@ Macro and micro steps
 
 An interpreter :py:meth:`~sismic.interpreter.Interpreter.execute_once`
 (resp. :py:meth:`~sismic.interpreter.Interpreter.execute`) method returns
-an instance of (resp. a list of) :py:class:`sismic.model.MacroStep`.
+an instance of (resp. a list of) :py:class:`sismic.interpreter.MacroStep`.
 A *macro step* corresponds to the process of consuming an event, regardless of the number and the type (eventless or not)
 of triggered transitions. A macro step also includes every consecutive *stabilization step*
 (i.e., the steps that are needed to enter nested states, or to switch into the configuration of a history state).
 
-A :py:class:`~sismic.model.MacroStep` exposes the consumed :py:attr:`~sismic.model.MacroStep.event` if any, a (possibly
-empty) list :py:attr:`~sismic.model.MacroStep.transitions` of :py:class:`~sismic.model.Transition` instances,
-and two aggregated ordered sequences of state names, :py:attr:`~sismic.model.MacroStep.entered_states` and
-:py:attr:`~sismic.model.MacroStep.exited_states`.
-In addition, a :py:class:`~sismic.model.MacroStep` exposes a list :py:attr:`~sismic.model.MacroStep.sent_events` of
+A :py:class:`~sismic.interpreter.MacroStep` exposes the consumed :py:attr:`~sismic.model.MacroStep.event` if any, a (possibly
+empty) list :py:attr:`~sismic.interpreter.MacroStep.transitions` of :py:class:`~sismic.interpreter.Transition` instances,
+and two aggregated ordered sequences of state names, :py:attr:`~sismic.interpreter.MacroStep.entered_states` and
+:py:attr:`~sismic.interpreter.MacroStep.exited_states`.
+In addition, a :py:class:`~sismic.interpreter.MacroStep` exposes a list :py:attr:`~sismic.interpreter.MacroStep.sent_events` of
 events that were fired by the statechart during the considered step.
 The order of states in those lists determines the order in which their *on entry* and *on exit* actions were processed.
 As transitions are atomically processed, this means that they could exit a state in
-:py:attr:`~sismic.model.MacroStep.entered_states` that is entered before some state in
-:py:attr:`~sismic.model.MacroStep.exited_states` is exited.
+:py:attr:`~sismic.interpreter.MacroStep.entered_states` that is entered before some state in
+:py:attr:`~sismic.interpreter.MacroStep.exited_states` is exited.
 The exact order in which states are exited and entered is indirectly available through the
-:py:attr:`~sismic.model.MacroStep.steps` attribute that is a list of all the :py:class:`~sismic.model.MicroStep`
+:py:attr:`~sismic.interpreter.MacroStep.steps` attribute that is a list of all the :py:class:`~sismic.interpreter.MicroStep`
 that were executed. Each of them contains the states that were exited and entered during its execution, and the a list
 of events that were sent during the step.
 
 A *micro step* is the smallest, atomic step that a statechart can execute.
-A :py:class:`~sismic.model.MacroStep` instance thus can be viewed (and is!) an aggregate of
-:py:class:`~sismic.model.MicroStep` instances.
+A :py:class:`~sismic.interpreter.MacroStep` instance thus can be viewed (and is!) an aggregate of
+:py:class:`~sismic.interpreter.MicroStep` instances.
 
 This way, a complete *run* of a statechart can be summarized as an ordered list of
-:py:class:`~sismic.model.MacroStep` instances,
-and details can be obtained using the :py:class:`~sismic.model.MicroStep` list of a
-:py:class:`~sismic.model.MacroStep`.
+:py:class:`~sismic.interpreter.MacroStep` instances,
+and details can be obtained using the :py:class:`~sismic.interpreter.MicroStep` list of a
+:py:class:`~sismic.interpreter.MacroStep`.
 
 
 Observing the execution
@@ -288,8 +285,8 @@ The interpreter is fully observable during its execution. It provides many publi
 that can be used to see what happens. In particular:
 
  - The :py:meth:`~sismic.interpreter.Interpreter.execute_once` (resp. :py:meth:`~sismic.interpreter.Interpreter.execute`)
-   method returns an instance of (resp. a list of) :py:class:`sismic.model.MacroStep`.
- - The :py:func:`~sismic.interpreter.helpers.log_trace` function can be used to log all the steps that were processed during the
+   method returns an instance of (resp. a list of) :py:class:`sismic.interpreter.MacroStep`.
+ - The :py:func:`~sismic.helpers.log_trace` function can be used to log all the steps that were processed during the
    execution of an interpreter. This methods takes an interpreter and returns a (dynamic) list of macro steps.
  - The list of active states can be retrieved using :py:attr:`~sismic.interpreter.Interpreter.configuration`.
  - The context of the execution is available using :py:attr:`~sismic.interpreter.Interpreter.context`

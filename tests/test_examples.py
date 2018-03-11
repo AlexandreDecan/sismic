@@ -1,8 +1,7 @@
 import unittest
 
 from sismic import io
-from sismic.interpreter import Interpreter
-from sismic.model import Event
+from sismic.interpreter import Interpreter, Event
 
 
 class ElevatorTests(unittest.TestCase):
