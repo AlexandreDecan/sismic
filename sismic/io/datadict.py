@@ -216,6 +216,20 @@ def _export_state_to_dict(statechart: Statechart, state_name: str, ordered=True)
                     transition_data['target'] = transition.target
                 if transition.action:
                     transition_data['action'] = transition.action
+
+                preconditions = getattr(transition, 'preconditions', [])
+                postconditions = getattr(transition, 'postconditions', [])
+                invariants = getattr(transition, 'invariants', [])
+                if preconditions or postconditions or invariants:
+                    conditions = []
+                    for condition in preconditions:
+                        conditions.append({'before': condition})
+                    for condition in postconditions:
+                        conditions.append({'after': condition})
+                    for condition in invariants:
+                        conditions.append({'always': condition})
+                    transition_data['contract'] = conditions
+
                 data['transitions'].append(transition_data)
 
     if isinstance(state, CompositeStateMixin):

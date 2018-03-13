@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.25.3 (2018-03-13)
+-------------------
+
+- (Fixed) ``export_to_dict`` (and by extension, ``export_to_yaml``) didn't export transition contracts.
+
+
 0.25.2 (2018-03-11)
 -------------------
 
