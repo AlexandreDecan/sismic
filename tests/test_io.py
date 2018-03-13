@@ -1,53 +1,43 @@
-import os
-import unittest
+import pytest
 
-from sismic import exceptions, io
-from sismic.io import import_from_yaml
-from sismic.io import export_to_plantuml
-
-
-class ImportFromYamlParserTests(unittest.TestCase):
-    def check_type(self, name):
-        yaml = ('statechart:'
-                '\n  name: ' + str(name) +
-                '\n  preamble: Nothing'
-                '\n  root state:'
-                '\n    name: s1')
-
-        item = io.import_from_yaml(yaml).name
-        self.assertIsInstance(item, str, msg=type(item))
-
-    def test_parser_conversion(self):
-        self.check_type(1)
-        self.check_type(-1)
-        self.check_type(1.0)
-        self.check_type('yes')
-        self.check_type('True')
-        self.check_type('no')
-        self.check_type('')
-
-        self.check_type([])
-        self.check_type([1, 2])
-        self.check_type({})
-        self.check_type({1: 1})
+from sismic.model import Statechart
+from sismic.exceptions import StatechartError
+from sismic.io import import_from_yaml, export_to_yaml, export_to_plantuml
+from sismic.io.text import export_to_tree
 
 
-class ImportFromYamlTests(unittest.TestCase):
-    def test_yaml_tests(self):
-        files = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',
-                 'nondeterministic', 'parallel', 'simple', 'timer']
-        for filename in files:
-            with self.subTest(filename=filename):
-                with open(os.path.join('tests', 'yaml', filename + '.yaml')) as f:
-                    io.import_from_yaml(f)
+def compare_statecharts(s1, s2):
+    assert s1.name == s2.name
+    assert s1.description == s2.description
+    assert s2.preamble == s2.preamble
 
-    def test_examples(self):
-        files = ['elevator/elevator', 'elevator/elevator_contract', 'microwave/microwave',
-                 'elevator/tester_elevator_7th_floor_never_reached', 'elevator/tester_elevator_moves_after_10s', 'writer_options']
-        for filename in files:
-            with self.subTest(filename=filename):
-                with open(os.path.join('docs', 'examples', filename + '.yaml')) as f:
-                    io.import_from_yaml(f)
+    assert set(s1.states) == set(s2.states)
+    assert set(s1.transitions) == set(s2.transitions)
+
+    for state in s1.states:
+        assert s1.parent_for(state) == s2.parent_for(state)
+        assert set(s1.children_for(state)) == set(s2.children_for(state))
+
+
+@pytest.mark.parametrize('data', [1, -1, 1.0, 'yes', 'True', 'no', '', [], [1, 2], {}, {1: 1}])
+def test_yaml_parser_types_handling(data):
+    yaml = ('statechart:'
+            '\n  name: ' + str(data) +
+            '\n  preamble: Nothing'
+            '\n  root state:'
+            '\n    name: s1')
+    item = import_from_yaml(yaml).name
+    assert isinstance(item, str)
+
+
+class TestImportFromYaml:
+    def test_tests_examples(self, tests_statecharts):
+        for statechart in tests_statecharts:
+            assert isinstance(statechart, Statechart)
+
+    def test_docs_examples(self, docs_statecharts):
+        for statechart in docs_statecharts:
+            assert isinstance(statechart, Statechart)
 
     def test_transitions_to_unknown_state(self):
         yaml = """
@@ -61,9 +51,9 @@ class ImportFromYamlTests(unittest.TestCase):
                 transitions:
                   - target: s2
         """
-        with self.assertRaises(exceptions.StatechartError) as cm:
-            io.import_from_yaml(yaml)
-        self.assertIn('Unknown target state', str(cm.exception))
+        with pytest.raises(StatechartError) as e:
+            import_from_yaml(yaml)
+        assert 'Unknown target state' in str(e.value)
 
     def test_history_not_in_compound(self):
         yaml = """
@@ -78,9 +68,9 @@ class ImportFromYamlTests(unittest.TestCase):
                  - name: s2
                    type: shallow history
         """
-        with self.assertRaises(exceptions.StatechartError) as cm:
-            io.import_from_yaml(yaml)
-        self.assertIn('cannot be used as a parent for', str(cm.exception))
+        with pytest.raises(StatechartError) as e:
+            import_from_yaml(yaml)
+        assert 'cannot be used as a parent for' in str(e.value)
 
     def test_declare_both_states_and_parallel_states(self):
         yaml = """
@@ -95,53 +85,41 @@ class ImportFromYamlTests(unittest.TestCase):
               - name: s2
         """
 
-        with self.assertRaises(exceptions.StatechartError) as cm:
-            io.import_from_yaml(yaml)
-        self.assertIn('root cannot declare both a "states" and a "parallel states" property', str(cm.exception))
+        with pytest.raises(StatechartError) as e:
+            import_from_yaml(yaml)
+        assert 'root cannot declare both a "states" and a "parallel states" property' in str(e.value)
 
 
-class ExportToDictYAMLTests(unittest.TestCase):
-    def setUp(self):
-        files_t = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',
-                   'nondeterministic', 'parallel', 'simple', 'timer']
-        files_e = ['elevator/elevator', 'elevator/elevator_contract', 'microwave/microwave',
-                   'elevator/tester_elevator_7th_floor_never_reached', 'elevator/tester_elevator_moves_after_10s', 'writer_options']
+class TestExportToYaml:
+    def test_export_docs_examples(self, docs_statecharts):
+        for statechart in docs_statecharts:
+            export_to_yaml(statechart)
+        assert True
 
-        self.files = []
-        for filename in files_t:
-            with open(os.path.join('tests', 'yaml', filename + '.yaml')) as f:
-                self.files.append(('\n'.join(f.readlines()), filename))
-        for filename in files_e:
-            with open(os.path.join('docs', 'examples', filename + '.yaml')) as f:
-                self.files.append(('\n'.join(f.readlines()), filename))
+    def test_export_tests_examples(self, tests_statecharts):
+        for statechart in tests_statecharts:
+            export_to_yaml(statechart)
+        assert True
 
-    def test_export(self):
-        for f, filename in self.files:
-            with self.subTest(filename=filename):
-                sc_1 = io.import_from_yaml(f)
-                io.export_to_yaml(sc_1)
+    def test_validity_for_docs_examples(self, docs_statecharts):
+        for statechart in docs_statecharts:
+            assert import_from_yaml(export_to_yaml(statechart)).validate()
 
-    def test_export_valid(self):
-        for f, filename in self.files:
-            with self.subTest(filename=filename):
-                sc_1 = io.import_from_yaml(f)
-                ex_1 = io.export_to_yaml(sc_1)
-                sc_2 = io.import_from_yaml(ex_1)
+    def test_identity_for_docs_examples(self, docs_statecharts):
+        for statechart in docs_statecharts:
+            compare_statecharts(statechart, import_from_yaml(export_to_yaml(statechart)))
 
-                self.assertTrue(sc_2.validate())
+    def test_validity_for_tests_examples(self, tests_statecharts):
+        for statechart in tests_statecharts:
+            assert import_from_yaml(export_to_yaml(statechart)).validate()
+
+    def test_identity_for_tests_examples(self, tests_statecharts):
+        for statechart in tests_statecharts:
+            compare_statecharts(statechart, import_from_yaml(export_to_yaml(statechart)))
 
 
-class ExportToTreeTests(unittest.TestCase):
-    def setUp(self):
-        files_t = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',
-                   'nondeterministic', 'parallel', 'simple', 'timer']
-
-        self.files = []
-        for filename in files_t:
-            with open(os.path.join('tests', 'yaml', filename + '.yaml')) as f:
-                self.files.append((filename, io.import_from_yaml(f)))
-
-    def test_output(self):
+class TestExporttoTree:
+    def test_output(self, tests_statecharts):
         results = [
             ['root', '   s1', '   s2', '   s3'],
             ['root', '   s1', '      s1a', '      s1b', '         s1b1', '         s1b2', '   s2'],
@@ -161,46 +139,29 @@ class ExportToTreeTests(unittest.TestCase):
             ['root', '   s1', '   s2', '   s3', '   s4']
         ]
 
-        for (filename, statechart), r in zip(self.files, results):
-            with self.subTest(filename=filename):
-                self.assertEqual(io.text.export_to_tree(statechart), r)
+        for statechart, r in zip(tests_statecharts, results):
+            assert export_to_tree(statechart) == r
 
-    def test_all_states_are_exported(self):
-        for filename, statechart in self.files:
-            with self.subTest(filename=filename):
-                result = set(io.text.export_to_tree(statechart, spaces=0))
-                expected = set(statechart.states)
-                self.assertSetEqual(result, expected)
+    def test_all_states_are_exported(self, tests_statecharts):
+        for statechart in tests_statecharts:
+            assert set(export_to_tree(statechart, spaces=0)) == set(statechart.states)
 
-    def test_indentation_is_correct(self):
-        for filename, statechart in self.files:
-            with self.subTest(filename=filename):
-                result = sorted(io.text.export_to_tree(statechart, spaces=1))
+    def test_indentation_is_correct(self, tests_statecharts):
+        for statechart in tests_statecharts:
+            result = sorted(export_to_tree(statechart, spaces=1))
 
-                for r in result:
-                    name = r.lstrip()
-                    depth = statechart.depth_for(name)
-                    spaces = len(r) - len(name)
-                    self.assertEqual(depth - 1, spaces)
+            for r in result:
+                name = r.lstrip()
+                depth = statechart.depth_for(name)
+                spaces = len(r) - len(name)
+                assert depth - 1 == spaces
 
 
-class ExportToPlantumlTests(unittest.TestCase):
-    def setUp(self):
-        files_t = ['actions', 'composite', 'deep_history', 'infinite', 'internal', 'nested_parallel',
-                   'nondeterministic', 'parallel', 'simple', 'timer']
-        files_e = ['elevator/elevator', 'elevator/elevator_contract', 'microwave/microwave',
-                   'elevator/tester_elevator_7th_floor_never_reached', 'elevator/tester_elevator_moves_after_10s', 'writer_options']
+class TestExportToPlantUML:
+    def test_export_tests_examples(self, tests_statecharts):
+        for statechart in tests_statecharts:
+            assert len(export_to_plantuml(statechart)) > 0
 
-        self.files = []
-        for filename in files_t:
-            with open(os.path.join('tests', 'yaml', filename + '.yaml')) as f:
-                self.files.append(('\n'.join(f.readlines()), filename))
-        for filename in files_e:
-            with open(os.path.join('docs', 'examples', filename + '.yaml')) as f:
-                self.files.append(('\n'.join(f.readlines()), filename))
-
-    def test_export(self):
-        for f, filename in self.files:
-            with self.subTest(filename=filename):
-                sc_1 = import_from_yaml(f)
-                export_to_plantuml(sc_1)
+    def test_export_docs_examples(self, docs_statecharts):
+        for statechart in docs_statecharts:
+            assert len(export_to_plantuml(statechart)) > 0
