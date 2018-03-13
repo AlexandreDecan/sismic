@@ -1,131 +1,100 @@
-import unittest
+import pytest
 
-from sismic import io
 from sismic.interpreter import Interpreter, Event
 
 
-class ElevatorTests(unittest.TestCase):
-    def setUp(self):
-        with open('docs/examples/elevator/elevator.yaml') as f:
-            self.sc = io.import_from_yaml(f)
-        self.interpreter = Interpreter(self.sc)
-        # Stabilization
-        self.interpreter.execute_once()
+def test_writer(writer):
+    writer.queue(
+        Event('keyPress', key='bonjour '),
+        Event('toggle'),
+        Event('keyPress', key='a '),
+        Event('toggle'),
+        Event('toggle_bold'),
+        Event('keyPress', key='tous !'),
+        Event('leave')
+    )
 
-    def test_init(self):
-        self.assertEqual(len(self.interpreter.configuration), 5)
-
-    def test_floor_selection(self):
-        self.interpreter.queue(Event('floorSelected', floor=4)).execute_once()
-        self.assertEqual(self.interpreter.context['destination'], 4)
-        self.interpreter.execute_once()
-        self.assertEqual(sorted(self.interpreter.configuration), ['active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'])
-
-    def test_doorsOpen(self):
-        self.interpreter.queue(Event('floorSelected', floor=4))
-        self.interpreter.execute()
-        self.assertEqual(self.interpreter.context['current'], 4)
-        self.interpreter.time += 10
-        self.interpreter.execute()
-
-        self.assertTrue('doorsOpen' in self.interpreter.configuration)
-        self.assertEqual(self.interpreter.context['current'], 0)
+    writer.execute()
+    assert writer.final
+    assert writer.context['output'] == ['bonjour ', '[b]', '[i]', 'a ', '[/b]', '[/i]', '[b]', 'tous !', '[/b]']
 
 
-class ElevatorContractTests(ElevatorTests):
-    def setUp(self):
-        with open('docs/examples/elevator/elevator_contract.yaml') as f:
-            self.sc = io.import_from_yaml(f)
-        self.interpreter = Interpreter(self.sc)
-        # Stabilization
-        self.interpreter.execute_once()
+class TestElevator:
+    def test_init(self, elevator):
+        assert elevator.configuration == []
+
+        # Stabilisation
+        elevator.execute_once()
+
+        assert set(elevator.configuration) == {'active', 'floorListener', 'floorSelecting',
+                                               'movingElevator', 'doorsOpen'}
+
+    def test_floor_selection(self, elevator):
+        # Stabilisation
+        elevator.execute_once()
+
+        elevator.queue(Event('floorSelected', floor=4)).execute_once()
+        assert elevator.context['destination'] == 4
+
+        elevator.execute_once()
+        assert set(elevator.configuration) == {'active', 'active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'}
+
+    def test_floor_selected_and_reached(self, elevator):
+        # Stabilisation
+        elevator.execute_once()
+
+        elevator.queue(Event('floorSelected', floor=4)).execute()
+
+        assert elevator.context['current'] == 4
+
+        elevator.time += 10
+        elevator.execute()
+
+        assert 'doorsOpen' in elevator.configuration
+        assert elevator.context['current'] == 0
 
 
-class WriterExecutionTests(unittest.TestCase):
-    def setUp(self):
-        with open('docs/examples/writer_options.yaml') as f:
-            self.sc = io.import_from_yaml(f)
-        self.interpreter = Interpreter(self.sc)
+class TestRemoteElevator:
+    def test_button(self, elevator, remote_elevator):
+        assert elevator.context['current'] == 0
 
-    def test_output(self):
-        scenario = [
-             Event('keyPress', key='bonjour '),
-             Event('toggle'),
-             Event('keyPress', key='a '),
-             Event('toggle'),
-             Event('toggle_bold'),
-             Event('keyPress', key='tous !'),
-             Event('leave')
-        ]
+        remote_elevator.queue(Event('button_2_pushed')).execute()
 
-        for event in scenario:
-            self.interpreter.queue(event)
+        event = elevator._external_events[-1]
+        assert event.name == 'floorSelected'
+        assert event.data['floor'] == 2
 
-        self.interpreter.execute()
+        elevator.execute()
+        assert elevator.context['current'] == 2
 
-        self.assertTrue(self.interpreter.final)
-        self.assertEqual(self.interpreter.context['output'], ['bonjour ', '[b]', '[i]', 'a ', '[/b]', '[/i]', '[b]', 'tous !', '[/b]'])
+    def test_button_0_on_groundfloor(self, elevator, remote_elevator):
+        assert elevator.context['current'] == 0
+
+        remote_elevator.queue(Event('button_0_pushed')).execute()
+        elevator.execute()
+
+        assert elevator.context['current'] == 0
 
 
-class RemoteElevatorTests(unittest.TestCase):
-    def setUp(self):
-        with open('docs/examples/elevator/elevator.yaml') as f:
-            elevator = io.import_from_yaml(f)
-        with open('docs/examples/elevator/elevator_buttons.yaml') as f:
-            buttons = io.import_from_yaml(f)
+class TestMicrowave:
+    def test_lamp_on(self, microwave):
+        microwave.execute_once()
+        microwave.queue(Event('door_opened'))
 
-        self.elevator = Interpreter(elevator)
-        self.buttons = Interpreter(buttons)
-        self.buttons.bind(self.elevator)
+        assert microwave.execute_once().sent_events[0].name == 'lamp_switch_on'
 
-    def test_button(self):
-        self.assertEqual(self.elevator.context['current'], 0)
+    def test_heating_on(self, microwave):
+        microwave.execute_once()
+        microwave.queue(
+            Event('door_opened'),
+            Event('item_placed'),
+            Event('door_closed'),
+            Event('input_timer_inc')
+        ).execute()
 
-        self.buttons.queue(Event('button_2_pushed'))
-        self.buttons.execute()
+        microwave.queue(Event('input_cooking_start'))
+        step = microwave.execute_once()
 
-        event = self.elevator._external_events.pop()
-        self.assertEqual(event.name, 'floorSelected')
-        self.assertEqual(event.data['floor'], 2)
-
-        self.buttons.queue(Event('button_2_pushed'))
-        self.buttons.execute()
-        self.elevator.execute()
-
-        self.assertEqual(self.elevator.context['current'], 2)
-
-    def test_button_0_on_groundfloor(self):
-        self.assertEqual(self.elevator.context['current'], 0)
-
-        self.buttons.queue(Event('button_0_pushed'))
-        self.buttons.execute()
-        self.elevator.execute()
-
-        self.assertEqual(self.elevator.context['current'], 0)
-
-
-class MicrowaveTests(unittest.TestCase):
-    def setUp(self):
-        with open('docs/examples/microwave/microwave.yaml') as f:
-            sc = io.import_from_yaml(f)
-        self.microwave = Interpreter(sc)
-
-    def test_lamp_on(self):
-        self.microwave.execute_once()
-        self.microwave.queue(Event('door_opened'))
-        step = self.microwave.execute_once()
-        self.microwave.execute_once()
-        self.assertEqual(step.sent_events[0].name, 'lamp_switch_on')
-
-    def test_heating_on(self):
-        self.microwave.execute_once()
-        self.microwave.queue(Event('door_opened'))
-        self.microwave.queue(Event('item_placed'))
-        self.microwave.queue(Event('door_closed'))
-        self.microwave.queue(Event('input_timer_inc'))
-        self.microwave.execute()
-        self.microwave.queue(Event('input_cooking_start'))
-        step = self.microwave.execute_once()
-        self.assertIn(Event('heating_on'), step.sent_events)
-        self.assertIn(Event('lamp_switch_on'), step.sent_events)
-        self.assertIn(Event('turntable_start'), step.sent_events)
+        assert Event('heating_on') in step.sent_events
+        assert Event('lamp_switch_on') in step.sent_events
+        assert Event('turntable_start') in step.sent_events
