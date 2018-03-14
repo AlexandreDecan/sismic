@@ -5,6 +5,7 @@ Changelog
 -------------------
 
 - (Fixed) ``export_to_dict`` (and by extension, ``export_to_yaml``) didn't export transition contracts.
+- (Changed) All the tests are now written using ``pytest`` instead of ``unittest``.
 
 
 0.25.2 (2018-03-11)

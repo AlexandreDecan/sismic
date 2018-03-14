@@ -1,54 +1,49 @@
-import unittest
-from unittest.mock import MagicMock
+import pytest
 
-from sismic.io import import_from_yaml
-from sismic.interpreter import Interpreter, Event, MetaEvent, InternalEvent
+from sismic.interpreter import Event, MetaEvent, InternalEvent
 from sismic.exceptions import PropertyStatechartError
 
 
-class InterpreterMetaEventTests(unittest.TestCase):
-    def setUp(self):
-        with open('docs/examples/microwave/microwave.yaml') as f:
-            self.interpreter = Interpreter(import_from_yaml(f))
-
+class TestInterpreterMetaEvents:
+    @pytest.fixture
+    def property_statechart(self, microwave, mocker):
         # Create mock for property
-        self.property = MagicMock(name='Interpreter', spec=Interpreter)
-        self.property.queue = MagicMock(return_value=None)
-        self.property.execute = MagicMock(return_value=None)
-        self.property.final = False
-        self.property.time = 0
+        property = mocker.MagicMock(name='Interpreter', spec=microwave)
+        property.queue = mocker.MagicMock(return_value=None)
+        property.execute = mocker.MagicMock(return_value=None)
+        property.final = False
+        property.time = 0
 
         # Bind it
-        self.interpreter.bind_property(self.property)
+        microwave.bind_property(property)
 
-    def test_synchronised_time(self):
-        self.assertEqual(self.interpreter.time, self.property.time)
-        self.interpreter.time += 10
-        self.assertEqual(self.interpreter.time, self.property.time)
+        return property
 
-    def test_empty_step(self):
-        self.interpreter.execute()
-        self.assertEqual(self.property.queue.call_args_list[0][0][0], MetaEvent('step started'))
-        self.assertEqual(self.property.queue.call_args_list[-1][0][0], MetaEvent('step ended'))
+    def test_synchronised_time(self, microwave, property_statechart):
+        assert microwave.time == property_statechart.time
+        microwave.time += 10
+        assert microwave.time == property_statechart.time
 
-        for call in self.property.queue.call_args_list:
-            self.assertIsInstance(call[0][0], MetaEvent)
+    def test_empty_step(self, microwave, property_statechart):
+        microwave.execute()
+        assert property_statechart.queue.call_args_list[0][0][0] == MetaEvent('step started')
+        assert property_statechart.queue.call_args_list[-1][0][0] == MetaEvent('step ended')
 
-    def test_event_sent(self):
+        for call in property_statechart.queue.call_args_list:
+            assert isinstance(call[0][0], MetaEvent)
+
+    def test_event_sent(self, microwave, property_statechart):
         # Add send to a state
-        state = self.interpreter.statechart.state_for('door closed')
+        state = microwave.statechart.state_for('door closed')
         state.on_entry = 'send("test")'
 
-        self.interpreter.execute()
+        microwave.execute()
 
-        self.assertIn(
-            MetaEvent('event sent', event=InternalEvent('test')),
-            [x[0][0] for x in self.property.queue.call_args_list]
-        )
+        assert MetaEvent('event sent', event=InternalEvent('test')) in [x[0][0] for x in property_statechart.queue.call_args_list]
 
-    def test_trace(self):
-        self.interpreter.queue(Event('door_opened'))
-        self.interpreter.execute()
+    def test_trace(self, microwave, property_statechart):
+        microwave.queue(Event('door_opened'))
+        microwave.execute()
 
         call_list = [
             MetaEvent('step started'),
@@ -69,22 +64,22 @@ class InterpreterMetaEventTests(unittest.TestCase):
         ]
 
         for i, call in enumerate(call_list):
-            effective_call = self.property.queue.call_args_list[i][0][0]
+            effective_call = property_statechart.queue.call_args_list[i][0][0]
 
-            self.assertIsInstance(effective_call, MetaEvent)
-            self.assertEqual(call.name, effective_call.name)
+            assert isinstance(effective_call, MetaEvent)
+            assert call.name == effective_call.name
 
             for param in ['state', 'source', 'target', 'event']:
                 if param in call.data:
-                    self.assertEqual(effective_call.data[param], call.data[param])
+                    assert effective_call.data[param] == call.data[param]
 
-    def test_final(self):
-        self.interpreter.execute()
-        self.assertFalse(self.property.final)
+    def test_final(self, microwave, property_statechart):
+        microwave.execute()
+        assert not property_statechart.final
 
-        self.property.final = True
-        self.assertTrue(self.property.final)
+        property_statechart.final = True
+        assert property_statechart.final
 
-        with self.assertRaises(PropertyStatechartError):
-            self.interpreter.execute()
+        with pytest.raises(PropertyStatechartError):
+            microwave.execute()
 
