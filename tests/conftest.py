@@ -51,6 +51,13 @@ def simple_statechart():
 
 
 @pytest.fixture
+def composite_statechart():
+    with open('yaml/composite.yaml') as f:
+        statechart = import_from_yaml(f)
+    return statechart
+
+
+@pytest.fixture
 def deep_history_statechart():
     with open('yaml/deep_history.yaml') as f:
         statechart = import_from_yaml(f)
