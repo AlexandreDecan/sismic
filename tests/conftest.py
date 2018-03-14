@@ -43,25 +43,18 @@ def microwave(request):
     return Interpreter(sc)
 
 
-@pytest.fixture
-def tests_statecharts():
-    files = ['actions', 'composite', 'deep_history', 'infinite', 'internal',
-             'nested_parallel', 'nondeterministic', 'parallel', 'simple', 'timer']
-
-    statecharts = []
-    for filename in files:
-        with open(os.path.join('yaml', filename + '.yaml')) as f:
-            statecharts.append(import_from_yaml(f))
-    return statecharts
+@pytest.fixture(params=['actions', 'composite', 'deep_history', 'infinite', 'internal',
+                        'nested_parallel', 'nondeterministic', 'parallel', 'simple', 'timer'])
+def example_from_tests(request):
+    with open(os.path.join('yaml', request.param + '.yaml')) as f:
+        statechart = import_from_yaml(f)
+    return statechart
 
 
-@pytest.fixture
-def docs_statecharts():
-    files = ['elevator/elevator', 'elevator/elevator_contract', 'microwave/microwave',
-                 'elevator/tester_elevator_7th_floor_never_reached', 'elevator/tester_elevator_moves_after_10s', 'writer_options']
-
-    statecharts = []
-    for filename in files:
-        with open(os.path.join('..', 'docs', 'examples', filename + '.yaml')) as f:
-            statecharts.append(import_from_yaml(f))
-    return statecharts
+@pytest.fixture(params=['elevator/elevator', 'elevator/elevator_contract', 'microwave/microwave',
+                        'elevator/tester_elevator_7th_floor_never_reached', 'elevator/tester_elevator_moves_after_10s',
+                        'writer_options'])
+def example_from_docs(request):
+    with open(os.path.join('..', 'docs', 'examples', request.param + '.yaml')) as f:
+        statechart = import_from_yaml(f)
+    return statechart

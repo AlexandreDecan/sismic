@@ -31,13 +31,11 @@ def test_yaml_parser_types_handling(data):
 
 
 class TestImportFromYaml:
-    def test_tests_examples(self, tests_statecharts):
-        for statechart in tests_statecharts:
-            assert isinstance(statechart, Statechart)
+    def test_import_example_from_tests(self, example_from_tests):
+        assert isinstance(example_from_tests, Statechart)
 
-    def test_docs_examples(self, docs_statecharts):
-        for statechart in docs_statecharts:
-            assert isinstance(statechart, Statechart)
+    def test_import_example_from_docs(self, example_from_docs):
+        assert isinstance(example_from_docs, Statechart)
 
     def test_transitions_to_unknown_state(self):
         yaml = """
@@ -91,77 +89,63 @@ class TestImportFromYaml:
 
 
 class TestExportToYaml:
-    def test_export_docs_examples(self, docs_statecharts):
-        for statechart in docs_statecharts:
-            export_to_yaml(statechart)
-        assert True
+    def test_export_example_from_tests(self, example_from_tests):
+        assert len(export_to_yaml(example_from_tests)) > 0
 
-    def test_export_tests_examples(self, tests_statecharts):
-        for statechart in tests_statecharts:
-            export_to_yaml(statechart)
-        assert True
+    def test_export_example_from_docs(self, example_from_docs):
+        assert len(export_to_yaml(example_from_docs)) > 0
 
-    def test_validity_for_docs_examples(self, docs_statecharts):
-        for statechart in docs_statecharts:
-            assert import_from_yaml(export_to_yaml(statechart)).validate()
+    def test_validity_for_example_from_tests(self, example_from_tests):
+        assert import_from_yaml(export_to_yaml(example_from_tests)).validate()
 
-    def test_identity_for_docs_examples(self, docs_statecharts):
-        for statechart in docs_statecharts:
-            compare_statecharts(statechart, import_from_yaml(export_to_yaml(statechart)))
+    def test_validity_for_example_from_docs(self, example_from_docs):
+        assert import_from_yaml(export_to_yaml(example_from_docs)).validate()
 
-    def test_validity_for_tests_examples(self, tests_statecharts):
-        for statechart in tests_statecharts:
-            assert import_from_yaml(export_to_yaml(statechart)).validate()
+    def test_identity_for_example_from_tests(self, example_from_tests):
+        compare_statecharts(example_from_tests, import_from_yaml(export_to_yaml(example_from_tests)))
 
-    def test_identity_for_tests_examples(self, tests_statecharts):
-        for statechart in tests_statecharts:
-            compare_statecharts(statechart, import_from_yaml(export_to_yaml(statechart)))
+    def test_identity_for_example_from_docs(self, example_from_docs):
+        compare_statecharts(example_from_docs, import_from_yaml(export_to_yaml(example_from_docs)))
 
 
 class TestExporttoTree:
-    def test_output(self, tests_statecharts):
-        results = [
-            ['root', '   s1', '   s2', '   s3'],
-            ['root', '   s1', '      s1a', '      s1b', '         s1b1', '         s1b2', '   s2'],
-            ['root', '   active', '      active.H*', '      concurrent_processes', '         process_1',
-             '            s11', '            s12', '            s13', '         process_2', '            s21',
-             '            s22', '            s23', '   pause', '   stop'],
-            ['root', '   s1', '   s2', '   stop'],
-            ['root', '   active', '   s1', '   s2'],
-            ['root', '   s1', '      p1', '         r1', '            i1', '            j1', '            k1',
-             '         r2', '            i2', '            j2', '            k2', '            y', '      p2',
-             '         r3', '            i3', '            j3', '            k3', '            z', '         r4',
-             '            i4', '            j4', '            k4', '            x'],
-            ['root', '   s1', '   s2', '   s3'],
-            ['root', '   s1', '      p1', '         a1', '         b1', '         c1', '         initial1', '      p2',
-             '         a2', '         b2', '         c2', '         initial2'],
-            ['root', '   final', '   s1', '   s2', '   s3'],
-            ['root', '   s1', '   s2', '   s3', '   s4']
-        ]
+    result = iter([
+        ['root', '   s1', '   s2', '   s3'],
+        ['root', '   s1', '      s1a', '      s1b', '         s1b1', '         s1b2', '   s2'],
+        ['root', '   active', '      active.H*', '      concurrent_processes', '         process_1',
+         '            s11', '            s12', '            s13', '         process_2', '            s21',
+         '            s22', '            s23', '   pause', '   stop'],
+        ['root', '   s1', '   s2', '   stop'],
+        ['root', '   active', '   s1', '   s2'],
+        ['root', '   s1', '      p1', '         r1', '            i1', '            j1', '            k1',
+         '         r2', '            i2', '            j2', '            k2', '            y', '      p2',
+         '         r3', '            i3', '            j3', '            k3', '            z', '         r4',
+         '            i4', '            j4', '            k4', '            x'],
+        ['root', '   s1', '   s2', '   s3'],
+        ['root', '   s1', '      p1', '         a1', '         b1', '         c1', '         initial1', '      p2',
+         '         a2', '         b2', '         c2', '         initial2'],
+        ['root', '   final', '   s1', '   s2', '   s3'],
+        ['root', '   s1', '   s2', '   s3', '   s4']
+    ])
 
-        for statechart, r in zip(tests_statecharts, results):
-            assert export_to_tree(statechart) == r
+    def test_output(self, example_from_tests):
+        result = next(self.result)
+        assert export_to_tree(example_from_tests) == result
 
-    def test_all_states_are_exported(self, tests_statecharts):
-        for statechart in tests_statecharts:
-            assert set(export_to_tree(statechart, spaces=0)) == set(statechart.states)
+    def test_all_states_are_exported(self, example_from_tests):
+        assert set(export_to_tree(example_from_tests, spaces=0)) == set(example_from_tests.states)
 
-    def test_indentation_is_correct(self, tests_statecharts):
-        for statechart in tests_statecharts:
-            result = sorted(export_to_tree(statechart, spaces=1))
-
-            for r in result:
-                name = r.lstrip()
-                depth = statechart.depth_for(name)
-                spaces = len(r) - len(name)
-                assert depth - 1 == spaces
+    def test_indentation_is_correct(self, example_from_tests):
+        for r in sorted(export_to_tree(example_from_tests, spaces=1)):
+            name = r.lstrip()
+            depth = example_from_tests.depth_for(name)
+            spaces = len(r) - len(name)
+            assert depth - 1 == spaces
 
 
 class TestExportToPlantUML:
-    def test_export_tests_examples(self, tests_statecharts):
-        for statechart in tests_statecharts:
-            assert len(export_to_plantuml(statechart)) > 0
+    def test_export_example_from_tests(self, example_from_tests):
+        assert len(export_to_plantuml(example_from_tests)) > 0
 
-    def test_export_docs_examples(self, docs_statecharts):
-        for statechart in docs_statecharts:
-            assert len(export_to_plantuml(statechart)) > 0
+    def test_export_example_from_docs(self, example_from_docs):
+        assert len(export_to_plantuml(example_from_docs)) > 0
