@@ -69,19 +69,23 @@ Sismic statecharts provides full support for the majority of the UML 2 statechar
     format
     execution
     code
-    contract
-    behavior
-    properties
 
+.. toctree::
+    :caption: Statechart testing
+    :maxdepth: 1
+
+    contract
+    properties
+    behavior
 
 .. toctree::
     :caption: Advanced topics
     :maxdepth: 1
 
-    advancedtopics/dealingtime
-    advancedtopics/communication
-    advancedtopics/integrate_code
-    advancedtopics/semantics
+    dealingtime
+    integrate_code
+    communication
+    semantics
 
 .. toctree::
     :caption: Misc

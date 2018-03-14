@@ -2,27 +2,31 @@
 Dealing with time
 =================
 
-It is quite usual in a statechart to rely on some notion of time.
-To cope with this, the built-in evaluator (see :py:class:`~sismic.code.PythonEvaluator`) has support for
-time events ``after(x)`` and ``idle(x)``, meaning that a transition can be triggered after a certain amount of time.
+It is quite usual in statecharts to find notations such as "*after 30 seconds*", often expressed as specific events
+on a transition. Sismic does not support the use of these *special events*, and proposes instead to deal with time
+by making use of some specifics provided by its interpreter and the default Python code evaluator.
 
-When it comes to interpreting statecharts, Sismic deals with time using an internal clock whose value is exposed
+Every interpreter has an internal clock whose value is initially set to 0. This internal clock is exposed by
 by the :py:attr:`~sismic.interpreter.Interpreter.time` property of an :py:class:`~sismic.interpreter.Interpreter`.
-Basically, this clock does nothing by itself except for being available for an
-:py:class:`~sismic.code.Evaluator` instance.
-If your statechart needs to rely on a time value, you have to set it by yourself.
+This property allows one to execute a statechart using simulated time. In other word, the value of this property
+won't change, unless you set it by yourself.
 
-Below are some examples to illustrate the use of time events.
+The built-in Python code evaluator allows one to make use of ``after(...)``, ``idle(...)`` in guards or contracts.
+These two Boolean predicates can be used to automatically compare the current time (as exposed by the interpreter)
+with a predefined value that depends on the state in which the predicate is used. For instance, ``after(x)`` will
+evaluate to ``True`` if the current time of the interpreter is at least ``x`` units greater than the time when the
+state using this predicate (or source state in the case of a transition) was entered.
+Similarly, ``idle(x)`` evaluates to ``True`` if no transition was triggered during the last ``x`` units of time.
+
+Note that while this property was initially designed to manage simulate time, it can also be used to synchronise
+the internal clock of an interpreter with the *real* time, i.e. wall-clock time.
 
 
 Simulated time
 --------------
 
-Sismic provides a discrete step-by-step interpreter for statecharts.
-It seems natural in a discrete simulation to rely on simulated time.
-
 The following example illustrates a statechart modeling the behavior of a simple *elevator*.
-If the elevator is sent to the 4th floor, according to the YAML definition of this statechart,
+If the elevator is sent to the 4th floor then, according to the YAML definition of this statechart,
 the elevator should automatically go back to the ground floor after 10 seconds.
 
 .. code:: yaml
@@ -94,6 +98,8 @@ We can check the current floor:
     0
 
 This displays ``0``.
+
+
 
 Real time
 ---------
