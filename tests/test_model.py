@@ -52,7 +52,7 @@ class TestStatechartTraveral:
 
     def test_descendants(self, composite_statechart):
         assert composite_statechart.descendants_for('s2') == []
-        assert set(composite_statechart.descendants_for('s1')) == set(['s1a', 's1b', 's1b1', 's1b2'])
+        assert set(composite_statechart.descendants_for('s1')) == {'s1a', 's1b', 's1b1', 's1b2'}
 
     def test_depth(self, composite_statechart):
         assert composite_statechart.depth_for('root') == 1

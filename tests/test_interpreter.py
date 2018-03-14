@@ -3,7 +3,6 @@ import pytest
 from collections import Counter
 
 from sismic.exceptions import ExecutionError, NonDeterminismError, ConflictingTransitionsError
-from sismic.io import import_from_yaml
 from sismic.code import DummyEvaluator
 from sismic.interpreter import Interpreter, Event, InternalEvent
 from sismic.helpers import coverage_from_trace, log_trace, run_in_background

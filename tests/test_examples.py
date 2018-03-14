@@ -1,6 +1,6 @@
 import pytest
 
-from sismic.interpreter import Interpreter, Event
+from sismic.interpreter import Event
 
 
 def test_writer(writer):
