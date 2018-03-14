@@ -12,10 +12,8 @@ from sismic.model import Transition, MacroStep, MicroStep
 
 class TestInterpreterWithSimple:
     @pytest.fixture()
-    def interpreter(self):
-        with open('yaml/simple.yaml') as f:
-            sc = import_from_yaml(f)
-        interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
+    def interpreter(self, simple_statechart):
+        interpreter = Interpreter(simple_statechart, evaluator_klass=DummyEvaluator)
 
         # Stabilization
         interpreter.execute_once()
@@ -90,10 +88,8 @@ class TestInterpreterWithSimple:
 
 class TestInterpreterWithInternal:
     @pytest.fixture
-    def interpreter(self):
-        with open('yaml/internal.yaml') as f:
-            sc = import_from_yaml(f)
-        interpreter = Interpreter(sc)
+    def interpreter(self, internal_statechart):
+        interpreter = Interpreter(internal_statechart)
 
         # Stabilization
         interpreter.execute_once()
@@ -121,10 +117,8 @@ class TestInterpreterWithInternal:
 
 class TestInterpreterWithNonDeterministic:
     @pytest.fixture()
-    def interpreter(self):
-        with open('yaml/nondeterministic.yaml') as f:
-            sc = import_from_yaml(f)
-        interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
+    def interpreter(self, nondeterministic_statechart):
+        interpreter = Interpreter(nondeterministic_statechart, evaluator_klass=DummyEvaluator)
 
         # Stabilization
         interpreter.execute_once()
@@ -138,10 +132,8 @@ class TestInterpreterWithNonDeterministic:
 
 class TestInterpreterWithHistory:
     @pytest.fixture()
-    def interpreter(self):
-        with open('yaml/history.yaml') as f:
-            sc = import_from_yaml(f)
-        interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
+    def interpreter(self, history_statechart):
+        interpreter = Interpreter(history_statechart, evaluator_klass=DummyEvaluator)
 
         # Stabilization
         interpreter.execute_once()
@@ -185,10 +177,8 @@ class TestInterpreterWithHistory:
 
 class TestInterpreterWithDeephistory:
     @pytest.fixture()
-    def interpreter(self):
-        with open('yaml/deep_history.yaml') as f:
-            sc = import_from_yaml(f)
-        interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
+    def interpreter(self, deep_history_statechart):
+        interpreter = Interpreter(deep_history_statechart, evaluator_klass=DummyEvaluator)
 
         # Stabilization
         interpreter.execute_once()
@@ -255,10 +245,8 @@ class TestInterpreterWithDeephistory:
 
 class TestInterpreterWithInfinite:
     @pytest.fixture()
-    def interpreter(self):
-        with open('yaml/infinite.yaml') as f:
-            sc = import_from_yaml(f)
-        interpreter = Interpreter(sc)
+    def interpreter(self, infinite_statechart):
+        interpreter = Interpreter(infinite_statechart)
 
         # Stabilization
         interpreter.execute_once()
@@ -293,10 +281,8 @@ class TestInterpreterWithInfinite:
 
 class TestInterpreterWithParallel:
     @pytest.fixture()
-    def interpreter(self):
-        with open('yaml/parallel.yaml') as f:
-            sc = import_from_yaml(f)
-        interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
+    def interpreter(self, parallel_statechart):
+        interpreter = Interpreter(parallel_statechart, evaluator_klass=DummyEvaluator)
 
         # Stabilization
         interpreter.execute_once()
@@ -345,10 +331,8 @@ class TestInterpreterWithNestedParallel:
     common_states = ['root', 's1', 'p1', 'p2', 'r1', 'r2', 'r3', 'r4']
 
     @pytest.fixture()
-    def interpreter(self):
-        with open('yaml/nested_parallel.yaml') as f:
-            sc = import_from_yaml(f)
-        interpreter = Interpreter(sc, evaluator_klass=DummyEvaluator)
+    def interpreter(self, nested_parallel_statechart):
+        interpreter = Interpreter(nested_parallel_statechart, evaluator_klass=DummyEvaluator)
 
         # Stabilization
         interpreter.execute_once()
@@ -462,7 +446,6 @@ def test_run_in_background(elevator):
     assert elevator.context['current'] == 4
 
 
-
 class TestCoverageFromTrace:
     def test_empty_trace(self):
         assert coverage_from_trace([]) == (Counter(), Counter())
@@ -490,11 +473,9 @@ class TestCoverageFromTrace:
 
 class TestInterpreterBinding:
     @pytest.fixture()
-    def interpreter(self):
-        with open('yaml/simple.yaml') as f:
-            sc = import_from_yaml(f)
-        i1 = Interpreter(sc, evaluator_klass=DummyEvaluator)
-        i2 = Interpreter(sc, evaluator_klass=DummyEvaluator)
+    def interpreter(self, simple_statechart):
+        i1 = Interpreter(simple_statechart, evaluator_klass=DummyEvaluator)
+        i2 = Interpreter(simple_statechart, evaluator_klass=DummyEvaluator)
 
         # Stabilization
         i1.execute_once(), i2.execute_once()

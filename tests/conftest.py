@@ -43,6 +43,69 @@ def microwave(request):
     return Interpreter(sc)
 
 
+@pytest.fixture
+def simple_statechart():
+    with open('yaml/simple.yaml') as f:
+        statechart = import_from_yaml(f)
+    return statechart
+
+
+@pytest.fixture
+def deep_history_statechart():
+    with open('yaml/deep_history.yaml') as f:
+        statechart = import_from_yaml(f)
+    return statechart
+
+
+@pytest.fixture
+def infinite_statechart():
+    with open('yaml/infinite.yaml') as f:
+        statechart = import_from_yaml(f)
+    return statechart
+
+
+@pytest.fixture
+def parallel_statechart():
+    with open('yaml/parallel.yaml') as f:
+        statechart = import_from_yaml(f)
+    return statechart
+
+
+@pytest.fixture
+def nested_parallel_statechart():
+    with open('yaml/nested_parallel.yaml') as f:
+        statechart = import_from_yaml(f)
+    return statechart
+
+
+@pytest.fixture
+def nondeterministic_statechart():
+    with open('yaml/nondeterministic.yaml') as f:
+        statechart = import_from_yaml(f)
+    return statechart
+
+
+@pytest.fixture
+def history_statechart():
+    with open('yaml/history.yaml') as f:
+        statechart = import_from_yaml(f)
+    return statechart
+
+
+@pytest.fixture
+def composite_statechart():
+    with open('yaml/composite.yaml') as f:
+        statechart = import_from_yaml(f)
+    return statechart
+
+
+@pytest.fixture
+def internal_statechart():
+    with open('yaml/internal.yaml') as f:
+        statechart = import_from_yaml(f)
+    return statechart
+
+
 @pytest.fixture(params=['actions', 'composite', 'deep_history', 'infinite', 'internal',
                         'nested_parallel', 'nondeterministic', 'parallel', 'simple', 'timer'])
 def example_from_tests(request):

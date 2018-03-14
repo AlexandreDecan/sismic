@@ -1,291 +1,259 @@
-import unittest
+import pytest
 
-from sismic import exceptions, io, model
+from sismic.exceptions import StatechartError
+from sismic.model import Statechart, Transition, CompoundState, BasicState
 from sismic.interpreter import Event
 
 
-class EventTests(unittest.TestCase):
-    def test_creation(self):
-        self.assertEqual(Event(name='hello'), Event('hello'))
-        with self.assertRaises(TypeError):
+class TestEvents:
+    def test_create_event(self):
+        assert Event('hello') == Event(name='hello')
+
+    def test_empty_event(self):
+        with pytest.raises(TypeError):
             Event()
 
-    def test_with_parameters(self):
+    def test_parametrized_events(self):
         event = Event('test', a=1, b=2, c=3)
-        self.assertEqual(event.data, {'a': 1, 'b': 2, 'c': 3})
 
-    def test_parameter_name(self):
-        with self.assertRaises(TypeError):
-            Event('test', name='fail')
+        assert event.data == {'a': 1, 'b': 2, 'c': 3}
+        assert event.a == 1
+        assert event.b == 2
+        assert event.c == 3
+        assert event.name == 'test'
 
-    def test_parameters_access(self):
-        event = Event('test', a=1, b=2, c=3)
-        self.assertEqual(event.a, 1)
-        self.assertEqual(event.b, 2)
-        self.assertEqual(event.c, 3)
-
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             _ = event.d
 
-        with self.assertRaises(KeyError):
+        with pytest.raises(KeyError):
             _ = event.data['d']
 
+    def test_cannot_use_name_as_parameter(self):
+        with pytest.raises(TypeError):
+            Event('test', name='fail')
 
-class TraversalTests(unittest.TestCase):
-    def setUp(self):
-        with open('tests/yaml/composite.yaml') as f:
-            self.sc = io.import_from_yaml(f)
 
-    def test_parent(self):
-        self.assertEqual(self.sc.parent_for('s2'), 'root')
-        self.assertEqual(self.sc.parent_for('root'), None)
-        with self.assertRaises(exceptions.StatechartError):
-            self.sc.parent_for('unknown')
+class TestStatechartTraveral:
+    def test_parent(self, composite_statechart):
+        assert composite_statechart.parent_for('s2') == 'root'
+        assert composite_statechart.parent_for('root') is None
 
-    def test_children(self):
-        self.assertEqual(sorted(self.sc.children_for('root')), ['s1', 's2'])
-        self.assertEqual(self.sc.children_for('s1b2'), [])
+        with pytest.raises(StatechartError):
+            composite_statechart.parent_for('unknown')
 
-    def test_ancestors(self):
-        self.assertEqual(self.sc.ancestors_for('s2'), ['root'])
-        self.assertEqual(self.sc.ancestors_for('s1a'), ['s1', 'root'])
-        self.assertEqual(self.sc.ancestors_for('s1b1'), ['s1b', 's1', 'root'])
+    def test_children(self, composite_statechart):
+        assert set(composite_statechart.children_for('root')) == {'s1', 's2'}
+        assert composite_statechart.children_for('s1b2') == []
 
-    def test_descendants(self):
-        self.assertEqual(self.sc.descendants_for('s2'), [])
-        s1 = self.sc.descendants_for('s1')
-        self.assertTrue('s1a' in s1)
-        self.assertTrue('s1b' in s1)
-        self.assertTrue('s1b1' in s1)
-        self.assertTrue('s1b2' in s1)
-        self.assertTrue(len(s1) == 4)
+    def test_ancestors(self, composite_statechart):
+        assert composite_statechart.ancestors_for('s2') == ['root']
+        assert composite_statechart.ancestors_for('s1a') == ['s1', 'root']
+        assert composite_statechart.ancestors_for('s1b1') == ['s1b', 's1', 'root']
 
-    def test_depth(self):
-        self.assertEqual(self.sc.depth_for('root'), 1)
-        self.assertEqual(self.sc.depth_for('s1'), 2)
-        self.assertEqual(self.sc.depth_for('s1a'), 3)
-        self.assertEqual(self.sc.depth_for('s1b1'), 4)
-        self.assertEqual(self.sc.depth_for('s2'), 2)
-        self.assertEqual(self.sc.depth_for('s1b2'), 4)
+    def test_descendants(self, composite_statechart):
+        assert composite_statechart.descendants_for('s2') == []
+        assert composite_statechart.descendants_for('s1') == ['s1a', 's1b', 's1b1', 's1b2']
 
-    def test_lca(self):
-        self.assertEqual(self.sc.least_common_ancestor('s1', 's2'), 'root')
-        self.assertEqual(self.sc.least_common_ancestor('s1', 's1a'), 'root')
-        self.assertEqual(self.sc.least_common_ancestor('s1a', 's1b'), 's1')
-        self.assertEqual(self.sc.least_common_ancestor('s1a', 's1b1'), 's1')
+    def test_depth(self, composite_statechart):
+        assert composite_statechart.depth_for('root') == 1
+        assert composite_statechart.depth_for('s1') == 2
+        assert composite_statechart.depth_for('s1a') == 3
+        assert composite_statechart.depth_for('s1b1') == 4
+        assert composite_statechart.depth_for('s2') == 2
+        assert composite_statechart.depth_for('s1b2') == 4
 
-    def test_leaf(self):
-        self.assertEqual(sorted(self.sc.leaf_for([])), [])
-        self.assertEqual(sorted(self.sc.leaf_for(['s1'])), ['s1'])
-        self.assertEqual(sorted(self.sc.leaf_for(['s1', 's2'])), ['s1', 's2'])
-        self.assertEqual(sorted(self.sc.leaf_for(['s1', 's1b1', 's2'])), ['s1b1', 's2'])
-        self.assertEqual(sorted(self.sc.leaf_for(['s1', 's1b', 's1b1'])), ['s1b1'])
+    def test_lca(self, composite_statechart):
+        assert composite_statechart.least_common_ancestor('s1', 's2') == 'root'
+        assert composite_statechart.least_common_ancestor('s1', 's1a') == 'root'
+        assert composite_statechart.least_common_ancestor('s1a', 's1b') == 's1'
+        assert composite_statechart.least_common_ancestor('s1a', 's1b1') == 's1'
 
-    def test_events(self):
-        self.assertEqual(self.sc.events_for(), ['click', 'close', 'validate'])
-        self.assertEqual(self.sc.events_for('s1b1'), ['validate'])
-        self.assertEqual(self.sc.events_for(['s1b1', 's1b']), ['click', 'validate'])
+    def test_leaf(self, composite_statechart):
+        assert sorted(composite_statechart.leaf_for([])) == []
+        assert sorted(composite_statechart.leaf_for(['s1'])) == ['s1']
+        assert sorted(composite_statechart.leaf_for(['s1', 's2'])) == ['s1', 's2']
+        assert sorted(composite_statechart.leaf_for(['s1', 's1b1', 's2'])) == ['s1b1', 's2']
+        assert sorted(composite_statechart.leaf_for(['s1', 's1b', 's1b1'])) == ['s1b1']
+
+    def test_events_for(self, composite_statechart):
+        assert set(composite_statechart.events_for()) == {'click', 'close', 'validate'}
+        assert set(composite_statechart.events_for('s1b1')) == {'validate'}
+        assert set(composite_statechart.events_for(['s1b1', 's1b'])) == {'click', 'validate'}
 
     def test_name_collision(self):
-        root = model.CompoundState('root', 'a')
-        sc = model.Statechart('test')
+        root = CompoundState('root', 'a')
+        sc = Statechart('test')
         sc.add_state(root, None)
-        s1 = model.BasicState('a')
-        s2 = model.BasicState('a')
+        s1 = BasicState('a')
+        s2 = BasicState('a')
         sc.add_state(s1, parent='root')
-        with self.assertRaises(exceptions.StatechartError) as cm:
+
+        with pytest.raises(StatechartError) as e:
             sc.add_state(s2, parent='root')
-        self.assertIn('already exists!', str(cm.exception))
+        assert 'already exists!' in str(e.value)
 
     def test_root_already_defined(self):
-        root = model.CompoundState('root', 'a')
-        sc = model.Statechart('test')
+        root = CompoundState('root', 'a')
+        sc = Statechart('test')
         sc.add_state(root, None)
-        with self.assertRaises(exceptions.StatechartError) as cm:
+
+        with pytest.raises(StatechartError) as e:
             sc.add_state(root, None)
-        self.assertIn('already exists!', str(cm.exception))
+        assert 'already exists!' in str(e.value)
 
 
-class ValidateTests(unittest.TestCase):
+class TestStatechartValidate:
     # REMARK: "Positive" tests are already done during io.import_from_yaml!
-    def test_history_memory_not_child(self):
-        with open('tests/yaml/history.yaml') as f:
-            statechart = io.import_from_yaml(f)
+    def test_history_memory_is_not_a_child(self, history_statechart):
+        history_statechart.state_for('loop.H').memory = 'pause'
+        with pytest.raises(StatechartError) as e:
+            history_statechart._validate_historystate_memory()
+        assert 'Initial memory' in str(e.value)
+        assert 'must be a parent\'s child' in str(e.value)
 
-        statechart.state_for('loop.H').memory = 'pause'
-        with self.assertRaises(exceptions.StatechartError) as cm:
-            statechart._validate_historystate_memory()
-        self.assertIn('Initial memory', str(cm.exception))
-        self.assertIn('must be a parent\'s child', str(cm.exception))
+    def test_history_memory_unknown(self, history_statechart):
+        history_statechart.state_for('loop.H').memory = 'unknown'
+        with pytest.raises(StatechartError) as e:
+            history_statechart._validate_historystate_memory()
+        assert 'Initial memory' == str(e.value)
+        assert 'does not exist' == str(e.value)
 
-    def test_history_memory_unknown(self):
-        with open('tests/yaml/history.yaml') as f:
-            statechart = io.import_from_yaml(f)
+    def test_history_memory_self(self, history_statechart):
+        history_statechart.state_for('loop.H').memory = 'loop.H'
+        with pytest.raises(StatechartError) as e:
+            history_statechart._validate_historystate_memory()
+        assert 'Initial memory' == str(e.value)
+        assert 'cannot target itself' == str(e.value)
 
-        statechart.state_for('loop.H').memory = 'unknown'
-        with self.assertRaises(exceptions.StatechartError) as cm:
-            statechart._validate_historystate_memory()
-        self.assertIn('Initial memory', str(cm.exception))
-        self.assertIn('does not exist', str(cm.exception))
+    def test_compound_initial_not_a_child(self, composite_statechart):
+        composite_statechart.state_for('s1b').initial = 's1'
+        with pytest.raises(StatechartError) as e:
+            composite_statechart._validate_compoundstate_initial()
+        assert 'Initial state' in str(e.value)
+        assert 'must be a child state' in str(e.value)
 
-    def test_history_memory_self(self):
-        with open('tests/yaml/history.yaml') as f:
-            statechart = io.import_from_yaml(f)
-
-        statechart.state_for('loop.H').memory = 'loop.H'
-        with self.assertRaises(exceptions.StatechartError) as cm:
-            statechart._validate_historystate_memory()
-        self.assertIn('Initial memory', str(cm.exception))
-        self.assertIn('cannot target itself', str(cm.exception))
-
-    def test_compound_initial_unknown(self):
-        with open('tests/yaml/composite.yaml') as f:
-            statechart = io.import_from_yaml(f)
-
-        statechart.state_for('s1b').initial = 'unknown'
-        with self.assertRaises(exceptions.StatechartError) as cm:
-            statechart._validate_compoundstate_initial()
-        self.assertIn('Initial state', str(cm.exception))
-        self.assertIn('does not exist', str(cm.exception))
-
-    def test_compound_initial_not_child(self):
-        with open('tests/yaml/composite.yaml') as f:
-            statechart = io.import_from_yaml(f)
-
-        statechart.state_for('s1b').initial = 's1'
-        with self.assertRaises(exceptions.StatechartError) as cm:
-            statechart._validate_compoundstate_initial()
-        self.assertIn('Initial state', str(cm.exception))
-        self.assertIn('must be a child state', str(cm.exception))
+    def test_compound_initial_unknown(self, composite_statechart):
+        composite_statechart.state_for('s1b').initial = 'unknown'
+        with pytest.raises(StatechartError) as e:
+            composite_statechart._validate_compoundstate_initial()
+        assert 'Initial state' in str(e.value)
+        assert 'does not exist' in str(e.value)
 
 
-class TransitionsTests(unittest.TestCase):
-    def setUp(self):
-        with open('tests/yaml/internal.yaml') as f:
-            self.sc = io.import_from_yaml(f)
+class TestTransition:
+    def test_transitions_from(self, internal_statechart):
+        assert internal_statechart.transitions_from('root') == []
+        assert len(internal_statechart.transitions_from('active')) == 2
+        assert len(internal_statechart.transitions_from('s1')) == 1
 
-    def test_transitions_from(self):
-        self.assertEqual(self.sc.transitions_from('root'), [])
-        self.assertEqual(len(self.sc.transitions_from('active')), 2)
-        self.assertEqual(len(self.sc.transitions_from('s1')), 1)
+        for transition in internal_statechart.transitions_from('active'):
+            assert transition.source == 'active'
 
-        nb_transitions = 0
-        for transition in self.sc.transitions:
-            if transition.source == 'unknown':
-                nb_transitions += 1
-        self.assertEqual(nb_transitions, 0)
+        with pytest.raises(StatechartError) as e:
+            internal_statechart.transitions_from('unknown')
+        assert 'does not exist' in str(e.value)
 
-        for transition in self.sc.transitions_from('active'):
-            self.assertEqual(transition.source, 'active')
+    def test_transitions_to(self, internal_statechart):
+        assert internal_statechart.transitions_to('root') == []
+        assert len(internal_statechart.transitions_to('s1')) == 1
+        assert len(internal_statechart.transitions_to('s2')) == 2
 
-    def test_transitions_to(self):
-        self.assertEqual(self.sc.transitions_to('root'), [])
-        self.assertEqual(len(self.sc.transitions_to('s1')), 1)
-        self.assertEqual(len(self.sc.transitions_to('s2')), 2)
+        for transition in internal_statechart.transitions_from('s2'):
+            assert transition.target == 's2'
 
-        nb_transitions = 0
-        for transition in self.sc.transitions:
-            if transition.source == 'unknown':
-                nb_transitions += 1
-        self.assertEqual(nb_transitions, 0)
+        with pytest.raises(StatechartError) as e:
+            internal_statechart.transitions_to('unknown')
+        assert 'does not exist' in str(e.value)
 
-        for transition in self.sc.transitions_from('s2'):
-            self.assertEqual(transition.target, 's2')
+    def test_transitions_with(self, internal_statechart):
+        assert len(internal_statechart.transitions_with('next')) == 1
+        assert len(internal_statechart.transitions_with('unknown')) == 0
 
-        with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc.add_transition(model.Transition('s2'))
-        self.assertIn('Cannot add', str(cm.exception))
+    def test_add_transition(self, internal_statechart):
+        with pytest.raises(StatechartError) as e:
+            internal_statechart.add_transition(Transition('s2'))
+        assert 'Cannot add' in str(e.value)
 
-        self.sc.add_transition(model.Transition('s1'))
-        self.assertEqual(len(self.sc.transitions_to('s1')), 2)
+        internal_statechart.add_transition(Transition('s1'))
+        assert len(internal_statechart.transitions_to('s1')) == 2
 
-    def test_transitions_with(self):
-        self.assertEqual(len(self.sc.transitions_with('next')), 1)
-        self.assertEqual(len(self.sc.transitions_with('unknown')), 0)
-
-
-class TransitionRotationTests(unittest.TestCase):
-    def setUp(self):
-        with open('tests/yaml/internal.yaml') as f:
-            self.sc = io.import_from_yaml(f)
-
-    def test_rotate_source(self):
+    def test_rotate_source(self, internal_statechart):
         tr = next(t for t in self.sc.transitions if t.source == 's1')
-        self.sc.rotate_transition(tr, new_source='s1')
+        internal_statechart.rotate_transition(tr, new_source='s1')
         self.assertEqual(tr.source, 's1')
 
-        self.sc.rotate_transition(tr, new_source='active')
+        internal_statechart.rotate_transition(tr, new_source='active')
         self.assertEqual(tr.source, 'active')
 
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc.rotate_transition(tr, new_source=None)
+            internal_statechart.rotate_transition(tr, new_source=None)
         self.assertIn('State', str(cm.exception))
         self.assertIn('does not exist', str(cm.exception))
 
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc.rotate_transition(tr, new_source='s2')
+            internal_statechart.rotate_transition(tr, new_source='s2')
         self.assertIn('cannot have transitions', str(cm.exception))
 
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc.rotate_transition(tr, new_source='unknown')
+            internal_statechart.rotate_transition(tr, new_source='unknown')
         self.assertIn('State', str(cm.exception))
         self.assertIn('does not exist', str(cm.exception))
 
-        self.sc.validate()
+        internal_statechart.validate()
 
     def test_rotate_target(self):
-        tr = next(t for t in self.sc.transitions if t.source == 's1')
-        self.sc.rotate_transition(tr, new_target='s2')
+        tr = next(t for t in internal_statechart.transitions if t.source == 's1')
+        internal_statechart.rotate_transition(tr, new_target='s2')
         self.assertEqual(tr.target, 's2')
 
-        self.sc.rotate_transition(tr, new_target='active')
+        internal_statechart.rotate_transition(tr, new_target='active')
         self.assertEqual(tr.target, 'active')
 
-        self.sc.rotate_transition(tr, new_target=None)
+        internal_statechart.rotate_transition(tr, new_target=None)
         self.assertEqual(tr.target, None)
         self.assertTrue(tr.internal)
 
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc.rotate_transition(tr, new_target='unknown')
+            internal_statechart.rotate_transition(tr, new_target='unknown')
         self.assertIn('State', str(cm.exception))
         self.assertIn('does not exist', str(cm.exception))
 
-        self.sc.validate()
+        internal_statechart.validate()
 
     def test_rotate_both(self):
-        tr = next(t for t in self.sc.transitions if t.source == 's1')
+        tr = next(t for t in internal_statechart.transitions if t.source == 's1')
 
-        self.sc.rotate_transition(tr, new_source='s1', new_target='s2')
+        internal_statechart.rotate_transition(tr, new_source='s1', new_target='s2')
         self.assertEqual(tr.source, 's1')
         self.assertEqual(tr.target, 's2')
-        self.sc.validate()
+        internal_statechart.validate()
 
     def test_rotate_both_unexisting(self):
-        tr = next(t for t in self.sc.transitions if t.source == 's1')
+        tr = next(t for t in internal_statechart.transitions if t.source == 's1')
 
         with self.assertRaises(ValueError):
-            self.sc.rotate_transition(tr)
+            internal_statechart.rotate_transition(tr)
 
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc.rotate_transition(tr, new_source=None, new_target=None)
+            internal_statechart.rotate_transition(tr, new_source=None, new_target=None)
         self.assertIn('State', str(cm.exception))
         self.assertIn('does not exist', str(cm.exception))
 
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc.rotate_transition(tr, new_source='s2', new_target='s2')
+            internal_statechart.rotate_transition(tr, new_source='s2', new_target='s2')
         self.assertIn('State', str(cm.exception))
         self.assertIn('cannot have transitions', str(cm.exception))
 
-        self.sc.validate()
+        internal_statechart.validate()
 
     def test_rotate_both_with_internal(self):
-        tr = next(t for t in self.sc.transitions if t.source == 's1')
+        tr = next(t for t in internal_statechart.transitions if t.source == 's1')
 
-        self.sc.rotate_transition(tr, new_source='s1', new_target=None)
+        internal_statechart.rotate_transition(tr, new_source='s1', new_target=None)
         self.assertEqual(tr.source, 's1')
         self.assertEqual(tr.target, None)
         self.assertTrue(tr.internal)
-        self.sc.validate()
+        internal_statechart.validate()
 
 
 class RemoveTransitionsTests(unittest.TestCase):
@@ -294,24 +262,24 @@ class RemoveTransitionsTests(unittest.TestCase):
             self.sc = io.import_from_yaml(f)
 
     def test_remove_existing_transition(self):
-        transitions = self.sc.transitions
+        transitions = internal_statechart.transitions
         for transition in transitions:
-            self.sc.remove_transition(transition)
-        self.assertEqual(len(self.sc.transitions), 0)
-        self.sc.validate()
+            internal_statechart.remove_transition(transition)
+        self.assertEqual(len(internal_statechart.transitions), 0)
+        internal_statechart.validate()
 
     def test_remove_unexisting_transition(self):
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc.remove_transition(None)
+            internal_statechart.remove_transition(None)
         self.assertIn('Transition', str(cm.exception))
         self.assertIn('does not exist', str(cm.exception))
 
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc.remove_transition(model.Transition('a', 'b'))
+            internal_statechart.remove_transition(model.Transition('a', 'b'))
         self.assertIn('Transition', str(cm.exception))
         self.assertIn('does not exist', str(cm.exception))
 
-        self.sc.validate()
+        internal_statechart.validate()
 
 
 class RemoveStatesTests(unittest.TestCase):
@@ -320,41 +288,41 @@ class RemoveStatesTests(unittest.TestCase):
             self.sc = io.import_from_yaml(f)
 
     def test_remove_existing_state(self):
-        self.sc.remove_state('active')
+        internal_statechart.remove_state('active')
 
-        self.assertTrue('active' not in self.sc.states)
+        self.assertTrue('active' not in internal_statechart.states)
         nb_transitions = 0
-        for transition in self.sc.transitions:
+        for transition in internal_statechart.transitions:
             if transition.source == 'active':
                 nb_transitions += 1
         self.assertEqual(nb_transitions, 0)
 
         nb_transitions = 0
-        for transition in self.sc.transitions:
+        for transition in internal_statechart.transitions:
             if transition.target == 'active':
                 nb_transitions += 1
         self.assertEqual(nb_transitions, 0)
-        self.sc.validate()
+        internal_statechart.validate()
 
     def test_remove_unregister_parent_children(self):
-        self.sc.remove_state('s1')
-        self.assertFalse('s1' in self.sc.children_for('active'))
-        self.sc.validate()
+        internal_statechart.remove_state('s1')
+        self.assertFalse('s1' in internal_statechart.children_for('active'))
+        internal_statechart.validate()
 
     def test_remove_unexisting_state(self):
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc.remove_state('unknown')
+            internal_statechart.remove_state('unknown')
         self.assertIn('State', str(cm.exception))
         self.assertIn('does not exist', str(cm.exception))
 
-        self.sc.validate()
+        internal_statechart.validate()
 
     def test_remove_root_state(self):
-        self.sc.remove_state('root')
-        self.assertEqual(len(self.sc.transitions), 0)
-        self.assertEqual(len(self.sc.states), 0)
-        self.assertEqual(self.sc.root, None)
-        self.sc.validate()
+        internal_statechart.remove_state('root')
+        self.assertEqual(len(internal_statechart.transitions), 0)
+        self.assertEqual(len(internal_statechart.states), 0)
+        self.assertEqual(internal_statechart.root, None)
+        internal_statechart.validate()
 
     def test_remove_nested_states(self):
         with open('tests/yaml/composite.yaml') as f:
@@ -373,32 +341,32 @@ class RemoveStatesTests(unittest.TestCase):
 class RenameStatesTests(unittest.TestCase):
     def setUp(self):
         with open('tests/yaml/internal.yaml') as f:
-            self.sc = io.import_from_yaml(f)
+            internal_statechart = io.import_from_yaml(f)
 
     def test_rename_unexisting_state(self):
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc.rename_state('unknown', 's3')
+            internal_statechart.rename_state('unknown', 's3')
         self.assertIn('State', str(cm.exception))
         self.assertIn('does not exist', str(cm.exception))
 
-        self.sc.validate()
+        internal_statechart.validate()
 
     def test_do_not_change_name(self):
-        self.sc.rename_state('s2', 's2')
+        internal_statechart.rename_state('s2', 's2')
 
-        self.assertTrue('s2' in self.sc.states)
-        self.assertEqual(self.sc.parent_for('s2'), 'root')
-        self.assertTrue('s2' in self.sc.children_for('root'))
+        self.assertTrue('s2' in internal_statechart.states)
+        self.assertEqual(internal_statechart.parent_for('s2'), 'root')
+        self.assertTrue('s2' in internal_statechart.children_for('root'))
 
-        self.sc.validate()
+        internal_statechart.validate()
 
     def test_rename_to_an_existing_state(self):
         with self.assertRaises(exceptions.StatechartError) as cm:
-            self.sc.rename_state('s2', 's1')
+            internal_statechart.rename_state('s2', 's1')
         self.assertIn('State', str(cm.exception))
         self.assertIn('already exists!', str(cm.exception))
 
-        self.sc.validate()
+        internal_statechart.validate()
 
     def test_rename_old_disappears(self):
         with open('tests/yaml/composite.yaml') as f:
