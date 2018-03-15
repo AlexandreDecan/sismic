@@ -131,7 +131,7 @@ class Interpreter:
         else:
             self._bound.append(interpreter_or_callable)
 
-    def bind_property(self, statechart_or_interpreter: Union[Statechart, 'Interpreter']) -> None:
+    def bind_property_statechart(self, statechart_or_interpreter: Union[Statechart, 'Interpreter']) -> None:
         """
         Bind a property statechart to the current interpreter.
         A property statechart receives meta-events from the current interpreter depending on what happens:

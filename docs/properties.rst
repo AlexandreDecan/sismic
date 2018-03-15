@@ -47,9 +47,9 @@ When a property statechart is bound to an interpreter, its internal clock (the
 interpreter.
 
 The complete list of :py:class:`~sismic.model.MetaEvent` that are created by the interpreter is described in the
-documentation of the :py:meth:`~sismic.interpreter.Interpreter.bind_property` method:
+documentation of the :py:meth:`~sismic.interpreter.Interpreter.bind_property_statechart` method:
 
-.. automethod:: sismic.interpreter.Interpreter.bind_property
+.. automethod:: sismic.interpreter.Interpreter.bind_property_statechart
     :noindex:
 
 If a property statechart reaches a final state during its execution, then the property is considered as not

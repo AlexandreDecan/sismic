@@ -4,6 +4,7 @@ Changelog
 Unreleased
 ----------
 
+- (Changed) ``Interpreter.bind_property`` becomes ``Interpreter.bind_property_statechart``.
 - (Changed) ``helpers.coverage_from_trace`` returns a dict with "entered states", "exited states" and
   "processed transitions".
 - (Changed) Rename ``sismic.testing`` to ``sismic.bdd``, and ``sismic.testing.behave`` to ``sismic.bdd.cli``.

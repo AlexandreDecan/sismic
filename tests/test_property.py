@@ -15,7 +15,7 @@ class TestInterpreterMetaEvents:
         property.time = 0
 
         # Bind it
-        microwave.bind_property(property)
+        microwave.bind_property_statechart(property)
 
         return property
 
