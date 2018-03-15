@@ -1,7 +1,15 @@
 Changelog
 =========
 
-0.26.1 (2018-03-15)
+0.26.2 (2018-03-15)
+-------------------
+
+- (Fixed) Step *Given/when I repeat "{step}" {repeat} times* requires *step* to be provided with no Gherkin
+  keyword. The current keyword (either *given* or *when*) is automatically used.
+- (Fixed) Escape expression in *then expression "{expression}" holds* and its negative counterpart.
+
+
+0.26.0 (2018-03-15)
 -------------------
 
 Sismic support for BDD was completely rewritten. The CLI is now ``sismic-bdd``, pointing to the ``cli`` submodule of

@@ -150,6 +150,30 @@ steps will store the output of ``executed()`` and *then* steps will verify asser
 "Given" and "when" steps
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+Given/when I send event {name}
+
+    This step queues an event with provided name.
+
+
+Given/when I send event {name} with {parameter}={value}
+
+    This step queues an event with provided name and parameter.
+    More than one parameter can be specified when using Gherkin tables, as follows:
+
+    .. literalinclude:: examples/elevator/elevator.feature
+        :language: gherkin
+        :lines: 11-16
+        :emphasize-lines: 3-5
+
+
+Given/when I wait {seconds:g} seconds
+
+Given/when I wait {seconds:g} second
+
+    These steps increase the internal clock of the interpreter.
+
+
 Given/when I do nothing
 
     This step does nothing. It's main usage is when assertions using *then* steps are written as first steps
@@ -173,29 +197,6 @@ Given/when I repeat "{step}" {repeat:d} times
     This step repeats given step several times.
     The text of the step must be provided without its keyword, and will be executed using the
     current keyword (*given* or *when*).
-
-
-Given/when I send event {name}
-
-    This step queues an event with provided name.
-
-
-Given/when I send event {name} with {parameter}={value}
-
-    This step queues an event with provided name and parameter.
-    More than one parameter can be specified when using Gherkin tables, as follows:
-
-    .. literalinclude:: examples/elevator/elevator.feature
-        :language: gherkin
-        :lines: 11-16
-        :emphasize-lines: 3-5
-
-
-Given/when I wait {seconds:g} seconds
-
-Given/when I wait {seconds:g} second
-
-    These steps increase the internal clock of the interpreter.
 
 
 "Then" steps
@@ -252,9 +253,9 @@ Then variable {variable} does not equal {value}
     than the one that is provided.
 
 
-Then expression {expression} holds
+Then expression "{expression}" holds
 
-Then expression {expression} does not hold
+Then expression "{expression}" does not hold
 
     These steps assert that given expression holds (does not hold). The expression will be evaluated by the
     underlying code evaluator (a :py:class:`~sismic.code.PythonEvaluator` by default) using the current

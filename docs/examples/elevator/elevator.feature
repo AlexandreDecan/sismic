@@ -21,7 +21,8 @@ Feature: Elevator
     Then variable current equals 7
     When I wait 10 seconds
     Then variable current equals 0
-    And expression current == 0 holds
+    # Example using another step:
+    And expression "current == 0" holds
 
   Scenario Outline: Elevator can reach floor from 0 to 5
     When I send event floorSelected with floor=<floor>
