@@ -7,6 +7,8 @@ import tempfile
 from behave import __main__ as behave_main  # type: ignore
 from typing import List
 
+__all__ = ['execute_behave']
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(prog='sismic-bdd',
@@ -29,10 +31,37 @@ def main() -> int:
     args, parameters = parser.parse_known_args()
     if args.show_steps:
         parameters.append('--steps')
-    return execute_behave(args.statechart, args.features, args.steps, args.properties, args.debug_on_error, parameters)
+    return execute_behave(
+        args.statechart,
+        args.features,
+        steps=args.steps,
+        properties=args.properties,
+        debug_on_error=args.debug_on_error,
+        parameters=parameters
+    )
 
 
-def execute_behave(statechart: str, features: List[str], steps: List[str], properties: List[str], debug_on_error: bool, parameters: List[str]) -> int:
+def execute_behave(statechart: str, features: List[str], *,
+                   steps: List[str]=None,
+                   properties: List[str]=None,
+                   debug_on_error: bool=False,
+                   parameters: List[str]=None) -> int:
+    """
+    Set an temporary directory to execute Behave with support for Sismic.
+
+    :param statechart: filepath to the statechart (in YAML).
+    :param features: list of filepaths to feature files.
+    :param steps: list of filepaths to step definitions.
+    :param properties: list of filepaths to property statecharts (in YAML).
+    :param debug_on_error: set to True to drop to (i)pdb in case of error.
+    :param parameters: additional parameters that will be provided to behave CLI.
+    :return: exit code of behave CLI.
+    """
+    # Default values
+    steps = steps if steps else []
+    properties = properties if properties else []
+    parameters = parameters if parameters else []
+
     # Create temporary directory
     with tempfile.TemporaryDirectory() as tempdir:
         # Move statechart

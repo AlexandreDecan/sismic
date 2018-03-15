@@ -1,53 +1,5 @@
 from behave import given, when, then  # type: ignore
-from typing import Union, List
-
 from ..interpreter import Event
-
-__all__ = ['action_alias', 'assertion_alias']
-
-
-def action_alias(step: str, step_to_execute: Union[str, List]) -> None:
-    """
-    Create an alias of a predefined "given"/"when" step. For example:
-    action_alias('I open door', 'I send event open_door')
-
-    Parameters are propagated to the original step as well. For example:
-    action_alias('Event {name} has to be sent', 'I send event {name}')
-
-    You can provide more than on "step_to_execute" if you want to alias several steps by a single one.
-
-    :param step: New step, without the "given" or "when" keyword.
-    :param step_to_execute: existing step, without the "given" or "when" keyword. Could be a list of steps.
-    """
-    step_to_execute = step_to_execute if isinstance(step_to_execute, str) else '\nand '.join(step_to_execute)
-
-    @given(step)
-    def _(context, **kwargs):
-        context.execute_steps('Given ' + step_to_execute.format(**kwargs))
-
-    @when(step)
-    def _(context, **kwargs):
-        context.execute_steps('When ' + step_to_execute.format(**kwargs))
-
-
-def assertion_alias(step: str, step_to_execute: Union[str, List]) -> None:
-    """
-    Create an alias of a predefined "then" step. For example:
-    assertion_alias('door is open', 'state door open is active')
-
-    Parameters are propagated to the original step as well. For example:
-    assertion_alias('{x} seconds elapsed', 'I wait for {x} seconds')
-
-    You can provide more than on "step_to_execute" if you want to alias several steps by a single one.
-
-    :param step: New step, without the "then" keyword
-    :param step_to_execute: existing step, without "then" keyword. Could be a list of steps.
-    """
-    step_to_execute = step_to_execute if isinstance(step_to_execute, str) else '\nand '.join(step_to_execute)
-
-    @then(step)
-    def _(context, **kwargs):
-        context.execute_steps('Then ' + step_to_execute.format(**kwargs))
 
 
 @given('I do nothing')
