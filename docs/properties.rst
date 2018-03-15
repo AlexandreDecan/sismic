@@ -38,7 +38,7 @@ During the execution of a statechart, several meta-events are created depending 
 being executed. Those meta-events are automatically send to any previously bound property statechart.
 
 To bind a property statechart to an interpreter, it suffices to provide the property statechart as a
-parameter of the :py:meth:`~sismic.interpreter.Interpreter.bind_property` method of an interpreter.
+parameter of the :py:meth:`~sismic.interpreter.Interpreter.bind_property_statechart` method of an interpreter.
 This method accepts either a :py:class:`~sismic.model.Statechart` or an :py:class:`~sismic.interpreter.Interpreter`
 instance.
 

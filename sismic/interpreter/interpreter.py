@@ -14,7 +14,7 @@ from ..code import Evaluator, PythonEvaluator
 from ..exceptions import (ConflictingTransitionsError, InvariantError, PropertyStatechartError,
                           ExecutionError, NonDeterminismError, PostconditionError, PreconditionError)
 
-__all__ = ['Interpreter']
+__all__ = ['Interpreter', 'Event', 'InternalEvent']
 
 
 class Interpreter:
