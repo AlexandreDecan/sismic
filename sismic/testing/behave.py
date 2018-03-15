@@ -64,51 +64,6 @@ def execute_behave(statechart: str,
                     .format(path=os.path.join(tempdir, property_filename).replace('\\', '\\\\'))
                 )
 
-        if coverage:
-            ENVIRONMENT['import'].append('from itertools import chain')
-            ENVIRONMENT['import'].append('from collections import Counter')
-
-            ENVIRONMENT['content'].append("""
-def states_coverage(states, entered):
-    entered_stats = Counter(entered)
-    coverage_stat = len(entered_stats.keys()) / len(states)
-
-    print('State coverage: {:.2%}'.format(coverage_stat))
-    print('Entered states:',
-          ' | '.join(('{} ({})'.format(k, v) for k, v in entered_stats.most_common())))
-    print('Remaining states:',
-          ' | '.join((str(s) for s in sorted(set(states).difference(entered_stats.keys())))))
-
-def transitions_coverage(transitions, processed):
-    processed_stats = Counter(processed)
-    coverage_stat = len(processed_stats.keys()) / len(transitions)
-
-    print('Transition coverage: {:.2%}'.format(coverage_stat))
-    print('Processed transitions:', ' | '.join(('{} ({})'.format(k, v) for k, v in processed_stats.most_common())))
-
-""")
-
-            ENVIRONMENT['after_scenario'].extend([
-                'trace = context._steps',
-                'context._traces.append(trace)',
-                'print()',
-                'states_coverage(context._interpreter.statechart.states, chain.from_iterable([step.entered_states for step in trace]))',
-                'transitions_coverage(context._interpreter.statechart.transitions, chain.from_iterable(([step.transitions for step in trace])))',
-                'print()',
-            ])
-
-            ENVIRONMENT['before_feature'].append('context._traces = []')
-
-            ENVIRONMENT['after_feature'].extend([
-                'trace = list(chain.from_iterable(context._traces))',
-                'print()',
-                'print("Aggregated coverage data")',
-                'print("------------------------")',
-                'states_coverage(context._interpreter.statechart.states, chain.from_iterable([step.entered_states for step in trace]))',
-                'transitions_coverage(context._interpreter.statechart.transitions, chain.from_iterable(([step.transitions for step in trace])))',
-                'print()',
-            ])
-
         if debug_on_error:
             ENVIRONMENT['after_step'].extend([
                 'if step.status == "failed":',
@@ -170,8 +125,6 @@ def main() -> int:
                         help='A list of files containing steps implementation')
     parser.add_argument('--properties', metavar='properties', nargs='+', type=str,
                         help='A list of filepaths pointing to YAML property statecharts. They will be checked at runtime following a fail fast approach.')
-    parser.add_argument('--coverage', action='store_true', default=False,
-                        help='Display coverage data')
     parser.add_argument('--show-steps', action='store_true', default=False,
                         help='Display a list of available steps (equivalent to Behave\'s --steps parameter')
     parser.add_argument('--debug-on-error', action='store_true', default=False,
@@ -180,7 +133,7 @@ def main() -> int:
     args, parameters = parser.parse_known_args()
     if args.show_steps:
         parameters.append('--steps')
-    return execute_behave(args.statechart, args.features, args.steps, args.properties, args.coverage, args.debug_on_error, parameters)
+    return execute_behave(args.statechart, args.features, args.steps, args.properties, args.debug_on_error, parameters)
 
 
 if __name__ == '__main__':

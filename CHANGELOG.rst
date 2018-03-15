@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- (Changed) ``helpers.coverage_from_trace`` returns a dict with "entered states", "exited states" and
+  "processed transitions".
+- (Removed) ``--coverage`` option from ``sismic-behave`` CLI.
+- (Removed) Unused ``io.text``.
+
+
 0.25.3 (2018-03-13)
 -------------------
 

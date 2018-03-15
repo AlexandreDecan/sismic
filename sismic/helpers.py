@@ -1,7 +1,7 @@
 import threading
 from collections import Counter
 from functools import wraps
-from typing import Any, Callable, List, Tuple
+from typing import Any, Callable, List, Mapping
 
 from .interpreter import Interpreter
 from .model import MacroStep
@@ -67,22 +67,28 @@ def run_in_background(interpreter: Interpreter,
     return thread
 
 
-def coverage_from_trace(trace: List[MacroStep]) -> Tuple[Counter, Counter]:
+def coverage_from_trace(trace: List[MacroStep]) -> Mapping[str, Counter]:
     """
-    Given a list of macro steps considered as the trace of a statechart execution, return a 2-uple
-    of *Counter* objects. The first one counts the states (as strings) that were visited, and the second one
-    counts the transitions (as *Transition* objects) that were visited.
+    Given a list of macro steps considered as the trace of a statechart execution, return *Counter* objects
+    that counts the states that were entered, the states that were exited and the transitions that were processed.
 
     :param trace: A list of macro steps
-    :return: A 2-uple of Counter objects
+    :return: A dict whose keys are "entered states", "exited states" and "processed transitions" and whose
+    values are Counter object.
     """
-    visited_states = []
-    visited_transitions = []
+    entered_states = []
+    exited_states = []
+    processed_transitions = []
 
     for macrostep in trace:
         for microstep in macrostep.steps:
-            visited_states.extend(microstep.entered_states)
+            entered_states.extend(microstep.entered_states)
+            exited_states.extend(microstep.exited_states)
             if microstep.transition:
-                visited_transitions.append(microstep.transition)
+                processed_transitions.append(microstep.transition)
 
-    return Counter(visited_states), Counter(visited_transitions)
+    return {
+        'entered states': Counter(entered_states),
+        'exited states': Counter(exited_states),
+        'processed transitions': Counter(processed_transitions)
+    }

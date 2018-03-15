@@ -3,7 +3,6 @@ import pytest
 from sismic.model import Statechart
 from sismic.exceptions import StatechartError
 from sismic.io import import_from_yaml, export_to_yaml, export_to_plantuml
-from sismic.io.text import export_to_tree
 
 
 def compare_statecharts(s1, s2):
@@ -106,41 +105,6 @@ class TestExportToYaml:
 
     def test_identity_for_example_from_docs(self, example_from_docs):
         compare_statecharts(example_from_docs, import_from_yaml(export_to_yaml(example_from_docs)))
-
-
-class TestExporttoTree:
-    result = iter([
-        ['root', '   s1', '   s2', '   s3'],
-        ['root', '   s1', '      s1a', '      s1b', '         s1b1', '         s1b2', '   s2'],
-        ['root', '   active', '      active.H*', '      concurrent_processes', '         process_1',
-         '            s11', '            s12', '            s13', '         process_2', '            s21',
-         '            s22', '            s23', '   pause', '   stop'],
-        ['root', '   s1', '   s2', '   stop'],
-        ['root', '   active', '   s1', '   s2'],
-        ['root', '   s1', '      p1', '         r1', '            i1', '            j1', '            k1',
-         '         r2', '            i2', '            j2', '            k2', '            y', '      p2',
-         '         r3', '            i3', '            j3', '            k3', '            z', '         r4',
-         '            i4', '            j4', '            k4', '            x'],
-        ['root', '   s1', '   s2', '   s3'],
-        ['root', '   s1', '      p1', '         a1', '         b1', '         c1', '         initial1', '      p2',
-         '         a2', '         b2', '         c2', '         initial2'],
-        ['root', '   final', '   s1', '   s2', '   s3'],
-        ['root', '   s1', '   s2', '   s3', '   s4']
-    ])
-
-    def test_output(self, example_from_tests):
-        result = next(self.result)
-        assert export_to_tree(example_from_tests) == result
-
-    def test_all_states_are_exported(self, example_from_tests):
-        assert set(export_to_tree(example_from_tests, spaces=0)) == set(example_from_tests.states)
-
-    def test_indentation_is_correct(self, example_from_tests):
-        for r in sorted(export_to_tree(example_from_tests, spaces=1)):
-            name = r.lstrip()
-            depth = example_from_tests.depth_for(name)
-            spaces = len(r) - len(name)
-            assert depth - 1 == spaces
 
 
 class TestExportToPlantUML:
