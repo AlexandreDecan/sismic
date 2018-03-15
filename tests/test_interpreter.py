@@ -447,27 +447,41 @@ def test_run_in_background(elevator):
 
 class TestCoverageFromTrace:
     def test_empty_trace(self):
-        assert coverage_from_trace([]) == (Counter(), Counter())
+        assert coverage_from_trace([]) == {'entered states': Counter(), 'exited states': Counter(), 'processed transitions': Counter()}
 
     def test_single_step(self):
         trace = [MacroStep(0, steps=[
-            MicroStep(entered_states=['a', 'b', 'c'], transition=Transition('x')),
-            MicroStep(entered_states=['a', 'b'], transition=Transition('x')),
+            MicroStep(entered_states=['a', 'b', 'c'], exited_states=['b'], transition=Transition('x')),
+            MicroStep(entered_states=['a', 'b'], exited_states=['c'], transition=Transition('x')),
             MicroStep(entered_states=['a']),
             MicroStep(entered_states=[])
         ])]
-        assert coverage_from_trace(trace) == (Counter(a=3, b=2, c=1), Counter({Transition('x'): 2}))
+
+        expected = {
+            'entered states': Counter(a=3, b=2, c=1),
+            'exited states': Counter(b=1, c=1),
+            'processed transitions': Counter({Transition('x'): 2})
+        }
+
+        assert coverage_from_trace(trace) == expected
 
     def test_multiple_steps(self):
         trace = [MacroStep(0, steps=[
-            MicroStep(entered_states=['a', 'b', 'c'], transition=Transition('x')),
-            MicroStep(entered_states=['a', 'b'], transition=Transition('x')),
+            MicroStep(entered_states=['a', 'b', 'c'], exited_states=['b'], transition=Transition('x')),
+            MicroStep(entered_states=['a', 'b'], exited_states=['c'],  transition=Transition('x')),
             MicroStep(entered_states=['a']),
             MicroStep(entered_states=[])
         ])]
 
         trace.extend(trace)
-        assert coverage_from_trace(trace) == (Counter(a=6, b=4, c=2), Counter({Transition('x'): 4}))
+
+        expected = {
+            'entered states': Counter(a=6, b=4, c=2),
+            'exited states': Counter(b=2, c=2),
+            'processed transitions': Counter({Transition('x'): 4})
+        }
+
+        assert coverage_from_trace(trace) == expected
 
 
 class TestInterpreterBinding:
