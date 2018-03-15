@@ -19,7 +19,7 @@ Feature: Elevator
   Scenario: Elevator reaches ground floor after 10 seconds
     When I reproduce "Elevator can move to 7th floor"
     Then variable current equals 7
-    When 10 seconds elapsed
+    When I wait 10 seconds
     Then variable current equals 0
     And expression current == 0 holds
 

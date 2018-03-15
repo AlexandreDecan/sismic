@@ -168,7 +168,7 @@ Given/when I reproduce "{scenario}"
         :emphasize-lines: 6
 
 
-Given/when I repeat step "{step}" {repeat:d} times
+Given/when I repeat "{step}" {repeat:d} times
 
     This step repeats given step (including its step keyword) several times.
 
@@ -189,8 +189,8 @@ Given/when I send event {name} with {parameter}={value}
         :emphasize-lines: 3-5
 
 
-Given/when {seconds:g} seconds elapsed
-Given/when {seconds:g} second elapsed
+Given/when I wait {seconds:g} seconds
+Given/when I wait {seconds:g} second
 
     These steps increase the internal clock of the interpreter.
 

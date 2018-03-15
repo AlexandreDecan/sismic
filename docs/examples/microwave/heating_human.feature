@@ -4,7 +4,7 @@ Feature: Cook food
     Given I open the door
     And I place an item in the oven
     And I close the door
-    And I press increase timer button
+    And I press increase timer button 5 times
     And I press increase power button
     When I press start button
     Then heating turns on
@@ -30,3 +30,4 @@ Feature: Cook food
   Scenario: Lamp is on while cooking
     When I reproduce "Cook food"
     Then lamp turns on
+
