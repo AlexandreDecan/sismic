@@ -1,10 +1,7 @@
 Module *bdd*
 ============
 
-Submodule *bdd.steps*
----------------------
-
-.. automodule:: sismic.bdd.steps
+.. automodule:: sismic.bdd
     :members:
     :member-order: bysource
     :show-inheritance:

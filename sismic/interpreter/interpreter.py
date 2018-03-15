@@ -136,13 +136,13 @@ class Interpreter:
         Bind a property statechart to the current interpreter.
         A property statechart receives meta-events from the current interpreter depending on what happens:
 
-         - step started: when a macro step starts.
-         - step ended: when a macro step ends.
-         - event consumed: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
-         - event sent: when an event is sent. The sent event is exposed through the ``event`` attribute.
-         - state exited: when a state is exited. The exited state is exposed through the ``state`` attribute.
-         - state entered: when a state is entered. The entered state is exposed through the ``state`` attribute.
-         - transition processed: when a transition is processed. The source state, target state and the event are
+         - *step started*: when a macro step starts.
+         - *step ended*: when a macro step ends.
+         - *event consumed*: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
+         - *event sent*: when an event is sent. The sent event is exposed through the ``event`` attribute.
+         - *state exited*: when a state is exited. The exited state is exposed through the ``state`` attribute.
+         - *state entered*: when a state is entered. The entered state is exposed through the ``state`` attribute.
+         - *transition processed*: when a transition is processed. The source state, target state and the event are
            exposed respectively through the ``source``, ``target`` and ``event`` attribute.
 
         The internal clock of all property statecharts will be synced with the one of the current interpreter.

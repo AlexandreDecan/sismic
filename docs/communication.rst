@@ -92,8 +92,9 @@ is sent both to ``interpreter_1`` and ``interpreter_2``.
     Events for interpreter_2: Event('test')
     Events for interpreter_3: InternalEvent('test')
 
-Example
--------
+
+Example of communicating statecharts
+------------------------------------
 
 Consider our running example, the elevator statechart.
 This statechart expects to receive *floorSelected* events (with a *floor* parameter representing the selected floor).

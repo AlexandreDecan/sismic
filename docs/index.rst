@@ -22,15 +22,12 @@ About
 
 *Sismic* is a recursive acronym that stands for *Sismic Interactive Statechart Model Interpreter and Checker*.
 
-The Sismic library for Python (version 3.4 or higher)
-is mainly developed by Alexandre Decan at the `University of Mons <http://www.umons.ac.be>`_.
-
-Sismic is released publicly under the `GNU Lesser General Public Licence version 3.0 (LGPLv3)
-<http://www.gnu.org/licenses/lgpl-3.0.html>`_.
-
-Sismic provides a set of tools to define, validate, simulate, execute and test statecharts.
 Statecharts are a well-known visual modeling language for representing the executable behavior
-of complex reactive event-based systems.
+of complex reactive event-based systems. Sismic library for Python (version 3.4 or higher) provides a set of
+tools to define, validate, simulate, execute and test statecharts.
+
+Sismic is mainly developed by Alexandre Decan at the `University of Mons <http://www.umons.ac.be>`_ and released
+publicly under the  `GNU Lesser General Public Licence version 3.0 (LGPLv3) <http://www.gnu.org/licenses/lgpl-3.0.html>`_.
 
 
 Features
@@ -42,8 +39,8 @@ Sismic provides the following features:
 - A statechart interpreter offering a discrete, step-by-step, and fully observable simulation engine
 - Built-in support for expressing actions and guards using regular Python code, can be easily extended to other programming languages
 - A design-by-contract approach for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions
-- Runtime checking of behavioral properties expressed as statecharts.
-- Predefined step definitions and utilities (including test coverage) to support behavior-driven development
+- Runtime checking of behavioral properties expressed as statecharts
+- Built-in support for behavior-driven development
 - Synchronous and asynchronous simulation, in real time or simulated time
 - Support for communication between statecharts and co-simulation
 - Statechart visualization using `PlantUML <http://www.plantuml.com/plantuml>`__
@@ -63,7 +60,7 @@ Sismic statecharts provides full support for the majority of the UML 2 statechar
 
 .. toctree::
     :caption: Overview
-    :maxdepth: 1
+    :maxdepth: 2
 
     installation
     format
@@ -72,7 +69,7 @@ Sismic statecharts provides full support for the majority of the UML 2 statechar
 
 .. toctree::
     :caption: Statechart testing
-    :maxdepth: 1
+    :maxdepth: 2
 
     contract
     properties
@@ -80,10 +77,10 @@ Sismic statecharts provides full support for the majority of the UML 2 statechar
 
 .. toctree::
     :caption: Advanced topics
-    :maxdepth: 1
+    :maxdepth: 2
 
-    dealingtime
-    integrate_code
+    time
+    integration
     communication
     semantics
 

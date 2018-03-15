@@ -1,5 +1,8 @@
-Behavior-Driven Development (BDD)
-=================================
+Behavior-Driven Development
+===========================
+
+About Behavior-Driven Development
+---------------------------------
 
 This introduction is inspired by the documentation of `Behave <http://behave.readthedocs.io/en/latest/philosophy.html>`__, a Python
 library for Behavior-Driven Development (BDD).
@@ -82,13 +85,13 @@ We can then instruct ``sismic-bdd`` to run on this statechart the scenarios desc
 
     sismic-bdd elevator.yaml --features elevator.feature
 
-.. note:: ``sismic-bdd`` allows to specify the path to each file, so it is not mandatory to put all of them
-    in the same directory. It also accepts multiple files for the ``--features`` parameter, and supports
-    all the `command-line parameters of Behave <http://behave.readthedocs.io/en/latest/behave.html#command-line-arguments>`__.
-
 Under the hood, ``sismic-bdd`` will create a temporary directory where all the files required to execute
 Behave are put. It also makes available a list of predefined *given*, *when*, and *then* steps and sets up many
 hooks that are required to integrate Sismic and Behave.
+
+.. note:: Module ``sismic.bdd`` exposes a :py:func:`~sismic.bdd.execute_behave` function that is internally
+    used by ``sismic-bdd`` CLI, and that can be used if programmatic access to these features is required.
+
 
 When ``sismic-bdd`` is executed, it will somehow translate the feature file into executable code, compute the outcomes
 of the scenarios, check whether they match what is expected, and display as summary of all executed scenarios and
@@ -103,8 +106,7 @@ encountered errors:
     22 steps passed, 0 failed, 0 skipped, 0 undefined
     Took 0m0.027s
 
-The ``sismic-bdd`` command-line interface accepts several parameters. Here is the output of
-``sismic-bdd -h``:
+The ``sismic-bdd`` command-line interface accepts several other parameters:
 
 .. code-block:: none
 
@@ -134,17 +136,27 @@ The ``sismic-bdd`` command-line interface accepts several parameters. Here is th
       --debug-on-error      Drop in a debugger in case of step failure (ipdb if
                             available)
 
+Additionally, any extra parameter provided to ``sismic-bdd`` will be passed to Behave.
+See `command-line parameters of Behave <http://behave.readthedocs.io/en/latest/behave.html#command-line-arguments>`__
+for more information.
+
+
 
 Predefined steps
 ----------------
 
-Sismic comes with several predefined steps that can be used to manipulate the (interpreter of the) statechart and
-to check that some conditions were met during execution.
+In order to be able to execute scenarios, a Python developer needs to write code defining the mapping from the actions
+and assertions expressed as natural language sentences in the scenarios (using specific
+keywords such as *given*, *when* or *then*) to Python code that manipulates the statechart.
+To facilitate the implementation of this mapping, Sismic provides a set of predefined
+statechart-specific steps.
 
-By convention, steps starting with *given* or *when* correspond to actions that must be applied by the statechart,
-while steps starting with *then* correspond to assertions about what happened during the execution.
-More precisely, any *given* or *when* step will trigger the ``execute()`` method of the underlying interpreter, *when*
-steps will store the output of ``executed()`` and *then* steps will verify assertions on this output.
+By convention, steps starting with *given* or *when* correspond to actions that must be applied on the statechart,
+while steps starting with *then* correspond to assertions about the execution or the current state of the statechart.
+More precisely, (1) all *given* or *when* steps implicitly call the :py:meth:`~sismic.interpreter.Interpreter.execute`
+method of the underlying interpreter, (2) all *when* steps capture the output of these calls, and (3) we developed all
+predefined *then* steps to assert things based on the captured output (implying that only the steps that start
+with *when* will be monitored in practice).
 
 
 "Given" and "when" steps
@@ -201,9 +213,6 @@ Given/when I repeat "{step}" {repeat:d} times
 
 "Then" steps
 ~~~~~~~~~~~~
-
-Remember that all these steps assert things about what happened during the execution the previous block of *when* steps.
-
 
 Then state {name} is entered
 
@@ -272,24 +281,22 @@ Then statechart is not in a final configuration
 Implementing new steps
 ----------------------
 
-While the steps that are already predefined should be sufficient to cover most of the cases, they are written in some
-statechart specific language. It could be very convenient to use domain-specific steps to write scenarios.
-For example, if the statechart being tested encodes the behavior of a microwave oven, it is far more intuitive to
-have "*given I open the door*" instead of "*given I send event open door*".
+While the steps that are already predefined should be sufficient to manipulate the statechart, it is more intuitive
+to use domain-specific steps to write scenarios.
+For example, if the statechart being tested encodes the behavior of a microwave oven, the domain-specific step
+"Given I open the door" corresponds to the action of sending an event ``door_opened`` to the statechart, and is
+more intuitive to use when writing scenarios.
 
-Consider the following scenarios expressed using this somehow microwave-specific language:
+Consider the following scenarios expressed using a domain-specific language:
 
 .. literalinclude:: examples/microwave/heating_human.feature
     :language: gherkin
 
-A first option to implement "given I open the door" is to use Behave library to write a new step,
-see `Python Step Implementations <http://behave.readthedocs.io/en/latest/tutorial.html#python-step-implementations>`__
-for more information.
 
-For convenience, the ``context`` object of Behave exposes three Sismic-related attributes, namely ``interpreter``,
-``trace`` and ``monitored_trace``. The first one corresponds to the interpreter being executed, the second one is a
-list of all executed macro steps, and the third one is list of executed macro steps restricted to the ones that were
-performed during the execution of the previous block of *when* steps.
+The mapping from domain-specific step "Given I open the door" to the action of sending a door opened event to the
+statechart could be defined using plain Python code, by defining a new step following
+`Python Step Implementations <http://behave.readthedocs.io/en/latest/tutorial.html#python-step-implementations>`__
+of Behave.
 
 .. code:: python
 
@@ -300,16 +307,22 @@ performed during the execution of the previous block of *when* steps.
     def opening_door(context):
         context.interpreter.queue('door_opened')
 
-However, we believe that most of the time, the domain-specific steps are just aliases of predefined steps.
-For convenience, :py:mod:`sismic.bdd.steps` provides two functions that can be easily used to define new aliases of
-existing steps:
+For convenience, the ``context`` parameter automatically provided by Behave at runtime exposes three Sismic-specific
+attributes, namely ``interpreter``, ``trace`` and ``monitored_trace``.
+The first one corresponds to the interpreter being executed, the second one is a list of all executed macro steps,
+and the third one is list of executed macro steps restricted to the ones that were performed during the
+execution of the previous block of *when* steps.
 
-.. automodule:: sismic.bdd.steps
-    :members:
+
+However, this domain-specific step can also be implemented more easily as an alias of predefined step "Given I send
+event door_opened". As we believe that most of the domain-specific steps are just aliases or combinations of
+predefined steps, Sismic provides two convenient helpers to map new steps to predefined ones:
+
+.. automodule:: sismic.bdd
+    :members: map_action, map_assertion
     :noindex:
 
-
-Using these two functions, it is very easy to implement all steps used in the example above:
+Using these helpers, one can easily implement the domain-specific steps of our example:
 
 .. literalinclude:: examples/microwave/heating_steps.py
     :language: python

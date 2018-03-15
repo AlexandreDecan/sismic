@@ -101,8 +101,8 @@ This displays ``0``.
 
 
 
-Real time
----------
+Real or wall-clock time
+-----------------------
 
 If a statechart needs to be aware of a real clock, the simplest way to achieve this is by using
 the :py:func:`time.time` function of Python.

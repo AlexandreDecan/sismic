@@ -4,6 +4,9 @@
 Implementing other statechart semantics
 =======================================
 
+Anatomy of the interpreter
+--------------------------
+
 An :py:class:`~sismic.interpreter.Interpreter` makes use of several *private* methods for its initialization and computations.
 These methods computes the transition(s) that should be processed, the resulting steps, etc.
 These methods can be overridden or combined to define variants of statechart semantics.
@@ -29,9 +32,11 @@ These methods are all used (even indirectly) by :py:class:`~sismic.interpreter.I
     how these methods are related and organized.
 
 
+Pointers for other semantics
+----------------------------
 
-Example: Outer-first/source-state semantics
--------------------------------------------
+Outer-first/source-state semantics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For example, in order to obtain an outer-first/source-state semantics (instead of the
 inner-first/source-state one that Sismic provides by default),
@@ -39,15 +44,16 @@ one should subclass :py:class:`~sismic.interpreter.Interpreter`
 and override :py:class:`~sismic.interpreter.Interpreter._filter_transitions`.
 
 
-Example: Semantics where internal events have no priority
----------------------------------------------------------
+Internal events have no priority
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you want to change the semantics of Sismic so that internal events no longer have
 priority over external events, it suffices to override the :py:meth:`~sismic.interpreter.Interpreter._select_event` method
 and to invert the order in which the internal and external events queues are visited.
 
-Example: Custom way to deal with non-determinism
-------------------------------------------------
+
+Dealing with non-determinism
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you want to change the way the Sismic deals with non-determinism,
 for example because it deviates from the semantics given by SCXML or Rhapsody

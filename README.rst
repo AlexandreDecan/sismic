@@ -15,17 +15,19 @@ Sismic for Python
 Sismic Interactive Statechart Model Interpreter and Checker
 -----------------------------------------------------------
 
-Statecharts are a well-known visual language for modeling the executable behavior of complex reactive event-based systems.
-The Sismic library for Python >= 3.4 provides a set of tools to define, validate, simulate, execute and debug statecharts.
-More specifically, Sismic provides:
+*Sismic* is a recursive acronym that stands for *Sismic Interactive Statechart Model Interpreter and Checker*.
 
+Statecharts are a well-known visual modeling language for representing the executable behavior
+of complex reactive event-based systems. Sismic library for Python (version 3.4 or higher) provides a set of
+tools to define, validate, simulate, execute and test statecharts.
+More specifically, Sismic provides:
 
 - An easy way to define and to import statecharts, based on the human-friendly YAML markup language
 - A statechart interpreter offering a discrete, step-by-step, and fully observable simulation engine
 - Built-in support for expressing actions and guards using regular Python code, can be easily extended to other programming languages
 - A design-by-contract approach for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions
-- Runtime checking of behavioral properties expressed as statecharts.
-- Predefined step definitions and utilities (including test coverage) to support behavior-driven development
+- Runtime checking of behavioral properties expressed as statecharts
+- Built-in support for behavior-driven development
 - Synchronous and asynchronous simulation, in real time or simulated time
 - Support for communication between statecharts and co-simulation
 - Statechart visualization using `PlantUML <http://www.plantuml.com/plantuml>`__
@@ -42,6 +44,7 @@ You can also install Sismic from this repository by cloning it.
 The development occurs in the *devel* branch, the latest stable distributed version is in the *master* branch.
 
 Sismic requires Python >=3.4
+
 
 Documentation
 -------------

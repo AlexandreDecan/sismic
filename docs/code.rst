@@ -3,6 +3,9 @@
 Include code in statecharts
 ===========================
 
+Python code evaluator
+---------------------
+
 A statechart can specify code that needs to be executed under some circumstances.
 For example, the *preamble* of a statechart, the *guard* or *action* of a transition or the
 *on entry* and *on exit* of a state may all contain code.

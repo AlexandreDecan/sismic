@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.26.3 (2018-03-15)
+-------------------
+
+- (Added) ``sismic.bdd`` exposes ``sismic.bdd.cli.execute_behave`` function to programmaticaly use ``sismic-bdd``.
+- (Changed) ``execute_behave`` function has only two required parameters, and the remaining ones (that have default
+  values) can only be set by name, not by position.
+- (Changed) ``action_alias`` and ``assertion_alias`` of module ``sismic.bdd.steps`` are renamed to ``map_action``
+  and ``map_assertion`` and are directly available from ``sismic.bdd``.
+
+
 0.26.2 (2018-03-15)
 -------------------
 
