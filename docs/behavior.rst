@@ -192,6 +192,7 @@ Given/when I send event {name} with {parameter}={value}
 
 
 Given/when I wait {seconds:g} seconds
+
 Given/when I wait {seconds:g} second
 
     These steps increase the internal clock of the interpreter.
@@ -204,8 +205,11 @@ Remember that all these steps assert things about what happened during the execu
 
 
 Then state {name} is entered
+
 Then state {name} is not entered
+
 Then state {name} is exited
+
 Then state {name} is not exited
 
     These steps assert that a state with provided name was respectively entered, not entered, exited,
@@ -213,12 +217,14 @@ Then state {name} is not exited
 
 
 Then state {name} is active
+
 Then state {name} is not active
 
     These steps assert that a state with provided name is (not) in the active configuration of the statechart.
 
 
 Then event {name} is fired
+
 Then event {name} is fired with {parameter}={value}
 
     These steps assert that an event with provided name was sent.
@@ -247,6 +253,7 @@ Then variable {variable} does not equal {value}
 
 
 Then expression {expression} holds
+
 Then expression {expression} does not hold
 
     These steps assert that given expression holds (does not hold). The expression will be evaluated by the
@@ -255,6 +262,7 @@ Then expression {expression} does not hold
 
 
 Then statechart is in a final configuration
+
 Then statechart is not in a final configuration
 
     These steps assert that the statechart is (not) in a final configuration.
