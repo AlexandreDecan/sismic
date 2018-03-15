@@ -1,10 +1,39 @@
-from behave import given, then, when  # type: ignore
-from ..interpreter import Interpreter, Event
-from ..helpers import log_trace
-from ..io import import_from_yaml
+from behave import given, when, then  # type: ignore
+from ..interpreter import Event
+
+__all__ = ['action_alias', 'assertion_alias']
 
 
-# #################### GENERAL PURPOSE
+def action_alias(step, step_to_execute) -> None:
+    """
+    Create an alias of a predefined "given"/"when" step.
+    Example: action_alias('I open door', 'I send event open_door')
+
+    :param step: New step, without the "given" or "when" keyword.
+    :param step_to_execute: existing step, without the "given" or "when" keyword
+    """
+    @given(step)
+    def _(context):
+        context.execute_steps('Given ' + step_to_execute)
+
+    @when(step)
+    def _(context):
+        context.execute_steps('When ' + step_to_execute)
+
+
+def assertion_alias(step, step_to_execute) -> None:
+    """
+    Create an alias of a predefined "then" step.
+    Example: assertion_alias('door is open', 'state door open is active')
+
+    :param step: New step, without the "then" keyword
+    :param step_to_execute: existing step, without "then" keyword
+    """
+    @then(step)
+    def _(context):
+        context.execute_steps('Then ' + step_to_execute)
+
+
 @given('I do nothing')
 @when('I do nothing')
 def do_nothing(context):
@@ -34,64 +63,6 @@ def repeat_step(context, step, repeat):
         context.execute_steps(step)
 
 
-# #################### CONFIGURATION
-def _execute_statechart(context, force_execution=False, execute_once=False):
-    if context._automatic_execution or force_execution:
-        # Remove events
-        while len(context._events) > 0:
-            context._events.pop()
-
-        if execute_once:
-            context._interpreter.execute_once()
-        else:
-            context._interpreter.execute()
-
-
-@given('I disable automatic execution')
-def disable_automatic_execution(context):
-    context._automatic_execution = False
-
-
-@given('I enable automatic execution')
-def enable_automatic_execution(context):
-    context._automatic_execution = True
-
-
-@given('I import a statechart from {path}')
-@when('I import a statechart from {path}')
-def load_statechart(context, path):
-    with open(path) as f:
-        context._statechart = import_from_yaml(f)
-    context._interpreter = Interpreter(context._statechart)
-    context._steps = log_trace(context._interpreter)
-
-    context._automatic_execution = True
-
-    context._events = []
-    context._interpreter.bind(context._events.append)
-
-    _execute_statechart(context, force_execution=True, execute_once=True)
-
-
-@given('I bind property statechart {path}')
-def load_property_statechart(context, path):
-    with open(path) as f:
-        context._interpreter.bind_property(import_from_yaml(f))
-
-
-@given('I execute the statechart')
-@when('I execute the statechart')
-def execute_statechart(context):
-    _execute_statechart(context, force_execution=True)
-
-
-@given('I execute once the statechart')
-@when('I execute once the statechart')
-def execute_once_statechart(context):
-    _execute_statechart(context, force_execution=True, execute_once=True)
-
-
-# #################### STATECHART
 @given('I send event {event_name}')
 @given('I send event {event_name} with {parameter}={value}')
 @when('I send event {event_name}')
@@ -106,100 +77,132 @@ def send_event(context, event_name, parameter=None, value=None):
         parameters[parameter] = eval(value)
 
     event = Event(event_name, **parameters)
-    context._interpreter.queue(event)
-    _execute_statechart(context)
+    context.interpreter.queue(event)
 
 
 @given('I wait {seconds:g} seconds')
 @given('I wait {seconds:g} second')
 @when('I wait {seconds:g} seconds')
 @when('I wait {seconds:g} second')
-def wait_seconds_once(context, seconds):
-    context._interpreter.time += seconds
-    _execute_statechart(context)
+def wait(context, seconds):
+    context.interpreter.time += seconds
 
 
-@given('I wait {seconds:g} seconds {repeat:d} times')
-@given('I wait {seconds:g} second {repeat:d} times')
-@when('I wait {seconds:g} seconds {repeat:d} times')
-@when('I wait {seconds:g} second {repeat:d} times')
-def wait_seconds(context, seconds, repeat):
-    for _ in range(repeat):
-        wait_seconds_once(context, seconds)
+@then('state {name} is entered')
+def state_is_entered(context, name):
+    for macrostep in context._monitored_trace:
+        if name in macrostep.entered_states:
+            return
+    assert False, 'State {} is not entered'.format(name)
 
 
-@given('I set variable {variable_name} to {value}')
-def set_variable(context, variable_name, value):
-    context._interpreter.context[variable_name] = eval(value, {}, {})
+@then('state {name} is not entered')
+def state_is_entered(context, name):
+    for macrostep in context._monitored_trace:
+        if name in macrostep.entered_states:
+            assert False, 'State {} is entered'.format(name)
 
 
-@then('state {state_name} should be active')
-def state_is_active(context, state_name):
-    assert state_name in context._statechart.states, 'Unknown state {}'.format(state_name)
-    assert state_name in context._interpreter.configuration, 'State {} is not active'.format(state_name)
+@then('state {name} is exited')
+def state_is_exited(context, name):
+    for macrostep in context._monitored_trace:
+        if name in macrostep.exited_states:
+            return
+    assert False, 'State {} is not exited'.format(name)
 
 
-@then('state {state_name} should not be active')
-def state_is_not_active(context, state_name):
-    assert state_name in context._statechart.states, 'Unknown state {}'.format(state_name)
-    assert state_name not in context._interpreter.configuration, 'State {} is active'.format(state_name)
+@then('state {name} is not exited')
+def state_is_exited(context, name):
+    for macrostep in context._monitored_trace:
+        if name in macrostep.exited_states:
+            assert False, 'State {} is exited'.format(name)
 
 
-@then('event {event_name} should be fired')
-@then('event {event_name} should be fired with {parameter}={value}')
-def event_is_received(context, event_name, parameter=None, value=None):
+@then('state {name} is active')
+def state_is_active(context, name):
+    assert name in context.interpreter.configuration, 'State {} is not active'.format(name)
+
+
+@then('state {name} is not active')
+def state_is_not_active(context, name):
+    assert name not in context.interpreter.configuration, 'State {} is active'.format(name)
+
+
+@then('event {name} is fired')
+@then('event {name} is fired with {parameter}={value}')
+def event_is_fired(context, name, parameter=None, value=None):
     parameters = {}
-    if context.table:
-        for row in context.table:
-            parameters[row['parameter']] = eval(row['value'], {}, {})
+
+    for row in context.table if context.table else []:
+        parameters[row['parameter']] = eval(row['value'], {}, {})
 
     if parameter and value:
         parameters[parameter] = eval(value)
 
-    for event in context._events:
-        if event.name == event_name:
-            matching_parameters = True
-            for key, value in parameters.items():
-                if getattr(event, key, None) != value:
-                    matching_parameters = False
-                    break
-            if matching_parameters:
-                return
-
-    assert False, 'No matching event fired for {} with {} in {}'.format(event_name, parameters, context._events)
-
-
-@then('event {event_name} should not be fired')
-def event_is_not_received(context, event_name):
-    for event in context._events:
-        if event.name == event_name:
-            assert False, 'Event {} was raised'.format(event)
+    for macrostep in context._monitored_trace:
+        for event in macrostep.sent_events:
+            if event.name == name:
+                matching_parameters = True
+                for key, value in parameters.items():
+                    if getattr(event, key, None) != value:
+                        matching_parameters = False
+                        break
+                if matching_parameters:
+                    return
+    assert False, 'Event {} is not fired with parameters {}'.format(name, parameters)
 
 
-@then('no event should be fired')
-def no_event_received(context):
-    assert len(context._events) == 0, 'Sent events: {}'.format(context._events)
+@then('event {name} is not fired')
+def event_is_not_fired(context, name):
+    for macrostep in context._monitored_trace:
+        for event in macrostep.sent_events:
+            assert event.name != name, 'Event {} is fired'.format(name)
 
 
-@then('variable {variable_name} should be defined')
-def variable_is_defined(context, variable_name):
-    assert variable_name in context._interpreter.context, '{} is not defined'.format(variable_name)
+@then('no event is fired')
+def no_event_is_fired(context):
+    for macrostep in context._monitored_trace:
+        if len(macrostep.sent_events) > 0:
+            if len(macrostep.sent_events) > 1:
+                assert False, 'Events {} are fired'.format(', '.join([e.name for e in macrostep.sent_events]))
+            else:
+                assert False, 'Event {} is fired'.format(macrostep.sent_events[0].name)
 
 
-@then('the value of {variable_name} should be {value}')
-def variable_equals_value(context, variable_name, value):
-    variable_is_defined(context, variable_name)
-    value = eval(value, {}, {})
-    context_value = context._interpreter.context[variable_name]
-    assert context_value == value, 'Variable {} equals {} != {}'.format(variable_name, context_value, value)
+@then('variable {variable} equals {value}')
+def variable_equals(context, variable, value):
+    assert variable in context.interpreter.context, 'Variable {} is not defined'.format(variable)
+
+    current_value = context.interpreter.context[variable]
+    expected_value = eval(value, {}, {})
+    assert current_value == expected_value, 'Variable {} equals {}, not {}'.format(variable, current_value, expected_value)
 
 
-@then('expression {expression} should hold')
+@then('variable {variable} does not equal {value}')
+def variable_does_not_equal(context, variable, value):
+    assert variable in context.interpreter.context, 'Variable {} is not defined'.format(variable)
+
+    current_value = context.interpreter.context[variable]
+    expected_value = eval(value, {}, {})
+    assert current_value != expected_value, 'Variable {} equals {}'.format(variable, current_value)
+
+
+@then('expression {expression} holds')
 def expression_holds(context, expression):
-    assert context._interpreter._evaluator._evaluate_code(expression), '{} does not hold'.format(expression)
+    assert context.interpreter._evaluator._evaluate_code(expression), 'Expression {} does not hold'.format(expression)
 
 
-@then('the statechart is in a final configuration')
+@then('expression {expression} does not hold')
+def expression_does_not_hold(context, expression):
+    assert not context.interpreter._evaluator._evaluate_code(expression), 'Expression {} holds'.format(expression)
+
+
+@then('statechart is in a final configuration')
 def final_configuration(context):
-    assert context._interpreter.final, \
-        'The statechart is not in a final configuration: {}'.format(context._interpreter.configuration)
+    assert context.interpreter.final, 'Statechart is not in a final configuration: {}'.format(', '.join(context.interpreter.configuration))
+
+
+@then('statechart is not in a final configuration')
+def final_configuration(context):
+    assert not context.interpreter.final, 'Statechart is in a final configuration: {}'.format(', '.join(context.interpreter.configuration))
+
