@@ -170,7 +170,9 @@ Given/when I reproduce "{scenario}"
 
 Given/when I repeat "{step}" {repeat:d} times
 
-    This step repeats given step (including its step keyword) several times.
+    This step repeats given step several times.
+    The text of the step must be provided without its keyword, and will be executed using the
+    current keyword (*given* or *when*).
 
 
 Given/when I send event {name}

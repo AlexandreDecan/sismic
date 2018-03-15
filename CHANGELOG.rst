@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.26.0 (2018-03-15)
+0.26.1 (2018-03-15)
 -------------------
 
 Sismic support for BDD was completely rewritten. The CLI is now ``sismic-bdd``, pointing to the ``cli`` submodule of

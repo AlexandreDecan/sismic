@@ -69,19 +69,19 @@ def reproduce_scenario(context, scenario, *, keyword='Given'):
 
 
 @when('I reproduce "{scenario}"')
-def __reproduce_scenario(context, scenario):
+def _reproduce_scenario(context, scenario):
     return reproduce_scenario(context, scenario, keyword='When')
 
 
 @given('I repeat "{step}" {repeat:d} times')
-@when('I repeat "{step}" {repeat:d} times')
-def repeat_step(context, step, repeat):
-    keyword = step.split(' ', 1)[0].lower()
-    assert keyword in ['given', 'when', 'and', 'but', 'then'], \
-        'Step {} should start with a supported keyword'.format(step)
-
+def repeat_step(context, step, repeat, *, keyword='Given'):
     for _ in range(repeat):
-        context.execute_steps(step)
+        context.execute_steps('{} {}'.format(keyword, step))
+
+
+@when('I repeat "{step}" {repeat:d} times')
+def _repeat_step(context, step, repeat):
+    return repeat_step(context, step, repeat, keyword='When')
 
 
 @given('I send event {name}')
