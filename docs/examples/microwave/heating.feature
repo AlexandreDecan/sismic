@@ -23,8 +23,8 @@ Feature: No heating if door is opened
     Given I send event door_opened
     And I send event item_placed
     And I send event door_closed
-    And I send event input_timer_inc
-    When I send event input_cooking_start
+    And I send event timer_inc
+    When I send event cooking_start
     Then event heating_on is fired
 
   Scenario: Opening door interrupts heating

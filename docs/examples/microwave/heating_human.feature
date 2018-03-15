@@ -1,35 +1,32 @@
-# Run with sismic-bdd microwave.yaml --features heating_human.feature --steps heating_steps.py
+Feature: Cook food
 
-Feature: No heating if door is opened
-
-  Scenario: No heating when nothing is done
-    When I power up the microwave
-    Then heating should not be on
-
-  Scenario: No heating when I open the door
-    When I open the door
-    Then heating should not turn on
-
-  Scenario: No heating when item is placed
+  Scenario: Cook food
     Given I open the door
-    When I place an item
-    Then heating should not turn on
+    And I place an item in the oven
+    And I close the door
+    And I press increase timer button
+    And I press increase power button
+    When I press start button
+    Then heating turns on
 
   Scenario: No heating when door is not closed
-    Given I open the door
-    And I place an item
-    When I close the door
-    Then heating should not turn on
-
-  Scenario: Allow heating if door is closed
-    Given I open the door
-    And I place an item
-    And I close the door
-    And I increase the cooking duration
-    When I press the start button
-    Then heating should turn on
+    Given I reproduce "Cook food"
+    And I open the door
+    When I press start button
+    Then heating does not turn on
 
   Scenario: Opening door interrupts heating
-    Given I reproduce "Allow heating if door is closed"
+    Given I reproduce "Cook food"
+    And 3 seconds elapsed
     When I open the door
-    Then heating should turn off
+    Then heating turns off
+
+  Scenario: Lamp is on when door is open
+    When I open the door
+    Then lamp turns on
+    When I close the door
+    Then lamp turns off
+
+  Scenario: Lamp is on while cooking
+    When I reproduce "Cook food"
+    Then lamp turns on

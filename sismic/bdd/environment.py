@@ -17,7 +17,7 @@ def before_scenario(context, scenario):
     # Log trace
     context.trace = log_trace(context.interpreter)
     context._monitoring = False
-    context._monitored_trace = None
+    context.monitored_trace = None
 
     # Load properties
     if properties is not None:
@@ -32,7 +32,7 @@ def before_step(context, step):
         # Stop monitoring
         context._monitoring = False
 
-        if context._monitored_trace is None:
+        if context.monitored_trace is None:
             raise ValueError('Scenario must at least contain one "when" step before any "then" step.')
 
 
@@ -47,10 +47,10 @@ def after_step(context, step):
 
         if not context._monitoring:
             context._monitoring = True
-            context._monitored_trace = []
+            context.monitored_trace = []
 
         if macrosteps is not None:
-            context._monitored_trace.extend(macrosteps)
+            context.monitored_trace.extend(macrosteps)
 
     # Hook to enable debugging
     if step.step_type == 'then' and step.status == 'failed' and context.config.userdata.get('debug-on-error', None) == 'True':

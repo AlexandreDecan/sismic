@@ -7,6 +7,7 @@ __all__ = ['action_alias', 'assertion_alias']
 def action_alias(step, step_to_execute) -> None:
     """
     Create an alias of a predefined "given"/"when" step.
+
     Example: action_alias('I open door', 'I send event open_door')
 
     :param step: New step, without the "given" or "when" keyword.
@@ -24,6 +25,7 @@ def action_alias(step, step_to_execute) -> None:
 def assertion_alias(step, step_to_execute) -> None:
     """
     Create an alias of a predefined "then" step.
+
     Example: assertion_alias('door is open', 'state door open is active')
 
     :param step: New step, without the "then" keyword
@@ -41,15 +43,20 @@ def do_nothing(context):
 
 
 @given('I reproduce "{scenario}"')
-@when('I reproduce "{scenario}"')
-def reproduce_scenario(context, scenario):
+def reproduce_scenario(context, scenario, *, keyword='Given'):
     current_feature = context.feature
     for included_scenario in current_feature.scenarios:
         if included_scenario.name == scenario:
-            steps = ['{} {}'.format(s.step_type, s.name) for s in included_scenario.steps]
-            context.execute_steps('\n'.join(steps))
+            for step in included_scenario.steps:
+                if step.step_type in ['given', 'when']:
+                    context.execute_steps('{} {}'.format(keyword, step.name))
             return
     assert False, 'Unknown scenario {}.'.format(scenario)
+
+
+@when('I reproduce "{scenario}"')
+def __reproduce_scenario(context, scenario):
+    return reproduce_scenario(context, scenario, keyword='When')
 
 
 @given('I repeat step "{step}" {repeat:d} times')
@@ -63,11 +70,11 @@ def repeat_step(context, step, repeat):
         context.execute_steps(step)
 
 
-@given('I send event {event_name}')
-@given('I send event {event_name} with {parameter}={value}')
-@when('I send event {event_name}')
-@when('I send event {event_name} with {parameter}={value}')
-def send_event(context, event_name, parameter=None, value=None):
+@given('I send event {name}')
+@given('I send event {name} with {parameter}={value}')
+@when('I send event {name}')
+@when('I send event {name} with {parameter}={value}')
+def send_event(context, name, parameter=None, value=None):
     parameters = {}
     if context.table:
         for row in context.table:
@@ -76,21 +83,21 @@ def send_event(context, event_name, parameter=None, value=None):
     if parameter and value:
         parameters[parameter] = eval(value)
 
-    event = Event(event_name, **parameters)
+    event = Event(name, **parameters)
     context.interpreter.queue(event)
 
 
-@given('I wait {seconds:g} seconds')
-@given('I wait {seconds:g} second')
-@when('I wait {seconds:g} seconds')
-@when('I wait {seconds:g} second')
+@given('{seconds:g} seconds elapsed')
+@given('{seconds:g} second elapsed')
+@when('{seconds:g} seconds elapsed')
+@when('{seconds:g} second elapsed')
 def wait(context, seconds):
     context.interpreter.time += seconds
 
 
 @then('state {name} is entered')
 def state_is_entered(context, name):
-    for macrostep in context._monitored_trace:
+    for macrostep in context.monitored_trace:
         if name in macrostep.entered_states:
             return
     assert False, 'State {} is not entered'.format(name)
@@ -98,14 +105,14 @@ def state_is_entered(context, name):
 
 @then('state {name} is not entered')
 def state_is_entered(context, name):
-    for macrostep in context._monitored_trace:
+    for macrostep in context.monitored_trace:
         if name in macrostep.entered_states:
             assert False, 'State {} is entered'.format(name)
 
 
 @then('state {name} is exited')
 def state_is_exited(context, name):
-    for macrostep in context._monitored_trace:
+    for macrostep in context.monitored_trace:
         if name in macrostep.exited_states:
             return
     assert False, 'State {} is not exited'.format(name)
@@ -113,7 +120,7 @@ def state_is_exited(context, name):
 
 @then('state {name} is not exited')
 def state_is_exited(context, name):
-    for macrostep in context._monitored_trace:
+    for macrostep in context.monitored_trace:
         if name in macrostep.exited_states:
             assert False, 'State {} is exited'.format(name)
 
@@ -139,7 +146,7 @@ def event_is_fired(context, name, parameter=None, value=None):
     if parameter and value:
         parameters[parameter] = eval(value)
 
-    for macrostep in context._monitored_trace:
+    for macrostep in context.monitored_trace:
         for event in macrostep.sent_events:
             if event.name == name:
                 matching_parameters = True
@@ -149,19 +156,22 @@ def event_is_fired(context, name, parameter=None, value=None):
                         break
                 if matching_parameters:
                     return
-    assert False, 'Event {} is not fired with parameters {}'.format(name, parameters)
+    if len(parameters) == 0:
+        assert False, 'Event {} is not fired'.format(name)
+    else:
+        assert False, 'Event {} is not fired with parameters {}'.format(name, parameters)
 
 
 @then('event {name} is not fired')
 def event_is_not_fired(context, name):
-    for macrostep in context._monitored_trace:
+    for macrostep in context.monitored_trace:
         for event in macrostep.sent_events:
             assert event.name != name, 'Event {} is fired'.format(name)
 
 
 @then('no event is fired')
 def no_event_is_fired(context):
-    for macrostep in context._monitored_trace:
+    for macrostep in context.monitored_trace:
         if len(macrostep.sent_events) > 0:
             if len(macrostep.sent_events) > 1:
                 assert False, 'Events {} are fired'.format(', '.join([e.name for e in macrostep.sent_events]))

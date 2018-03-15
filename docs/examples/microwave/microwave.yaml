@@ -1,35 +1,9 @@
 statechart:
   name: Microwave controller
-  description: |
-    in:
-     input_power_inc
-     input_power_dec
-     input_power_reset
-     input_timer_inc
-     input_timer_dec
-     input_timer_reset
-     input_cooking_start
-     input_cooking_stop
-     timer_tick
-     item_placed
-     item_removed
-     door_opened
-     door_closed
-
-    out:
-     lamp_switch_on
-     lamp_switch_off
-     display_set(text:str)
-     display_clear
-     heating_set_power(power:int)
-     heating_on
-     heating_off
-     beep(number:int)
-     turntable_start
-     turntable_stop
   preamble: |
-    POWER_VALUES = [600, 700, 800, 900, 1000, 1100, 1200]
-    POWER_DEFAULT = 3
+    POWER_VALUES = [300, 600, 900, 1200, 1500]
+    POWER_DEFAULT = 2  # 900W
+    MAXPOWER = 3  # 1200W
   root state:
     name: controller
     initial: door closed
@@ -37,7 +11,7 @@ statechart:
       power = POWER_DEFAULT
       timer = 0
     transitions:
-      - event: input_cooking_stop
+      - event: cooking_stop
         action: |
           power = POWER_DEFAULT
           timer = 0
@@ -55,15 +29,16 @@ statechart:
             transitions:
               - event: door_opened
                 target: opened with item
-              - event: input_timer_inc
+              - event: timer_inc
                 action: |
                   timer = timer + 1
                   send('display_set', text='TIMER: %d' % timer)
-              - event: input_timer_dec
+              - event: timer_dec
+                guard: timer >= 0
                 action: |
-                  timer = max(0, timer - 1)
+                  timer = timer - 1
                   send('display_set', text='TIMER: %d' % timer)
-              - event: input_timer_reset
+              - event: timer_reset
                 action: |
                   timer = 0
                   send('display_set', text='TIMER: %d' % timer)
@@ -71,17 +46,19 @@ statechart:
               - name: program mode
                 initial: not ready
                 transitions:
-                  - event: input_power_reset
+                  - event: power_reset
                     action: |
                       power = POWER_DEFAULT
                       send('display_set', text='POWER: %d' % POWER_VALUES[power])
-                  - event: input_power_inc
+                  - event: power_inc
+                    guard: power < len(POWER_VALUES)
                     action: |
-                      power = min(len(POWER_VALUES) - 1, power + 1)
+                      power = power + 1
                       send('display_set', text='POWER: %d' % POWER_VALUES[power])
-                  - event: input_power_dec
+                  - event: power_dec
+                    guard: power > 0
                     action: |
-                      power = max(0, power - 1)
+                      power = power - 1
                       send('display_set', text='POWER: %d' % POWER_VALUES[power])
                 states:
                   - name: not ready
@@ -92,7 +69,7 @@ statechart:
                     transitions:
                       - guard: timer == 0
                         target: not ready
-                      - event: input_cooking_start
+                      - event: cooking_start
                         target: cooking mode
               - name: cooking mode
                 on entry: |

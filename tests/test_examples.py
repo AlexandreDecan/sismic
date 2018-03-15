@@ -1,5 +1,3 @@
-import pytest
-
 from sismic.interpreter import Event
 
 
@@ -89,12 +87,14 @@ class TestMicrowave:
             Event('door_opened'),
             Event('item_placed'),
             Event('door_closed'),
-            Event('input_timer_inc')
+            Event('timer_inc')
         ).execute()
 
-        microwave.queue(Event('input_cooking_start'))
-        step = microwave.execute_once()
+        microwave.queue(Event('cooking_start'))
+        sent_events = []
+        for step in microwave.execute():
+            sent_events.extend(step.sent_events)
 
-        assert Event('heating_on') in step.sent_events
-        assert Event('lamp_switch_on') in step.sent_events
-        assert Event('turntable_start') in step.sent_events
+        assert Event('heating_on') in sent_events
+        assert Event('lamp_switch_on') in sent_events
+        assert Event('turntable_start') in sent_events
