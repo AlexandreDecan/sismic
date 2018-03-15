@@ -1,30 +1,30 @@
 Feature: Elevator
 
   Scenario: Elevator starts on ground floor
-    Then the value of current should be 0
-    And the value of destination should be 0
+    When I do nothing
+    Then variable current equals 0
+    And variable destination equals 0
 
   Scenario: Elevator can move to 7th floor
     When I send event floorSelected with floor=7
-    Then the value of current should be 7
+    Then variable current equals 7
 
   Scenario: Elevator can move to 4th floor
     When I send event floorSelected
       | parameter  | value |
       | floor      | 4     |
       | dummy      | None  |
-    Then the value of current should be 4
+    Then variable current equals 4
 
   Scenario: Elevator reaches ground floor after 10 seconds
     Given I reproduce "Elevator can move to 7th floor"
     When I wait 10 seconds
-    Then the value of current should be 0
-    # Notice the variant using "holds":
-    And expression current == 0 should hold
+    Then variable current equals 0
+    And expression current == 0 holds
 
   Scenario Outline: Elevator can reach floor from 0 to 5
     When I send event floorSelected with floor=<floor>
-    Then the value of current should be <floor>
+    Then variable current equals <floor>
 
     Examples:
       | floor |

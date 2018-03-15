@@ -1,4 +1,4 @@
-# Run with sismic-behave microwave.yaml --features heating_human.feature --steps heating_steps.py 
+# Run with sismic-bdd microwave.yaml --features heating_human.feature --steps heating_steps.py
 
 Feature: No heating if door is opened
 

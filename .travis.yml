@@ -10,10 +10,6 @@ install:
 - pip install -r requirements.txt
 script:
 - coverage run --source sismic -m pytest
-- coverage run -a --source sismic -m sismic.bdd.cli docs/examples/elevator/elevator_contract.yaml --features docs/examples/elevator/elevator.feature
-- coverage run -a --source sismic -m sismic.bdd.cli docs/examples/microwave/microwave.yaml --features docs/examples/microwave/heating.feature --properties docs/examples/microwave/heating_off_property.yaml docs/examples/microwave/heating_on_property.yaml docs/examples/microwave/heating_property.yaml
-- coverage run -a --source sismic -m sismic.bdd.cli docs/examples/microwave/microwave.yaml --features docs/examples/microwave/heating_human.feature --steps docs/examples/microwave/heating_steps.py
-- coverage run -a --source sismic -m sismic.bdd.cli docs/examples/microwave/microwave.yaml --features docs/examples/microwave/heating_human.feature --steps docs/examples/microwave/heating_steps.py --properties docs/examples/microwave/heating_off_property.yaml docs/examples/microwave/heating_on_property.yaml docs/examples/microwave/heating_property.yaml
 - cd docs && make doctest && cd ..
 after_success:
 - coveralls

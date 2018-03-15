@@ -1,60 +1,15 @@
-from behave import given, then, when
-from sismic.bdd import steps
+from sismic.bdd.steps import action_alias, assertion_alias
 
 
-@given('I open the door')
-@when('I open the door')
-def open_the_door(context):
-    return steps.send_event(context, 'door_opened')
+action_alias('I open the door', 'I send event door_opened')
+action_alias('I close the door', 'I send event door_closed')
+action_alias('I power up the microwave', 'I do nothing')
+action_alias('I place an item', 'I send event item_placed')
+action_alias('I increase the cooking duration', 'I send event input_timer_inc')
+action_alias('I press the start button', 'I send event input_cooking_start')
 
-
-@given('I close the door')
-@when('I close the door')
-def close_the_door(context):
-    return steps.send_event(context, 'door_closed')
-
-
-@when('I power up the microwave')
-def power_up_microwave(context):
-    return steps.do_nothing(context)
-
-
-@given('I place an item')
-@when('I place an item')
-def place_an_item(context):
-    return steps.send_event(context, 'item_placed')
-
-
-@given('I increase the cooking duration')
-def increase_cooking_duration(context):
-    return steps.send_event(context, 'input_timer_inc')
-
-
-@when('I press the start button')
-def press_start_button(context):
-    return steps.send_event(context, 'input_cooking_start')
-
-
-@then('heating should be on')
-def heating_is_active(context):
-    return steps.state_is_active(context, 'cooking mode')
-
-
-@then('heating should not be on')
-def heating_not_active(context):
-    return steps.state_is_not_active(context, 'cooking mode')
-
-
-@then('heating should turn on')
-def heating_on_is_sent(context):
-    return steps.event_is_received(context, 'heating_on')
-
-
-@then('heating should not turn on')
-def heating_on_is_not_sent(context):
-    return steps.event_is_not_received(context, 'heating_on')
-
-
-@then('heating should turn off')
-def heating_off_is_sent(context):
-    return steps.event_is_received(context, 'heating_off')
+assertion_alias('Heating should be on', 'State cooking mode is active')
+assertion_alias('Heating should not be on', 'State cooking mode is not active')
+assertion_alias('Heating should turn on', 'Event heating_on is fired')
+assertion_alias('Heating should not turn on', 'Event heating_on is not fired')
+assertion_alias('Heating should turn off', 'Event heating_off is fired')

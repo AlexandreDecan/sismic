@@ -4,11 +4,27 @@ Changelog
 Unreleased
 ----------
 
+Sismic support for BDD was completely rewritten. The CLI is now ``sismic-bdd``, pointing to the ``cli`` submodule of
+the newly created ``sismic.bdd`` module. All steps that are related to Sismic internals were removed, and only
+steps that manipulate the statechart are kept. Check the documentation and ``sismic.bdd.steps`` for more information.
+Execution semantics have slightly changed but shouldn't have any impact when running BDD tests.
+Predefined steps can be easily extended thanks to the ``action_alias`` and ``assertion_alias`` helpers.
+See documentation for more details.
+
+- (Changed) ``sismic-behave`` CLI is now ``sismic-bdd``.
+- (Removed) ``--coverage`` option from ``sismic-behave`` CLI.
+- (Changed) Rename ``sismic.testing`` to ``sismic.bdd``, and ``sismic.testing.behave`` to ``sismic.bdd.cli``.
+- (Changed) A new list of predefined steps, available in ``sismic.bdd.steps``, see documentation.
+- (Changed) A "when" step is now required before any "then" step. The "then" steps assert on what happens during
+  the "when" steps, and not on the whole execution or the last step as before.
+- (Added) ``sismic.bdd.steps`` provides ``action_alias`` and ``assertion_alias`` to make defining new steps easy.
+- (Changed) BDD tests are directly executed by ``pytest`` (instead of being triggered by Travis-CI).
+
+Other changes:
+
 - (Changed) ``Interpreter.bind_property`` becomes ``Interpreter.bind_property_statechart``.
 - (Changed) ``helpers.coverage_from_trace`` returns a dict with "entered states", "exited states" and
   "processed transitions".
-- (Changed) Rename ``sismic.testing`` to ``sismic.bdd``, and ``sismic.testing.behave`` to ``sismic.bdd.cli``.
-- (Removed) ``--coverage`` option from ``sismic-behave`` CLI.
 - (Removed) Unused ``io.text``.
 
 
