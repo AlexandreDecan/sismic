@@ -103,7 +103,7 @@ and display as summary of all executed scenarios and encountered errors:
 ``sismic-behave`` also allows one to check property statecharts while the scenarios are being executed.
 To do so, provide a list of YAML filepath containing property statecharts using the ``--properties`` argument.
 The property statecharts defined in these YAML will be checked at runtime following a fail fast approach
-(see :py:class:`~sismic.testing.ExecutionWatcher` and :ref:`property_statecharts` for more information).
+(see :ref:`property_statecharts` for more information).
 
 
 While BDD can be convenient to identify errors, it is usually not easy to identify where the error occured.
@@ -247,6 +247,6 @@ Then the statechart is in a final configuration
     using the ``--show-steps`` argument of ``sismic-behave``.
 
 .. note:: If you do not want to rely on Sismic and want to use *behave* command-line interface, you can easily
-    import the predefined steps using ``from sismic.testing.steps import *``.
+    import the predefined steps using ``from sismic.bdd.steps import *``.
     This will also import *behave* and all the needed objects to define and use new steps.
     See `Python Step Implementations <http://behave.readthedocs.io/en/latest/tutorial.html#python-step-implementations>`__ for more information.

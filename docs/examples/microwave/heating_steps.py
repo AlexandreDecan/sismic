@@ -1,5 +1,5 @@
 from behave import given, then, when
-from sismic.testing import steps
+from sismic.bdd import steps
 
 
 @given('I open the door')

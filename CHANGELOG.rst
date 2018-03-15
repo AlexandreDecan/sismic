@@ -6,6 +6,7 @@ Unreleased
 
 - (Changed) ``helpers.coverage_from_trace`` returns a dict with "entered states", "exited states" and
   "processed transitions".
+- (Changed) Rename ``sismic.testing`` to ``sismic.bdd``, and ``sismic.testing.behave`` to ``sismic.bdd.cli``.
 - (Removed) ``--coverage`` option from ``sismic-behave`` CLI.
 - (Removed) Unused ``io.text``.
 

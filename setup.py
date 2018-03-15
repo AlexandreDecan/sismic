@@ -93,7 +93,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'sismic-behave=sismic.testing.behave:main',
+            'sismic-behave=sismic.bdd.cli:main',
         ],
     },
 )

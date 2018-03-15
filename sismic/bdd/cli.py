@@ -12,7 +12,7 @@ from behave import __main__ as behave_main  # type: ignore
 
 
 DEFAULT_STEPS_CONTENT = """
-from sismic.testing.steps import *
+from sismic.bdd.steps import *
 """
 
 ENVIRONMENT = {
@@ -31,7 +31,6 @@ def execute_behave(statechart: str,
                    features: List[str],
                    steps: List[str],
                    properties: List[str],
-                   coverage: bool,
                    debug_on_error: bool,
                    parameters: List[str]) -> int:
     # Create temporary directory
