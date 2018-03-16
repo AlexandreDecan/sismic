@@ -27,7 +27,8 @@ The development occurs in the *devel* branch, the latest stable distributed vers
 2. Create the environment: ``virtualenv -p python3.4 env``
 3. Jump into: ``source env/bin/activate``
 4. Clone the repository: ``git clone https://github.com/AlexandreDecan/sismic``
-5. Install dependencies: ``pip install -r requirements.txt``
+5. Install Sismic: ``pip install .`` or ``pip install -e .`` (editable mode)
+6. Install test dependencies: ``pip install -r requirements.txt``
 
 Sismic is now available from the root directory. Its code is in the *sismic* repository.
 The documentation can be built from the *docs* directory using ``make html``.
@@ -35,4 +36,4 @@ The documentation can be built from the *docs* directory using ``make html``.
 Tests are available both for the code and the documentation:
 
 - ``make doctest`` in the *docs* directory (documentation tests)
-- ``python -m unittest discover`` from the root directory (code tests)
+- ``python -m pytest tests/`` from the root directory (code tests)
