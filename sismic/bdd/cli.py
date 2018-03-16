@@ -7,10 +7,10 @@ import tempfile
 from behave import __main__ as behave_main  # type: ignore
 from typing import List
 
-__all__ = ['execute_behave']
+__all__ = ['execute_cli']
 
 
-def main() -> int:
+def parse_cli() -> int:
     parser = argparse.ArgumentParser(prog='sismic-bdd',
                                      description='Command-line utility to execute Gherkin feature files using Behave.\n'
                                                  'Extra parameters will be passed to Behave.')
@@ -31,7 +31,7 @@ def main() -> int:
     args, parameters = parser.parse_known_args()
     if args.show_steps:
         parameters.append('--steps')
-    return execute_behave(
+    return execute_cli(
         args.statechart,
         args.features,
         steps=args.steps,
@@ -41,11 +41,11 @@ def main() -> int:
     )
 
 
-def execute_behave(statechart: str, features: List[str], *,
-                   steps: List[str]=None,
-                   properties: List[str]=None,
-                   debug_on_error: bool=False,
-                   parameters: List[str]=None) -> int:
+def execute_cli(statechart: str, features: List[str], *,
+                steps: List[str]=None,
+                properties: List[str]=None,
+                debug_on_error: bool=False,
+                parameters: List[str]=None) -> int:
     """
     Set an temporary directory to execute Behave with support for Sismic.
 
@@ -113,4 +113,4 @@ def execute_behave(statechart: str, features: List[str], *,
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(parse_cli())

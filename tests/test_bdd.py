@@ -1,10 +1,10 @@
-from sismic.bdd.cli import execute_behave
+from sismic.bdd.cli import execute_cli
 
 
 def test_elevator():
     d = lambda f: 'docs/examples/elevator/' + f
 
-    assert 0 == execute_behave(
+    assert 0 == execute_cli(
         statechart=d('elevator_contract.yaml'),
         features=[d('elevator.feature')],
         steps=[],
@@ -17,7 +17,7 @@ def test_elevator():
 def test_microwave():
     d = lambda f: 'docs/examples/microwave/' + f
 
-    assert 0 == execute_behave(
+    assert 0 == execute_cli(
         statechart=d('microwave.yaml'),
         features=[d('heating.feature')],
         steps=[],
@@ -30,7 +30,7 @@ def test_microwave():
 def test_microwave_with_properties():
     d = lambda f: 'docs/examples/microwave/' + f
 
-    assert 0 == execute_behave(
+    assert 0 == execute_cli(
         statechart=d('microwave.yaml'),
         features=[d('heating.feature')],
         steps=[],
@@ -43,7 +43,7 @@ def test_microwave_with_properties():
 def test_microwave_with_steps():
     d = lambda f: 'docs/examples/microwave/' + f
 
-    assert 0 == execute_behave(
+    assert 0 == execute_cli(
         statechart=d('microwave.yaml'),
         features=[d('heating_human.feature')],
         steps=[d('heating_steps.py')],
@@ -56,7 +56,7 @@ def test_microwave_with_steps():
 def test_microwave_with_steps_and_properties():
     d = lambda f: 'docs/examples/microwave/' + f
 
-    assert 0 == execute_behave(
+    assert 0 == execute_cli(
         statechart=d('microwave.yaml'),
         features=[d('heating_human.feature')],
         steps=[d('heating_steps.py')],

@@ -89,7 +89,7 @@ Under the hood, ``sismic-bdd`` will create a temporary directory where all the f
 Behave are put. It also makes available a list of predefined *given*, *when*, and *then* steps and sets up many
 hooks that are required to integrate Sismic and Behave.
 
-.. note:: Module ``sismic.bdd`` exposes a :py:func:`~sismic.bdd.execute_behave` function that is internally
+.. note:: Module ``sismic.bdd`` exposes a :py:func:`~sismic.bdd.execute_cli` function that is internally
     used by ``sismic-bdd`` CLI, and that can be used if programmatic access to these features is required.
 
 
