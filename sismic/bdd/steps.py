@@ -122,6 +122,7 @@ def event_is_fired(context, name, parameter=None, value=None):
                         break
                 if matching_parameters:
                     return
+
     if len(parameters) == 0:
         assert False, 'Event {} is not fired'.format(name)
     else:

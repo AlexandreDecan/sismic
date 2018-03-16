@@ -51,7 +51,7 @@ statechart:
                       power = POWER_DEFAULT
                       send('display_set', text='POWER: %d' % POWER_VALUES[power])
                   - event: power_inc
-                    guard: power < len(POWER_VALUES)
+                    guard: power < MAXPOWER
                     action: |
                       power = power + 1
                       send('display_set', text='POWER: %d' % POWER_VALUES[power])

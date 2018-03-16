@@ -64,7 +64,7 @@ Sismic support for BDD
 Since statecharts are executable pieces of software, it is desirable for statechart users to be able to describe
 the intended behavior in terms of feature and scenario descriptions.
 While it is possible to manually integrate the BDD process with any library or software, Sismic is bundled with a
-command-line utility ``sismic-bdd`` that automates the integration of BDD.
+command-line utility ``sismic-bdd`` (or ``python -m sismic.bdd``) that automates the integration of BDD.
 
 Sismic support for BDD relies on `Behave <http://behave.readthedocs.io/en/latest/>`__, a Python library for BDD
 with full support of the Gherkin language.
@@ -89,7 +89,7 @@ Under the hood, ``sismic-bdd`` will create a temporary directory where all the f
 Behave are put. It also makes available a list of predefined *given*, *when*, and *then* steps and sets up many
 hooks that are required to integrate Sismic and Behave.
 
-.. note:: Module ``sismic.bdd`` exposes a :py:func:`~sismic.bdd.execute_cli` function that is internally
+.. note:: Module ``sismic.bdd`` exposes a :py:func:`~sismic.bdd.execute_bdd` function that is internally
     used by ``sismic-bdd`` CLI, and that can be used if programmatic access to these features is required.
 
 

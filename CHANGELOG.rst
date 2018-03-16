@@ -4,16 +4,19 @@ Changelog
 Unreleased
 ----------
 
-- (Added) Tests for bdd steps.
+- (Added) ``sismic.bdd.execute_bdd`` can be used to execute BDD tests programmatically.
+- (Added) ``sismic.bdd.__main__`` is the CLI interface for ``sismic-behave`` and can now be executed using
+  ``python -m sismic.bdd`` too if sismic is available but not installed.
+- (Added) Many tests for BDD steps.
 - (Changed) ``Statechart.copy_from_statechart`` has only its first argument that can be provided by position.
   The remaining ones (esp. ``source`` and ``replace``) should be provided by name.
-- (Changed) ``sismic.bdd.execute_behave`` is renamed to ``sismic.bdd.execute_cli``.
+- (Removed) ``sismic.bdd.cli.execute_behave``, subsumed by ``sismic.bdd.execute_bdd``.
 
 
 0.26.3 (2018-03-15)
 -------------------
 
-- (Added) ``sismic.bdd`` exposes ``sismic.bdd.cli.execute_behave`` function to programmaticaly use ``sismic-bdd``.
+- (Added) ``sismic.bdd`` exposes ``sismic.bdd.cli.execute_behave`` function to programmatically use ``sismic-bdd``.
 - (Changed) ``execute_behave`` function has only two required parameters, and the remaining ones (that have default
   values) can only be set by name, not by position.
 - (Changed) ``action_alias`` and ``assertion_alias`` of module ``sismic.bdd.steps`` are renamed to ``map_action``

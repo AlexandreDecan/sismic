@@ -1,73 +1,56 @@
 import pytest
 
+import os
+
 from sismic.interpreter import Event
-from sismic.bdd.cli import execute_cli
-from sismic.bdd import steps
+from sismic.bdd import steps, execute_bdd
+from sismic.io import import_from_yaml
 
 
-def test_elevator():
-    d = lambda f: 'docs/examples/elevator/' + f
-
-    assert 0 == execute_cli(
-        statechart=d('elevator_contract.yaml'),
-        features=[d('elevator.feature')],
-        steps=[],
-        properties=[],
-        debug_on_error=False,
-        parameters= []
+def test_elevator(elevator):
+    assert 0 == execute_bdd(
+        elevator.statechart,
+        [os.path.join('docs', 'examples', 'elevator', 'elevator.feature')]
     )
 
 
-def test_microwave():
-    d = lambda f: 'docs/examples/microwave/' + f
+class TestMicrowave:
+    @pytest.fixture
+    def property_statecharts(self):
+        statecharts = []
+        for filename in ['heating_off_property', 'heating_on_property', 'heating_property']:
+            with open(os.path.join('docs', 'examples', 'microwave', filename+'.yaml')) as f:
+                statecharts.append(import_from_yaml(f))
+        return statecharts
 
-    assert 0 == execute_cli(
-        statechart=d('microwave.yaml'),
-        features=[d('heating.feature')],
-        steps=[],
-        properties=[],
-        debug_on_error=False,
-        parameters=[]
-    )
+    def test_microwave(self, microwave):
+        assert 0 == execute_bdd(
+            microwave.statechart,
+            [os.path.join('docs', 'examples', 'microwave', 'heating.feature')]
+        )
 
+    def test_microwave_with_properties(self, microwave, property_statecharts):
+        assert 0 == execute_bdd(
+            microwave.statechart,
+            [os.path.join('docs', 'examples', 'microwave', 'heating.feature')],
+            property_statecharts=property_statecharts
+        )
 
-def test_microwave_with_properties():
-    d = lambda f: 'docs/examples/microwave/' + f
+    def test_microwave_with_steps(self, microwave):
 
-    assert 0 == execute_cli(
-        statechart=d('microwave.yaml'),
-        features=[d('heating.feature')],
-        steps=[],
-        properties=[d('heating_off_property.yaml'), d('heating_on_property.yaml'), d('heating_property.yaml')],
-        debug_on_error=False,
-        parameters=[]
-    )
+        assert 0 == execute_bdd(
+            microwave.statechart,
+            [os.path.join('docs', 'examples', 'microwave', 'heating_human.feature')],
+            step_filepaths=[os.path.join('docs', 'examples', 'microwave', 'heating_steps.py')],
+        )
 
-
-def test_microwave_with_steps():
-    d = lambda f: 'docs/examples/microwave/' + f
-
-    assert 0 == execute_cli(
-        statechart=d('microwave.yaml'),
-        features=[d('heating_human.feature')],
-        steps=[d('heating_steps.py')],
-        properties=[],
-        debug_on_error=False,
-        parameters=[]
-    )
-
-
-def test_microwave_with_steps_and_properties():
-    d = lambda f: 'docs/examples/microwave/' + f
-
-    assert 0 == execute_cli(
-        statechart=d('microwave.yaml'),
-        features=[d('heating_human.feature')],
-        steps=[d('heating_steps.py')],
-        properties=[d('heating_off_property.yaml'), d('heating_on_property.yaml'), d('heating_property.yaml')],
-        debug_on_error=False,
-        parameters=[]
-    )
+    def test_microwave_with_steps_and_properties(self, microwave, property_statecharts):
+        assert 0 == execute_bdd(
+            microwave.statechart,
+            [os.path.join('docs', 'examples', 'microwave', 'heating_human.feature')],
+            step_filepaths=[os.path.join('docs', 'examples', 'microwave', 'heating_steps.py')],
+            property_statecharts=property_statecharts
+        )
 
 
 class TestSteps:

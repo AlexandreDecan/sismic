@@ -1,29 +1,20 @@
-from sismic.io import import_from_yaml
-from sismic.interpreter import Interpreter
 from sismic.helpers import log_trace
 
 
 def before_scenario(context, scenario):
-    # Get config
-    statechart = context.config.userdata.get('statechart', None)
-    properties = context.config.userdata.get('properties', None)
-
-    # Load statechart
-    assert statechart is not None
-
-    with open(statechart) as fp:
-        context.interpreter = Interpreter(import_from_yaml(fp))
+    # Create interpreter
+    statechart = context.config.userdata.get('statechart')
+    interpreter_klass = context.config.userdata.get('interpreter_klass')
+    context.interpreter = interpreter_klass(statechart)
 
     # Log trace
     context.trace = log_trace(context.interpreter)
     context._monitoring = False
     context.monitored_trace = None
 
-    # Load properties
-    if properties is not None:
-        for property_statechart in properties.split(';'):
-            with open(property_statechart) as fp:
-                context.interpreter.bind_property_statechart(import_from_yaml(fp))
+    # Bind property statecharts
+    for property_statechart in context.config.userdata.get('property_statecharts'):
+        context.interpreter.bind_property_statechart(interpreter_klass(property_statechart))
 
 
 def before_step(context, step):
@@ -49,11 +40,10 @@ def after_step(context, step):
             context._monitoring = True
             context.monitored_trace = []
 
-        if macrosteps is not None:
-            context.monitored_trace.extend(macrosteps)
+        context.monitored_trace.extend(macrosteps)
 
     # Hook to enable debugging
-    if step.step_type == 'then' and step.status == 'failed' and context.config.userdata.get('debug-on-error', None) == 'True':
+    if step.step_type == 'then' and step.status == 'failed' and context.config.userdata.get('debug-on-error'):
         try:
             import ipdb as pdb
         except ImportError:
