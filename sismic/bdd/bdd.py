@@ -80,13 +80,17 @@ def execute_bdd(statechart: Statechart,
     :param property_statecharts: list of property statecharts
     :param interpreter_klass: a callable that accepts a statechart and returns an Interpreter
     :param debug_on_error: set to True to drop to (i)pdb in case of error.
-    :param behave_parameters: additional parameters that will be provided to behave.
+    :param behave_parameters: additional CLI parameters used by Behave (see http://behave.readthedocs.io/en/latest/behave.html#command-line-arguments)
     :return: exit code of behave CLI.
     """
     # Default values
     step_filepaths = step_filepaths if step_filepaths else []
     property_statecharts = property_statecharts if property_statecharts else []
     behave_parameters = behave_parameters if behave_parameters else []
+
+    # If debug_on_error, disable captured stdout, otherwise it hangs
+    if debug_on_error and '--capture' not in behave_parameters:
+        behave_parameters.append('--no-capture')
 
     # Create temporary directory to put everything inside
     with tempfile.TemporaryDirectory() as tempdir:
@@ -125,7 +129,6 @@ def execute_bdd(statechart: Statechart,
 
         # Run behave
         return run_behave(config)
-
 
 
 def cli() -> int:

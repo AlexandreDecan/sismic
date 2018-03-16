@@ -43,16 +43,18 @@ def after_step(context, step):
         context.monitored_trace.extend(macrosteps)
 
     # Hook to enable debugging
-    if step.step_type == 'then' and step.status == 'failed' and context.config.userdata.get('debug-on-error'):
+    if step.step_type == 'then' and step.status == 'failed' and context.config.userdata.get('debug_on_error'):
         try:
             import ipdb as pdb
         except ImportError:
             import pdb
 
         print('--------------------------------------------------------------')
-        print('Dropping into (i)pdb.')
+        print('Dropping into (i)pdb.', end='\n\n')
         print('Variable context holds the current execution context of Behave')
-        print('You can access the interpreter using context.interpreter, and\nthe trace using context.trace')
+        print('You can access the interpreter using context.interpreter, the')
+        print('trace using context.trace and the monitored trace using')
+        print('context.monitored_trace.')
         print('--------------------------------------------------------------')
 
         pdb.post_mortem(step.exc_traceback)
