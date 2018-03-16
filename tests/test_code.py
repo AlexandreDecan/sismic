@@ -7,7 +7,7 @@ from sismic.interpreter import Interpreter, Event, InternalEvent
 from sismic.io import import_from_yaml
 
 
-def test_dummy_nevaluator(mocker):
+def test_dummy_evaluator(mocker):
         interpreter = mocker.MagicMock(name='interpreter')
         evaluator = code.DummyEvaluator(interpreter=interpreter)
 

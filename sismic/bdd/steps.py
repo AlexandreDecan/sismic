@@ -70,7 +70,7 @@ def state_is_entered(context, name):
 
 
 @then('state {name} is not entered')
-def state_is_entered(context, name):
+def state_is_not_entered(context, name):
     for macrostep in context.monitored_trace:
         if name in macrostep.entered_states:
             assert False, 'State {} is entered'.format(name)
@@ -85,7 +85,7 @@ def state_is_exited(context, name):
 
 
 @then('state {name} is not exited')
-def state_is_exited(context, name):
+def state_is_not_exited(context, name):
     for macrostep in context.monitored_trace:
         if name in macrostep.exited_states:
             assert False, 'State {} is exited'.format(name)
@@ -179,6 +179,6 @@ def final_configuration(context):
 
 
 @then('statechart is not in a final configuration')
-def final_configuration(context):
+def not_final_configuration(context):
     assert not context.interpreter.final, 'Statechart is in a final configuration: {}'.format(', '.join(context.interpreter.configuration))
 

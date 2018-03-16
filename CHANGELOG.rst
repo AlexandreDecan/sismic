@@ -4,6 +4,7 @@ Changelog
 Unreleased
 ----------
 
+- (Added) Tests for bdd steps.
 - (Changed) ``Statechart.copy_from_statechart`` has only its first argument that can be provided by position.
   The remaining ones (esp. ``source`` and ``replace``) should be provided by name.
 - (Changed) ``sismic.bdd.execute_behave`` is renamed to ``sismic.bdd.execute_cli``.
