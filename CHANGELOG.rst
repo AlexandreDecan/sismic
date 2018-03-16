@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.26.4 (2018-03-16)
+-------------------
 
 - (Added) ``sismic.bdd.execute_bdd`` can be used to execute BDD tests programmatically.
 - (Added) ``sismic.bdd.__main__`` is the CLI interface for ``sismic-behave`` and can now be executed using
@@ -10,6 +10,8 @@ Unreleased
 - (Added) Many tests for BDD steps.
 - (Changed) ``Statechart.copy_from_statechart`` has only its first argument that can be provided by position.
   The remaining ones (esp. ``source`` and ``replace``) should be provided by name.
+- (Fixed) Sismic requires behave >= 1.6.0.
+- (Fixed) Older versions of typing do not contain ``Deque``.
 - (Removed) ``sismic.bdd.cli.execute_behave``, subsumed by ``sismic.bdd.execute_bdd``.
 
 

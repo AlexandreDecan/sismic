@@ -4,6 +4,7 @@ import os
 
 from sismic.interpreter import Event
 from sismic.bdd import steps, execute_bdd
+from sismic.bdd.__main__ import cli
 from sismic.io import import_from_yaml
 
 
@@ -51,6 +52,15 @@ class TestMicrowave:
             step_filepaths=[os.path.join('docs', 'examples', 'microwave', 'heating_steps.py')],
             property_statecharts=property_statecharts
         )
+
+
+def test_cli():
+    assert 0 == cli([
+        'docs/examples/microwave/microwave.yaml',
+        '--features', 'docs/examples/microwave/heating.feature', 'docs/examples/microwave/heating_human.feature',
+        '--steps', 'docs/examples/microwave/heating_steps.py',
+        '--properties', 'docs/examples/microwave/heating_on_property.yaml', 'docs/examples/microwave/heating_off_property.yaml'
+    ])
 
 
 class TestSteps:
