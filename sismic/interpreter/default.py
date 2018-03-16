@@ -1,7 +1,11 @@
 from collections import deque
 from itertools import combinations
-from typing import (Any, Callable, Dict, Iterable, List, Mapping, Optional,
-                    Set, Union, cast, Deque)
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Union, cast
+try:
+    # Because Deque was not available in early versions of typing...
+    from typing import Deque
+except ImportError:
+    pass
 
 from ..model import (
     MacroStep, MicroStep, Event, InternalEvent, MetaEvent,
