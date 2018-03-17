@@ -2,7 +2,7 @@ from typing import Mapping, List
 from ..model import (
     DeepHistoryState, FinalState, Transition, CompoundState,
     OrthogonalState, ShallowHistoryState, Statechart,
-    ActionStateMixin, ContractMixin, HistoryStateMixin)
+    ActionStateMixin, ContractMixin)
 
 
 __all__ = ['export_to_plantuml']
@@ -16,7 +16,7 @@ class PlantUMLExporter:
             statechart_description: bool=True,
             statechart_preamble: bool=True,
             state_contracts: bool=True,
-            state_actions: bool=True,
+            state_action: bool=True,
             transition_contracts: bool=True,
             transition_action: bool=True) -> None:
         self.statechart = statechart
@@ -24,13 +24,16 @@ class PlantUMLExporter:
         self.statechart_description = statechart_description
         self.statechart_preamble = statechart_preamble
         self.state_contracts = state_contracts
-        self.state_actions = state_actions
+        self.state_action = state_action
         self.transition_contracts = transition_contracts
         self.transition_action = transition_action
 
         self._states_id = dict()  # type: Mapping[str, str]
         self._output = []  # type: List[str]
         self._indent = 0
+
+    def arrow(self, source, target):
+        return '-->'
 
     def indent(self):
         self._indent += 2
@@ -93,7 +96,7 @@ class PlantUMLExporter:
         # Actions
         has_actions = False
 
-        if self.state_actions and isinstance(state, ActionStateMixin):
+        if self.state_action and isinstance(state, ActionStateMixin):
             # On entry, on exit
             if state.on_entry:
                 has_actions = True
@@ -138,34 +141,32 @@ class PlantUMLExporter:
             for cond in state.postconditions:
                 self.output('{} : **post:** {}'.format(self.state_id(name), cond))
 
+        # Transitions
+        if isinstance(state, CompoundState) and state.initial:
+            self.output('[*] {arrow} {target}'.format(
+                arrow=self.arrow(None, state.initial),
+                target=self.state_id(state.initial)
+            ))
+
+        self.export_transitions(name)
+
         # Nested states
         for i, child in enumerate(self.statechart.children_for(name)):
             if i != 0 and isinstance(state, OrthogonalState):
                 self.output('--')
             self.export_state(child)
 
-        # Initial state
-        if isinstance(state, CompoundState) and state.initial:
-            self.output('[*] -> {}'.format(self.state_id(state.initial)))
-
         self.deindent()
         self.output('}')
 
     def export_transitions(self, source_name: str) -> None:
-        state = self.statechart.state_for(source_name)
-
-        # History state
-        if isinstance(state, HistoryStateMixin) and state.memory:
-            self.output('{} -> {}'.format(self.state_id(source_name), self.state_id(state.memory)))
-
         # Transitions (except internal ones)
         transitions = filter(lambda t: not t.internal, self.statechart.transitions_from(source_name))
 
         for transition in transitions:
             # Do not treat final states here
-            if transition.target and isinstance(self.statechart.state_for(transition.target), FinalState):
+            if isinstance(self.statechart.state_for(transition.target), FinalState):
                 continue
-
             self.export_transition(transition)
 
     def export_transition(self, transition: Transition) -> None:
@@ -195,8 +196,9 @@ class PlantUMLExporter:
             for cond in transition.postconditions:
                 text.append('post: {}\n'.format(cond))
 
-        self.output('{source} -> {target} : {text}'.format(
+        self.output('{source} {arrow} {target} : {text}'.format(
             source=self.state_id(transition.source),
+            arrow=self.arrow(transition.source, transition.target),
             target=target_name,
             text=''.join(text),
         ))
@@ -207,9 +209,6 @@ class PlantUMLExporter:
         self.export_statechart()
         self.export_state(self.statechart.root)
 
-        for name in self.statechart.states:
-            self.export_transitions(name)
-
         self.output('@enduml')
 
         return '\n'.join(self._output)
@@ -219,11 +218,11 @@ def export_to_plantuml(
         statechart: Statechart,
         filepath: str=None, *,
         statechart_name=True,
-        statechart_description=True,
-        statechart_preamble=True,
-        state_contracts=True,
-        state_actions=True,
-        transition_contracts=True,
+        statechart_description=False,
+        statechart_preamble=False,
+        state_contracts=False,
+        state_action=True,
+        transition_contracts=False,
         transition_action=True) -> str:
     """
     Export given statechart to plantUML (see http://plantuml/plantuml).
@@ -234,7 +233,7 @@ def export_to_plantuml(
     :param statechart_description: include the description of the statechart
     :param statechart_preamble: include the preamble of the statechart
     :param state_contracts: include state contracts
-    :param state_actions: include state actions (on entry, on exit and internal transitions)
+    :param state_action: include state actions (on entry, on exit and internal transitions)
     :param transition_contracts: include transition contracts
     :param transition_action: include actions on transition
     :return: textual representation using plantuml
@@ -246,7 +245,7 @@ def export_to_plantuml(
         statechart_description=statechart_description,
         statechart_preamble=statechart_preamble,
         state_contracts=state_contracts,
-        state_actions=state_actions,
+        state_action=state_action,
         transition_contracts=transition_contracts,
         transition_action=transition_action,
     )

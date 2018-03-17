@@ -1,10 +1,11 @@
 Changelog
 =========
 
-0.26.5 (2018-03-17)
+0.26.6 (2018-03-17)
 -------------------
 
 - (Changed) Export to PlantUML uses short arrows by default.
+- (Changed) Many improvements related to the transitions when using ``export_to_plantuml``.
 
 
 0.26.4 (2018-03-16)
