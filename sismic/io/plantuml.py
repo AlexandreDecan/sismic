@@ -146,7 +146,7 @@ class PlantUMLExporter:
 
         # Initial state
         if isinstance(state, CompoundState) and state.initial:
-            self.output('[*] --> {}'.format(self.state_id(state.initial)))
+            self.output('[*] -> {}'.format(self.state_id(state.initial)))
 
         self.deindent()
         self.output('}')
@@ -156,7 +156,7 @@ class PlantUMLExporter:
 
         # History state
         if isinstance(state, HistoryStateMixin) and state.memory:
-            self.output('{} --> {}'.format(self.state_id(source_name), self.state_id(state.memory)))
+            self.output('{} -> {}'.format(self.state_id(source_name), self.state_id(state.memory)))
 
         # Transitions (except internal ones)
         transitions = filter(lambda t: not t.internal, self.statechart.transitions_from(source_name))
@@ -195,7 +195,7 @@ class PlantUMLExporter:
             for cond in transition.postconditions:
                 text.append('post: {}\n'.format(cond))
 
-        self.output('{source} --> {target} : {text}'.format(
+        self.output('{source} -> {target} : {text}'.format(
             source=self.state_id(transition.source),
             target=target_name,
             text=''.join(text),
