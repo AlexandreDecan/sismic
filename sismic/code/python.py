@@ -118,7 +118,7 @@ class PythonEvaluator(Evaluator):
 
     @property
     def context(self) -> Mapping:
-        return FrozenContext(self._context)
+        return self._context
 
     def on_step_starts(self, event: Event = None) -> None:
         """
