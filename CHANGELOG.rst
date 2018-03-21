@@ -1,6 +1,13 @@
 Changelog
 =========
 
+
+0.26.7 (2018-03-21)
+-------------------
+
+- (Removed) Nested context (ie. nested variable scopes) for the Python code evaluator.
+
+
 0.26.6 (2018-03-17)
 -------------------
 
