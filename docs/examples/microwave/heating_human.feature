@@ -31,3 +31,11 @@ Feature: Cook food
     When I reproduce "Cook food"
     Then lamp turns on
 
+  Scenario: Cooking can be stopped stop
+    Given I reproduce "Cook food"
+    When 2 seconds elapsed
+    Then variable timer equals 3
+    When I press stop button
+    Then variable timer equals 0
+    And heating turns off
+

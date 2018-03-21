@@ -88,7 +88,7 @@ statechart:
                 contract:
                   - before: timer > 0
                   - always: timer >= 0
-                  - always: power == __old__.power
+                  - always: power == __old__.power or received('cooking_stop')
                   - after: received('door_opened') or timer == 0
                 transitions:
                   - guard: timer == 0

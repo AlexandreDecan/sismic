@@ -47,26 +47,7 @@ populated with ``{'x': 1, 'y': 0}``. When the statechart is further executed (in
 After execution, the context is ``{'x': 2, 'y': 0}``.
 
 The default code evaluator has a global context that is always exposed when a piece of code has to be evaluated
-or executed, and also defines local contexts for each state. Local contexts allow one to create variables whose
-scope is limited to the state and its descendants. In other word, the context of a state is composed of its local
-context and the ones of its ancestors. The context of a transition is the same than the one of its source state.
-
-More precisely, every state and every transition has a specific evaluation context.
-The code associated with a state is executed in a local context which is composed of local variables and every
-variable that is defined in the context of the parent state. The context of a transition is built upon the context
-of its source state.
-
-Dealing with local contexts should not be an issue when writing code in the statechart, as it's very close to the
-way scopes are handled by Python.
-It could however look tricky when manipulating the ``context`` attribute of an interpreter or of a
-:py:class:`~sismic.code.PythonEvaluator` instance directly.
-For convenience, the context that is exposed by those objects prepend the name of the state to the name of the
-variables that were defined in that state. For instance, if ``x`` has been defined independently in both *s1* and *s2*,
-and assuming that *s1* is not a descendant nor an ancestor of *s2*, then the value of ``x`` in *s1* and *s2* can be
-accessed respectively using ``interpreter.context['s1.x']`` and ``interpreter.context['s2.x']``.
-
-
-When a :py:class:`~sismic.code.PythonEvaluator` instance is initialized, an initial context can be specified.
+or executed. When a :py:class:`~sismic.code.PythonEvaluator` instance is initialized, an initial context can be specified.
 For convenience, the initial context can be directly provided to the constructor of an :py:class:`~sismic.interpreter.Interpreter`.
 
 It should be noticed that the initial context is set *before* executing the preamble of a statechart.
