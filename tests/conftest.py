@@ -8,18 +8,16 @@ from sismic.interpreter import Interpreter
 @pytest.fixture(params=[False, True], ids=['no contract', 'contract'])
 def elevator(request):
     if request.param:
-        filepath = 'docs/examples/elevator/elevator_contract.yaml'
+        sc = import_from_yaml(filepath='docs/examples/elevator/elevator_contract.yaml')
     else:
-        filepath = 'docs/examples/elevator/elevator.yaml'
-    with open(filepath) as f:
-        sc = import_from_yaml(f)
+        sc = import_from_yaml(filepath='docs/examples/elevator/elevator.yaml')
+
     return Interpreter(sc)
 
 
 @pytest.fixture
 def remote_elevator(elevator):
-    with open('docs/examples/elevator/elevator_buttons.yaml') as f:
-        sc = import_from_yaml(f)
+    sc = import_from_yaml(filepath='docs/examples/elevator/elevator_buttons.yaml')
     remote = Interpreter(sc)
     remote.bind(elevator)
     return remote
@@ -27,104 +25,77 @@ def remote_elevator(elevator):
 
 @pytest.fixture
 def writer():
-    with open('docs/examples/writer_options.yaml') as f:
-        sc = import_from_yaml(f)
+    sc = import_from_yaml(filepath='docs/examples/writer_options.yaml')
     return Interpreter(sc)
 
 
 @pytest.fixture(params=[False, True], ids=['no contract', 'contract'])
 def microwave(request):
     if request.param:
-        filepath = 'docs/examples/microwave/microwave_with_contracts.yaml'
+        sc = import_from_yaml(filepath='docs/examples/microwave/microwave_with_contracts.yaml')
     else:
-        filepath = 'docs/examples/microwave/microwave.yaml'
-    with open(filepath) as f:
-        sc = import_from_yaml(f)
+        sc = import_from_yaml(filepath='docs/examples/microwave/microwave.yaml')
     return Interpreter(sc)
 
 
 @pytest.fixture
 def simple_statechart():
-    with open('tests/yaml/simple.yaml') as f:
-        statechart = import_from_yaml(f)
-    return statechart
+    return import_from_yaml(filepath='tests/yaml/simple.yaml')
 
 
 @pytest.fixture
 def composite_statechart():
-    with open('tests/yaml/composite.yaml') as f:
-        statechart = import_from_yaml(f)
-    return statechart
+    return import_from_yaml(filepath='tests/yaml/composite.yaml')
 
 
 @pytest.fixture
 def deep_history_statechart():
-    with open('tests/yaml/deep_history.yaml') as f:
-        statechart = import_from_yaml(f)
-    return statechart
+    return import_from_yaml(filepath='tests/yaml/deep_history.yaml')
 
 
 @pytest.fixture
 def infinite_statechart():
-    with open('tests/yaml/infinite.yaml') as f:
-        statechart = import_from_yaml(f)
-    return statechart
+    return import_from_yaml(filepath='tests/yaml/infinite.yaml')
 
 
 @pytest.fixture
 def parallel_statechart():
-    with open('tests/yaml/parallel.yaml') as f:
-        statechart = import_from_yaml(f)
-    return statechart
+    return import_from_yaml(filepath='tests/yaml/parallel.yaml')
 
 
 @pytest.fixture
 def nested_parallel_statechart():
-    with open('tests/yaml/nested_parallel.yaml') as f:
-        statechart = import_from_yaml(f)
-    return statechart
+    return import_from_yaml(filepath='tests/yaml/nested_parallel.yaml')
 
 
 @pytest.fixture
 def nondeterministic_statechart():
-    with open('tests/yaml/nondeterministic.yaml') as f:
-        statechart = import_from_yaml(f)
-    return statechart
+    return import_from_yaml(filepath='tests/yaml/nondeterministic.yaml')
 
 
 @pytest.fixture
 def history_statechart():
-    with open('tests/yaml/history.yaml') as f:
-        statechart = import_from_yaml(f)
-    return statechart
+    return import_from_yaml(filepath='tests/yaml/history.yaml')
 
 
 @pytest.fixture
 def composite_statechart():
-    with open('tests/yaml/composite.yaml') as f:
-        statechart = import_from_yaml(f)
-    return statechart
+    return import_from_yaml(filepath='tests/yaml/composite.yaml')
 
 
 @pytest.fixture
 def internal_statechart():
-    with open('tests/yaml/internal.yaml') as f:
-        statechart = import_from_yaml(f)
-    return statechart
+    return import_from_yaml(filepath='tests/yaml/internal.yaml')
 
 
 @pytest.fixture(params=['actions', 'composite', 'deep_history', 'infinite', 'internal',
                         'nested_parallel', 'nondeterministic', 'parallel', 'simple', 'timer'])
 def example_from_tests(request):
-    with open(os.path.join('tests', 'yaml', request.param + '.yaml')) as f:
-        statechart = import_from_yaml(f)
-    return statechart
+    return import_from_yaml(filepath=os.path.join('tests', 'yaml', request.param + '.yaml'))
 
 
 @pytest.fixture(params=['elevator/elevator', 'elevator/elevator_contract', 'microwave/microwave',
                         'elevator/tester_elevator_7th_floor_never_reached', 'elevator/tester_elevator_moves_after_10s',
                         'writer_options'])
 def example_from_docs(request):
-    with open(os.path.join('docs', 'examples', request.param + '.yaml')) as f:
-        statechart = import_from_yaml(f)
-    return statechart
+    return import_from_yaml(filepath=os.path.join('docs', 'examples', request.param + '.yaml'))

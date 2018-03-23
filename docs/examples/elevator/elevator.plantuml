@@ -1,0 +1,34 @@
+@startuml
+title Elevator
+state "active" as active {
+  state "floorListener" as floorListener {
+    [*] --> floorSelecting
+    state "floorSelecting" as floorSelecting {
+      floorSelecting --> floorSelecting : floorSelected / destination = event.floor
+    }
+  }
+  --
+  state "movingElevator" as movingElevator {
+    [*] --> doorsOpen
+    state "moving" as moving {
+      moving --> doorsOpen : [destination == current] / doors_open = True
+      state "movingDown" as movingDown {
+        movingDown : **entry** / current = current - 1
+        movingDown --> movingDown : [destination < current]
+      }
+      state "movingUp" as movingUp {
+        movingUp : **entry** / current = current + 1
+        movingUp --> movingUp : [destination > current]
+      }
+    }
+    state "doorsClosed" as doorsClosed {
+      doorsClosed --> movingUp : [destination > current]
+      doorsClosed --> movingDown : [destination < current and destination >= 0]
+    }
+    state "doorsOpen" as doorsOpen {
+      doorsOpen -ri-> doorsClosed : [destination != current] / doors_open = False
+      doorsOpen -ri-> doorsClosed : [after(10) and current > 0] / destination = 0; doors_open = False
+    }
+  }
+}
+@enduml

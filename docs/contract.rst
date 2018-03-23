@@ -124,15 +124,15 @@ at runtime (as explained above) and may raise a subclass of :py:exc:`~sismic.exc
     from sismic.interpreter import Interpreter, Event
     from sismic.io import import_from_yaml
 
-    with open('examples/elevator/elevator_contract.yaml') as f:
-        statechart = import_from_yaml(f)
+    statechart = import_from_yaml(filepath='examples/elevator/elevator_contract.yaml')
 
-        # Make the run fails
-        statechart.state_for('movingUp').preconditions[0] = 'current > destination'
+    # Make the run fails
+    statechart.state_for('movingUp').preconditions[0] = 'current > destination'
 
-        interpreter = Interpreter(statechart)
-        interpreter.queue(Event('floorSelected', floor=4))
-        interpreter.execute()
+    interpreter = Interpreter(statechart)
+    interpreter.queue(Event('floorSelected', floor=4))
+    interpreter.execute()
+
 
 Here we manually changed one of the preconditions such that it failed at runtime.
 The exception displays some relevant information to help debug:

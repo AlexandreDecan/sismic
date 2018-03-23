@@ -45,23 +45,32 @@ class SCHEMA:
     }
 
 
-def import_from_yaml(statechart: Iterable[str], ignore_schema: bool=False, ignore_validation: bool=False) -> Statechart:
+def import_from_yaml(text: Iterable[str]=None, filepath: str=None, *, ignore_schema: bool=False, ignore_validation: bool=False) -> Statechart:
     """
-    Import a statechart from a YAML representation.
+    Import a statechart from a YAML representation (first argument) or a YAML file (filepath argument).
 
     Unless specified, the structure contained in the YAML is validated against a predefined
     schema (see *sismic.io.SCHEMA*), and the resulting statechart is validated using its *validate()* method.
 
-    :param statechart: string or any equivalent object
+    :param text: A YAML text. If not provided, filepath argument has to be provided.
+    :param filepath: A path to a YAML file.
     :param ignore_schema: set to *True* to disable yaml validation.
     :param ignore_validation: set to *True* to disable statechart validation.
     :return: a *Statechart* instance
     """
+    if not text and not filepath:
+        raise TypeError('A YAML must be provided, either using first argument or filepath argument.')
+    elif text and filepath:
+        raise TypeError('Either provide first argument or filepath argument, not both.')
+    elif filepath:
+        with open(filepath, 'r') as f:
+            text = f.read()
+
     if yaml.version_info < (0, 15):
-        data = yaml.safe_load(statechart)  # type: dict
+        data = yaml.safe_load(text)  # type: dict
     else:
         yml = yaml.YAML(typ='safe', pure=True)
-        data = yml.load(statechart)
+        data = yml.load(text)
 
     if not ignore_schema:
         try:
@@ -78,7 +87,8 @@ def import_from_yaml(statechart: Iterable[str], ignore_schema: bool=False, ignor
 
 def export_to_yaml(statechart: Statechart, filepath: str=None) -> str:
     """
-    Export given *Statechart* instance to YAML
+    Export given *Statechart* instance to YAML. Its YAML representation is returned by this function.
+    Automatically save the output to filepath, if provided.
 
     :param statechart: statechart to export
     :param filepath: save output to given filepath, if provided

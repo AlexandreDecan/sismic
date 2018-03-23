@@ -43,8 +43,7 @@ First, one should load the statechart and initialize the interpreter:
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter, Event
 
-    with open('examples/elevator/elevator.yaml') as f:
-        statechart = import_from_yaml(f)
+    statechart = import_from_yaml(filepath='examples/elevator/elevator.yaml')
 
     interpreter = Interpreter(statechart)
 
@@ -114,8 +113,7 @@ Let us first initialize an interpreter using one of our statechart example, the 
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter, Event
 
-    with open('examples/elevator/elevator.yaml') as f:
-        statechart = import_from_yaml(f)
+    statechart = import_from_yaml(filepath='examples/elevator/elevator.yaml')
 
     interpreter = Interpreter(statechart)
 
@@ -181,8 +179,7 @@ This is illustrated in the following example.
     import time
 
     # Load statechart and create an interpreter
-    with open('examples/elevator.yaml') as f:
-        statechart = import_from_yaml(f)
+    statechart = import_from_yaml(filepath='examples/elevator.yaml')
 
     # Set the initial time
     interpreter = Interpreter(statechart)

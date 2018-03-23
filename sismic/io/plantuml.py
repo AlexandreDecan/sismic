@@ -216,7 +216,8 @@ class PlantUMLExporter:
 
 def export_to_plantuml(
         statechart: Statechart,
-        filepath: str=None, *,
+        filepath: str=None,
+        *,
         statechart_name=True,
         statechart_description=False,
         statechart_preamble=False,
@@ -226,6 +227,7 @@ def export_to_plantuml(
         transition_action=True) -> str:
     """
     Export given statechart to plantUML (see http://plantuml/plantuml).
+    If a filepath is provided, also save the output to this file.
 
     :param statechart: statechart to export
     :param filepath: save output to given filepath, if provided

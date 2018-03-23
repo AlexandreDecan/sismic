@@ -233,7 +233,8 @@ Statechart examples
 Elevator
 ~~~~~~~~
 
-The Elevator statechart is one of the running examples in this documentation. Its visual description (currently not supported by Sismic) could look as follows:
+The Elevator statechart is one of the running examples in this documentation.
+Its visual description (currently not supported by Sismic) could look as follows:
 
 .. image:: /examples/elevator/elevator.png
     :align: center
@@ -266,15 +267,24 @@ For example:
 
 .. testcode:: python
 
-    from sismic import io, model
+    from sismic.io import import_from_yaml
+    from sismic.model import Statechart
 
     with open('examples/elevator/elevator.yaml') as f:
-        statechart = io.import_from_yaml(f)
-        assert isinstance(statechart, model.Statechart)
+        statechart = import_from_yaml(f)
+        assert isinstance(statechart, Statechart)
+
+The function also supports importing from a given filepath:
+
+.. testcode:: python
+
+    statechart = import_from_yaml(filepath='examples/elevator/elevator.yaml')
+    assert isinstance(statechart, Statechart)
+
 
 The parser performs several checks using statechart's :py:class:`~sismic.model.Statechart.validate` method.
 It also does an automatic validation against some kind of schema to prevent erroneous keys.
-See `schema library <https://pypi.python.org/pypi/schema>`__ for more information about the semantic.
+See `schema library <https://pypi.python.org/pypi/schema>`__ for more information about the semantics.
 
 .. literalinclude:: ../sismic/io/yaml.py
     :language: python

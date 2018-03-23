@@ -42,9 +42,9 @@ For example, assume we have three instances of :py:class:`~sismic.interpreter.In
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter
 
-    interpreter_1 = Interpreter(import_from_yaml(open('examples/elevator/elevator.yaml')))
-    interpreter_2 = Interpreter(import_from_yaml(open('examples/elevator/elevator_buttons.yaml')))
-    interpreter_3 = Interpreter(import_from_yaml(open('examples/elevator/elevator_buttons.yaml')))
+    interpreter_1 = Interpreter(import_from_yaml(filepath='examples/elevator/elevator.yaml'))
+    interpreter_2 = Interpreter(import_from_yaml(filepath='examples/elevator/elevator_buttons.yaml'))
+    interpreter_3 = Interpreter(import_from_yaml(filepath='examples/elevator/elevator_buttons.yaml'))
 
 .. testcode:: bind
 
@@ -118,8 +118,8 @@ We bind our panel with our elevator, such that the panel can control the elevato
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter, Event, InternalEvent
 
-    elevator = Interpreter(import_from_yaml(open('examples/elevator/elevator.yaml')))
-    buttons = Interpreter(import_from_yaml(open('examples/elevator/elevator_buttons.yaml')))
+    elevator = Interpreter(import_from_yaml(filepath='examples/elevator/elevator.yaml'))
+    buttons = Interpreter(import_from_yaml(filepath='examples/elevator/elevator_buttons.yaml'))
 
     # Elevator will receive events from buttons
     buttons.bind(elevator)

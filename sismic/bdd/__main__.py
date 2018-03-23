@@ -27,13 +27,11 @@ def cli(args=None) -> int:
     if args.show_steps:
         parameters.append('--steps')
 
-    with open(args.statechart) as f:
-        statechart = import_from_yaml(f)
+    statechart = import_from_yaml(filepath=args.statechart)
 
     property_statecharts = []
     for property_statechart in args.properties or []:
-        with open(property_statechart) as f:
-            property_statecharts.append(import_from_yaml(f))
+        property_statecharts.append(import_from_yaml(filepath=property_statechart))
 
     return execute_bdd(
         statechart,

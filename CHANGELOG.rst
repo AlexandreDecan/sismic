@@ -1,11 +1,17 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- (Added) ``import_from_yaml`` accepts a ``filepath`` argument.
+
 
 0.26.7 (2018-03-21)
 -------------------
 
 - (Removed) Nested context (ie. nested variable scopes) for the Python code evaluator.
+- (Fixed) BDD step *expression {expression} holds*.
 
 
 0.26.6 (2018-03-17)

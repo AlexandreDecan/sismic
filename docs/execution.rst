@@ -90,8 +90,7 @@ Consider the following example:
     from sismic.interpreter import Interpreter
 
     # Load statechart from yaml file
-    with open('examples/elevator/elevator.yaml') as f:
-        elevator = import_from_yaml(f)
+    elevator = import_from_yaml(filepath='examples/elevator/elevator.yaml')
 
     # Create an interpreter for this statechart
     interpreter = Interpreter(elevator)
