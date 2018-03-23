@@ -113,6 +113,16 @@ class TestExportToYaml:
     def test_identity_for_example_from_docs(self, example_from_docs):
         compare_statecharts(example_from_docs, import_from_yaml(export_to_yaml(example_from_docs)))
 
+    def test_export_based_on_filepath(self, elevator):
+        filepath = 'docs/examples/elevator/elevator.plantuml'
+        statechart = elevator.statechart
+        with open(filepath, 'r') as f:
+            p1 = f.read()
+
+        assert p1 != export_to_plantuml(statechart)
+        assert p1 == export_to_plantuml(statechart, based_on=p1)
+        assert p1 == export_to_plantuml(statechart, based_on_filepath=filepath)
+
 
 class TestExportToPlantUML:
     def test_export_example_from_tests(self, example_from_tests):
@@ -120,3 +130,4 @@ class TestExportToPlantUML:
 
     def test_export_example_from_docs(self, example_from_docs):
         assert len(export_to_plantuml(example_from_docs)) > 0
+

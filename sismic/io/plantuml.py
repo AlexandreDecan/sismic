@@ -1,3 +1,5 @@
+import re
+
 from typing import Mapping, List
 from ..model import (
     DeepHistoryState, FinalState, Transition, CompoundState,
@@ -12,6 +14,7 @@ class PlantUMLExporter:
     def __init__(
             self,
             statechart: Statechart, *,
+            based_on: str=None,
             statechart_name: bool=True,
             statechart_description: bool=True,
             statechart_preamble: bool=True,
@@ -20,6 +23,7 @@ class PlantUMLExporter:
             transition_contracts: bool=True,
             transition_action: bool=True) -> None:
         self.statechart = statechart
+        self.based_on = based_on
         self.statechart_name = statechart_name
         self.statechart_description = statechart_description
         self.statechart_preamble = statechart_preamble
@@ -33,7 +37,20 @@ class PlantUMLExporter:
         self._indent = 0
 
     def arrow(self, source, target):
-        return '-->'
+        # source = None --> initial state
+        if not self.based_on:
+            return '-->'
+        else:
+            if source is None:
+                source = '[*]'
+            if isinstance(self.statechart.state_for(target), FinalState):
+                target = '[*]'
+
+            for line in self.based_on.split('\n'):
+                matches = re.findall(r'(\[\*\]|[a-zA-Z0-9]+) -(.*)> (\[\*\]|[a-zA-Z0-9]+)', line)
+                if matches and matches[0][0] == source and matches[0][2] == target:
+                    return '-{}>'.format(matches[0][1])
+            return '-->'
 
     def indent(self):
         self._indent += 2
@@ -218,19 +235,31 @@ def export_to_plantuml(
         statechart: Statechart,
         filepath: str=None,
         *,
-        statechart_name=True,
-        statechart_description=False,
-        statechart_preamble=False,
-        state_contracts=False,
-        state_action=True,
-        transition_contracts=False,
-        transition_action=True) -> str:
+        based_on: str=None,
+        based_on_filepath: str=None,
+        statechart_name: bool=True,
+        statechart_description: bool=False,
+        statechart_preamble: bool=False,
+        state_contracts: bool=False,
+        state_action: bool=True,
+        transition_contracts: bool=False,
+        transition_action: bool=True) -> str:
     """
     Export given statechart to plantUML (see http://plantuml/plantuml).
     If a filepath is provided, also save the output to this file.
 
+    Due to the way statecharts are representing, and due to the presence of features that are specific to Sismic,
+    the resulting statechart representation does not include all the informations.
+    For example, final states and history states won't have name, actions and contracts.
+
+    If a previously exported representation for the statechart is provided, either as text (based_on parameter)
+    or as a filepath (based_on_filepath parameter), it will attempt to reuse the modifications made
+    to the transitions (their direction and length).
+
     :param statechart: statechart to export
     :param filepath: save output to given filepath, if provided
+    :param based_on: existing representation of the statechart in PlantUML
+    :param based_on_filepath: filepath to an existing representation of the statechart in PlantUML
     :param statechart_name: include the name of the statechart
     :param statechart_description: include the description of the statechart
     :param statechart_preamble: include the preamble of the statechart
@@ -241,8 +270,15 @@ def export_to_plantuml(
     :return: textual representation using plantuml
     """
 
+    if based_on and based_on_filepath:
+        raise TypeError('Parameters based_on and based_on_filepath cannot both be provided at the same time.')
+    if based_on_filepath:
+        with open(based_on_filepath, 'r') as f:
+            based_on = f.read()
+
     exporter = PlantUMLExporter(
         statechart,
+        based_on=based_on,
         statechart_name=statechart_name,
         statechart_description=statechart_description,
         statechart_preamble=statechart_preamble,

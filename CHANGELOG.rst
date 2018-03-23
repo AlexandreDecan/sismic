@@ -1,10 +1,13 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.26.8 (2018-03-23)
+-------------------
 
 - (Added) ``import_from_yaml`` accepts a ``filepath`` argument.
+- (Added) ``based_on`` and ``based_on_filepath`` parameters for ``export_to_plantuml`` so a previously generated
+  PlantUML file can be used as a basis for a new one (including its modifications related to the direction and length
+  of transitions).
 
 
 0.26.7 (2018-03-21)

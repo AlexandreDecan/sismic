@@ -306,9 +306,31 @@ some of them being used by third-party tools that support visualising (or editin
 
 Notably, module :py:mod:`sismic.io` contains a function :py:func:`~sismic.io.export_to_plantuml` that export a given statechart to
 `PlantUML <http://plantuml.com/>`__, a tool based on graphviz that can automatically render statecharts (to some extent).
-An online version of PlantUML can be found `here <www.plantuml.com/plantuml/>`__.
+An online version of PlantUML can be found `here <http://www.plantuml.com/plantuml/>`__.
 
 For example, the elevator statechart can be exported to the following PlantUML file, which in turns
-was used to generate the previously given representation of the elevator.
+can be used to generate the previously given representation of the elevator.
 
 .. literalinclude:: /examples/elevator/elevator.plantuml
+
+
+
+.. seealso:: PlantUML's rendering can be modified to some extent by adjusting the notation used for transitions.
+    By default, ``-->`` transitions correspond to downward transitions of good length.
+
+    A transition can be shortened by using ``->`` instead of ``-->``, and the direction of a transition can be
+    changed by using ``-up->`, ``-right->`, ``-down->` or ``-left->``. Both changes can be applied at the same time
+    using `-u->`, ``-r->`, ``-d->`` or ``-l->``.
+    See `PlantUML documentation <http://plantuml.com/state-diagram>`__ for more information.
+
+If you have already exported a statechart to PlantUML and made some changes to the direction or length of the
+transitions, it is likely that you will want to retrieve these changes when you export the (possibly modified)
+statechart again to PlantUML.
+
+The :py:func:`~sismic.io.export_to_plantuml` function accepts two optional (mutually exclusive) parameters ``based_on``
+and ``based_on_filepath`` that can be used to provide an earlier version of a PlantUML text representation
+(or a path to such a version if ``based_on_filepath`` is used).
+This will then be used to incorporate as much as possible the changes made on the transitions.
+
+.. autofunction:: sismic.io.export_to_plantuml
+    :noindex:
