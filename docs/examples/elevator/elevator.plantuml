@@ -2,14 +2,14 @@
 title Elevator
 state "active" as active {
   state "floorListener" as floorListener {
-    [*] --> floorSelecting
+    [*] -right-> floorSelecting
     state "floorSelecting" as floorSelecting {
       floorSelecting --> floorSelecting : floorSelected / destination = event.floor
     }
   }
   --
   state "movingElevator" as movingElevator {
-    [*] --> doorsOpen
+    [*] -right-> doorsOpen
     state "moving" as moving {
       moving --> doorsOpen : [destination == current] / doors_open = True
       state "movingDown" as movingDown {
@@ -26,8 +26,8 @@ state "active" as active {
       doorsClosed --> movingDown : [destination < current and destination >= 0]
     }
     state "doorsOpen" as doorsOpen {
-      doorsOpen -ri-> doorsClosed : [destination != current] / doors_open = False
-      doorsOpen -ri-> doorsClosed : [after(10) and current > 0] / destination = 0; doors_open = False
+      doorsOpen -right-> doorsClosed : [destination != current] / doors_open = False
+      doorsOpen -right-> doorsClosed : [after(10) and current > 0] / destination = 0; doors_open = False
     }
   }
 }

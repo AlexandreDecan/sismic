@@ -234,7 +234,7 @@ Elevator
 ~~~~~~~~
 
 The Elevator statechart is one of the running examples in this documentation.
-Its visual description (currently not supported by Sismic) could look as follows:
+Its visual description generated from Sismic using PlantUML looks as follows:
 
 .. image:: /examples/elevator/elevator.png
     :align: center
@@ -243,6 +243,7 @@ The corresponding YAML description is given below.
 
 .. literalinclude:: /examples/elevator/elevator.yaml
    :language: yaml
+
 
 Other examples
 ~~~~~~~~~~~~~~
@@ -307,3 +308,7 @@ Notably, module :py:mod:`sismic.io` contains a function :py:func:`~sismic.io.exp
 `PlantUML <http://plantuml.com/>`__, a tool based on graphviz that can automatically render statecharts (to some extent).
 An online version of PlantUML can be found `here <www.plantuml.com/plantuml/>`__.
 
+For example, the elevator statechart can be exported to the following PlantUML file, which in turns
+was used to generate the previously given representation of the elevator.
+
+.. literalinclude:: /examples/elevator/elevator.plantuml
