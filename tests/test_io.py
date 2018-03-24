@@ -113,6 +113,34 @@ class TestExportToYaml:
     def test_identity_for_example_from_docs(self, example_from_docs):
         compare_statecharts(example_from_docs, import_from_yaml(export_to_yaml(example_from_docs)))
 
+
+class TestExportToPlantUML:
+    def test_export_example_from_tests(self, example_from_tests):
+        export = export_to_plantuml(
+            example_from_tests,
+            statechart_name=True,
+            statechart_description=True,
+            statechart_preamble=True,
+            state_contracts=True,
+            state_action=True,
+            transition_contracts=True,
+            transition_action=True
+        )
+        assert len(export) > 0
+
+    def test_export_example_from_docs(self, example_from_docs):
+        export = export_to_plantuml(
+            example_from_docs,
+            statechart_name=True,
+            statechart_description=True,
+            statechart_preamble=True,
+            state_contracts=True,
+            state_action=True,
+            transition_contracts=True,
+            transition_action=True
+        )
+        assert len(export) > 0
+
     def test_export_based_on_filepath(self, elevator):
         filepath = 'docs/examples/elevator/elevator.plantuml'
         statechart = elevator.statechart
@@ -123,11 +151,4 @@ class TestExportToYaml:
         assert p1 == export_to_plantuml(statechart, based_on=p1)
         assert p1 == export_to_plantuml(statechart, based_on_filepath=filepath)
 
-
-class TestExportToPlantUML:
-    def test_export_example_from_tests(self, example_from_tests):
-        assert len(export_to_plantuml(example_from_tests)) > 0
-
-    def test_export_example_from_docs(self, example_from_docs):
-        assert len(export_to_plantuml(example_from_docs)) > 0
 
