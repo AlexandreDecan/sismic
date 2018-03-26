@@ -73,8 +73,7 @@ def coverage_from_trace(trace: List[MacroStep]) -> Mapping[str, Counter]:
     that counts the states that were entered, the states that were exited and the transitions that were processed.
 
     :param trace: A list of macro steps
-    :return: A dict whose keys are "entered states", "exited states" and "processed transitions" and whose
-    values are Counter object.
+    :return: A dict whose keys are "entered states", "exited states" and "processed transitions" and whose values are Counter object.
     """
     entered_states = []
     exited_states = []

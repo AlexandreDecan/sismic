@@ -1,6 +1,6 @@
 import re
 
-from typing import Mapping, List
+from typing import Dict, List, Tuple
 from ..model import (
     DeepHistoryState, FinalState, Transition, CompoundState,
     OrthogonalState, ShallowHistoryState, Statechart,
@@ -32,7 +32,13 @@ class PlantUMLExporter:
         self.transition_contracts = transition_contracts
         self.transition_action = transition_action
 
-        self._states_id = dict()  # type: Mapping[str, str]
+        self._based_on_arrows = dict()  # type: Dict[Tuple[str, str], str]
+        if self.based_on:
+            for line in self.based_on.splitlines():
+                matches = re.findall(r'(\[\*\]|[a-zA-Z0-9]+) -([^ ]*)> (\[\*\]|[a-zA-Z0-9]+)', line)
+                if matches:
+                    self._based_on_arrows[(matches[0][0], matches[0][2])] = '-{}>'.format(matches[0][1])
+
         self._output = []  # type: List[str]
         self._indent = 0
 
@@ -41,16 +47,9 @@ class PlantUMLExporter:
         if not self.based_on:
             return '-->'
         else:
-            if source is None:
-                source = '[*]'
-            if isinstance(self.statechart.state_for(target), FinalState):
-                target = '[*]'
-
-            for line in self.based_on.split('\n'):
-                matches = re.findall(r'(\[\*\]|[a-zA-Z0-9]+) -(.*)> (\[\*\]|[a-zA-Z0-9]+)', line)
-                if matches and matches[0][0] == source and matches[0][2] == target:
-                    return '-{}>'.format(matches[0][1])
-            return '-->'
+            source = '[*]' if source is None else self.state_id(source)
+            target = '[*]' if isinstance(self.statechart.state_for(target), FinalState) else self.state_id(target)
+            return self._based_on_arrows.get((source, target), '-->')
 
     def indent(self):
         self._indent += 2

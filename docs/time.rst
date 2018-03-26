@@ -213,7 +213,8 @@ Notice from previous example that using a loop makes it impossible to send event
 For convenience, sismic provides a :py:func:`sismic.helpers.run_in_background`
 function that run an interpreter in a thread, and does the job of synchronizing the clock for you.
 
-
+.. autofunction:: sismic.helpers.run_in_background
+    :noindex:
 
 .. note:: An optional argument ``callback`` can be passed to :py:func:`~sismic.interpreter.helpers.run_in_background`.
     It must be a callable that accepts the (possibly empty) list of :py:class:`~sismic.interpreter.MacroStep` returned by

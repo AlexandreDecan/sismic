@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- (Fixed) ``based_on`` for ``export_to_plantuml`` correctly takes into account states whose name contains whitespaces.
+
+
 0.26.8 (2018-03-23)
 -------------------
 
