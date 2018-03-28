@@ -92,6 +92,13 @@ class TestStatechartTraveral:
             sc.add_state(s2, parent='root')
         assert 'already exists!' in str(e.value)
 
+    def test_name_is_none(self):
+        sc = Statechart('test')
+        state = BasicState(name=None)
+        with pytest.raises(StatechartError) as e:
+            sc.add_state(state, None)
+        assert 'must have a name' in str(e.value)
+
     def test_root_already_defined(self):
         root = CompoundState('root', 'a')
         sc = Statechart('test')

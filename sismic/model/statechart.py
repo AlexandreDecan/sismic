@@ -354,6 +354,10 @@ class Statechart:
         :param parent: name of its parent, or None
         :raise StatechartError:
         """
+        # Check state has a name
+        if state.name is None:
+            raise StatechartError('State {} must have a name'.format(state))
+
         # Check name unicity
         if state.name in self._states.keys():
             raise StatechartError('State {} already exists!'.format(state))
