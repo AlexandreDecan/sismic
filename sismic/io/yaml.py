@@ -95,7 +95,7 @@ def export_to_yaml(statechart: Statechart, filepath: str=None) -> str:
     :return: A textual YAML representation
     """
     output = yaml.dump(export_to_dict(statechart, ordered=False),
-                       width=1000, default_flow_style=False, default_style='"')
+                       width=1000, default_flow_style=False)
 
     if filepath:
         with open(filepath, 'w') as f:
