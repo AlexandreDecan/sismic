@@ -130,7 +130,6 @@ class PlantUMLExporter:
             # Internal actions
             transitions = [tr for tr in self.statechart.transitions_from(name) if tr.internal and tr.action]
             if len(transitions) > 0:
-                has_actions = True
                 for transition in transitions:
                     text = []
                     if transition.event:
@@ -212,7 +211,8 @@ class PlantUMLExporter:
             for cond in transition.postconditions:
                 text.append('post: {}\n'.format(cond))
 
-        self.output('{source} {arrow} {target} : {text}'.format(
+        format = '{source} {arrow} {target} : {text}' if len(text) > 0 else '{source} {arrow} {target}'
+        self.output(format.format(
             source=self.state_id(transition.source),
             arrow=self.arrow(transition.source, transition.target),
             target=target_name,
