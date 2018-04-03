@@ -1,8 +1,9 @@
 Changelog
 =========
 
-Unreleased
-----------
+
+0.26.9 (2018-04-03)
+-------------------
 
 - (Fixed) ``based_on`` for ``export_to_plantuml`` correctly takes into account states whose name contains whitespaces.
 - (Fixed) ``export_to_plantuml`` properly exports transition with no event, no guard and no action.
