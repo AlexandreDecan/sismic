@@ -57,11 +57,6 @@ setup(
             'sismic-bdd=sismic.bdd.__main__:cli',
         ],
     },
-    # package_data and data_files can be used to populate MANIFEST.in
-    # See https://docs.python.org/3.6/distutils/settupscript.html#installing-package-data
-    package_data=[],
-    # See https://docs.python.org/3.6/distutils/settupscript.html#installing-additional-files
-    data_files=[],
-    # Files listed in MANIFEST.in (generated or manually completed) will be included upon installation
+    # Copy all files listed in MANIFEST.in to installation folder
     include_package_data=True,
 )
