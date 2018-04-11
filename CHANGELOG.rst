@@ -1,6 +1,14 @@
 Changelog
 =========
 
+1.0.0 (2018-04-11)
+------------------
+
+After more than two years of development, Sismic is stable enough to be released in version 1.0.0.
+Consequently, Sismic will adhere to semantic versioning (see `semver.org <https://semver.org/>`__), meaning that
+breaking changes will only occur in major releases, backward compatible changes in minor releases, and bug fixes in
+patches.
+
 
 0.26.9 (2018-04-03)
 -------------------
