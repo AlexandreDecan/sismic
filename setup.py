@@ -23,12 +23,13 @@ setup(
     license=sismic.__licence__,
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
 
         'Environment :: Console',
 
         'Intended Audience :: Developers',
         'Intended Audience :: Education',
+        'Intended Audience :: Information Technology',
         'Intended Audience :: Science/Research',
 
         'Topic :: Software Development :: Interpreters',
@@ -41,6 +42,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
 
     ],
     keywords='statechart state machine interpreter model uml scxml harel',
