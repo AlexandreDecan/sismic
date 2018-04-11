@@ -8,7 +8,7 @@ Sismic for Python
 .. image:: https://api.codacy.com/project/badge/grade/10d0a71b01c144859db571ddf17bb7d4
     :target: https://www.codacy.com/app/alexandre-decan/sismic
 .. image:: https://badge.fury.io/py/sismic.svg
-    :target: https://pypi.python.org/pypi/sismic
+    :target: https://pypi.org/project/sismic/
 .. image:: https://readthedocs.org/projects/sismic/badge/?version=master
     :target: https://sismic.readthedocs.io/
 

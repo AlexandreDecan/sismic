@@ -2,7 +2,7 @@
 from codecs import open
 from os import path
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 import sismic
 
@@ -46,7 +46,7 @@ setup(
 
     ],
     keywords='statechart state machine interpreter model uml scxml harel',
-    packages=['sismic'],
+    packages=find_packages(exclude=['docs', 'tests']),
     python_requires='>=3.4',
     install_requires=[
         'ruamel.yaml>=0.12.10',
