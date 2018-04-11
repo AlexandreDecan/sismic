@@ -37,13 +37,14 @@ Some experimental features are also available as `feature branches <https://gith
 Installation
 ------------
 
+Sismic requires Python >=3.4.
 Sismic can be installed using ``pip`` as usual: ``pip install sismic``.
 This will install the latest stable version.
 
 You can also install Sismic from this repository by cloning it.
 The development occurs in the *devel* branch, the latest stable distributed version is in the *master* branch.
 
-Sismic requires Python >=3.4
+Starting from release 1.0.0, Sismic adheres to a `semantic versioning <https://semver.org>`__ scheme.
 
 
 Documentation
