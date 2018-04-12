@@ -1,26 +1,24 @@
-# To use a consistent encoding
-from codecs import open
 from os import path
-
+from codecs import open
 from setuptools import setup, find_packages
 
 import sismic
 
-here = path.abspath(path.dirname(__file__))
-
 # Get the long description from the README file
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+with open(path.join(path.abspath(path.dirname(__file__)), 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='sismic',
+    name=sismic.__package__,
     version=sismic.__version__,
+    license=sismic.__licence__,
+
+    author=sismic.__author__,
+    url=sismic.__url__,
+
     description=sismic.__description__,
     long_description=long_description,
-    url=sismic.__url__,
-    author=sismic.__author__,
-    author_email=sismic.__email__,
-    license=sismic.__licence__,
+
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -42,10 +40,9 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-
     ],
     keywords='statechart state machine interpreter model uml scxml harel',
+
     packages=find_packages(exclude=['docs', 'tests']),
     python_requires='>=3.4',
     install_requires=[
@@ -54,11 +51,13 @@ setup(
         'behave>=1.2.6',
         'typing>=3.5.1'
     ],
+
     entry_points={
         'console_scripts': [
             'sismic-bdd=sismic.bdd.__main__:cli',
         ],
     },
-    # Copy all files listed in MANIFEST.in to installation folder
+
     include_package_data=True,
+    zip_safe=True,
 )

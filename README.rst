@@ -1,10 +1,10 @@
 Sismic for Python
 =================
 
-.. image:: https://travis-ci.org/AlexandreDecan/sismic.svg?branch=devel
+.. image:: https://travis-ci.org/AlexandreDecan/sismic.svg?branch=master
     :target: https://travis-ci.org/AlexandreDecan/sismic
-.. image:: https://coveralls.io/repos/AlexandreDecan/sismic/badge.svg?branch=devel&service=github
-    :target: https://coveralls.io/github/AlexandreDecan/sismic?branch=devel
+.. image:: https://coveralls.io/repos/AlexandreDecan/sismic/badge.svg?branch=master&service=github
+    :target: https://coveralls.io/github/AlexandreDecan/sismic?branch=master
 .. image:: https://api.codacy.com/project/badge/grade/10d0a71b01c144859db571ddf17bb7d4
     :target: https://www.codacy.com/app/alexandre-decan/sismic
 .. image:: https://badge.fury.io/py/sismic.svg
@@ -42,7 +42,6 @@ Sismic can be installed using ``pip`` as usual: ``pip install sismic``.
 This will install the latest stable version.
 
 You can also install Sismic from this repository by cloning it.
-The development occurs in the *devel* branch, the latest stable distributed version is in the *master* branch.
 
 Starting from release 1.0.0, Sismic adheres to a `semantic versioning <https://semver.org>`__ scheme.
 
@@ -52,16 +51,16 @@ Documentation
 
 The documentation for the latest distributed version is available on `sismic.readthedocs.io <http://sismic.readthedocs.io/>`_.
 
-Many examples are available in `docs/examples <https://github.com/AlexandreDecan/sismic/tree/devel/docs/examples>`_.
+Many examples are available in `docs/examples <https://github.com/AlexandreDecan/sismic/tree/master/docs/examples>`_.
 
-The documentation can also be directly built from the `docs <https://github.com/AlexandreDecan/sismic/tree/devel/docs>`_ directory using Sphinx.
+The documentation can also be directly built from the `docs <https://github.com/AlexandreDecan/sismic/tree/master/docs>`_ directory using Sphinx.
 
 
 Changelog
 ---------
 
 See documentation's `changelog <http://sismic.readthedocs.io/en/master/changelog.html>`_.
-Unreleased changes are visible `here <https://github.com/AlexandreDecan/sismic/tree/devel/CHANGELOG.rst>`_.
+Unreleased changes are visible `here <https://github.com/AlexandreDecan/sismic/tree/master/CHANGELOG.rst>`_.
 
 Credits
 -------
