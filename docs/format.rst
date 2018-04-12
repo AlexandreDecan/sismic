@@ -35,7 +35,7 @@ If you are not familiar with YAML, have a look at `YAML official documentation <
 
 
 .. seealso:: Experimental import/export support for AMOLA specifications of statecharts is available in
-    a dedicated feature branch available, as explained `here <https://github.com/AlexandreDecan/sismic/issues/63>`__.
+    a dedicated feature branch as explained `here <https://github.com/AlexandreDecan/sismic/issues/63>`__.
     AMOLA is notably used in `ASEME IDE <http://aseme.tuc.gr/>`__, which can be used to graphically create, edit
     and visualize statecharts.
 
@@ -249,7 +249,7 @@ Other examples
 ~~~~~~~~~~~~~~
 
 Some other examples can be found in the Git repository of the project, in
-`docs/examples <https://github.com/AlexandreDecan/sismic/tree/devel/docs/examples>`__.
+`docs/examples <https://github.com/AlexandreDecan/sismic/tree/master/docs/examples>`__.
 
 
 Importing and validating statecharts
