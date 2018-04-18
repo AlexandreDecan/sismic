@@ -2,6 +2,7 @@ import pytest
 
 import os
 
+from sismic.exceptions import StatechartError
 from sismic.interpreter import Event
 from sismic.bdd import steps, execute_bdd
 from sismic.bdd.__main__ import cli
@@ -71,6 +72,14 @@ class TestSteps:
         context.interpreter = mocker.MagicMock(name='interpreter')
         context.interpreter.queue = mocker.MagicMock(name='queue')
         context.interpreter.context = {'x': 1}
+
+        def state_for(name):
+            if name == 'unknown state':
+                raise StatechartError()
+            else:
+                return mocker.DEFAULT
+
+        context.interpreter.statechart.state_for = mocker.MagicMock(side_effect=state_for)
         context.execute_steps = mocker.MagicMock(name='execute_steps')
         context.monitored_trace = []
 
@@ -121,6 +130,8 @@ class TestSteps:
         steps.state_is_entered(context, 'c')
         with pytest.raises(AssertionError):
             steps.state_is_entered(context, 'state')
+        with pytest.raises(StatechartError):
+            steps.state_is_entered(context, 'unknown state')
 
     def test_state_is_not_entered(self, context, trace):
         context.monitored_trace = []
@@ -130,6 +141,8 @@ class TestSteps:
         with pytest.raises(AssertionError):
             steps.state_is_not_entered(context, 'a')
         steps.state_is_not_entered(context, 'state')
+        with pytest.raises(StatechartError):
+            steps.state_is_entered(context, 'unknown state')
 
     def test_state_is_exited(self, context, trace):
         context.monitored_trace = []
@@ -142,6 +155,8 @@ class TestSteps:
         steps.state_is_exited(context, 'z')
         with pytest.raises(AssertionError):
             steps.state_is_entered(context, 'state')
+        with pytest.raises(StatechartError):
+            steps.state_is_entered(context, 'unknown state')
 
     def test_state_is_not_exited(self, context, trace):
         context.monitored_trace = []
@@ -151,6 +166,8 @@ class TestSteps:
         with pytest.raises(AssertionError):
             steps.state_is_not_exited(context, 'x')
         steps.state_is_not_exited(context, 'state')
+        with pytest.raises(StatechartError):
+            steps.state_is_entered(context, 'unknown state')
 
     def test_state_is_active(self, context):
         context.interpreter.configuration = []
@@ -163,6 +180,8 @@ class TestSteps:
         steps.state_is_active(context, 'c')
         with pytest.raises(AssertionError):
             steps.state_is_active(context, 'state')
+        with pytest.raises(StatechartError):
+            steps.state_is_entered(context, 'unknown state')
 
     def test_state_is_not_active(self, context):
         context.interpreter.configuration = []
@@ -174,6 +193,8 @@ class TestSteps:
             steps.state_is_not_active(context, 'a')
 
         steps.state_is_not_active(context, 'state')
+        with pytest.raises(StatechartError):
+            steps.state_is_entered(context, 'unknown state')
 
     def test_event_is_fired(self, context, trace):
         context.monitored_trace = []

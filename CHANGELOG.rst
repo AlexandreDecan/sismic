@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.0.1 (2018-04-18)
+------------------
+
+- (Fixed) BDD steps that involve a state raises a ``StatechartError`` if state does not exist.
+  This prevents *state X is active* (and its variants) to fail, e.g., because *X* is misspelled.
+
+
 1.0.0 (2018-04-11)
 ------------------
 

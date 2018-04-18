@@ -63,6 +63,9 @@ def wait(context, seconds):
 
 @then('state {name} is entered')
 def state_is_entered(context, name):
+    # Check that state exists
+    context.interpreter.statechart.state_for(name)
+
     for macrostep in context.monitored_trace:
         if name in macrostep.entered_states:
             return
@@ -71,6 +74,9 @@ def state_is_entered(context, name):
 
 @then('state {name} is not entered')
 def state_is_not_entered(context, name):
+    # Check that state exists
+    context.interpreter.statechart.state_for(name)
+
     for macrostep in context.monitored_trace:
         if name in macrostep.entered_states:
             assert False, 'State {} is entered'.format(name)
@@ -78,6 +84,9 @@ def state_is_not_entered(context, name):
 
 @then('state {name} is exited')
 def state_is_exited(context, name):
+    # Check that state exists
+    context.interpreter.statechart.state_for(name)
+
     for macrostep in context.monitored_trace:
         if name in macrostep.exited_states:
             return
@@ -86,6 +95,9 @@ def state_is_exited(context, name):
 
 @then('state {name} is not exited')
 def state_is_not_exited(context, name):
+    # Check that state exists
+    context.interpreter.statechart.state_for(name)
+
     for macrostep in context.monitored_trace:
         if name in macrostep.exited_states:
             assert False, 'State {} is exited'.format(name)
@@ -93,11 +105,17 @@ def state_is_not_exited(context, name):
 
 @then('state {name} is active')
 def state_is_active(context, name):
+    # Check that state exists
+    context.interpreter.statechart.state_for(name)
+
     assert name in context.interpreter.configuration, 'State {} is not active'.format(name)
 
 
 @then('state {name} is not active')
 def state_is_not_active(context, name):
+    # Check that state exists
+    context.interpreter.statechart.state_for(name)
+
     assert name not in context.interpreter.configuration, 'State {} is active'.format(name)
 
 
