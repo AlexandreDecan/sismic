@@ -29,7 +29,7 @@ there is hardly any support for it at the modeling level.
 Sismic aims to change this, by integrating support for Design by Contract for statecharts.
 The basic idea is that contracts can be defined on statechart componnents (states or transitions),
 by specifying preconditions, postconditions, and invariants on them.
-At runtime, Sismic will verify the conditions specified by the constracts.
+At runtime, Sismic will verify the conditions specified by the contracts.
 If a condition is not satisfied, a :py:exc:`~sismic.exceptions.ContractError` will be raised.
 More specifically, one of the following 4 error types wil be raised: :py:exc:`~sismic.exceptions.PreconditionError`,
 :py:exc:`~sismic.exceptions.PostconditionError`, or :py:exc:`~sismic.exceptions.InvariantError`.
