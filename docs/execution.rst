@@ -31,9 +31,9 @@ appear in the SCXML file) as the order in which (non-parallel) transitions shoul
 
 From our point of view, this solution is not satisfactory.
 The execution should not depend on the (often arbitrary) order in which items happen to be declared in some document,
-in particular when there many be many different ways to construct or import a statechart.
+in particular when there may be many different ways to construct or to import a statechart.
 
-Other statechart tools do not even define any order on the transitions in such situations:
+Another statechart tool does not even define any order on the transitions in such situations:
 
     "Rhapsody detects such cases of nondeterminism during code generation
     and **does not allow them**. The motivation for this is that the generated code
@@ -54,7 +54,7 @@ According to the Rhapsody implementation:
     way**."
     --- `The Rhapsody Semantics of Statecharts <http://research.microsoft.com/pubs/148785/charts04.pdf>`__
 
-SCXML again circumvents this problem by using the *document order*.
+SCXML circumvents this problem by relying again on the *document order*.
 
     "enabledTransitions will contain multiple transitions only if a parallel state is active.
     In that case, we may have one transition selected for each of its children. [...]
