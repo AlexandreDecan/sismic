@@ -9,7 +9,6 @@ Several other programming languages also provide support for DbC.
 The main idea is that the specification of a software component (e.g., a method, function or class) is
 extended with a so-called *contract* that needs to be respected when using this component.
 Typically, the contract is expressed in terms of preconditions, postconditions and invariants.
-We have additionally added so-called sequential conditions on top of this.
 
     Design by contract (DbC), also known as contract programming, programming by contract and
     design-by-contract programming, is an approach for designing software. It prescribes that
@@ -33,8 +32,7 @@ by specifying preconditions, postconditions, and invariants on them.
 At runtime, Sismic will verify the conditions specified by the constracts.
 If a condition is not satisfied, a :py:exc:`~sismic.exceptions.ContractError` will be raised.
 More specifically, one of the following 4 error types wil be raised: :py:exc:`~sismic.exceptions.PreconditionError`,
-:py:exc:`~sismic.exceptions.PostconditionError`, :py:exc:`~sismic.exceptions.InvariantError`,
-or :py:exc:`~sismic.exceptions.SequentialConditionError`.
+:py:exc:`~sismic.exceptions.PostconditionError`, or :py:exc:`~sismic.exceptions.InvariantError`.
 
 Contracts can be specified for any state contained in the statechart, and for any transition contained in the statechart.
 A state contract can contain preconditions, postconditions, and/or invariants.
