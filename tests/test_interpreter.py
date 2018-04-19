@@ -222,7 +222,8 @@ class TestInterpreterWithDeephistory:
         assert step.entered_states.index('process_2') < step.entered_states.index('s22')
 
         interpreter.queue(Event('next1')).queue(Event('next2')).execute()
-        assert interpreter.final
+        assert 's13' in interpreter.configuration and 's23' in interpreter.configuration
+        assert not interpreter.final
 
     def test_exited_order(self, interpreter):
         interpreter.queue(
@@ -239,7 +240,8 @@ class TestInterpreterWithDeephistory:
         assert step.exited_states == ['pause', 'active.H*']
 
         interpreter.queue(Event('next1'), Event('next2')).execute()
-        assert interpreter.final
+        assert 's13' in interpreter.configuration and 's23' in interpreter.configuration
+        assert not interpreter.final
 
 
 class TestInterpreterWithInfinite:

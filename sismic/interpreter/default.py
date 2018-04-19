@@ -476,7 +476,7 @@ class Interpreter:
                 entered_states.insert(0, state)
 
             returned_steps.append(MicroStep(event=event, transition=transition,
-                                                  entered_states=entered_states, exited_states=exited_states))
+                                            entered_states=entered_states, exited_states=exited_states))
 
         return returned_steps
 
@@ -488,29 +488,23 @@ class Interpreter:
          - Enter the initial state of a compound state with no active child
          - Enter the memory of a history state
          - Enter the children of an orthogonal state with no active child
-         - Exit active states if all "deepest" (leaves) states are final
+         - Empty active configuration if root's child is a final state
 
         :param names: List of states to consider (usually, the active configuration)
         :return: A *MicroStep* instance or *None* if this statechart can not be more stabilized
         """
         # Check if we are in a set of "stable" states
         leaves_names = self._statechart.leaf_for(names)
-        leaves = sorted(map(self._statechart.state_for, leaves_names),
+        leaves = sorted([self._statechart.state_for(name) for name in leaves_names],
                         key=lambda s: (-self._statechart.depth_for(s.name), s.name))
 
-        # Final states?
-        if len(leaves) > 0 and all([isinstance(s, FinalState) for s in leaves]):
-            # Leave all states
-            exited_states = sorted(self._configuration, key=lambda s: (-self._statechart.depth_for(s), s))
-            return MicroStep(exited_states=exited_states)
-
-        # Otherwise, develop history, compound and orthogonal states.
         for leaf in leaves:
-            name = cast(StateMixin, leaf).name
-            if isinstance(leaf, HistoryStateMixin):
-                states_to_enter = self._memory.get(name, [leaf.memory])
+            if isinstance(leaf, FinalState) and self._statechart.parent_for(leaf.name) == self._statechart.root:
+                return MicroStep(exited_states=[leaf.name, self._statechart.root])
+            if isinstance(leaf, (ShallowHistoryState, DeepHistoryState)):
+                states_to_enter = self._memory.get(leaf.name, [leaf.memory])
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_for(x), x))
-                return MicroStep(entered_states=states_to_enter, exited_states=[name])
+                return MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, OrthogonalState) and self._statechart.children_for(leaf.name):
                 return MicroStep(entered_states=sorted(self._statechart.children_for(leaf.name)))
             elif isinstance(leaf, CompoundState) and leaf.initial:
@@ -604,8 +598,8 @@ class Interpreter:
             self._notify_properties('event sent', event=event)
 
         return MicroStep(event=step.event, transition=step.transition,
-                               entered_states=step.entered_states, exited_states=step.exited_states,
-                               sent_events=sent_events)
+                         entered_states=step.entered_states, exited_states=step.exited_states,
+                         sent_events=sent_events)
 
     def _stabilize(self) -> List[MicroStep]:
         """

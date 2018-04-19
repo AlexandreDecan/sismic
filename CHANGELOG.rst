@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- (Fixed) Final states remain in the active configuration unless they are all children of the root state. In this
+  case, statechart execution is stopped. Previously, if all leaf states of the active configuration were final states,
+  the execution stopped even if these final states were nested in an orthogonal or compound state. The corrected
+  behavior strictly adheres to SCXML 1.0 semantics.
+
+
 1.0.1 (2018-04-18)
 ------------------
 
