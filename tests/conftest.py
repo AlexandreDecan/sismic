@@ -54,6 +54,11 @@ def deep_history_statechart():
 
 
 @pytest.fixture
+def final_statechart():
+    return import_from_yaml(filepath='tests/yaml/final.yaml')
+
+
+@pytest.fixture
 def infinite_statechart():
     return import_from_yaml(filepath='tests/yaml/infinite.yaml')
 
@@ -88,7 +93,7 @@ def internal_statechart():
     return import_from_yaml(filepath='tests/yaml/internal.yaml')
 
 
-@pytest.fixture(params=['actions', 'composite', 'deep_history', 'infinite', 'internal',
+@pytest.fixture(params=['actions', 'composite', 'deep_history', 'final', 'infinite', 'internal',
                         'nested_parallel', 'nondeterministic', 'parallel', 'simple', 'timer'])
 def example_from_tests(request):
     return import_from_yaml(filepath=os.path.join('tests', 'yaml', request.param + '.yaml'))

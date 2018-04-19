@@ -114,6 +114,49 @@ class TestInterpreterWithInternal:
         assert interpreter.final
 
 
+class TestInterpreterWithFinal:
+    @pytest.fixture()
+    def interpreter(self, final_statechart):
+        return Interpreter(final_statechart, evaluator_klass=DummyEvaluator)
+
+    def test_not_final(self, interpreter):
+        assert 'root' not in interpreter.configuration
+        assert not interpreter.final
+
+    def test_root_when_not_final(self, interpreter):
+        interpreter.execute()
+        assert interpreter.configuration == ['root', 'a']
+        assert not interpreter.final
+
+    def test_when_root_child_is_final(self, interpreter):
+        interpreter.queue('root-final').execute()
+        assert interpreter.configuration == []
+        assert interpreter.final
+
+    def test_when_root_child_is_not_final(self, interpreter):
+        interpreter.queue('b').execute()
+        assert interpreter.configuration == ['root', 'b']
+        assert not interpreter.final
+
+    def test_when_nested_child_is_final(self, interpreter):
+        interpreter.queue('c').execute()
+        assert interpreter.configuration == ['root', 'c', 'nested-final']
+        assert not interpreter.final
+
+    def test_with_parallel_states(self, interpreter):
+        interpreter.queue('parallel').execute()
+        assert interpreter.configuration == ['root', 'parallel', 'p1', 'p2', 'p1a', 'p2a']
+        assert not interpreter.final
+
+        interpreter.queue('p1-final').execute()
+        assert interpreter.configuration == ['root', 'parallel', 'p1', 'p2', 'p1-final', 'p2a']
+        assert not interpreter.final
+
+        interpreter.queue('p2-final').execute()
+        assert interpreter.configuration == ['root', 'parallel', 'p1', 'p2', 'p1-final', 'p2-final']
+        assert not interpreter.final
+
+
 class TestInterpreterWithNonDeterministic:
     @pytest.fixture()
     def interpreter(self, nondeterministic_statechart):

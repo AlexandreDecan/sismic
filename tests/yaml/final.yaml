@@ -1,0 +1,44 @@
+statechart:
+  name: final
+  root state:
+    name: root
+    initial: a
+    states:
+      - name: a
+        transitions:
+          - target: root-final
+            event: root-final
+          - target: b
+            event: b
+          - target: c
+            event: c
+          - target: parallel
+            event: parallel
+      - name: b
+      - name: root-final
+        type: final
+      - name: c
+        initial: nested-final
+        states:
+          - name: nested-final
+            type: final
+      - name: parallel
+        parallel states:
+          - name: p1
+            initial: p1a
+            states:
+              - name: p1a
+                transitions:
+                  - event: p1-final
+                    target: p1-final
+              - name: p1-final
+                type: final
+          - name: p2
+            initial: p2a
+            states:
+              - name: p2a
+                transitions:
+                  - event: p2-final
+                    target: p2-final
+              - name: p2-final
+                type: final
