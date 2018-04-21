@@ -12,3 +12,4 @@ Contributors
 * Tom Mens
 * Mathieu Goeminne
 * Ali Parsai
+* Nikos Spanoudakis

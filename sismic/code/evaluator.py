@@ -36,7 +36,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
-    def on_step_starts(self, event: Event = None) -> None:
+    def on_step_starts(self, event: Optional[Event]=None) -> None:
         """
         Called each time the interpreter starts a macro step.
 
@@ -80,7 +80,7 @@ class Evaluator(metaclass=abc.ABCMeta):
             if len(events) > 0:
                 raise CodeEvaluationError('Events cannot be raised by statechart preamble')
 
-    def evaluate_guard(self, transition: Transition, event: Event) -> Optional[bool]:
+    def evaluate_guard(self, transition: Transition, event: Optional[Event]=None) -> Optional[bool]:
         """
         Evaluate the guard for given transition.
 
@@ -92,7 +92,7 @@ class Evaluator(metaclass=abc.ABCMeta):
             return self._evaluate_code(transition.guard, additional_context={'event': event})
         return None
 
-    def execute_action(self, transition: Transition, event: Event) -> List[Event]:
+    def execute_action(self, transition: Transition, event: Optional[Event]=None) -> List[Event]:
         """
         Execute the action for given transition.
         This method is called for every transition that is processed, even those with no *action*.
@@ -132,7 +132,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         else:
             return []
 
-    def evaluate_preconditions(self, obj, event: Event = None) -> Iterable[str]:
+    def evaluate_preconditions(self, obj, event: Optional[Event]=None) -> Iterable[str]:
         """
         Evaluate the preconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -146,7 +146,7 @@ class Evaluator(metaclass=abc.ABCMeta):
             lambda c: not self._evaluate_code(c, additional_context=event_d), getattr(obj, 'preconditions', [])
         )
 
-    def evaluate_invariants(self, obj, event: Event = None) -> Iterable[str]:
+    def evaluate_invariants(self, obj, event: Optional[Event]=None) -> Iterable[str]:
         """
         Evaluate the invariants for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -160,7 +160,7 @@ class Evaluator(metaclass=abc.ABCMeta):
             lambda c: not self._evaluate_code(c, additional_context=event_d), getattr(obj, 'invariants', [])
         )
 
-    def evaluate_postconditions(self, obj, event: Event = None) -> Iterable[str]:
+    def evaluate_postconditions(self, obj, event: Optional[Event]=None) -> Iterable[str]:
         """
         Evaluate the postconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.

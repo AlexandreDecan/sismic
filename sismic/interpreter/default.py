@@ -1,6 +1,7 @@
 from collections import deque
 from itertools import combinations
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Union, cast
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Union, cast, Tuple
+
 try:
     # Because Deque was not available in early versions of typing...
     from typing import Deque
@@ -10,8 +11,7 @@ except ImportError:
 from ..model import (
     MacroStep, MicroStep, Event, InternalEvent, MetaEvent,
     Statechart, Transition,
-    StateMixin, HistoryStateMixin,
-    FinalState, OrthogonalState, CompoundState, DeepHistoryState, ShallowHistoryState,
+    StateMixin, FinalState, OrthogonalState, CompoundState, DeepHistoryState, ShallowHistoryState,
 )
 
 from ..code import Evaluator, PythonEvaluator
@@ -214,34 +214,28 @@ class Interpreter:
 
     def execute_once(self) -> Optional[MacroStep]:
         """
-        Processes a transition based on the oldest queued event (or no event if an eventless transition
-        can be processed), and stabilizes the interpreter in a stable situation (ie. processes initial states,
-        history states, etc.). When multiple transitions are selected, they are atomically processed:
+        Select transitions that can be fired based on available queued events, process them and stabilize
+        the interpreter. When multiple transitions are selected, they are atomically processed:
         states are exited, transition is processed, states are entered, statechart is stabilized and only
         after that, the next transition is processed.
 
         :return: a macro step or *None* if nothing happened
         """
-        event = None  # type: Optional[Event]
-
         # Initialization
         if not self._initialized:
             computed_steps = [MicroStep(entered_states=[self._statechart.root])]
             self._initialized = True
+            event = None  # type: Optional[Event]
         else:
-            # Look for eventless transitions first
-            transitions = self._select_transitions(event=None)
-            if len(transitions) == 0:
-                # Look for transitions with event
-                event = self._select_event()
-                if event is None:
-                    # No event implies no step!
-                    # However, we need to check properties
-                    self._check_properties(None)
-                    return None
-                transitions = self._select_transitions(event=event)
+            event, transitions = self._select_transitions()
 
-            # No transition? Empty step!
+            # If there is no event and no transition, return "no step"
+            if event is None and len(transitions) == 0:
+                # However, check properties
+                self._check_properties(None)
+                return None
+
+            # No transition but event? Empty step!
             if len(transitions) == 0:
                 computed_steps = [MicroStep(event=event)]
             else:
@@ -342,22 +336,33 @@ class Interpreter:
         else:
             return None
 
-    def _select_transitions(self, event: Event = None) -> List[Transition]:
+    def _select_transitions(self) -> Tuple[Optional[Event], List[Transition]]:
         """
-        Return a list of transitions that can be triggered according to the given event, or eventless
-        transition if *event* is None.
+        Select the transitions that could be triggered and the corresponding (optional) event.
+        If automatic transitions (ie. ones without event) are found, return them and do not look for
+        transitions with event. Otherwise, consume next event and return a possibly empty list of
+        transitions that could be fired with this event.
 
-        :param event: event to consider
-        :return: a list of *Transition* instances
+        :return: a couple (event instance, list of *Transition* instances)
         """
         transitions = []
 
-        # Retrieve the firable transitions for all active state
+        # Select transitions with no event first
+        for transition in self._statechart.transitions:
+            if (transition.event is None and transition.source in self._configuration and
+                    (transition.guard is None or self._evaluator.evaluate_guard(transition))):
+                transitions.append(transition)
+
+        if len(transitions) > 0:
+            return None, transitions
+
+        # Take and consume next event
+        event = self._select_event()
         for transition in self._statechart.transitions:
             if (transition.event == getattr(event, 'name', None) and transition.source in self._configuration and
                     (transition.guard is None or self._evaluator.evaluate_guard(transition, event))):
                 transitions.append(transition)
-        return transitions
+        return event, transitions
 
     def _filter_transitions(self, transitions: List[Transition]) -> List[Transition]:
         """

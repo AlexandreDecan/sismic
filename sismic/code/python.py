@@ -1,10 +1,8 @@
 import collections
 import copy
 from functools import partial
-from itertools import chain
 from types import CodeType
-from typing import (Any, Callable, Dict, Iterator, List, Mapping,
-                    MutableMapping, cast)
+from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
 
 from . import Evaluator
 from ..exceptions import CodeEvaluationError
@@ -98,7 +96,7 @@ class PythonEvaluator(Evaluator):
     def __init__(self, interpreter=None, *, initial_context: Mapping[str, Any]=None) -> None:
         super().__init__(interpreter, initial_context=initial_context)
 
-        self._context = {} if initial_context is None else initial_context  # type: Dict[str, Any]
+        self._context = {} if initial_context is None else initial_context  # type: Mapping[str, Any]
         self._interpreter = interpreter
 
         # Memory and entry time
@@ -120,7 +118,7 @@ class PythonEvaluator(Evaluator):
     def context(self) -> Mapping:
         return self._context
 
-    def on_step_starts(self, event: Event = None) -> None:
+    def on_step_starts(self, event: Optional[Event]=None) -> None:
         """
         Called each time the interpreter starts a macro step.
 
@@ -172,7 +170,7 @@ class PythonEvaluator(Evaluator):
         """
         return self._interpreter.time - seconds >= self._idle_time[name]
 
-    def _evaluate_code(self, code: str, *, additional_context: Mapping = None) -> bool:
+    def _evaluate_code(self, code: str, *, additional_context: Mapping=None) -> bool:
         """
         Evaluate given code using Python.
 
@@ -198,7 +196,7 @@ class PythonEvaluator(Evaluator):
         except Exception as e:
             raise CodeEvaluationError('The above exception occurred while evaluating:\n{}'.format(code)) from e
 
-    def _execute_code(self, code: str, *, additional_context: Mapping = None) -> List[Event]:
+    def _execute_code(self, code: str, *, additional_context: Mapping=None) -> List[Event]:
         """
         Execute given code using Python.
 
@@ -241,7 +239,7 @@ class PythonEvaluator(Evaluator):
             if len(events) > 0:
                 raise CodeEvaluationError('Events cannot be raised by statechart preamble')
 
-    def evaluate_guard(self, transition: Transition, event: Event) -> bool:
+    def evaluate_guard(self, transition: Transition, event: Optional[Event]=None) -> bool:
         """
         Evaluate the guard for given transition.
 
@@ -256,7 +254,7 @@ class PythonEvaluator(Evaluator):
         }
         return self._evaluate_code(getattr(transition, 'guard', None), additional_context=additional_context)
 
-    def execute_action(self, transition: Transition, event: Event) -> List[Event]:
+    def execute_action(self, transition: Transition, event: Optional[Event]=None) -> List[Event]:
         """
         Execute the action for given transition.
         This method is called for every transition that is processed, even those with no *action*.
@@ -292,7 +290,7 @@ class PythonEvaluator(Evaluator):
         """
         return self._execute_code(getattr(state, 'on_exit', None))
 
-    def evaluate_preconditions(self, obj, event: Event = None) -> Iterator[str]:
+    def evaluate_preconditions(self, obj, event: Optional[Event]=None) -> Iterator[str]:
         """
         Evaluate the preconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -319,7 +317,7 @@ class PythonEvaluator(Evaluator):
             getattr(obj, 'preconditions', [])
         )
 
-    def evaluate_invariants(self, obj, event: Event = None) -> Iterator[str]:
+    def evaluate_invariants(self, obj, event: Optional[Event]=None) -> Iterator[str]:
         """
         Evaluate the invariants for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -344,7 +342,7 @@ class PythonEvaluator(Evaluator):
             getattr(obj, 'invariants', [])
         )
 
-    def evaluate_postconditions(self, obj, event: Event = None) -> Iterator[str]:
+    def evaluate_postconditions(self, obj, event: Optional[Event]=None) -> Iterator[str]:
         """
         Evaluate the postconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
