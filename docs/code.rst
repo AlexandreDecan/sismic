@@ -122,3 +122,29 @@ These entries are covered in the docstring of a :py:class:`~sismic.code.PythonEv
 
 
 
+Anatomy of a code evaluator
+---------------------------
+
+An :py:class:`~sismic.code.Evaluator` subclass must at lest implement the following methods and attributes:
+
+.. automethod:: sismic.code.Evaluator._evaluate_code
+    :noindex:
+
+.. automethod:: sismic.code.Evaluator._execute_code
+    :noindex:
+
+.. autoattribute:: sismic.code.Evaluator.context
+    :noindex:
+
+
+.. note::
+    None of those two methods are actually called by the interpreter during the execution of a statechart.
+    These methods are *fallback methods* that are used by other methods that are implicitly called depending on what is
+    currently being processed in the statechart. The documentation of :py:class:`~sismic.code.Evaluator` covers this:
+
+.. autoclass:: sismic.code.Evaluator
+    :members:
+    :exclude-members: _evaluate_code, _execute_code, context
+    :member-order: bysource
+    :noindex:
+

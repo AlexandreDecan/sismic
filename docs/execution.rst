@@ -298,3 +298,32 @@ that can be used to see what happens. In particular:
    (see :ref:`code_evaluation`).
  - It is possible to bind a callable that will be called each time an event is sent by the statechart using
    the :py:meth:`~sismic.interpreter.Interpreter.bind` method of an interpreter (see :ref:`communication`).
+
+
+
+Anatomy of the interpreter
+--------------------------
+
+An :py:class:`~sismic.interpreter.Interpreter` makes use of several *private* methods for its initialization and computations.
+These methods computes the transition(s) that should be processed, the resulting steps, etc.
+These methods can be overridden or combined to define variants of statechart semantics.
+
+.. automethod:: sismic.interpreter.Interpreter._select_event
+
+.. automethod:: sismic.interpreter.Interpreter._select_transitions
+
+.. automethod:: sismic.interpreter.Interpreter._filter_transitions
+
+.. automethod:: sismic.interpreter.Interpreter._sort_transitions
+
+.. automethod:: sismic.interpreter.Interpreter._create_steps
+
+.. automethod:: sismic.interpreter.Interpreter._create_stabilization_step
+
+.. automethod:: sismic.interpreter.Interpreter._apply_step
+
+
+These methods are all used (even indirectly) by :py:class:`~sismic.interpreter.Interpreter.execute_once`.
+
+.. seealso:: Consider looking at the source of :py:class:`~sismic.interpreter.Interpreter.execute_once` to understand
+    how these methods are related and organized.
