@@ -73,6 +73,12 @@ arise ("*the designer does not rely on any particular order for event instances 
 to the relevant orthogonal regions*", UML specification). In practice, however, it is often desirable to allow such situations.
 
 
+.. seealso::
+    Other semantics can be quite easily implemented. For example, the extension *sismic-semantics* already
+    provides support for outer-first/source-state and eventless transitions first.
+    More information on :ref:`extensions`.
+
+
 Using *Interpreter*
 -------------------
 

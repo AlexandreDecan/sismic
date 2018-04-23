@@ -82,7 +82,7 @@ Sismic statecharts provides full support for the majority of the UML 2 statechar
     time
     integration
     communication
-    semantics
+    extensions
 
 .. toctree::
     :caption: Misc
