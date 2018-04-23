@@ -15,16 +15,16 @@ sismic-amola
 This extension provides support to import and export statechart written using AMOLA. This allows statecharts to be
 created, edited and displayed with the `ASEME IDE <http://aseme.tuc.gr/>`__.
 
-The extension and its documentation can be found `here <https://github.com/AlexandreDecan/sismic-extensions/sismic-amola>`__.
+The extension and its documentation can be found `here <https://github.com/AlexandreDecan/sismic-extensions/sismic_amola>`__.
 
 
 sismic-semantics
 ================
 
 This extension provides two variations around the default interpreter: one supporting outer-first/source-state semantics,
-and a second giving priority to automatic (eventless) transitions.
+and a second giving priority to transitions with event (instead of eventless transitions).
 
-The extension and its documentation can be found `here <https://github.com/AlexandreDecan/sismic-extensions/sismic-semantics>`__.
+The extension and its documentation can be found `here <https://github.com/AlexandreDecan/sismic-extensions/sismic_semantics>`__.
 
 
 

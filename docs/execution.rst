@@ -75,7 +75,7 @@ to the relevant orthogonal regions*", UML specification). In practice, however, 
 
 .. seealso::
     Other semantics can be quite easily implemented. For example, the extension *sismic-semantics* already
-    provides support for outer-first/source-state and eventless transitions first.
+    provides support for outer-first/source-state semantics and priority to transitions with event.
     More information on :ref:`extensions`.
 
 

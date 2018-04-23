@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.2 (Unreleased)
+1.1.0 (2018-04-23)
 ------------------
 
 - (Fixed) Final states remain in the active configuration unless they are all children of the root state. In this
@@ -9,6 +9,10 @@ Changelog
   the execution stopped even if these final states were nested in an orthogonal or compound state. The corrected
   behavior strictly adheres to SCXML 1.0 semantics. This could be a backward incompatible change if you explicitly
   relied on the previously wrong behaviour.
+- (Added) `Interpreter._select_event` accepts an additional parameter `consume` (default to True) that can be used
+  to select an event without consuming it.
+- (Added) Documentation for extensions, and two (not included in Sismic!) extensions providing import/export
+  with AMOLA, and new semantics for the interpreter.
 
 
 1.0.1 (2018-04-18)

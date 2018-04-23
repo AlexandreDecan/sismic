@@ -321,18 +321,25 @@ class Interpreter:
             if property_statechart.final:
                 raise PropertyStatechartError(property_statechart, self.configuration, macro_step, self.context)
 
-    def _select_event(self) -> Optional[Event]:
+    def _select_event(self, consume=True) -> Optional[Event]:
         """
         Return (and consume!) the next available event if any.
         This method prioritizes internal events over external ones.
 
+        :param consume: Set to False to *not* consume the event.
         :return: An instance of Event or None if no event is available
         """
         # Internal events are processed first
         if len(self._internal_events) > 0:
-            return self._internal_events.popleft()
+            if consume:
+                return self._internal_events.popleft()
+            else:
+                return self._internal_events[0]
         elif len(self._external_events) > 0:
-            return self._external_events.popleft()
+            if consume:
+                return self._external_events.popleft()
+            else:
+                return self._external_events[0]
         else:
             return None
 
@@ -358,6 +365,9 @@ class Interpreter:
 
         # Take and consume next event
         event = self._select_event()
+        if event is None:
+            return None, []
+
         for transition in self._statechart.transitions:
             if (transition.event == getattr(event, 'name', None) and transition.source in self._configuration and
                     (transition.guard is None or self._evaluator.evaluate_guard(transition, event))):
