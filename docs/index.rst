@@ -93,14 +93,28 @@ Sismic statecharts provides full support for the majority of the UML 2 statechar
     api
 
 
-Source code
------------
+Credits
+-------
+
+The Sismic library for Python
+is mainly developed by Alexandre Decan at the `University of Mons <http://www.umons.ac.be>`_ with the help
+of `many contributors <http://sismic.readthedocs.io/en/master/authors.html>`_.
+
+Sismic is released publicly under the `GNU Lesser General Public Licence version 3.0 (LGPLv3)
+<http://www.gnu.org/licenses/lgpl-3.0.html>`_.
 
 The source code is available on GitHub:
 https://github.com/AlexandreDecan/sismic
 
 Use GitHub's integrated services to contribute suggestions and feature requests for this library or to report bugs.
 
+You can cite Sismic using:
 
+.. code::
 
+    @software{sismic,
+      author = {{Alexandre Decan}},
+      title = {Sismic Interactive Statechart Model Interpreter and Checker},
+      url = {https://github.com/AlexandreDecan/sismic},
+    }
 

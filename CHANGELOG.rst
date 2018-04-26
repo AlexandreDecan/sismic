@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.1.0 (2018-04-26)
+------------------
+
+- (Fixed) Whitespaces in event parameters used in BDD steps are stripped before they are evaluated.
+
+
 1.1.0 (2018-04-23)
 ------------------
 

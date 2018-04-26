@@ -71,3 +71,13 @@ of `many contributors <http://sismic.readthedocs.io/en/master/authors.html>`_.
 
 Sismic is released publicly under the `GNU Lesser General Public Licence version 3.0 (LGPLv3)
 <http://www.gnu.org/licenses/lgpl-3.0.html>`_.
+
+You can cite Sismic using:
+
+.. code::
+
+    @software{sismic,
+      author = {{Alexandre Decan}},
+      title = {Sismic Interactive Statechart Model Interpreter and Checker},
+      url = {https://github.com/AlexandreDecan/sismic},
+    }

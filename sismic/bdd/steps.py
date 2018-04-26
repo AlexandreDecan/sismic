@@ -44,10 +44,10 @@ def send_event(context, name, parameter=None, value=None):
     parameters = {}
     if context.table:
         for row in context.table:
-            parameters[row['parameter']] = eval(row['value'], {}, {})
+            parameters[row['parameter'].strip()] = eval(row['value'].strip(), {}, {})
 
     if parameter and value:
-        parameters[parameter] = eval(value)
+        parameters[parameter.strip()] = eval(value.strip(), {}, {})
 
     event = Event(name, **parameters)
     context.interpreter.queue(event)
@@ -125,10 +125,10 @@ def event_is_fired(context, name, parameter=None, value=None):
     parameters = {}
 
     for row in context.table if context.table else []:
-        parameters[row['parameter']] = eval(row['value'], {}, {})
+        parameters[row['parameter'].strip()] = eval(row['value'].strip(), {}, {})
 
     if parameter and value:
-        parameters[parameter] = eval(value)
+        parameters[parameter.strip()] = eval(value.strip(), {}, {})
 
     for macrostep in context.monitored_trace:
         for event in macrostep.sent_events:

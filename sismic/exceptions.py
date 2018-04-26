@@ -75,7 +75,7 @@ class PropertyStatechartError(SismicError):
     def __str__(self):  # pragma: no cover
         message = [
             '{}'.format(self.__class__.__name__),
-            'Property statechart: {}'.format(self._property),
+            'Property is not satisfied, {} has reached a final state'.format(self._property),
             'Configuration: {}'.format(self._configuration),
             'Step: {}'.format(self._step),
             'Context:'
