@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased
-----------
+1.1.2 (2018-05-09)
+------------------
 
 - (Fixed) Interpreter instances can be serialized using ``pickle`` (`#66 <https://github.com/AlexandreDecan/sismic/issues/66>`__).
 
