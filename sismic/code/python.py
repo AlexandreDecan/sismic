@@ -27,6 +27,12 @@ class FrozenContext(collections.Mapping):
         except KeyError:
             raise AttributeError('{} has no attribute {}'.format(self, item))
 
+    def __getstate__(self):
+        return self.__frozencontext
+
+    def __setstate__(self, state):
+        self.__frozencontext = state
+
     def __getitem__(self, key):
         return self.__frozencontext[key]
 
@@ -366,3 +372,9 @@ class PythonEvaluator(Evaluator):
             lambda c: not self._evaluate_code(c, additional_context=additional_context),
             getattr(obj, 'postconditions', [])
         )
+
+    def __getstate__(self):
+        attributes = self.__dict__.copy()
+        attributes['_executable_code'] = dict()  # Code fragment cannot be pickled
+        attributes['_evaluable_code'] = dict()  # Code fragment cannot be pickled
+        return attributes
