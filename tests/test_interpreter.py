@@ -1,5 +1,7 @@
 import pytest
 
+import pickle
+
 from collections import Counter
 
 from sismic.exceptions import ExecutionError, NonDeterminismError, ConflictingTransitionsError
@@ -560,3 +562,21 @@ class TestInterpreterBinding:
 
         assert i1._internal_events.pop() == Event('test')
         assert i2._external_events.pop() == Event('test')
+
+
+def test_interpreter_is_serialisable(microwave):
+    microwave.queue(
+        'door_opened',
+        'item_placed',
+        'door_closed',
+        'timer_inc',
+        'timer_inc',
+        'cooking_start'
+        'timer_tick',
+    ).execute()
+
+    dumped = pickle.dumps(microwave)
+    n_microwave = pickle.loads(dumped)
+
+    assert microwave.configuration == n_microwave.configuration
+    assert microwave.context == n_microwave.context
