@@ -150,7 +150,7 @@ class Interpreter:
            exposed respectively through the ``source``, ``target`` and ``event`` attribute.
 
         The internal clock of all property statecharts will be synced with the one of the current interpreter.
-        As soon as a property statechart reaches a final state, a ``PropertyStatechartError`` will be raised, 
+        As soon as a property statechart reaches a final state, a ``PropertyStatechartError`` will be raised,
         implicitly meaning that the property expressed by the corresponding property statechart is not satisfied.
 
         :param statechart_or_interpreter: A property statechart or an interpreter of a property statechart.
@@ -607,10 +607,11 @@ class Interpreter:
 
         # Send events
         for event in sent_events:
-            self._raise_event(event)
-
-            # Notify properties
-            self._notify_properties('event sent', event=event)
+            if isinstance(event, InternalEvent):
+                self._raise_event(event)
+                self._notify_properties('event sent', event=event)
+            elif isinstance(event, MetaEvent):
+                self._notify_properties('meta event sent', event=event)
 
         return MicroStep(event=step.event, transition=step.transition,
                          entered_states=step.entered_states, exited_states=step.exited_states,

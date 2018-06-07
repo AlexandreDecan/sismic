@@ -3,7 +3,7 @@ import pytest
 from sismic import code
 from sismic.code.python import FrozenContext
 from sismic.exceptions import CodeEvaluationError
-from sismic.interpreter import Event, InternalEvent
+from sismic.interpreter import Event, InternalEvent, MetaEvent
 
 
 def test_dummy_evaluator(mocker):
@@ -81,6 +81,10 @@ class TestPythonEvaluator:
         events = evaluator._execute_code('send("hello")')
         assert events == [InternalEvent('hello')]
 
+    def test_meta(self, evaluator):
+        events = evaluator._execute_code('meta("hello")')
+        assert events == [MetaEvent('hello')]
+
     def test_no_event_raised_by_preamble(self, interpreter, evaluator):
         interpreter.statechart.preamble = 'send("test")'
         with pytest.raises(CodeEvaluationError):
@@ -93,4 +97,3 @@ class TestPythonEvaluator:
     @pytest.mark.skip('http://stackoverflow.com/questions/32894942/listcomp-unable-to-access-locals-defined-in-code-called-by-exec-if-nested-in-fun')
     def test_access_outer_scope(self, evaluator):
         evaluator._execute_code('d = [x for x in range(10) if x!=a]', additional_context={'a': 1})
-
