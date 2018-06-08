@@ -43,19 +43,18 @@ class FrozenContext(collections.Mapping):
         return iter(self.__frozencontext)
 
 
-def create_send_function(event_list: List[Event], event_class: Event) -> Callable[..., None]:
+def create_send_function(event_list: List[Event], event_klass: Callable[(str, ...), Event]) -> Callable[(str, ...), None]:
     """
-    Create and return a callable that takes a name and additional parameters, builds an Event of type event_class,
+    Create and return a callable that takes a name and additional parameters, builds an Event of type event_klass,
     and add it into given *event_list*.
 
     :param event_list: list to complement
-    :param event_class: Event to create inside the function
+    :param event_klass: Event to create inside the function
     :return: the newly created function
     """
 
     def send(name, **kwargs):
-        event = InternalEvent(name, **kwargs)
-        event = event_class(name, **kwargs)
+        event = event_klass(name, **kwargs)
         event_list.append(event)
 
     return send
@@ -75,8 +74,8 @@ class PythonEvaluator(Evaluator):
     - On code execution:
         - A *send(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
           raises an internal event with it.
-        - A *meta(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
-          raises a meta event with it.
+        - A *notify(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
+          raises a meta-event with it. Meta-events are only sent to bound property statecharts.
         - If the code is related to a transition, the *event: Event* that fires the transition is exposed.
     - On guard or contract evaluation:
         - If the code is related to a transition, the *event: Event* that fires the transition is exposed.
@@ -227,7 +226,7 @@ class PythonEvaluator(Evaluator):
         exposed_context = {
             'active': self._active,
             'send': create_send_function(sent_events, InternalEvent),
-            'meta': create_send_function(sent_events, MetaEvent),
+            'notify': create_send_function(sent_events, MetaEvent),
             'time': self._interpreter.time,
         }
         exposed_context.update(additional_context if additional_context is not None else {})

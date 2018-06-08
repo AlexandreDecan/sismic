@@ -149,6 +149,10 @@ class Interpreter:
          - *transition processed*: when a transition is processed. The source state, target state and the event are
            exposed respectively through the ``source``, ``target`` and ``event`` attribute.
 
+        Additionally, MetaEvent instances that are sent from within the statechart are directly passed to all
+        bound property statecharts. This allows more advanced communication and synchronisation patterns with
+        the bound property statecharts.
+
         The internal clock of all property statecharts will be synced with the one of the current interpreter.
         As soon as a property statechart reaches a final state, a ``PropertyStatechartError`` will be raised,
         implicitly meaning that the property expressed by the corresponding property statechart is not satisfied.
@@ -611,7 +615,7 @@ class Interpreter:
                 self._raise_event(event)
                 self._notify_properties('event sent', event=event)
             elif isinstance(event, MetaEvent):
-                self._notify_properties('meta event sent', event=event)
+                self._notify_properties(event.name, **event.data)
 
         return MicroStep(event=step.event, transition=step.transition,
                          entered_states=step.entered_states, exited_states=step.exited_states,

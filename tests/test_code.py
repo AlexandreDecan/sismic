@@ -81,9 +81,9 @@ class TestPythonEvaluator:
         events = evaluator._execute_code('send("hello")')
         assert events == [InternalEvent('hello')]
 
-    def test_meta(self, evaluator):
-        events = evaluator._execute_code('meta("hello")')
-        assert events == [MetaEvent('hello')]
+    def test_notify(self, evaluator):
+        events = evaluator._execute_code('notify("hello", x=1, y="world")')
+        assert events == [MetaEvent('hello', x=1, y='world')]
 
     def test_no_event_raised_by_preamble(self, interpreter, evaluator):
         interpreter.statechart.preamble = 'send("test")'

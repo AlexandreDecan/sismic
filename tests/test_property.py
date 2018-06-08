@@ -44,12 +44,12 @@ class TestInterpreterMetaEvents:
     def test_meta_event_sent(self, microwave, property_statechart):
         # Add meta to a state
         state = microwave.statechart.state_for('door closed')
-        state.on_entry = 'meta("test")'
+        state.on_entry = 'notify("test", x=1, y="hello")'
 
         microwave.execute()
 
-        assert MetaEvent('event sent', event=InternalEvent('test')) not in [x[0][0] for x in property_statechart.queue.call_args_list]
-        assert MetaEvent('meta event sent', event=MetaEvent('test')) in [x[0][0] for x in property_statechart.queue.call_args_list]
+        assert MetaEvent('event sent', event=MetaEvent('test', x=1, y='hello')) not in [x[0][0] for x in property_statechart.queue.call_args_list]
+        assert MetaEvent('test', x=1, y='hello') in [x[0][0] for x in property_statechart.queue.call_args_list]
 
     def test_trace(self, microwave, property_statechart):
         microwave.queue(Event('door_opened'))
