@@ -43,7 +43,7 @@ class FrozenContext(collections.Mapping):
         return iter(self.__frozencontext)
 
 
-def create_send_function(event_list: List[Event], event_klass: Callable[(str, ...), Event]) -> Callable[(str, ...), None]:
+def create_send_function(event_list: List[Event], event_klass: Callable[..., Event]) -> Callable[..., None]:
     """
     Create and return a callable that takes a name and additional parameters, builds an Event of type event_klass,
     and add it into given *event_list*.
