@@ -17,7 +17,7 @@ def log_trace(interpreter: Interpreter) -> List[MacroStep]:
     :param interpreter: an *Interpreter* instance
     :return: a list of *MacroStep*
     """
-    func = interpreter.execute_once  # type: Callable[[], MacroStep]
+    func = interpreter.execute_once
     trace = []
 
     @wraps(func)

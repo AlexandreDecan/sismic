@@ -243,7 +243,7 @@ class Interpreter:
                 transitions = self._sort_transitions(
                     self._filter_transitions(transitions)
                 )
-                computed_steps = self._create_steps(event, transitions)
+                computed_steps = self._create_steps(cast(Event, event), transitions)
 
         # Notify properties
         self._notify_properties('step started')
@@ -407,7 +407,7 @@ class Interpreter:
             # Two transitions conflict if one of them leaves the parallel state
             for t1, t2 in combinations(transitions, 2):
                 # Check (1)
-                lca = self._statechart.least_common_ancestor(t1.source, t2.source)
+                lca = self._statechart.least_common_ancestor(t1.source, t2.source)  # type: str
                 lca_state = self._statechart.state_for(lca)
 
                 # Their LCA must be an orthogonal state!

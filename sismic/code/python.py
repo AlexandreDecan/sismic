@@ -118,7 +118,7 @@ class PythonEvaluator(Evaluator):
         self._sent_events = []  # type: List[Event]
         if self._interpreter is not None:
             self._interpreter.bind(self._sent_events.append)
-        self._received_event = None  # type: Event
+        self._received_event = None  # type: Optional[Event]
 
     @property
     def context(self) -> Mapping:
@@ -176,7 +176,7 @@ class PythonEvaluator(Evaluator):
         """
         return self._interpreter.time - seconds >= self._idle_time[name]
 
-    def _evaluate_code(self, code: str, *, additional_context: Mapping=None) -> bool:
+    def _evaluate_code(self, code: Optional[str], *, additional_context: Mapping=None) -> bool:
         """
         Evaluate given code using Python.
 
@@ -184,7 +184,7 @@ class PythonEvaluator(Evaluator):
         :param additional_context: an optional additional context
         :return: truth value of *code*
         """
-        if not code:
+        if code is None:
             return True
 
         compiled_code = self._evaluable_code.get(code, None)
@@ -202,7 +202,7 @@ class PythonEvaluator(Evaluator):
         except Exception as e:
             raise CodeEvaluationError('The above exception occurred while evaluating:\n{}'.format(code)) from e
 
-    def _execute_code(self, code: str, *, additional_context: Mapping=None) -> List[Event]:
+    def _execute_code(self, code: Optional[str], *, additional_context: Mapping=None) -> List[Event]:
         """
         Execute given code using Python.
 
@@ -210,7 +210,7 @@ class PythonEvaluator(Evaluator):
         :param additional_context: an optional additional context
         :return: a list of sent events
         """
-        if not code:
+        if code is None:
             return []
 
         compiled_code = self._executable_code.get(code, None)
@@ -307,7 +307,7 @@ class PythonEvaluator(Evaluator):
         """
         state_name = obj.source if isinstance(obj, Transition) else obj.name
 
-        additional_context = {'event': event} if isinstance(obj, Transition) else {}
+        additional_context = {'event': event} if isinstance(obj, Transition) else {}  # type: Dict[str, Any]
         additional_context.update({
             'received': self._received,
             'sent': self._sent

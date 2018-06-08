@@ -114,8 +114,9 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param state: the considered state
         :return: a list of sent events
         """
-        if getattr(state, 'on_entry', None):
-            return self._execute_code(cast(ActionStateMixin, state).on_entry)
+        code = getattr(state, 'on_entry', None)
+        if code:
+            return self._execute_code(code)
         else:
             return []
 
@@ -127,8 +128,9 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param state: the considered state
         :return: a list of sent events
         """
-        if getattr(state, 'on_exit', None):
-            return self._execute_code(cast(ActionStateMixin, state).on_exit)
+        code = getattr(state, 'on_exit', None)
+        if code:
+            return self._execute_code(code)
         else:
             return []
 

@@ -24,7 +24,7 @@ class Statechart:
         self._preamble = preamble
 
         self._states = {}  # type: Dict[str, StateMixin]
-        self._parent = {}  # type: Dict[str, str]
+        self._parent = {}  # type: Dict[str, Optional[str]]
         self._children = {}  # type: Dict[Optional[str], List[str]]
         self._transitions = []  # type: List[Transition]
 
@@ -72,7 +72,7 @@ class Statechart:
         except KeyError as e:
             raise StatechartError('State {} does not exist'.format(name)) from e
 
-    def parent_for(self, name: str) -> str:
+    def parent_for(self, name: str) -> Optional[str]:
         """
         Return the name of the parent of given state name.
 

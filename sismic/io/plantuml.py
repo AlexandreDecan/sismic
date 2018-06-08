@@ -1,6 +1,6 @@
 import re
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from ..model import (
     DeepHistoryState, FinalState, Transition, CompoundState,
     OrthogonalState, ShallowHistoryState, Statechart,
@@ -223,7 +223,7 @@ class PlantUMLExporter:
         self.output('@startuml')
 
         self.export_statechart()
-        self.export_state(self.statechart.root)
+        self.export_state(self.statechart.root)  # type: ignore
 
         self.output('@enduml')
 

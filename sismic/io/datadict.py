@@ -100,16 +100,18 @@ def _import_state_from_dict(state_d: Mapping[str, Any]) -> StateMixin:
     :param state_d: a dictionary containing state data
     :return: a specialized instance of State
     """
-    name = state_d.get('name')
+    name = state_d['name']  # type: str
     stype = state_d.get('type', None)
 
-    on_entry = state_d.get('on entry', None)
+    on_entry = state_d.get('on entry', None)  # type: Optional[str]
     on_entry = on_entry.strip() if on_entry else None
-    on_exit = state_d.get('on exit', None)
+    on_exit = state_d.get('on exit', None)  # type: Optional[str]
     on_exit = on_exit.strip() if on_exit else None
 
+    state = None  # type: Any
+
     if stype == 'final':
-        state = FinalState(name, on_entry=on_entry, on_exit=on_exit)  # type: Any
+        state = FinalState(name, on_entry=on_entry, on_exit=on_exit)
     elif stype == 'shallow history':
         state = ShallowHistoryState(name, on_entry=on_entry, on_exit=on_exit, memory=state_d.get('memory', None))
     elif stype == 'deep history':
