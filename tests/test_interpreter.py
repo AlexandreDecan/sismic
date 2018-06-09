@@ -8,7 +8,7 @@ from sismic.exceptions import ExecutionError, NonDeterminismError, ConflictingTr
 from sismic.code import DummyEvaluator
 from sismic.interpreter import Interpreter, Event, InternalEvent
 from sismic.helpers import coverage_from_trace, log_trace, run_in_background
-from sismic.model import Transition, MacroStep, MicroStep
+from sismic.model import Transition, MacroStep, MicroStep, MetaEvent
 
 
 class TestInterpreterWithSimple:
@@ -562,6 +562,27 @@ class TestInterpreterBinding:
 
         assert i1._internal_events.pop() == Event('test')
         assert i2._external_events.pop() == Event('test')
+
+    def test_metaevent(self, interpreter):
+        i1, i2 = interpreter
+
+        i1.bind(i2.queue)
+
+        i1._raise_event(MetaEvent('test'))
+
+        assert len(i1._internal_events) == 0
+        assert len(i2._external_events) == 0
+
+    def test_event(self, interpreter):
+        i1, i2 = interpreter
+
+        i1.bind(i2.queue)
+
+        with pytest.raises(ValueError):
+            i1._raise_event(Event('test'))
+
+        assert len(i1._internal_events) == 0
+        assert len(i2._external_events) == 0
 
 
 def test_interpreter_is_serialisable(microwave):
