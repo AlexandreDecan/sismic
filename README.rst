@@ -34,6 +34,7 @@ More specifically, Sismic provides:
 
 Some experimental features are also available as `feature branches <https://github.com/AlexandreDecan/sismic/issues?q=is%3Aopen+is%3Aissue+label%3A%22feature+branch%22>`__.
 
+
 Installation
 ------------
 
@@ -65,12 +66,13 @@ See documentation's `changelog <http://sismic.readthedocs.io/en/master/changelog
 Credits
 -------
 
-The Sismic library for Python
-is mainly developed by Alexandre Decan at the `University of Mons <http://www.umons.ac.be>`_ with the help
-of `many contributors <http://sismic.readthedocs.io/en/master/authors.html>`_.
+The Sismic library for Python is mainly developed by Alexandre Decan at the
+`University of Mons <http://www.umons.ac.be>`_ with the help of
+`many contributors <http://sismic.readthedocs.io/en/master/authors.html>`_.
 
 Sismic is released publicly under the `GNU Lesser General Public Licence version 3.0 (LGPLv3)
 <http://www.gnu.org/licenses/lgpl-3.0.html>`_.
+
 
 You can cite Sismic using:
 
@@ -81,3 +83,5 @@ You can cite Sismic using:
       title = {Sismic Interactive Statechart Model Interpreter and Checker},
       url = {https://github.com/AlexandreDecan/sismic},
     }
+
+
