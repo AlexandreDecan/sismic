@@ -1,11 +1,11 @@
 Changelog
 =========
 
-1.2.0 (Unreleased)
+1.2.0 (2018-06-11)
 ------------------
 
 - (Added) A ``notify`` function that can be used in the action code fragments of a statechart to send user-defined
-  meta-events to the bound property statecharts.
+  meta-events to the bound property statecharts (`#67 <https://github.com/AlexandreDecan/sismic/issues/67>`__).
 
 
 1.1.2 (2018-05-09)
