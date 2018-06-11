@@ -13,3 +13,4 @@ Contributors
 * Mathieu Goeminne
 * Ali Parsai
 * Nikos Spanoudakis
+* Timothy Rule
