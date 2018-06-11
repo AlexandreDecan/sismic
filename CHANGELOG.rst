@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.2.0 (Unreleased)
+------------------
+
+- (Added) A ``notify`` function that can be used in the action code fragments of a statechart to send user-defined
+  meta-events to the bound property statecharts.
+
+
 1.1.2 (2018-05-09)
 ------------------
 

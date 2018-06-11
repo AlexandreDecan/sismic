@@ -149,8 +149,12 @@ class Interpreter:
          - *transition processed*: when a transition is processed. The source state, target state and the event are
            exposed respectively through the ``source``, ``target`` and ``event`` attribute.
 
+        Additionally, MetaEvent instances that are sent from within the statechart are directly passed to all
+        bound property statecharts. This allows more advanced communication and synchronisation patterns with
+        the bound property statecharts.
+
         The internal clock of all property statecharts will be synced with the one of the current interpreter.
-        As soon as a property statechart reaches a final state, a ``PropertyStatechartError`` will be raised, 
+        As soon as a property statechart reaches a final state, a ``PropertyStatechartError`` will be raised,
         implicitly meaning that the property expressed by the corresponding property statechart is not satisfied.
 
         :param statechart_or_interpreter: A property statechart or an interpreter of a property statechart.
@@ -275,21 +279,31 @@ class Interpreter:
     def _raise_event(self, event: Event) -> None:
         """
         Raise an event from the statechart.
-        Events are propagated to bound interpreters as non-internal events, and added to the internal queue of the
-        current interpreter.
 
-        :param event: raised event.
+        InternalEvent instances are propagated to bound interpreters as non-internal events, and added to the internal
+        event queue of the current interpreter as an InternalEvent instance.
+
+        If a MetaEvent instance is provided, it is used to notify the bound property statecharts and is neither
+        propagated to bound interpreters nor added to the internal event queue of the current interpreter.
+
+        :param event: event to be sent by the statechart.
         """
         if isinstance(event, InternalEvent):
             # Add to current interpreter's internal queue
             self._internal_events.append(event)
 
+            # Notify bound property statecharts
+            self._notify_properties('event sent', event=event)
+
             # Propagate event to bound callable as an "external" event
             external_event = Event(event.name, **event.data)
             for bound_callable in self._bound:
                 bound_callable(external_event)
+        elif isinstance(event, MetaEvent):
+            # Notify bound property statecharts
+            self._notify_properties(event.name, **event.data)
         else:
-            raise ValueError('Only InternalEvent instances are supported, not {}.'.format(type(event)))
+            raise ValueError('Only InternalEvent and MetaEvent can be sent by a statechart, not {}'.format(type(event)))
 
     def _notify_properties(self, event_name: str, **kwargs):
         """
@@ -608,9 +622,6 @@ class Interpreter:
         # Send events
         for event in sent_events:
             self._raise_event(event)
-
-            # Notify properties
-            self._notify_properties('event sent', event=event)
 
         return MicroStep(event=step.event, transition=step.transition,
                          entered_states=step.entered_states, exited_states=step.exited_states,
