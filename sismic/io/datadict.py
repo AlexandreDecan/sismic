@@ -71,6 +71,7 @@ def _import_transition_from_dict(state_name: str, transition_d: Mapping[str, Any
     """
     event = transition_d.get('event', None)
     guard = transition_d.get('guard', None)
+    default = transition_d.get('default', None)
     action = transition_d.get('action', None)
 
     transition = Transition(
@@ -78,6 +79,7 @@ def _import_transition_from_dict(state_name: str, transition_d: Mapping[str, Any
         transition_d.get('target', None),
         event.strip() if event else None,
         guard.strip() if guard else None,
+        default.strip() if default else None,
         action.strip() if action else None,
     )
 
@@ -203,7 +205,7 @@ def _export_state_to_dict(statechart: Statechart, state_name: str, ordered=True)
         data['contract'] = conditions
 
     if isinstance(state, TransitionStateMixin):
-        # event, guard, target, action
+        # event, guard, target, default, action
         transitions = statechart.transitions_from(cast(StateMixin, state).name)
         if len(transitions) > 0:
             data['transitions'] = []
@@ -216,6 +218,8 @@ def _export_state_to_dict(statechart: Statechart, state_name: str, ordered=True)
                     transition_data['guard'] = transition.guard
                 if transition.target:
                     transition_data['target'] = transition.target
+                if transition.default:
+                    transition_data['default'] = transition.default
                 if transition.action:
                     transition_data['action'] = transition.action
 

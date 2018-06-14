@@ -19,6 +19,7 @@ class SCHEMA:
         schema.Optional('event'): schema.Use(str),
         schema.Optional('guard'): schema.Use(str),
         schema.Optional('action'): schema.Use(str),
+        schema.Optional('default'): schema.Use(str),
         schema.Optional('contract'): [contract],
     }
 
