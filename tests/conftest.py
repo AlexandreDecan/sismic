@@ -84,11 +84,6 @@ def history_statechart():
 
 
 @pytest.fixture
-def composite_statechart():
-    return import_from_yaml(filepath='tests/yaml/composite.yaml')
-
-
-@pytest.fixture
 def internal_statechart():
     return import_from_yaml(filepath='tests/yaml/internal.yaml')
 
