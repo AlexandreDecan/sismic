@@ -1,0 +1,23 @@
+statechart:
+  name: default transition statechart
+  root state:
+    name: root
+    on entry: x = 0
+    initial: s1
+
+    states:
+      - name: s1
+        transitions:
+          - target: s2
+            event: goto s2
+      - name: s2
+        transitions:
+          - default: s3
+      - name: s3
+        transitions:
+          - target: s3
+            guard: x == 0
+            action: x += 1
+          - default: final
+      - name: final
+        type: final

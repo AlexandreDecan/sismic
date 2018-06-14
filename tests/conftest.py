@@ -92,6 +92,10 @@ def composite_statechart():
 def internal_statechart():
     return import_from_yaml(filepath='tests/yaml/internal.yaml')
 
+@pytest.fixture
+def default_transition_statechart():
+    return import_from_yaml(filepath='tests/yaml/default_transition.yaml')
+
 
 @pytest.fixture(params=['actions', 'composite', 'deep_history', 'final', 'infinite', 'internal',
                         'nested_parallel', 'nondeterministic', 'parallel', 'simple', 'timer'])

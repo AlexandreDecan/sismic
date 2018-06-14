@@ -290,15 +290,17 @@ class Transition(ContractMixin):
     :param target: name of the target state (if transition is not internal)
     :param event: event name (if any)
     :param guard: condition as code (if any)
+    :param default: name of the target state (if no other transitions evaulate)
     :param action: action as code (if any)
     """
 
-    def __init__(self, source: str, target: str=None, event: str=None, guard: str=None, action: str=None) -> None:
+    def __init__(self, source: str, target: str=None, event: str=None, guard: str=None, default: str=None, action: str=None) -> None:
         ContractMixin.__init__(self)
         self._source = source
         self._target = target
         self.event = event
         self.guard = guard
+        self._default = default
         self.action = action
 
     @property
@@ -307,7 +309,13 @@ class Transition(ContractMixin):
 
     @property
     def target(self):
+        if self._default:
+            return self._default
         return self._target
+
+    @property
+    def default(self):
+        return self._default
 
     @property
     def internal(self):
@@ -332,6 +340,7 @@ class Transition(ContractMixin):
                 and self.event == other.event
                 and self.guard == other.guard
                 and self.action == other.action
+                and self.default == other.default
             )
         else:
             return NotImplemented

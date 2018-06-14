@@ -370,9 +370,16 @@ class Interpreter:
 
         # Select transitions with no event first
         for transition in self._statechart.transitions:
-            if (transition.event is None and transition.source in self._configuration and
+            if (transition.event is None and transition.default is None and transition.source in self._configuration and
                     (transition.guard is None or self._evaluator.evaluate_guard(transition))):
                 transitions.append(transition)
+
+        # If no transitions, see if there is a default.
+        if len(transitions) == 0:
+            for transition in self._statechart.transitions:
+                if (transition.default is not None and transition.source in self._configuration and
+                        (transition.guard is None or self._evaluator.evaluate_guard(transition))):
+                    transitions.append(transition)
 
         if len(transitions) > 0:
             return None, transitions
@@ -383,7 +390,7 @@ class Interpreter:
             return None, []
 
         for transition in self._statechart.transitions:
-            if (transition.event == getattr(event, 'name', None) and transition.source in self._configuration and
+            if (transition.event == getattr(event, 'name', None) and transition.default is None and transition.source in self._configuration and
                     (transition.guard is None or self._evaluator.evaluate_guard(transition, event))):
                 transitions.append(transition)
         return event, transitions

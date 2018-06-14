@@ -116,6 +116,25 @@ class TestInterpreterWithInternal:
         assert interpreter.final
 
 
+class TestInterpreterWithDefaultTransition:
+    @pytest.fixture
+    def interpreter(self, default_transition_statechart):
+        interpreter = Interpreter(default_transition_statechart)
+
+        # Stabilization
+        interpreter.execute_once()
+
+        return interpreter
+
+    def test_single_default_transition(self, interpreter):
+        interpreter.queue(Event('goto s2'))
+        assert interpreter.execute_once().entered_states == ['s2']
+        assert interpreter.execute_once().entered_states == ['s3']
+        assert interpreter.execute_once().entered_states == ['s3']
+        assert interpreter.execute_once().entered_states == ['final']
+        assert interpreter.final
+
+
 class TestInterpreterWithFinal:
     @pytest.fixture()
     def interpreter(self, final_statechart):

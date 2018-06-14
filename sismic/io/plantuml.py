@@ -197,6 +197,8 @@ class PlantUMLExporter:
             text.append(transition.event + ' ')
         if transition.guard:
             text.append('[{}] '.format(transition.guard))
+        if transition.default:
+            text.append('[(default)] ')
         if transition.action and self.transition_action:
             text.append('/ {}'.format(transition.action.replace('\n', '; ')))
 
