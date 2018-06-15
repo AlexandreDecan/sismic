@@ -368,22 +368,26 @@ class Interpreter:
         """
         transitions = []
 
-        # Select transitions with no event first
-        for transition in self._statechart.transitions:
-            if (transition.event is None and transition.source in self._configuration and
+        # Transitions of active states
+        activable_transitions = [tr for tr in self._statechart.transitions if tr.source in self._configuration]
+
+        # Eventless transitions are considered first
+        for transition in activable_transitions:
+            if (transition.event is None and 
                     (transition.guard is None or self._evaluator.evaluate_guard(transition))):
                 transitions.append(transition)
 
+        # If an eventless transition can be triggered, return it
         if len(transitions) > 0:
             return None, transitions
 
-        # Take and consume next event
+        # Otherwise, take and consume next event
         event = self._select_event()
         if event is None:
             return None, []
 
-        for transition in self._statechart.transitions:
-            if (transition.event == getattr(event, 'name', None) and transition.source in self._configuration and
+        for transition in activable_transitions:
+            if (transition.event == event.name and
                     (transition.guard is None or self._evaluator.evaluate_guard(transition, event))):
                 transitions.append(transition)
         return event, transitions
