@@ -225,38 +225,26 @@ class Interpreter:
 
         :return: a macro step or *None* if nothing happened
         """
-        # Initialization
-        if not self._initialized:
-            computed_steps = [MicroStep(entered_states=[self._statechart.root])]
-            self._initialized = True
-            event = None  # type: Optional[Event]
-        else:
-            event, transitions = self._select_transitions()
-
-            # If there is no event and no transition, return "no step"
-            if event is None and len(transitions) == 0:
-                # However, check properties
-                self._check_properties(None)
-                return None
-
-            # No transition but event? Empty step!
-            if len(transitions) == 0:
-                computed_steps = [MicroStep(event=event)]
-            else:
-                # Select the transitions that will be performed
-                transitions = self._sort_transitions(
-                    self._filter_transitions(transitions)
-                )
-                computed_steps = self._create_steps(cast(Event, event), transitions)
+        # Compute steps
+        computed_steps = self._compute_steps()
+        
+        if computed_steps is None:
+            # No step (no transition, no event). However, check properties
+            self._check_properties(None)
+            return None
 
         # Notify properties
         self._notify_properties('step started')
-        if event:
+
+        # Consume event if it triggered a transition
+        if computed_steps[0].event is not None:
+            event = self._select_event(consume=True)
             self._notify_properties('event consumed', event=event)
+        else:
+            event = None
 
         # Execute the steps
         self._evaluator.on_step_starts(event)
-
         executed_steps = []
         for step in computed_steps:
             executed_steps.append(self._apply_step(step))
@@ -335,12 +323,12 @@ class Interpreter:
             if property_statechart.final:
                 raise PropertyStatechartError(property_statechart, self.configuration, macro_step, self.context)
 
-    def _select_event(self, consume=True) -> Optional[Event]:
+    def _select_event(self, *, consume: bool) -> Optional[Event]:
         """
-        Return (and consume!) the next available event if any.
+        Return the next available event if any.
         This method prioritizes internal events over external ones.
 
-        :param consume: Set to False to *not* consume the event.
+        :param consume: Indicates whether event should be consumed.
         :return: An instance of Event or None if no event is available
         """
         # Internal events are processed first
@@ -357,13 +345,13 @@ class Interpreter:
         else:
             return None
 
-    def _select_transitions(self) -> Tuple[Optional[Event], List[Transition]]:
+    def _select_transitions(self, event: Event) -> List[Transition]:
         """
-        Select the transitions that could be triggered and the corresponding (optional) event.
-        If automatic transitions (ie. ones without event) are found, return them and do not look for
-        transitions with event. Otherwise, consume next event and return a possibly empty list of
-        transitions that could be fired with this event.
-
+        Select the transitions that could be triggered based on given event (or None if
+        no event can be consumed). This function could return both eventless transitions
+        and transitions with event.
+        
+        :param event: event to consider, possibly None.
         :return: a couple (event instance, list of *Transition* instances)
         """
         transitions = []
@@ -371,34 +359,53 @@ class Interpreter:
         # Transitions of active states
         activable_transitions = [tr for tr in self._statechart.transitions if tr.source in self._configuration]
 
-        # Eventless transitions are considered first
         for transition in activable_transitions:
-            if (transition.event is None and 
-                    (transition.guard is None or self._evaluator.evaluate_guard(transition))):
-                transitions.append(transition)
+            # Eventless transition or transition with matching event?
+            match_event = (
+                (transition.event is None) or 
+                (event is not None and transition.event == event.name)
+            )
+            if match_event: 
+                # Is the guard satisfied?
+                match_guard = (
+                    (transition.guard is None) or
+                    (self._evaluator.evaluate_guard(transition, event))
+                )
 
-        # If an eventless transition can be triggered, return it
-        if len(transitions) > 0:
-            return None, transitions
+                if match_guard: 
+                    transitions.append(transition)
+            
+        return transitions
 
-        # Otherwise, take and consume next event
-        event = self._select_event()
-        if event is None:
-            return None, []
-
-        for transition in activable_transitions:
-            if (transition.event == event.name and
-                    (transition.guard is None or self._evaluator.evaluate_guard(transition, event))):
-                transitions.append(transition)
-        return event, transitions
-
-    def _filter_transitions(self, transitions: List[Transition]) -> List[Transition]:
+    def _filter_transitions_wrt_event(self, transitions: List[Transition]) -> List[Transition]:
         """
-        Given a list of transitions, return a filtered list of transitions with respect to the
-        inner-first/source-state semantic.
+        Convenience helper to filter transitions such that eventless transitions
+        are selected first (in contrast with transitions with event).
 
-        :param transitions: a list of *Transition* instances
-        :return: a list of *Transition* instances
+        :param transitions: list of transitions to consider
+        :return transitions: list of selected transitions
+        """
+        with_event = []
+        without_event = []
+
+        for transition in transitions:
+            if transition.event is None:
+                without_event.append(transition)
+            else:
+                with_event.append(transition)
+
+        if len(without_event) > 0:
+            return without_event
+        else:
+            return with_event
+
+    def _filter_transitions_wrt_depth(self, transitions: List[Transition]) -> List[Transition]:
+        """
+        Convenience helper to filter transitions according to an 
+        inner-first/source state semantics.
+
+        :param transitions: list of transitions to consider
+        :return transitions: list of selected transitions
         """
         removed_transitions = set()
         for transition in transitions:
@@ -409,6 +416,20 @@ class Interpreter:
                     break
 
         return list(set(transitions).difference(removed_transitions))
+
+    def _filter_transitions(self, transitions: List[Transition]) -> List[Transition]:
+        """
+        Given a list of transitions, return the ones that should be triggered.
+        In its default implementation, prioritizes eventless transitions over
+        transitions with event, and follows inner-first/source state semantics.
+
+        :param transitions: list of transitions to consider
+        :return transitions: list of selected transitions
+        """
+        transitions = self._filter_transitions_wrt_event(transitions)
+        transitions = self._filter_transitions_wrt_depth(transitions)
+
+        return transitions
 
     def _sort_transitions(self, transitions: List[Transition]) -> List[Transition]:
         """
@@ -460,7 +481,46 @@ class Interpreter:
 
         return transitions
 
-    def _create_steps(self, event: Event,
+    def _compute_steps(self) -> Optional[List[MicroStep]]:
+        """
+        Compute and returns the next steps based on current configuration
+        and event queues. 
+
+        :return A (possibly None) list of steps.
+        """
+        # Initialization
+        if not self._initialized:
+            self._initialized = True
+            return [MicroStep(entered_states=[self._statechart.root])]
+        
+        # Select event if any
+        event = self._select_event(consume=False)
+
+        # Select transitions
+        transitions = self._select_transitions(event)
+
+        # No transition can be triggered?
+        if len(transitions) == 0:
+            if event is None:
+                # No event, no step!
+                return None
+            else:
+                # Empty step, so that event is eventually consumed
+                return [MicroStep(event=event)]
+        
+        # Filter transitions
+        transitions = self._filter_transitions(transitions)
+
+        # Compute transitions order
+        transitions = self._sort_transitions(transitions)
+
+        # Should the step consume an event?
+        event = None if transitions[0].event is None else event
+        
+        return self._create_steps(event, transitions)
+
+
+    def _create_steps(self, event: Optional[Event],
                       transitions: Iterable[Transition]) -> List[MicroStep]:
         """
         Return a (possibly empty) list of micro steps. Each micro step corresponds to the process of a transition

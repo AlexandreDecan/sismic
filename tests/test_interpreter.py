@@ -39,28 +39,28 @@ class TestInterpreterWithSimple:
 
     def test_queue(self, interpreter):
         interpreter.queue(Event('e1'))
-        assert interpreter._select_event() == Event('e1')
+        assert interpreter._select_event(consume=True) == Event('e1')
 
         interpreter.queue(InternalEvent('e2'))
-        assert interpreter._select_event() == InternalEvent('e2')
+        assert interpreter._select_event(consume=True) == InternalEvent('e2')
 
         # Internal events are handled as external events, and thus have no priority
         interpreter.queue(Event('external'))
         interpreter.queue(InternalEvent('internal'))
-        assert interpreter._select_event() == Event('external')
-        assert interpreter._select_event() == InternalEvent('internal')
+        assert interpreter._select_event(consume=True) == Event('external')
+        assert interpreter._select_event(consume=True) == InternalEvent('internal')
 
         interpreter.queue('e3')
-        assert interpreter._select_event() == Event('e3')
+        assert interpreter._select_event(consume=True) == Event('e3')
 
         interpreter.queue('e4').queue('e5')
-        assert interpreter._select_event() == Event('e4')
-        assert interpreter._select_event() == Event('e5')
+        assert interpreter._select_event(consume=True) == Event('e4')
+        assert interpreter._select_event(consume=True) == Event('e5')
 
         interpreter.queue('e6', 'e7', Event('e8'))
-        assert interpreter._select_event() == Event('e6')
-        assert interpreter._select_event() == Event('e7')
-        assert interpreter._select_event() == Event('e8')
+        assert interpreter._select_event(consume=True) == Event('e6')
+        assert interpreter._select_event(consume=True) == Event('e7')
+        assert interpreter._select_event(consume=True) == Event('e8')
 
     def test_simple_configuration(self, interpreter):
         assert interpreter.execute_once() is None  # Should do nothing!

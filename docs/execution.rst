@@ -308,6 +308,8 @@ An :py:class:`~sismic.interpreter.Interpreter` makes use of several *private* me
 These methods computes the transition(s) that should be processed, the resulting steps, etc.
 These methods can be overridden or combined to define variants of statechart semantics.
 
+.. automethod:: sismic.interpreter.Interpreter._compute_steps
+
 .. automethod:: sismic.interpreter.Interpreter._select_event
 
 .. automethod:: sismic.interpreter.Interpreter._select_transitions
