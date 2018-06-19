@@ -345,20 +345,27 @@ class Interpreter:
         else:
             return None
 
-    def _select_transitions(self, event: Event) -> List[Transition]:
+    def _select_transitions(self, event: Event, states: List[StateMixin], *,
+            eventless_first=True, inner_first=True) -> List[Transition]:
         """
-        Select the transitions that could be triggered based on given event (or None if
-        no event can be consumed). This function could return both eventless transitions
-        and transitions with event.
+        Select and return the transitions that are triggered, based on given event
+        (or None if no event can be consumed) and given list of states. 
+        
+        By default, this function prioritizes eventless transitions and follows
+        inner-first/source state semantics. 
         
         :param event: event to consider, possibly None.
-        :return: a couple (event instance, list of *Transition* instances)
+        :param states: states to consider. 
+        :param eventless_first: True to prioritize eventless transitions.
+        :param inner_first: True to follow inner-first/source state semantics.
+        :return: list of triggered transitions.
         """
         transitions = []
 
         # Transitions of active states
         activable_transitions = [tr for tr in self._statechart.transitions if tr.source in self._configuration]
 
+        # First step: matching transitions
         for transition in activable_transitions:
             # Eventless transition or transition with matching event?
             match_event = (
@@ -375,16 +382,7 @@ class Interpreter:
                 if match_guard: 
                     transitions.append(transition)
             
-        return transitions
-
-    def _filter_transitions_wrt_event(self, transitions: List[Transition]) -> List[Transition]:
-        """
-        Convenience helper to filter transitions such that eventless transitions
-        are selected first (in contrast with transitions with event).
-
-        :param transitions: list of transitions to consider
-        :return transitions: list of selected transitions
-        """
+        # Second step: order transitions based on event/eventless
         with_event = []
         without_event = []
 
@@ -394,40 +392,26 @@ class Interpreter:
             else:
                 with_event.append(transition)
 
-        if len(without_event) > 0:
-            return without_event
+        if eventless_first:
+            transitions = without_event if len(without_event) > 0 else with_event
         else:
-            return with_event
-
-    def _filter_transitions_wrt_depth(self, transitions: List[Transition]) -> List[Transition]:
-        """
-        Convenience helper to filter transitions according to an 
-        inner-first/source state semantics.
-
-        :param transitions: list of transitions to consider
-        :return transitions: list of selected transitions
-        """
+            transitions = with_event if len(with_event) > 0 else without_event
+        
+        # Third step: inner-first/source state semantics
+        if inner_first:
+            state_selection_function = self._statechart.descendants_for
+        else:
+            state_selection_function = self._statechart.ancestors_for
+        
         removed_transitions = set()
         for transition in transitions:
-            source_state_descendants = self._statechart.descendants_for(transition.source)
+            selected_states = state_selection_function(transition.source)
             for other_transition in transitions:
-                if other_transition.source in source_state_descendants:
+                if other_transition.source in selected_states:
                     removed_transitions.add(transition)
                     break
 
         return list(set(transitions).difference(removed_transitions))
-
-    def _filter_transitions(self, transitions: List[Transition]) -> List[Transition]:
-        """
-        Given a list of transitions, return the ones that should be triggered.
-        In its default implementation, prioritizes eventless transitions over
-        transitions with event, and follows inner-first/source state semantics.
-
-        :param transitions: list of transitions to consider
-        :return transitions: list of selected transitions
-        """
-        transitions = self._filter_transitions_wrt_event(transitions)
-        transitions = self._filter_transitions_wrt_depth(transitions)
 
         return transitions
 
@@ -493,11 +477,9 @@ class Interpreter:
             self._initialized = True
             return [MicroStep(entered_states=[self._statechart.root])]
         
-        # Select event if any
-        event = self._select_event(consume=False)
-
         # Select transitions
-        transitions = self._select_transitions(event)
+        event = self._select_event(consume=False)
+        transitions = self._select_transitions(event, states=self._configuration)
 
         # No transition can be triggered?
         if len(transitions) == 0:
@@ -508,9 +490,6 @@ class Interpreter:
                 # Empty step, so that event is eventually consumed
                 return [MicroStep(event=event)]
         
-        # Filter transitions
-        transitions = self._filter_transitions(transitions)
-
         # Compute transitions order
         transitions = self._sort_transitions(transitions)
 

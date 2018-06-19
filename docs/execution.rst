@@ -314,8 +314,6 @@ These methods can be overridden or combined to define variants of statechart sem
 
 .. automethod:: sismic.interpreter.Interpreter._select_transitions
 
-.. automethod:: sismic.interpreter.Interpreter._filter_transitions
-
 .. automethod:: sismic.interpreter.Interpreter._sort_transitions
 
 .. automethod:: sismic.interpreter.Interpreter._create_steps
