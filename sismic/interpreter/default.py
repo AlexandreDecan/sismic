@@ -1,5 +1,5 @@
 from collections import deque
-from itertools import combinations
+from itertools import combinations, groupby
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Union, cast, Tuple
 
 try:
@@ -345,7 +345,7 @@ class Interpreter:
         else:
             return None
 
-    def _select_transitions(self, event: Event, states: List[StateMixin], *,
+    def _select_transitions(self, event: Event, states: List[str], *,
             eventless_first=True, inner_first=True) -> List[Transition]:
         """
         Select and return the transitions that are triggered, based on given event
@@ -355,65 +355,53 @@ class Interpreter:
         inner-first/source state semantics. 
         
         :param event: event to consider, possibly None.
-        :param states: states to consider. 
+        :param states: state names to consider. 
         :param eventless_first: True to prioritize eventless transitions.
         :param inner_first: True to follow inner-first/source state semantics.
         :return: list of triggered transitions.
-        """
-        transitions = []
+        """        
+        considered_transitions = []  # type: List[Tuple[bool, int, Transition]]
 
-        # Transitions of active states
-        activable_transitions = [tr for tr in self._statechart.transitions if tr.source in self._configuration]
+        # Select triggerable (based on event) transitions for considered states
+        for transition in self._statechart.transitions:
+            if transition.source in states:
+                if transition.event is None or transition.event == getattr(event, 'name', None):
+                    if eventless_first:
+                        event_order = transition.event is not None  # event = 1, no event = 0
+                    else:
+                        event_order = transition.event is None
+                    
+                    if inner_first:
+                        depth_order = -self._statechart.depth_for(transition.source)  # more nested first
+                    else:
+                        depth_order = self._statechart.depth_for(transition.source)
+                    
+                    considered_transitions.append((event_order, depth_order, transition))
 
-        # First step: matching transitions
-        for transition in activable_transitions:
-            # Eventless transition or transition with matching event?
-            match_event = (
-                (transition.event is None) or 
-                (event is not None and transition.event == event.name)
-            )
-            if match_event: 
-                # Is the guard satisfied?
-                match_guard = (
-                    (transition.guard is None) or
-                    (self._evaluator.evaluate_guard(transition, event))
-                )
-
-                if match_guard: 
-                    transitions.append(transition)
-            
-        # Second step: order transitions based on event/eventless
-        with_event = []
-        without_event = []
-
-        for transition in transitions:
-            if transition.event is None:
-                without_event.append(transition)
-            else:
-                with_event.append(transition)
-
-        if eventless_first:
-            transitions = without_event if len(without_event) > 0 else with_event
-        else:
-            transitions = with_event if len(with_event) > 0 else without_event
+        # Order transitions based on event and depth orderings
+        considered_transitions.sort(key=lambda t: (t[0], t[1]))
         
-        # Third step: inner-first/source state semantics
-        if inner_first:
-            state_selection_function = self._statechart.descendants_for
-        else:
-            state_selection_function = self._statechart.ancestors_for
+        # Which states should be selected to satisfy depth ordering?
+        other_states_selector = self._statechart.ancestors_for if inner_first else self._statechart.descendants_for
+        ignored_states = set()  # type: Set[str]
         
-        removed_transitions = set()
-        for transition in transitions:
-            selected_states = state_selection_function(transition.source)
-            for other_transition in transitions:
-                if other_transition.source in selected_states:
-                    removed_transitions.add(transition)
-                    break
+        selected_transitions = []  # type: List[Transition]
+        for _, transitions in groupby(considered_transitions, lambda t: t[0]):  # event order
+            # If there are selected transitions (from previous group), ignore new ones
+            if len(selected_transitions) > 0:
+                break
 
-        return list(set(transitions).difference(removed_transitions))
-
-        return transitions
+            for _, transitions in groupby(transitions, lambda t: t[1]):  # depth order
+                for _, _, transition in transitions:
+                    if transition.source not in ignored_states:
+                        if transition.guard is None or self._evaluator.evaluate_guard(transition, event):
+                            # Add descendants/ancestors to ignored states
+                            for state in other_states_selector(transition.source):
+                                ignored_states.add(state)
+                            # Add transition to the list of selected ones
+                            selected_transitions.append(transition)
+                        
+        return selected_transitions
 
     def _sort_transitions(self, transitions: List[Transition]) -> List[Transition]:
         """
