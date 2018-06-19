@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.2.1 (2018-06-19)
+------------------
+
+- (Changed) Transitions are evaluated according to their event (eventless ones first) and
+  inner-first/source state semantics, allowing to bypass many useless guard evaluations.
+
+
 1.2.0 (2018-06-11)
 ------------------
 
