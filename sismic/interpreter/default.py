@@ -360,48 +360,54 @@ class Interpreter:
         :param inner_first: True to follow inner-first/source state semantics.
         :return: list of triggered transitions.
         """        
+        selected_transitions = []  # type: List[Transition]
+        
         # List of (event_order, depth_order, transition)
         considered_transitions = []  # type: List[Tuple[int, int, Transition]]
 
-        # Use a cache for state depth (could become costly in some edge cases)
-        _state_depth_cache = {s: self._statechart.depth_for(s) for s in states}
+        # Use a cache for state depth (could avoid some costly computations)
+        _state_depth_cache = dict()  # type: Dict[str, int]
 
         # Select triggerable (based on event) transitions for considered states
         for transition in self._statechart.transitions:
             if transition.source in states:
                 if transition.event is None or transition.event == getattr(event, 'name', None):
+                    # Compute order based on event
                     event_order = int(transition.event is None)  # event = 0, no event = 1
-                    if eventless_first:
-                        event_order *= -1 
                     
+                    # Compute order based on depth
+                    if transition.source not in _state_depth_cache:
+                        _state_depth_cache[transition.source] = self._statechart.depth_for(transition.source)                    
                     depth_order = _state_depth_cache[transition.source]  # less nested first
-                    if inner_first:
-                        depth_order *= -1
                     
+                    # Change order according to the semantics
+                    event_order = -event_order if eventless_first else event_order
+                    depth_order = -depth_order if inner_first else depth_order
+
                     considered_transitions.append((event_order, depth_order, transition))
 
         # Order transitions based on event and depth orderings
         considered_transitions.sort(key=lambda t: (t[0], t[1]))
         
         # Which states should be selected to satisfy depth ordering?
-        other_states_selector = self._statechart.ancestors_for if inner_first else self._statechart.descendants_for
+        ignored_state_selector = self._statechart.ancestors_for if inner_first else self._statechart.descendants_for
         ignored_states = set()  # type: Set[str]
         
-        selected_transitions = []  # type: List[Transition]
+        # Select transitions according to the semantics
         for _, transitions in groupby(considered_transitions, lambda t: t[0]):  # event order
             # If there are selected transitions (from previous group), ignore new ones
             if len(selected_transitions) > 0:
                 break
 
-            for _, transitions in groupby(transitions, lambda t: t[1]):  # depth order
-                for _, _, transition in transitions:
-                    if transition.source not in ignored_states:
-                        if transition.guard is None or self._evaluator.evaluate_guard(transition, event):
-                            # Add descendants/ancestors to ignored states
-                            for state in other_states_selector(transition.source):
-                                ignored_states.add(state)
-                            # Add transition to the list of selected ones
-                            selected_transitions.append(transition)
+            # Remember that transitions are sorted based on event/eventless and the source state depth
+            for *_, transition in transitions: 
+                if transition.source not in ignored_states:
+                    if transition.guard is None or self._evaluator.evaluate_guard(transition, event):
+                        # Add descendants/ancestors to ignored states
+                        for state in ignored_state_selector(transition.source):
+                            ignored_states.add(state)
+                        # Add transition to the list of selected ones
+                        selected_transitions.append(transition)
                         
         return selected_transitions
 
