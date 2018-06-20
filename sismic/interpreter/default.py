@@ -360,21 +360,23 @@ class Interpreter:
         :param inner_first: True to follow inner-first/source state semantics.
         :return: list of triggered transitions.
         """        
-        considered_transitions = []  # type: List[Tuple[bool, int, Transition]]
+        # List of (event_order, depth_order, transition)
+        considered_transitions = []  # type: List[Tuple[int, int, Transition]]
+
+        # Use a cache for state depth (could become costly in some edge cases)
+        _state_depth_cache = {s: self._statechart.depth_for(s) for s in states}
 
         # Select triggerable (based on event) transitions for considered states
         for transition in self._statechart.transitions:
             if transition.source in states:
                 if transition.event is None or transition.event == getattr(event, 'name', None):
+                    event_order = int(transition.event is None)  # event = 0, no event = 1
                     if eventless_first:
-                        event_order = transition.event is not None  # event = 1, no event = 0
-                    else:
-                        event_order = transition.event is None
+                        event_order *= -1 
                     
+                    depth_order = _state_depth_cache[transition.source]  # less nested first
                     if inner_first:
-                        depth_order = -self._statechart.depth_for(transition.source)  # more nested first
-                    else:
-                        depth_order = self._statechart.depth_for(transition.source)
+                        depth_order *= -1
                     
                     considered_transitions.append((event_order, depth_order, transition))
 
