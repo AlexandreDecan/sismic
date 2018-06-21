@@ -6,6 +6,7 @@ Changelog
 
 - (Fixed) Event is not exposed when guard of eventless transitions are evaluated (regression 
   introduced in version 1.2.1).
+- (Changed) Improve performances when selecting transitions that could/will be triggered.
 
 
 1.2.1 (2018-06-19)
