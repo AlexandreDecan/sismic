@@ -20,6 +20,7 @@ class SCHEMA:
         schema.Optional('guard'): schema.Use(str),
         schema.Optional('action'): schema.Use(str),
         schema.Optional('contract'): [contract],
+        schema.Optional('priority'): schema.Or(schema.Use(int), 'high', 'low'),
     }
 
     state = dict()  # type: ignore

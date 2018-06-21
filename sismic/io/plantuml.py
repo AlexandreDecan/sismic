@@ -132,6 +132,8 @@ class PlantUMLExporter:
             if len(transitions) > 0:
                 for transition in transitions:
                     text = []
+                    if transition.priority != 0:
+                        text.append('{}:'.format(transition.priority))
                     if transition.event:
                         text.append('**{}** '.format(transition.event))
                     if transition.guard:
@@ -193,6 +195,8 @@ class PlantUMLExporter:
             target_name = self.state_id(target.name)
 
         text = []
+        if transition.priority != 0:
+            text.append('{}:'.format(transition.priority))
         if transition.event:
             text.append(transition.event + ' ')
         if transition.guard:

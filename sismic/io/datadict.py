@@ -72,6 +72,12 @@ def _import_transition_from_dict(state_name: str, transition_d: Mapping[str, Any
     event = transition_d.get('event', None)
     guard = transition_d.get('guard', None)
     action = transition_d.get('action', None)
+    priority = transition_d.get('priority', None)
+    
+    if priority == 'low':
+        priority = Transition.LOW_PRIORITY
+    elif priority == 'high':
+        priority = Transition.HIGH_PRIORITY
 
     transition = Transition(
         state_name,
@@ -79,6 +85,7 @@ def _import_transition_from_dict(state_name: str, transition_d: Mapping[str, Any
         event.strip() if event else None,
         guard.strip() if guard else None,
         action.strip() if action else None,
+        priority,
     )
 
     # Preconditions, postconditions and invariants
@@ -218,6 +225,14 @@ def _export_state_to_dict(statechart: Statechart, state_name: str, ordered=True)
                     transition_data['target'] = transition.target
                 if transition.action:
                     transition_data['action'] = transition.action
+                if transition.priority != Transition.DEFAULT_PRIORITY:
+                    if transition.priority == Transition.LOW_PRIORITY:
+                        priority = 'low'
+                    elif transition.priority == Transition.HIGH_PRIORITY:
+                        priority = 'high'
+                    else:
+                        priority = transition.priority
+                    transition_data['priority'] = priority
 
                 preconditions = getattr(transition, 'preconditions', [])
                 postconditions = getattr(transition, 'postconditions', [])
