@@ -394,7 +394,10 @@ class Interpreter:
         ignored_states = set()  # type: Set[str]
         
         # Select transitions according to the semantics
-        for _, transitions in groupby(considered_transitions, lambda t: t[0]):  # event order
+        for eventless, transitions in groupby(considered_transitions, lambda t: t[0]):  # event order
+            # Event shouldn't be exposed to guards if we're processing eventless transition
+            exposed_event = None if eventless else event
+            
             # If there are selected transitions (from previous group), ignore new ones
             if len(selected_transitions) > 0:
                 break
@@ -402,7 +405,7 @@ class Interpreter:
             # Remember that transitions are sorted based on event/eventless and the source state depth
             for *_, transition in transitions: 
                 if transition.source not in ignored_states:
-                    if transition.guard is None or self._evaluator.evaluate_guard(transition, event):
+                    if transition.guard is None or self._evaluator.evaluate_guard(transition, exposed_event):
                         # Add descendants/ancestors to ignored states
                         for state in ignored_state_selector(transition.source):
                             ignored_states.add(state)
