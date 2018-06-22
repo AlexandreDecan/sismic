@@ -1,5 +1,5 @@
-from collections import deque
-from itertools import combinations, groupby
+from collections import deque, defaultdict
+from itertools import combinations
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Union, cast, Tuple
 
 try:
@@ -19,6 +19,17 @@ from ..exceptions import (ConflictingTransitionsError, InvariantError, PropertyS
                           ExecutionError, NonDeterminismError, PostconditionError, PreconditionError)
 
 __all__ = ['Interpreter']
+
+
+def sorted_groupby(iterable, key=None, reverse=False):
+    """
+    Return pairs (label, group) grouped and sorted by label = key(item).
+    """
+    groups = defaultdict(list)
+    for value in iterable:
+        groups[key(value)].append(value)
+    sort_key = lambda e: e[0]
+    return sorted(groups.items(), key=sort_key, reverse=reverse)
 
 
 class Interpreter:
@@ -361,69 +372,60 @@ class Interpreter:
         :return: list of triggered transitions.
         """        
         selected_transitions = []  # type: List[Transition]
-        
-        # List of (event_order, depth_order, source, priority, transition)
-        considered_transitions = []  # type: List[Tuple[int, int, str, int, Transition]]
-
-        # Use a cache for state depth (could avoid some costly computations)
+        considered_transitions = []  # type: List[Transition]
         _state_depth_cache = dict()  # type: Dict[str, int]
-
+        
         # Select triggerable (based on event) transitions for considered states
         for transition in self._statechart.transitions:
             if transition.source in states:
                 if transition.event is None or transition.event == getattr(event, 'name', None):
-                    # Compute order based on event
-                    event_order = int(transition.event is None)  # event = 0, no event = 1
-                    
                     # Compute order based on depth
                     if transition.source not in _state_depth_cache:
                         _state_depth_cache[transition.source] = self._statechart.depth_for(transition.source)                    
-                    depth_order = _state_depth_cache[transition.source]  # less nested first
                     
-                    # Change order according to the semantics
-                    event_order = -event_order if eventless_first else event_order
-                    depth_order = -depth_order if inner_first else depth_order
+                    considered_transitions.append(transition)
 
-                    considered_transitions.append((event_order, depth_order, transition.source, -transition.priority, transition))
-
-        # Order transitions based on event order, depth order, source and priority
-        considered_transitions.sort(key=lambda t: tuple(t[:-1]))
-        
         # Which states should be selected to satisfy depth ordering?
         ignored_state_selector = self._statechart.ancestors_for if inner_first else self._statechart.descendants_for
         ignored_states = set()  # type: Set[str]
-        
-        # Select transitions according to the semantics
-        for eventless, transitions in groupby(considered_transitions, lambda t: t[0]):  # event order
+
+        # Group and sort transitions based on the event
+        eventless_first_order = lambda t: t.event is not None
+        for has_event, transitions in sorted_groupby(considered_transitions, key=eventless_first_order, reverse=not eventless_first):
             # Event shouldn't be exposed to guards if we're processing eventless transition
-            exposed_event = None if eventless else event
+            exposed_event = event if has_event else None
             
             # If there are selected transitions (from previous group), ignore new ones
             if len(selected_transitions) > 0:
                 break
 
-            for (depth, source), transitions in groupby(transitions, lambda t: (t[1], t[2])):  # (depth, source) order
-                # Do not consider ignored states
-                if source in ignored_states:
-                    break
-                
-                for priority, transitions in groupby(transitions, lambda t: t[3]):  # priority order
-                    found_transitions_for_this_state = False
-
-                    for *_, transition in transitions: 
-                        if transition.guard is None or self._evaluator.evaluate_guard(transition, exposed_event):
-                            # Add transition to the list of selected ones
-                            selected_transitions.append(transition)
-                            found_transitions_for_this_state = True
+            # Group and sort transitions based on the source state depth
+            depth_order = lambda t: _state_depth_cache[t.source]
+            for depth, transitions in sorted_groupby(transitions, key=depth_order, reverse=inner_first):
+                # Group and sort transitions based on the source state
+                state_order = lambda t: t.source  # we just want states to be grouped here
+                for source, transitions in sorted_groupby(transitions, key=state_order):
+                    # Do not considered ignored states
+                    if source in ignored_states:
+                        continue
                     
-                    # Do not consider lower priority classes if we found transitions
-                    if found_transitions_for_this_state:
-                        # Add descendants/ancestors to ignored states
-                        for state in ignored_state_selector(source):
-                            ignored_states.add(state)
-                        # Add current state to ignored state
-                        ignored_states.add(source)
-                        break
+                    has_found_transitions = False
+                    # Group and sort transitions based on their priority
+                    priority_order = lambda t: t.priority
+                    for priority, transitions in sorted_groupby(transitions, key=priority_order, reverse=True):
+                        for transition in transitions:
+                            if transition.guard is None or self._evaluator.evaluate_guard(transition, exposed_event):
+                                # Add transition to the list of selected ones
+                                selected_transitions.append(transition)
+                                has_found_transitions = True
+
+                        # Ignore ancestors/descendants w.r.t. inner-first/source state
+                        if has_found_transitions:
+                            for state in ignored_state_selector(source):
+                                ignored_states.add(state)
+                            # Also ignore current state, as we found transitions in a higher priority class
+                            ignored_states.add(source)
+                            break
                     
         return selected_transitions
 
