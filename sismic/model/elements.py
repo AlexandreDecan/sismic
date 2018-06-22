@@ -348,9 +348,9 @@ class Transition(ContractMixin):
     def __str__(self):
         return '{} -> {}{} [{}] -> {}'.format(
             self.source,
-            '' if self.priority == 0 else '{}:'.format(self.priority), 
-            self.event, 
-            self.guard, 
+            '' if self.priority == 0 else '{}:'.format(self.priority),
+            self.event,
+            self.guard,
             self.target if self.target else ''
         )
 

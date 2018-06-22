@@ -215,8 +215,8 @@ class PlantUMLExporter:
             for cond in transition.postconditions:
                 text.append('post: {}\n'.format(cond))
 
-        format = '{source} {arrow} {target} : {text}' if len(text) > 0 else '{source} {arrow} {target}'
-        self.output(format.format(
+        _format = '{source} {arrow} {target} : {text}' if len(text) > 0 else '{source} {arrow} {target}'
+        self.output(_format.format(
             source=self.state_id(transition.source),
             arrow=self.arrow(transition.source, transition.target),
             target=target_name,

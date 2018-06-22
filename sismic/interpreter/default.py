@@ -238,7 +238,7 @@ class Interpreter:
         """
         # Compute steps
         computed_steps = self._compute_steps()
-        
+
         if computed_steps is None:
             # No step (no transition, no event). However, check properties
             self._check_properties(None)
@@ -360,29 +360,29 @@ class Interpreter:
             eventless_first=True, inner_first=True) -> List[Transition]:
         """
         Select and return the transitions that are triggered, based on given event
-        (or None if no event can be consumed) and given list of states. 
-        
+        (or None if no event can be consumed) and given list of states.
+
         By default, this function prioritizes eventless transitions and follows
-        inner-first/source state semantics. 
-        
+        inner-first/source state semantics.
+
         :param event: event to consider, possibly None.
-        :param states: state names to consider. 
+        :param states: state names to consider.
         :param eventless_first: True to prioritize eventless transitions.
         :param inner_first: True to follow inner-first/source state semantics.
         :return: list of triggered transitions.
-        """        
+        """
         selected_transitions = []  # type: List[Transition]
         considered_transitions = []  # type: List[Transition]
         _state_depth_cache = dict()  # type: Dict[str, int]
-        
+
         # Select triggerable (based on event) transitions for considered states
         for transition in self._statechart.transitions:
             if transition.source in states:
                 if transition.event is None or transition.event == getattr(event, 'name', None):
                     # Compute order based on depth
                     if transition.source not in _state_depth_cache:
-                        _state_depth_cache[transition.source] = self._statechart.depth_for(transition.source)                    
-                    
+                        _state_depth_cache[transition.source] = self._statechart.depth_for(transition.source)
+
                     considered_transitions.append(transition)
 
         # Which states should be selected to satisfy depth ordering?
@@ -394,25 +394,25 @@ class Interpreter:
         for has_event, transitions in sorted_groupby(considered_transitions, key=eventless_first_order, reverse=not eventless_first):
             # Event shouldn't be exposed to guards if we're processing eventless transition
             exposed_event = event if has_event else None
-            
+
             # If there are selected transitions (from previous group), ignore new ones
             if len(selected_transitions) > 0:
                 break
 
             # Group and sort transitions based on the source state depth
             depth_order = lambda t: _state_depth_cache[t.source]
-            for depth, transitions in sorted_groupby(transitions, key=depth_order, reverse=inner_first):
+            for _, transitions in sorted_groupby(transitions, key=depth_order, reverse=inner_first):
                 # Group and sort transitions based on the source state
                 state_order = lambda t: t.source  # we just want states to be grouped here
                 for source, transitions in sorted_groupby(transitions, key=state_order):
                     # Do not considered ignored states
                     if source in ignored_states:
                         continue
-                    
+
                     has_found_transitions = False
                     # Group and sort transitions based on their priority
                     priority_order = lambda t: t.priority
-                    for priority, transitions in sorted_groupby(transitions, key=priority_order, reverse=True):
+                    for _, transitions in sorted_groupby(transitions, key=priority_order, reverse=True):
                         for transition in transitions:
                             if transition.guard is None or self._evaluator.evaluate_guard(transition, exposed_event):
                                 # Add transition to the list of selected ones
@@ -426,7 +426,7 @@ class Interpreter:
                             # Also ignore current state, as we found transitions in a higher priority class
                             ignored_states.add(source)
                             break
-                    
+
         return selected_transitions
 
     def _sort_transitions(self, transitions: List[Transition]) -> List[Transition]:
@@ -482,7 +482,7 @@ class Interpreter:
     def _compute_steps(self) -> Optional[List[MicroStep]]:
         """
         Compute and returns the next steps based on current configuration
-        and event queues. 
+        and event queues.
 
         :return A (possibly None) list of steps.
         """
@@ -490,7 +490,7 @@ class Interpreter:
         if not self._initialized:
             self._initialized = True
             return [MicroStep(entered_states=[self._statechart.root])]
-        
+
         # Select transitions
         event = self._select_event(consume=False)
         transitions = self._select_transitions(event, states=self._configuration)
@@ -503,13 +503,13 @@ class Interpreter:
             else:
                 # Empty step, so that event is eventually consumed
                 return [MicroStep(event=event)]
-        
+
         # Compute transitions order
         transitions = self._sort_transitions(transitions)
 
         # Should the step consume an event?
         event = None if transitions[0].event is None else event
-        
+
         return self._create_steps(event, transitions)
 
 
