@@ -94,6 +94,6 @@ class TestPythonEvaluator:
         evaluator._execute_code('a = 1\nassert a == 1', additional_context=evaluator.context)
         assert evaluator._evaluate_code('a == 1', additional_context={'a': 1})
 
-    @pytest.mark.skip('http://stackoverflow.com/questions/32894942/listcomp-unable-to-access-locals-defined-in-code-called-by-exec-if-nested-in-fun')
+    @pytest.mark.xfail(reason='http://stackoverflow.com/questions/32894942/listcomp-unable-to-access-locals-defined-in-code-called-by-exec-if-nested-in-fun and possibly fixed with https://bugs.python.org/issue3692')
     def test_access_outer_scope(self, evaluator):
-        evaluator._execute_code('d = [x for x in range(10) if x!=a]', additional_context={'a': 1})
+        evaluator._execute_code('d = [x for x in range(10) if x != a]', additional_context={'a': 1})
