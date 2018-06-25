@@ -3,6 +3,13 @@ from .interpreter import Interpreter
 from .model import MacroStep, Transition, Event
 
 
+__all__ = [
+    'state_is_entered', 'state_is_exited', 
+    'event_is_fired', 'event_is_consumed',
+    'transition_is_processed',
+    'expression_holds',
+]
+
 MacroSteps = Union[MacroStep, List[MacroStep]]
 
 
