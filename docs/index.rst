@@ -41,8 +41,7 @@ Sismic provides the following features:
 - A design-by-contract approach for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions
 - Runtime checking of behavioral properties expressed as statecharts
 - Built-in support for behavior-driven development
-- Synchronous and asynchronous simulation, in real time or simulated time
-- Support for communication between statecharts and co-simulation
+- Support for communication between statecharts
 - Statechart visualization using `PlantUML <http://www.plantuml.com/plantuml>`__
 
 Some experimental features are also available as `feature branches <https://github.com/AlexandreDecan/sismic/issues?q=is%3Aopen+is%3Aissue+label%3A%22feature+branch%22>`__.
@@ -74,6 +73,7 @@ Sismic statecharts provides full support for the majority of the UML 2 statechar
     contract
     properties
     behavior
+    unittests
 
 .. toctree::
     :caption: Advanced topics

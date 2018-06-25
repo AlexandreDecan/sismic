@@ -7,13 +7,6 @@ Monitoring properties
 About runtime verification
 --------------------------
 
-Like any executable software artefacts, statecharts can and should be tested during their development.
-
-One possible appproach is to test the execution of a statechart *by hand*, writing unit tests or BDD tests.
-The Sismic interpreter stores and returns several values that can be inspected during the execution, including
-the active configuration, the list of entered or exited states, etc.
-The functional tests in *tests/test_interpreter.py* on the GitHub repository are several examples of this kind of tests.
-
 Another key feature of Sismic's interpreter is its support for monitoring properties at runtime, not only contracts.
 To avoid a statechart designer needing to learn a different language for expressing such properties,
 these properties are expressed using the statechart notation. These properties are then called *property statecharts*

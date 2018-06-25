@@ -289,7 +289,7 @@ and details can be obtained using the :py:class:`~sismic.model.MicroStep` list o
 Observing the execution
 -----------------------
 
-The interpreter is fully observable during its execution. It provides many public and private attributes
+The interpreter is fully observable during its execution. It provides many methods and attributes
 that can be used to see what happens. In particular:
 
  - The :py:meth:`~sismic.interpreter.Interpreter.execute_once` (resp. :py:meth:`~sismic.interpreter.Interpreter.execute`)
