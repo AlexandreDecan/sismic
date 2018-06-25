@@ -1,4 +1,5 @@
 from sismic.interpreter import Event
+from sismic import testing
 
 
 def test_writer(writer):
@@ -42,7 +43,6 @@ class TestElevator:
         elevator.execute_once()
 
         elevator.queue(Event('floorSelected', floor=4)).execute()
-
         assert elevator.context['current'] == 4
 
         elevator.time += 10
@@ -56,11 +56,8 @@ class TestRemoteElevator:
     def test_button(self, elevator, remote_elevator):
         assert elevator.context['current'] == 0
 
-        remote_elevator.queue(Event('button_2_pushed')).execute()
-
-        event = elevator._external_events[-1]
-        assert event.name == 'floorSelected'
-        assert event.data['floor'] == 2
+        steps = remote_elevator.queue(Event('button_2_pushed')).execute()
+        assert testing.event_is_fired(steps, 'floorSelected', {'floor': 2})
 
         elevator.execute()
         assert elevator.context['current'] == 2
@@ -79,7 +76,8 @@ class TestMicrowave:
         microwave.execute_once()
         microwave.queue(Event('door_opened'))
 
-        assert microwave.execute_once().sent_events[0].name == 'lamp_switch_on'
+        steps = microwave.execute_once()
+        assert testing.event_is_fired(steps, 'lamp_switch_on')
 
     def test_heating_on(self, microwave):
         microwave.execute_once()
@@ -91,10 +89,8 @@ class TestMicrowave:
         ).execute()
 
         microwave.queue(Event('cooking_start'))
-        sent_events = []
-        for step in microwave.execute():
-            sent_events.extend(step.sent_events)
-
-        assert Event('heating_on') in sent_events
-        assert Event('lamp_switch_on') in sent_events
-        assert Event('turntable_start') in sent_events
+        steps = microwave.execute()
+        
+        assert testing.event_is_fired(steps, 'heating_on')
+        assert testing.event_is_fired(steps, 'lamp_switch_on')
+        assert testing.event_is_fired(steps, 'turntable_start')

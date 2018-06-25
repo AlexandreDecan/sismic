@@ -9,6 +9,7 @@ from sismic.code import DummyEvaluator
 from sismic.interpreter import Interpreter, Event, InternalEvent
 from sismic.helpers import coverage_from_trace, log_trace, run_in_background
 from sismic.model import Transition, MacroStep, MicroStep, MetaEvent
+from sismic import testing
 
 
 class TestInterpreterWithSimple:

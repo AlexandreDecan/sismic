@@ -103,8 +103,7 @@ def state_is_active(context, name):
     # Check that state exists
     context.interpreter.statechart.state_for(name)
 
-    test = testing.state_is_active(context.interpreter, name)
-    assert test, 'State {} is not active'.format(name)
+    assert name in context.interpreter.configuration, 'State {} is not active'.format(name)
 
 
 @then('state {name} is not active')
@@ -112,8 +111,7 @@ def state_is_not_active(context, name):
     # Check that state exists
     context.interpreter.statechart.state_for(name)
 
-    test = not testing.state_is_active(context.interpreter, name)
-    assert test, 'State {} is active'.format(name)
+    assert name not in context.interpreter.configuration, 'State {} is active'.format(name)
 
 
 @then('event {name} is fired')
