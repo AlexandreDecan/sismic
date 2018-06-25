@@ -309,8 +309,6 @@ class PythonEvaluator(Evaluator):
         :param event: an optional *Event* instance, in the case of a transition
         :return: list of unsatisfied conditions
         """
-        state_name = obj.source if isinstance(obj, Transition) else obj.name
-
         additional_context = {'event': event} if isinstance(obj, Transition) else {}  # type: Dict[str, Any]
         additional_context.update({
             'received': self._received,

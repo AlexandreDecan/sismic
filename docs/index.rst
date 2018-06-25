@@ -52,7 +52,7 @@ but can be easily tuned to other semantics.
 Sismic statecharts provides full support for the majority of the UML 2 statechart concepts:
 
 - simple states, composite states, orthogonal (parallel) states, initial and final states, shallow and deep history states
-- state transitions, guarded transitions, automatic (eventless) transitions, internal transitions
+- state transitions, guarded transitions, automatic (eventless) transitions, internal transitions and transition priorities
 - statechart variables and their initialisation
 - state entry and exit actions, transition actions
 - internal and external parametrized events

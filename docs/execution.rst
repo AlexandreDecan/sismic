@@ -45,6 +45,9 @@ We decide to follow Rhapsody and to raise an error (in fact, a :py:exc:`~sismic.
 nondeterminism occur during the execution. Notice that this only concerns multiple transitions in the same
 composite state, not in parallel states.
 
+.. note:: Sismic allows to define priorities on transitions to address nondeterminism: transitions with 
+        higher priorities will be selected first for execution, ignoring transitions with lower priorities.
+
 When multiple transitions are triggered from within distinct parallel states, the situation is even more intricate.
 According to the Rhapsody implementation:
 

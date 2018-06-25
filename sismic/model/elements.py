@@ -291,15 +291,21 @@ class Transition(ContractMixin):
     :param event: event name (if any)
     :param guard: condition as code (if any)
     :param action: action as code (if any)
+    :param priority: priority (default to 0)
     """
 
-    def __init__(self, source: str, target: str=None, event: str=None, guard: str=None, action: str=None) -> None:
+    LOW_PRIORITY = -1
+    DEFAULT_PRIORITY = 0
+    HIGH_PRIORITY = 1
+
+    def __init__(self, source: str, target: str=None, event: str=None, guard: str=None, action: str=None, priority=None) -> None:
         ContractMixin.__init__(self)
         self._source = source
         self._target = target
         self.event = event
         self.guard = guard
         self.action = action
+        self.priority = 0 if priority is None else priority
 
     @property
     def source(self):
@@ -340,7 +346,13 @@ class Transition(ContractMixin):
         return 'Transition({!r}, {!r}, event={!r})'.format(self.source, self.target, self.event)
 
     def __str__(self):
-        return '{} -> {} [{}] -> {}'.format(self.source, self.event, self.guard, self.target if self.target else '')
+        return '{} -> {}{} [{}] -> {}'.format(
+            self.source,
+            '' if self.priority == 0 else '{}:'.format(self.priority),
+            self.event,
+            self.guard,
+            self.target if self.target else ''
+        )
 
     def __hash__(self):
         return hash(self.source)

@@ -1,7 +1,7 @@
 import abc
-from typing import Any, Optional, Iterable, List, Mapping, cast
+from typing import Any, Optional, Iterable, List, Mapping
 
-from ..model import ActionStateMixin, Statechart, StateMixin, Transition, Event
+from ..model import Statechart, StateMixin, Transition, Event
 from ..exceptions import CodeEvaluationError
 
 __all__ = ['Evaluator']

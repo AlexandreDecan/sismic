@@ -1,0 +1,26 @@
+statechart:
+  name: test priorities
+  root state:
+    name: root
+    initial: a
+    states:
+     - name: a
+       transitions:
+        - target: b
+          priority: high
+        - target: c
+          priority: low
+        - target: d
+          priority: low
+     - name: b
+       transitions:
+        - event: e
+          target: c
+          priority: 1
+        - event: e
+          target: d
+          priority: low
+        - target: a
+          priority: -2
+     - name: c
+     - name: d

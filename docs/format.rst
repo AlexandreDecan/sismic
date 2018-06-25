@@ -222,7 +222,15 @@ Instead, it **must** either define an event or define a guard to determine when 
 Notice that such a transition does not trigger the *on entry* and *on exit* of its state, and can thus be used
 to model an *internal action*.
 
+Priorities can be set for transitions using the *priority* property. By default, all transitions 
+have a priority of 0. A priority can be any integer, or *low* (equivalent to -1) or *high* 
+(equivalent to 1). 
 
+.. note:: Transition priorities can be used to simulate default transitions or to fix non-determinism
+    when multiple transitions from a single state can be triggered at the same time. Notice that 
+    transition priorities are considered **after** the default semantics of Sismic (eventless
+    transitions first, and inner-first/source state first). 
+    
 
 Statechart examples
 *******************

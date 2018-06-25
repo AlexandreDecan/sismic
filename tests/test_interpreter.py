@@ -462,6 +462,47 @@ class TestInterpreterWithNestedParallel:
         assert [t.source for t in step.transitions] == ['k1', 'x', 'y', 'z']
 
 
+class TestTransitionPriority:
+    @pytest.fixture()
+    def interpreter(self, priority_statechart):
+        interpreter = Interpreter(priority_statechart, evaluator_klass=DummyEvaluator)
+        interpreter.execute_once()
+        assert interpreter.configuration == ['root', 'a']
+        return interpreter
+
+    def test_high_has_priority(self, interpreter):
+        interpreter.execute_once()
+        assert interpreter.configuration == ['root', 'b']
+                
+    def test_eventless_first(self, interpreter):
+        interpreter.execute_once()
+        interpreter.queue('e')
+        interpreter.execute_once()
+        assert interpreter.configuration == ['root', 'a']  # not ['root', 'c']
+
+    def test_conflicting_priorities(self, interpreter):
+        # Remove "high", stick with two "normal"
+        for transition in interpreter._statechart.transitions:
+            if transition.source == 'a' and transition.priority == 1:
+                interpreter._statechart.remove_transition(transition)
+                break
+
+        with pytest.raises(NonDeterminismError):
+            interpreter.execute_once()
+
+    def test_event_high_has_priority(self, interpreter):
+        # Remove automatic transitions from b
+        for transition in interpreter._statechart.transitions:
+            if transition.source == 'b' and transition.event is None:
+                interpreter._statechart.remove_transition(transition)
+                break
+
+        interpreter.execute_once()
+        interpreter.queue('e')
+        interpreter.execute_once()
+        assert interpreter.configuration == ['root', 'c']
+
+
 class TestLogTrace:
     @pytest.fixture(autouse=True)
     def setup(self, elevator):

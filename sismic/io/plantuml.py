@@ -132,6 +132,8 @@ class PlantUMLExporter:
             if len(transitions) > 0:
                 for transition in transitions:
                     text = []
+                    if transition.priority != Transition.DEFAULT_PRIORITY:
+                        text.append('{}:'.format(transition.priority))
                     if transition.event:
                         text.append('**{}** '.format(transition.event))
                     if transition.guard:
@@ -193,6 +195,8 @@ class PlantUMLExporter:
             target_name = self.state_id(target.name)
 
         text = []
+        if transition.priority != Transition.DEFAULT_PRIORITY:
+            text.append('{}:'.format(transition.priority))
         if transition.event:
             text.append(transition.event + ' ')
         if transition.guard:
@@ -211,8 +215,8 @@ class PlantUMLExporter:
             for cond in transition.postconditions:
                 text.append('post: {}\n'.format(cond))
 
-        format = '{source} {arrow} {target} : {text}' if len(text) > 0 else '{source} {arrow} {target}'
-        self.output(format.format(
+        _format = '{source} {arrow} {target} : {text}' if len(text) > 0 else '{source} {arrow} {target}'
+        self.output(_format.format(
             source=self.state_id(transition.source),
             arrow=self.arrow(transition.source, transition.target),
             target=target_name,
