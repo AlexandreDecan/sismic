@@ -285,10 +285,13 @@ class PythonEvaluator(Evaluator):
         :param state: the considered state
         :return: a list of sent events
         """
+        execution = self._execute_code(getattr(state, 'on_entry', None))
+
         self._entry_time[state.name] = self._interpreter.time
         self._idle_time[state.name] = self._interpreter.time
 
-        return self._execute_code(getattr(state, 'on_entry', None))
+        return execution
+        
 
     def execute_on_exit(self, state: StateMixin) -> List[Event]:
         """

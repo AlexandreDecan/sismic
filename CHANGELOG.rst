@@ -6,6 +6,9 @@ Unreleased
  
  - (Added) Priority can be set for transitions (using *low*, *high* or any integer in yaml). transitions
    are selected according to their priorities (still following eventless and inner-first/source state semantics).
+ - (Fixed) State *on entry* time (used for ``idle`` and ``after``) is set after the *on entry* 
+   action is executed, making the two predicates more accurate when long-running actions are 
+   executed when a state is entered.
 
 
 1.2.2 (2018-06-21)
