@@ -1,5 +1,6 @@
 from behave import given, when, then  # type: ignore
 from ..interpreter import Event
+from .. import testing
 
 
 @given('I do nothing')
@@ -66,10 +67,8 @@ def state_is_entered(context, name):
     # Check that state exists
     context.interpreter.statechart.state_for(name)
 
-    for macrostep in context.monitored_trace:
-        if name in macrostep.entered_states:
-            return
-    assert False, 'State {} is not entered'.format(name)
+    test = testing.state_is_entered(context.monitored_trace, name)
+    assert test, 'State {} is not entered'.format(name)
 
 
 @then('state {name} is not entered')
@@ -77,20 +76,17 @@ def state_is_not_entered(context, name):
     # Check that state exists
     context.interpreter.statechart.state_for(name)
 
-    for macrostep in context.monitored_trace:
-        if name in macrostep.entered_states:
-            assert False, 'State {} is entered'.format(name)
-
+    test = not testing.state_is_entered(context.monitored_trace, name)
+    assert test, 'State {} is entered'.format(name)
+    
 
 @then('state {name} is exited')
 def state_is_exited(context, name):
     # Check that state exists
     context.interpreter.statechart.state_for(name)
 
-    for macrostep in context.monitored_trace:
-        if name in macrostep.exited_states:
-            return
-    assert False, 'State {} is not exited'.format(name)
+    test = testing.state_is_exited(context.monitored_trace, name)
+    assert test, 'State {} is not exited'.format(name)
 
 
 @then('state {name} is not exited')
@@ -98,10 +94,9 @@ def state_is_not_exited(context, name):
     # Check that state exists
     context.interpreter.statechart.state_for(name)
 
-    for macrostep in context.monitored_trace:
-        if name in macrostep.exited_states:
-            assert False, 'State {} is exited'.format(name)
-
+    test = not testing.state_is_exited(context.monitored_trace, name)
+    assert test, 'State {} is exited'.format(name)
+    
 
 @then('state {name} is active')
 def state_is_active(context, name):
@@ -130,28 +125,18 @@ def event_is_fired(context, name, parameter=None, value=None):
     if parameter and value:
         parameters[parameter.strip()] = eval(value.strip(), {}, {})
 
-    for macrostep in context.monitored_trace:
-        for event in macrostep.sent_events:
-            if event.name == name:
-                matching_parameters = True
-                for key, value in parameters.items():
-                    if getattr(event, key, None) != value:
-                        matching_parameters = False
-                        break
-                if matching_parameters:
-                    return
-
+    test = testing.event_is_fired(context.monitored_trace, name, parameters)
+    
     if len(parameters) == 0:
-        assert False, 'Event {} is not fired'.format(name)
+        assert test, 'Event {} is not fired'.format(name)
     else:
-        assert False, 'Event {} is not fired with parameters {}'.format(name, parameters)
+        assert test, 'Event {} is not fired with parameters {}'.format(name, parameters)
 
 
 @then('event {name} is not fired')
 def event_is_not_fired(context, name):
-    for macrostep in context.monitored_trace:
-        for event in macrostep.sent_events:
-            assert event.name != name, 'Event {} is fired'.format(name)
+    test = not testing.event_is_fired(context.monitored_trace, name)
+    assert test, 'Event {} is fired'.format(name)
 
 
 @then('no event is fired')
@@ -184,12 +169,12 @@ def variable_does_not_equal(context, variable, value):
 
 @then('expression {expression} holds')
 def expression_holds(context, expression):
-    assert context.interpreter._evaluator._evaluate_code(expression), 'Expression {} does not hold'.format(expression)
+    assert testing.expression_holds(context.interpreter, expression), 'Expression {} does not holds'.format(expression)
 
 
 @then('expression {expression} does not hold')
 def expression_does_not_hold(context, expression):
-    assert not context.interpreter._evaluator._evaluate_code(expression), 'Expression {} holds'.format(expression)
+    assert not testing.expression_holds(context.interpreter, expression), 'Expression {} holds'.format(expression)
 
 
 @then('statechart is in a final configuration')
