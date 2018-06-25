@@ -9,7 +9,8 @@ Unreleased
  - (Added) A ``sismic.testing`` module containing some primitives to ease unit testing.
  - (Fixed) State *on entry* time (used for ``idle`` and ``after``) is set after the *on entry* 
    action is executed, making the two predicates more accurate when long-running actions are 
-   executed when a state is entered.
+   executed when a state is entered. Similarly, ``idle`` is reset after the action of a transition
+   is performed, not before.
 
 
 1.2.2 (2018-06-21)
@@ -23,7 +24,7 @@ Unreleased
 1.2.1 (2018-06-19)
 ------------------
 
-- (Changed) Transitions are evaluated according to their event (eventless ones first) and
+- (Fixed) Transitions are evaluated according to their event (eventless ones first) and
   inner-first/source state semantics, allowing to bypass many useless guard evaluations.
 
 
@@ -49,15 +50,15 @@ Unreleased
 1.1.0 (2018-04-23)
 ------------------
 
+- (Added) ``Interpreter._select_event`` accepts an additional parameter ``consume`` that can be used
+  to select an event without consuming it.
+- (Added) Documentation for extensions, and two (not included in Sismic!) extensions providing import/export
+  with AMOLA, and new semantics for the interpreter.
 - (Fixed) Final states remain in the active configuration unless they are all children of the root state. In this
   case, statechart execution is stopped. Previously, if all leaf states of the active configuration were final states,
   the execution stopped even if these final states were nested in an orthogonal or compound state. The corrected
   behavior strictly adheres to SCXML 1.0 semantics. This could be a backward incompatible change if you explicitly
   relied on the previously wrong behaviour.
-- (Added) ``Interpreter._select_event`` accepts an additional parameter ``consume`` (default to True) that can be used
-  to select an event without consuming it.
-- (Added) Documentation for extensions, and two (not included in Sismic!) extensions providing import/export
-  with AMOLA, and new semantics for the interpreter.
 
 
 1.0.1 (2018-04-18)

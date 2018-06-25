@@ -273,9 +273,11 @@ class PythonEvaluator(Evaluator):
         :param event: instance of *Event* if any
         :return: a list of sent events
         """
+        execution = self._execute_code(getattr(transition, 'action', None), additional_context={'event': event})
+        
         self._idle_time[transition.source] = self._interpreter.time
 
-        return self._execute_code(getattr(transition, 'action', None), additional_context={'event': event})
+        return execution
 
     def execute_on_entry(self, state: StateMixin) -> List[Event]:
         """

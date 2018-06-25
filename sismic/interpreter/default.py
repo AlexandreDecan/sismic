@@ -34,7 +34,8 @@ def sorted_groupby(iterable, key=None, reverse=False):
 
 class Interpreter:
     """
-    A discrete interpreter that executes a statechart according to a semantic close to SCXML.
+    A discrete interpreter that executes a statechart according to a semantic close to SCXML
+    (eventless transitions first, inner-first/source state semantics).
 
     :param statechart: statechart to interpret
     :param evaluator_klass: An optional callable (eg. a class) that takes an interpreter and an optional initial
@@ -83,7 +84,7 @@ class Interpreter:
     @property
     def time(self) -> float:
         """
-        Time value (in seconds) for the internal clock
+        Time value (in seconds) of the internal clock
         """
         return self._time
 
@@ -356,7 +357,7 @@ class Interpreter:
         else:
             return None
 
-    def _select_transitions(self, event: Event, states: List[str], *,
+    def _select_transitions(self, event: Optional[Event], states: Iterable[str], *,
             eventless_first=True, inner_first=True) -> List[Transition]:
         """
         Select and return the transitions that are triggered, based on given event
@@ -444,7 +445,7 @@ class Interpreter:
             # Two transitions conflict if one of them leaves the parallel state
             for t1, t2 in combinations(transitions, 2):
                 # Check (1)
-                lca = self._statechart.least_common_ancestor(t1.source, t2.source)  # type: str
+                lca = cast(str, self._statechart.least_common_ancestor(t1.source, t2.source))
                 lca_state = self._statechart.state_for(lca)
 
                 # Their LCA must be an orthogonal state!
