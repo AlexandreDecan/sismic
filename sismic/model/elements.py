@@ -338,6 +338,7 @@ class Transition(ContractMixin):
                 and self.event == other.event
                 and self.guard == other.guard
                 and self.action == other.action
+                and self.priority == other.priority
             )
         else:
             return NotImplemented
