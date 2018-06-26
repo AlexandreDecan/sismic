@@ -1,3 +1,5 @@
+import warnings
+
 from collections import deque, defaultdict
 from itertools import combinations
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Union, cast, Tuple
@@ -8,6 +10,7 @@ try:
 except ImportError:
     pass
 
+from .clock import Clock
 from ..model import (
     MacroStep, MicroStep, Event, InternalEvent, MetaEvent,
     Statechart, Transition,
@@ -16,7 +19,7 @@ from ..model import (
 
 from ..code import Evaluator, PythonEvaluator
 from ..exceptions import (ConflictingTransitionsError, InvariantError, PropertyStatechartError,
-                          ExecutionError, NonDeterminismError, PostconditionError, PreconditionError)
+                          NonDeterminismError, PostconditionError, PreconditionError)
 
 __all__ = ['Interpreter']
 
@@ -57,7 +60,7 @@ class Interpreter:
         self._initialized = False
 
         # Internal clock
-        self._time = 0  # type: float
+        self.clock = Clock()
 
         # History states memory
         self._memory = {}  # type: Dict[str, Optional[List[str]]]
@@ -84,25 +87,18 @@ class Interpreter:
     @property
     def time(self) -> float:
         """
-        Time value (in seconds) of the internal clock
+        Time value (in seconds) of the internal clock. 
+
+        Deprecated since 1.3.0, use Interpreter.clock.time instead.
         """
-        return self._time
+        warnings.warn('Interpreter.time is deprecated since 1.3.0, use Interpreter.clock.time instead', DeprecationWarning)
+        return self.clock.time
 
     @time.setter
     def time(self, value: float):
-        """
-        Set the time of the internal clock
-
-        :param value: time value (in seconds)
-        """
-        if self._time > value:
-            raise ExecutionError('Time must be monotonic, cannot set time to {} from {}'.format(value, self._time))
-        self._time = value
-
-        # Update bound properties
-        for property_statechart in self._bound_properties:
-            property_statechart.time = self._time
-
+        warnings.warn('Interpreter.time is deprecated since 1.3.0, use Interpreter.clock.time instead', DeprecationWarning)
+        self.clock.time = value
+        
     @property
     def configuration(self) -> List[str]:
         """
@@ -178,7 +174,7 @@ class Interpreter:
             interpreter = statechart_or_interpreter
 
         # Sync clock
-        interpreter.time = self.time
+        interpreter.clock = self.clock
 
         # Add to the list of properties
         self._bound_properties.append(interpreter)
@@ -262,7 +258,7 @@ class Interpreter:
             executed_steps.append(self._apply_step(step))
             executed_steps.extend(self._stabilize())
 
-        macro_step = MacroStep(time=self.time, steps=executed_steps)
+        macro_step = MacroStep(time=self.clock.time, steps=executed_steps)
 
         # Check state invariants
         configuration = self.configuration  # Use self.configuration to benefit from the sorting by depth

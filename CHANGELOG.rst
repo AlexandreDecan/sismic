@@ -7,10 +7,15 @@ Unreleased
  - (Added) Priority can be set for transitions (using *low*, *high* or any integer in yaml). transitions
    are selected according to their priorities (still following eventless and inner-first/source state semantics).
  - (Added) A ``sismic.testing`` module containing some primitives to ease unit testing.
+ - (Added) An ``Interpreter.clock`` attribute that stores an instance of the newly added ``Clock`` class. 
+   This clock can be used to represent simulated and real time. See documentation for more information.
+ - (Changed) ``helpers.run_in_background`` no longer synchronizes the interpreter clock. 
+   Use ``interpreter.clock.start()`` instead. 
  - (Fixed) State *on entry* time (used for ``idle`` and ``after``) is set after the *on entry* 
    action is executed, making the two predicates more accurate when long-running actions are 
    executed when a state is entered. Similarly, ``idle`` is reset after the action of a transition
    is performed, not before.
+ - (Deprecated) ``Interpreter.time`` is deprecated, use ``Interpreter.clock.time`` instead.
 
 
 1.2.2 (2018-06-21)

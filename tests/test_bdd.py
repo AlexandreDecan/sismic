@@ -112,12 +112,12 @@ class TestSteps:
         context.interpreter.queue.assert_called_with(Event('event_name', x=1))
 
     def test_wait(self, context):
-        context.interpreter.time = 0
+        context.interpreter.clock.time = 0
         steps.wait(context, 3)
-        assert context.interpreter.time == 3
+        assert context.interpreter.clock.time == 3
 
         steps.wait(context, 6)
-        assert context.interpreter.time == 9
+        assert context.interpreter.clock.time == 9
 
     def test_state_is_entered(self, context, trace):
         context.monitored_trace = []
