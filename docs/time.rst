@@ -1,4 +1,3 @@
-
 Dealing with time
 =================
 
@@ -16,20 +15,28 @@ evaluate to ``True`` if the current time of the interpreter is at least ``x`` se
 state using this predicate (or source state in the case of a transition) was entered.
 Similarly, ``idle(x)`` evaluates to ``True`` if no transition was triggered during the last ``x`` seconds.
 
+Sismic provides two implementations of :py:class:`~sismic.clock.BaseClock` in its :py:mod:`sismic.clock` module.
+The first one is a :py:class:`~sismic.clock.SimulatedClock` that can be manually or automatically incremented. In the latter case, 
+the speed of the clock can be easily changed. The second implementation is a classical :py:class:`~sismic.clock.WallClock` with 
+no flourish.
 
-Interpreter clock
------------------
+By default, the interpreter uses a :py:class:`~sismic.clock.SimulatedClock`. If you want the 
+interpreter to rely on another kind of clock, pass an instance of :py:class:`~sismic.clock.BaseClock`
+as the ``clock`` parameter of an interpreter constructor. 
 
-The clock of an interpreter is an instance of :py:class:`~sismic.interpreter.Clock` and is 
-exposed through its :py:attr:`~sismic.interpreter.Interpreter.clock` attribute. 
 
-The clock always starts at ``0`` and accumulates the elapsed time. 
-Its current time value can be read from the :py:attr:`~sismic.interpreter.Clock.time` attribute. 
+Simulated clock
+---------------
+
+The default clock is a :py:class:`~sismic.clock.SimulatedClock` instance.
+This clock always starts at ``0`` and accumulates the elapsed time. 
+
+Its current time value can be read from the :py:attr:`~sismic.clock.SimulatedClock.time` attribute. 
 By default, the value of this attribute does not change, unless manually modified (simulated time) or
-by starting the clock (using :py:meth:`~sismic.interpreter.Clock.start`, wall-clock time).
+by starting the clock (using :py:meth:`~sismic.clock.SimulatedClock.start`, wall-clock time).
 
 
-To change the current time of a clock, simply set a new value to the :py:attr:`~sismic.interpreter.Clock.time` attribute.
+To change the current time of a clock, simply set a new value to the :py:attr:`~sismic.clock.SimulatedClock.time` attribute.
 Notice that time is expected to be monotonic: it is not allowed to set a new value that is strictly lower than
 the previous one. 
 
@@ -37,9 +44,9 @@ As expected, simulated time can be easily achieved by manually modifying this va
 
 .. testcode:: clock
 
-    from sismic.interpreter import Clock
+    from sismic.clock import SimulatedClock
 
-    clock = Clock()
+    clock = SimulatedClock()
     print('initial time:', clock.time)
 
     clock.time += 10
@@ -51,8 +58,8 @@ As expected, simulated time can be easily achieved by manually modifying this va
     new time: 10
 
 
-To support real time, a :py:class:`~sismic.interpreter.Clock` object has two methods, namely 
-:py:meth:`~sismic.interpreter.Clock.start` and :py:meth:`~sismic.interpreter.Clock.stop`. 
+To support real time, a :py:class:`~sismic.clock.SimulatedClock` object has two methods, namely 
+:py:meth:`~sismic.clock.SimulatedClock.start` and :py:meth:`~sismic.clock.SimulatedClock.stop`. 
 These methods can be used respectively to start and stop the synchronization with real time. 
 Internally, the clock relies on Python's ``time.time()`` function. 
 
@@ -60,7 +67,7 @@ Internally, the clock relies on Python's ``time.time()`` function.
 
     from time import sleep
 
-    clock = Clock()
+    clock = SimulatedClock()
 
     clock.start()
     sleep(0.1)
@@ -73,7 +80,7 @@ Internally, the clock relies on Python's ``time.time()`` function.
 
 
 A clock based on real time can also be manually changed during the execution by setting a 
-new value for its :py:attr:`~sismic.interpreter.Clock.time` attribute:
+new value for its :py:attr:`~sismic.clock.SimulatedClock.time` attribute:
 
 
 .. testcode:: clock
@@ -91,13 +98,13 @@ new value for its :py:attr:`~sismic.interpreter.Clock.time` attribute:
 
 
 Finally, a clock based on real time can be accelerated or slowed down by changing the value 
-of its :py:attr:`~sismic.interpreter.Clock.speed` attribute. By default, the value of this 
+of its :py:attr:`~sismic.clock.BaseClock.speed` attribute. By default, the value of this 
 attribute is set to ``1``. A higher value (e.g. ``2``) means that the clock will be faster
 than real time (e.g. 2 times faster), while a lower value slows down the clock. 
 
 .. testcode:: clock
 
-    clock = Clock()
+    clock = SimulatedClock()
     clock.speed = 100
 
     clock.start()
@@ -110,10 +117,9 @@ than real time (e.g. 2 times faster), while a lower value slows down the clock.
 
     new time: 10
 
-    
 
-Simulated time
---------------
+Example: manual time
+~~~~~~~~~~~~~~~~~~~~
 
 The following example illustrates a statechart modeling the behavior of a simple *elevator*.
 If the elevator is sent to the 4th floor then, according to the YAML definition of this statechart,
@@ -180,12 +186,11 @@ Let's check the current floor:
     0
 
 
-
-Real or wall-clock time
------------------------
+Example: automatic time
+~~~~~~~~~~~~~~~~~~~~~~~
 
 If the execution of a statechart needs to rely on a real clock, the simplest way to achieve this
-is by using the :py:meth:`~sismic.interpreter.Clock.start` method of an interpreter clock. 
+is by using the :py:meth:`~sismic.clock.SimulatedClock.start` method of an interpreter clock. 
 
 Let us first initialize an interpreter using one of our statechart example, the *elevator*:
 
@@ -245,3 +250,33 @@ We can now check that our elevator is on the ground floor:
 .. testoutput:: realclock
 
     0
+
+
+Wall-clock 
+----------
+
+The second clock provided by Sismic is a :py:class:`~sismic.clock.WallClock` whose time 
+is synchronized with system time (it relies on the ``time.time()`` function of Python).
+
+
+.. testcode::
+
+    from sismic.clock import WallClock
+    from time import time
+
+    clock = WallClock()
+    assert (time() - clock.time) <= 1
+
+
+Implementing other clocks
+-------------------------
+
+You can quite easily write your own clock implementation, for example if you need to
+synchronize different distributed interpreters or if you want your clock to ignore
+Sismic processing time. Simply subclass the :py:class:`~sismic.clock.BaseClock` base class.
+
+.. autoclass:: sismic.clock.BaseClock
+    :members:
+    :member-order: bysource
+    :noindex:
+

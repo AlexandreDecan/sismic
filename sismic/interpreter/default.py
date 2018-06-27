@@ -10,7 +10,7 @@ try:
 except ImportError:
     pass
 
-from .clock import Clock
+from ..clock import BaseClock, SimulatedClock
 from ..model import (
     MacroStep, MicroStep, Event, InternalEvent, MetaEvent,
     Statechart, Transition,
@@ -42,16 +42,19 @@ class Interpreter:
 
     :param statechart: statechart to interpret
     :param evaluator_klass: An optional callable (eg. a class) that takes an interpreter and an optional initial
-        context as input and return an *Evaluator* instance that will be used to initialize the interpreter.
+        context as input and returns an *Evaluator* instance that will be used to initialize the interpreter.
         By default, the *PythonEvaluator* class will be used.
     :param initial_context: an optional initial context that will be provided to the evaluator.
         By default, an empty context is provided
+    :param clock: A BaseClock instance that will be used to set this interpreter internal time.
+        By default, a SimulatedClock is used.
     :param ignore_contract: set to True to ignore contract checking during the execution.
     """
 
     def __init__(self, statechart: Statechart, *,
                  evaluator_klass: Callable[..., Evaluator]=PythonEvaluator,
                  initial_context: Mapping[str, Any]=None,
+                 clock: BaseClock=None,
                  ignore_contract: bool=False) -> None:
         # Internal variables
         self._ignore_contract = ignore_contract
@@ -60,7 +63,7 @@ class Interpreter:
         self._initialized = False
 
         # Internal clock
-        self.clock = Clock()
+        self.clock = SimulatedClock() if clock is None else clock
 
         # History states memory
         self._memory = {}  # type: Dict[str, Optional[List[str]]]
@@ -97,7 +100,7 @@ class Interpreter:
     @time.setter
     def time(self, value: float):
         warnings.warn('Interpreter.time is deprecated since 1.3.0, use Interpreter.clock.time instead', DeprecationWarning)
-        self.clock.time = value
+        self.clock.time = value  # type: ignore
         
     @property
     def configuration(self) -> List[str]:
@@ -233,12 +236,16 @@ class Interpreter:
 
         :return: a macro step or *None* if nothing happened
         """
+        # Freeze clock to have a consistent time value during the step
+        self.clock.split()
+
         # Compute steps
         computed_steps = self._compute_steps()
 
         if computed_steps is None:
             # No step (no transition, no event). However, check properties
             self._check_properties(None)
+            self.clock.unsplit()
             return None
 
         # Notify properties
@@ -269,6 +276,9 @@ class Interpreter:
         # End step and check for property statechart violations
         self._notify_properties('step ended')
         self._check_properties(macro_step)
+
+        # Unfreeze time
+        self.clock.unsplit()
 
         return macro_step
 

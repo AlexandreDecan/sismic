@@ -1,13 +1,13 @@
 import pytest
 
 from time import sleep
-from sismic.interpreter import Clock
+from sismic.clock import SimulatedClock, WallClock
 
 
-class TestClock:
+class TestSimulatedClock:
     @pytest.fixture()
     def clock(self):
-        return Clock()
+        return SimulatedClock()
 
     def test_initial_value(self, clock):
         assert clock.time == 0
@@ -68,4 +68,42 @@ class TestClock:
 
         assert 0.2 <= clock.time < 0.3
 
+    def test_split(self, clock):
+        clock.split()
+        clock.time = 10
+        assert clock.time == 0
+        clock.unsplit()
+        assert clock.time == 10
+
+    def test_split_with_automatic(self, clock):
+        clock.start()
+        sleep(0.1)
+        assert clock.time >= 0.1
+        
+        clock.split()
+        current_time = clock.time
+        sleep(0.1)
+        assert clock.time == current_time
+
+        clock.unsplit()
+        assert clock.time > current_time
     
+
+class TestWallClock:
+    @pytest.fixture()
+    def clock(self):
+        return WallClock()
+
+    def test_increase(self, clock):
+        current_time = clock.time
+        sleep(0.1)
+        assert clock.time > current_time
+
+    def test_split(self, clock):
+        clock.split()
+        current_time = clock.time
+        sleep(0.1)
+        assert clock.time == current_time
+        clock.unsplit()
+        assert clock.time > current_time
+        
