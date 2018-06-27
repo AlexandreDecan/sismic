@@ -3,7 +3,7 @@ import abc
 from time import time
 
 
-__all__ = ['BaseClock', 'SimulatedClock', 'WallClock']
+__all__ = ['BaseClock', 'SimulatedClock', 'WallClock', 'SynchronizedClock']
 
 
 class BaseClock(metaclass=abc.ABCMeta):
@@ -12,29 +12,11 @@ class BaseClock(metaclass=abc.ABCMeta):
 
     The purpose of a clock instance is to provide a way for the interpreter
     to get the current time during the execution of a statechart. 
-
-    There are two important properties that must be satisfied by any
-    implementation: (1) time is expected to be monotonic; and (2) returned time 
-    is expected to remain constant between calls to split() and unsplit().
     """
     @abc.abstractproperty
     def time(self):
         """
         Current time
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def split(self):
-        """
-        Freeze current time until unsplit() is called.
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def unsplit(self):
-        """
-        Unfreeze current time.
         """
         raise NotImplementedError()
 
@@ -55,7 +37,6 @@ class SimulatedClock(BaseClock):
         self._time = 0
         self._play = False
         self._speed = 1
-        self._split = None
 
     @property
     def _elapsed(self):
@@ -91,27 +72,12 @@ class SimulatedClock(BaseClock):
         self._base = time()
         self._speed = speed
 
-    def split(self):
-        """
-        Freeze current time until unsplit is called.
-        """
-        self._split = self.time
-
-    def unsplit(self):
-        """
-        Unfreeze current time.
-        """
-        self._split = None
-
     @property
     def time(self):
         """
         Time value of this clock.
         """
-        if self._split is None:
-            return self._time + self._elapsed
-        else:
-            return self._split
+        return self._time + self._elapsed
         
     @time.setter
     def time(self, new_time):
@@ -142,21 +108,31 @@ class WallClock(BaseClock):
     """
     A clock that follows wall-clock time. 
     """
-    def __init__(self):
-        self._split = None
+    
+    @property
+    def time(self):
+        return time()
+    
+    def __repr__(self):
+        return 'WallClock[{}]'.format(self.time)
 
-    def split(self):
-        self._split = self.time
 
-    def unsplit(self):
-        self._split = None
+class SynchronizedClock(BaseClock):
+    """
+    A clock that is synchronized with a given interpreter.
+
+    The synchronization is based on the interpreter's internal time value, not 
+    on its clock. As a consequence, the time value of a SynchronizedClock only
+    changes when the underlying interpreter is executed.
+
+    :param interpreter: an interpreter instance
+    """
+    def __init__(self, interpreter):
+        self._interpreter = interpreter
 
     @property
     def time(self):
-        if self._split is None:
-            return time()
-        else:
-            return self._split
+        return self._interpreter.time
 
     def __repr__(self):
-        return 'WallClock[{}]'.format(self.time)
+        return 'SynchronizedClock[{}]'.format(self._interpreter.time)

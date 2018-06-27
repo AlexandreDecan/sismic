@@ -167,7 +167,7 @@ class PythonEvaluator(Evaluator):
         :param seconds: elapsed time
         :return: True if given state was entered more than *seconds* ago.
         """
-        return self._interpreter.clock.time - seconds >= self._entry_time[name]
+        return self._interpreter.time - seconds >= self._entry_time[name]
 
     def _idle(self, name: str, seconds: float) -> bool:
         """
@@ -177,7 +177,7 @@ class PythonEvaluator(Evaluator):
         :param seconds: elapsed time
         :return: True if given state was the target of a transition more than *seconds* ago.
         """
-        return self._interpreter.clock.time - seconds >= self._idle_time[name]
+        return self._interpreter.time - seconds >= self._idle_time[name]
 
     def _evaluate_code(self, code: Optional[str], *, additional_context: Mapping=None) -> bool:
         """
@@ -196,7 +196,7 @@ class PythonEvaluator(Evaluator):
 
         exposed_context = {
             'active': self._active,
-            'time': self._interpreter.clock.time,
+            'time': self._interpreter.time,
         }
         exposed_context.update(additional_context if additional_context is not None else {})
 
@@ -227,7 +227,7 @@ class PythonEvaluator(Evaluator):
             'active': self._active,
             'send': create_send_function(sent_events, InternalEvent),
             'notify': create_send_function(sent_events, MetaEvent),
-            'time': self._interpreter.clock.time,
+            'time': self._interpreter.time,
         }
         exposed_context.update(additional_context if additional_context is not None else {})
 
@@ -275,7 +275,7 @@ class PythonEvaluator(Evaluator):
         """
         execution = self._execute_code(getattr(transition, 'action', None), additional_context={'event': event})
         
-        self._idle_time[transition.source] = self._interpreter.clock.time
+        self._idle_time[transition.source] = self._interpreter.time
 
         return execution
 
@@ -289,8 +289,8 @@ class PythonEvaluator(Evaluator):
         """
         execution = self._execute_code(getattr(state, 'on_entry', None))
 
-        self._entry_time[state.name] = self._interpreter.clock.time
-        self._idle_time[state.name] = self._interpreter.clock.time
+        self._entry_time[state.name] = self._interpreter.time
+        self._idle_time[state.name] = self._interpreter.time
 
         return execution
         

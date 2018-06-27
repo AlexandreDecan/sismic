@@ -10,7 +10,7 @@ try:
 except ImportError:
     pass
 
-from ..clock import BaseClock, SimulatedClock
+from ..clock import BaseClock, SimulatedClock, SynchronizedClock
 from ..model import (
     MacroStep, MicroStep, Event, InternalEvent, MetaEvent,
     Statechart, Transition,
@@ -41,7 +41,7 @@ class Interpreter:
     (eventless transitions first, inner-first/source state semantics).
 
     :param statechart: statechart to interpret
-    :param evaluator_klass: An optional callable (eg. a class) that takes an interpreter and an optional initial
+    :param evaluator_klass: An optional callable (e.g. a class) that takes an interpreter and an optional initial
         context as input and returns an *Evaluator* instance that will be used to initialize the interpreter.
         By default, the *PythonEvaluator* class will be used.
     :param initial_context: an optional initial context that will be provided to the evaluator.
@@ -64,6 +64,7 @@ class Interpreter:
 
         # Internal clock
         self.clock = SimulatedClock() if clock is None else clock
+        self._time = self.clock.time
 
         # History states memory
         self._memory = {}  # type: Dict[str, Optional[List[str]]]
@@ -90,12 +91,9 @@ class Interpreter:
     @property
     def time(self) -> float:
         """
-        Time value (in seconds) of the internal clock. 
-
-        Deprecated since 1.3.0, use Interpreter.clock.time instead.
+        Time of the latest execution.
         """
-        warnings.warn('Interpreter.time is deprecated since 1.3.0, use Interpreter.clock.time instead', DeprecationWarning)
-        return self.clock.time
+        return self._time
 
     @time.setter
     def time(self, value: float):
@@ -177,7 +175,7 @@ class Interpreter:
             interpreter = statechart_or_interpreter
 
         # Sync clock
-        interpreter.clock = self.clock
+        interpreter.clock = SynchronizedClock(self)
 
         # Add to the list of properties
         self._bound_properties.append(interpreter)
@@ -236,8 +234,8 @@ class Interpreter:
 
         :return: a macro step or *None* if nothing happened
         """
-        # Freeze clock to have a consistent time value during the step
-        self.clock.split()
+        # Store time to have a consistent time value during this step
+        self._time = self.clock.time
 
         # Compute steps
         computed_steps = self._compute_steps()
@@ -245,7 +243,6 @@ class Interpreter:
         if computed_steps is None:
             # No step (no transition, no event). However, check properties
             self._check_properties(None)
-            self.clock.unsplit()
             return None
 
         # Notify properties
@@ -265,7 +262,7 @@ class Interpreter:
             executed_steps.append(self._apply_step(step))
             executed_steps.extend(self._stabilize())
 
-        macro_step = MacroStep(time=self.clock.time, steps=executed_steps)
+        macro_step = MacroStep(time=self._time, steps=executed_steps)
 
         # Check state invariants
         configuration = self.configuration  # Use self.configuration to benefit from the sorting by depth
@@ -276,9 +273,6 @@ class Interpreter:
         # End step and check for property statechart violations
         self._notify_properties('step ended')
         self._check_properties(macro_step)
-
-        # Unfreeze time
-        self.clock.unsplit()
 
         return macro_step
 

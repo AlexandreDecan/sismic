@@ -26,24 +26,20 @@ class TestInterpreterWithSimple:
         assert not interpreter.final
 
     def test_time(self, interpreter):
-        assert interpreter.clock.time == 0
+        assert interpreter.time == 0
 
         interpreter.clock.time += 10
-        assert interpreter.clock.time == 10
+        # No execution means no new time value
+        assert interpreter.time == 0  
 
-        interpreter.clock.time = 20
-        assert interpreter.clock.time == 20
-
-        with pytest.raises(ValueError):
-            interpreter.clock.time = 10
+        interpreter.execute()
+        assert interpreter.time == 10
 
     def test_deprecated_time(self, interpreter):
         with pytest.warns(DeprecationWarning):
-            assert interpreter.time == 0
-        
-        with pytest.warns(DeprecationWarning):
             interpreter.time += 1
-            assert interpreter.time == 1
+            assert interpreter.time == 0
+            assert interpreter.clock.time == 1
 
     def test_queue(self, interpreter):
         interpreter.queue(Event('e1'))
@@ -539,7 +535,7 @@ def test_run_in_background(elevator):
     task.stop()
 
     assert elevator.context['current'] == 4
-    assert elevator.clock.time == 0
+    assert elevator.time == 0
 
 
 class TestCoverageFromTrace:

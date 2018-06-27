@@ -20,9 +20,9 @@ class TestInterpreterMetaEvents:
         return property
 
     def test_synchronised_time(self, microwave, property_statechart):
-        assert microwave.clock.time == property_statechart.clock.time
+        assert microwave.time == property_statechart.time
         microwave.clock.time += 10
-        assert microwave.clock.time == property_statechart.clock.time
+        assert microwave.time == property_statechart.time
 
     def test_empty_step(self, microwave, property_statechart):
         microwave.execute()

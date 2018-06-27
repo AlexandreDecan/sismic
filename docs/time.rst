@@ -15,10 +15,14 @@ evaluate to ``True`` if the current time of the interpreter is at least ``x`` se
 state using this predicate (or source state in the case of a transition) was entered.
 Similarly, ``idle(x)`` evaluates to ``True`` if no transition was triggered during the last ``x`` seconds.
 
-Sismic provides two implementations of :py:class:`~sismic.clock.BaseClock` in its :py:mod:`sismic.clock` module.
+These two predicates rely on the :py:attr:`~sismic.interpreter.Interpreter.time` attribute of an interpreter.
+The value of that attribute is computed at the beginning of each executed step based on a clock. 
+
+Sismic provides three implementations of :py:class:`~sismic.clock.BaseClock` in its :py:mod:`sismic.clock` module.
 The first one is a :py:class:`~sismic.clock.SimulatedClock` that can be manually or automatically incremented. In the latter case, 
 the speed of the clock can be easily changed. The second implementation is a classical :py:class:`~sismic.clock.WallClock` with 
-no flourish.
+no flourish. The third implemention is a :py:class:`~sismic.clock.SynchronizedClock` that synchronizes its time value 
+based on the one of an interpreter. Its main use case is to support the co-execution of property statecharts.
 
 By default, the interpreter uses a :py:class:`~sismic.clock.SimulatedClock`. If you want the 
 interpreter to rely on another kind of clock, pass an instance of :py:class:`~sismic.clock.BaseClock`
@@ -121,7 +125,7 @@ than real time (e.g. 2 times faster), while a lower value slows down the clock.
 Example: manual time
 ~~~~~~~~~~~~~~~~~~~~
 
-The following example illustrates a statechart modeling the behavior of a simple *elevator*.
+The following example illustrates a statechart modelling the behavior of a simple *elevator*.
 If the elevator is sent to the 4th floor then, according to the YAML definition of this statechart,
 the elevator should automatically go back to the ground floor after 10 seconds.
 
@@ -268,12 +272,26 @@ is synchronized with system time (it relies on the ``time.time()`` function of P
     assert (time() - clock.time) <= 1
 
 
+Synchronized clock
+------------------
+
+The third clock is a :py:class:`~sismic.clock.SynchronizedClock` that expects an 
+:py:class:`~sismic.interpreter.Interpreter` instance, and synchronizes its time
+value based on the value of the ``time`` attribute of the interpreter.
+
+The main use cases are when statechart executions have to be synchronized to the 
+point where a shared clock instance is not sufficient because executions should 
+occur at exactly the same time, up to the milliseconds. Internally, this clock 
+is used when property statecharts are bound to an interpreter, as they need to be
+executed at the exact same time. 
+
+
 Implementing other clocks
 -------------------------
 
 You can quite easily write your own clock implementation, for example if you need to
-synchronize different distributed interpreters or if you want your clock to ignore
-Sismic processing time. Simply subclass the :py:class:`~sismic.clock.BaseClock` base class.
+synchronize different distributed interpreters. 
+Simply subclass the :py:class:`~sismic.clock.BaseClock` base class.
 
 .. autoclass:: sismic.clock.BaseClock
     :members:

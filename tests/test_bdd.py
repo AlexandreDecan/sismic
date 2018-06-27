@@ -115,7 +115,7 @@ class TestSteps:
         context.interpreter.clock.time = 0
         steps.wait(context, 3)
         assert context.interpreter.clock.time == 3
-
+        
         steps.wait(context, 6)
         assert context.interpreter.clock.time == 9
 

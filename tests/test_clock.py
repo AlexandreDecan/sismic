@@ -1,7 +1,7 @@
 import pytest
 
 from time import sleep
-from sismic.clock import SimulatedClock, WallClock
+from sismic.clock import SimulatedClock, WallClock, SynchronizedClock
 
 
 class TestSimulatedClock:
@@ -15,6 +15,11 @@ class TestSimulatedClock:
     def test_manual_increment(self, clock):
         clock.time += 1
         assert clock.time == 1
+
+    def test_monotonicity(self, clock):
+        clock.time = 10
+        with pytest.raises(ValueError):
+            clock.time = 0
 
     def test_automatic_increment(self, clock):
         clock.start()
@@ -68,26 +73,6 @@ class TestSimulatedClock:
 
         assert 0.2 <= clock.time < 0.3
 
-    def test_split(self, clock):
-        clock.split()
-        clock.time = 10
-        assert clock.time == 0
-        clock.unsplit()
-        assert clock.time == 10
-
-    def test_split_with_automatic(self, clock):
-        clock.start()
-        sleep(0.1)
-        assert clock.time >= 0.1
-        
-        clock.split()
-        current_time = clock.time
-        sleep(0.1)
-        assert clock.time == current_time
-
-        clock.unsplit()
-        assert clock.time > current_time
-    
 
 class TestWallClock:
     @pytest.fixture()
@@ -99,11 +84,26 @@ class TestWallClock:
         sleep(0.1)
         assert clock.time > current_time
 
-    def test_split(self, clock):
-        clock.split()
-        current_time = clock.time
-        sleep(0.1)
-        assert clock.time == current_time
-        clock.unsplit()
-        assert clock.time > current_time
+
+class TestSynchronizedClock():
+    @pytest.fixture()
+    def interpreter(self, mocker):
+        interpreter = mocker.MagicMock()
+        interpreter.time = 0
+        return interpreter
+    
+    @pytest.fixture()
+    def clock(self, interpreter):
+        return SynchronizedClock(interpreter)
+
+    def test_init(self, clock):
+        assert clock.time == 0
+
+    def test_sync(self, clock, interpreter):
+        interpreter.time = 3
+        assert clock.time == 3
+
+    def test_no_sync_with_clock(self, clock, interpreter):
+        interpreter.clock.time = 3
+        assert clock.time == 0
         
