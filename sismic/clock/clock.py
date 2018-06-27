@@ -146,7 +146,7 @@ class WallClock(BaseClock):
         self._split = None
 
     def split(self):
-        self._split = time()
+        self._split = self.time
 
     def unsplit(self):
         self._split = None
