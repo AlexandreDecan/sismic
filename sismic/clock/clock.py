@@ -1,9 +1,10 @@
 import abc
 
+from numbers import Number
 from time import time
 
 
-__all__ = ['BaseClock', 'SimulatedClock', 'WallClock', 'SynchronizedClock']
+__all__ = ['BaseClock', 'SimulatedClock', 'UtcClock', 'SynchronizedClock']
 
 
 class BaseClock(metaclass=abc.ABCMeta):
@@ -14,11 +15,14 @@ class BaseClock(metaclass=abc.ABCMeta):
     to get the current time during the execution of a statechart. 
     """
     @abc.abstractproperty
-    def time(self):
+    def time(self) -> Number:
         """
         Current time
         """
         raise NotImplementedError()
+
+    def __repr__(self):
+        return '{}[{}]'.format(self.__class__.__name__, self.time)
 
 
 class SimulatedClock(BaseClock):
@@ -97,24 +101,24 @@ class SimulatedClock(BaseClock):
         return '{:.2f}'.format(float(self.time))
 
     def __repr__(self):
-        return 'SimulatedClock[{:.2f},x{},{}]'.format(
+        return '{}[{:.2f},x{},{}]'.format(
+            self.__class__.__name__,
             self.time,
             self._speed,
             '>' if self._play else '=',
         )
 
     
-class WallClock(BaseClock):
+class UtcClock(BaseClock):
     """
-    A clock that follows wall-clock time. 
+    A clock that simulates a wall clock in UTC. 
+
+    The returned time value is based on Python time.time() function.
     """
     
     @property
     def time(self):
         return time()
-    
-    def __repr__(self):
-        return 'WallClock[{}]'.format(self.time)
 
 
 class SynchronizedClock(BaseClock):
@@ -133,6 +137,3 @@ class SynchronizedClock(BaseClock):
     @property
     def time(self):
         return self._interpreter.time
-
-    def __repr__(self):
-        return 'SynchronizedClock[{}]'.format(self._interpreter.time)

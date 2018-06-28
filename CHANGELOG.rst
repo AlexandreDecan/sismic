@@ -8,7 +8,7 @@ Unreleased
    are selected according to their priorities (still following eventless and inner-first/source state semantics).
  - (Added) A ``sismic.testing`` module containing some primitives to ease unit testing.
  - (Added) A ``sismic.clock`` module with a ``BaseClock`` base class and three direct implementations, 
-   namely ``SimulatedClock``, ``WallClock`` and ``SynchronizedClock``. A ``SimulatedClock`` allows to manually or automatically 
+   namely ``SimulatedClock``, ``UtcClock`` and ``SynchronizedClock``. A ``SimulatedClock`` allows to manually or automatically 
    change the time, while a ``WallClock`` as the expected behaviour of a wall-clock. 
    ``Clock`` instances are used by the interpreter to get the current time during execution. 
    See documentation for more information.
@@ -16,7 +16,7 @@ Unreleased
  - (Changed) ``interpreter.time`` represents the time of the last executed step, not the current
    time. Use ``interpreter.clock.time`` instead. 
  - (Changed) ``helpers.run_in_background`` no longer synchronizes the interpreter clock. 
-   Use the ``start()`` method of ``interpreter.clock`` or a ``WallClock`` instance instead. 
+   Use the ``start()`` method of ``interpreter.clock`` or an ``UtcClock`` instance instead. 
  - (Fixed) State *on entry* time (used for ``idle`` and ``after``) is set after the *on entry* 
    action is executed, making the two predicates more accurate when long-running actions are 
    executed when a state is entered. Similarly, ``idle`` is reset after the action of a transition

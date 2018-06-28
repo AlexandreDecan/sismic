@@ -1,3 +1,3 @@
-from .clock import BaseClock, SimulatedClock, WallClock, SynchronizedClock
+from .clock import BaseClock, SimulatedClock, UtcClock, SynchronizedClock
 
-__all__ = ['BaseClock', 'SimulatedClock', 'WallClock', 'SynchronizedClock']
+__all__ = ['BaseClock', 'SimulatedClock', 'UtcClock', 'SynchronizedClock']

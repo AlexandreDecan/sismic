@@ -1,7 +1,7 @@
 import pytest
 
 from time import sleep
-from sismic.clock import SimulatedClock, WallClock, SynchronizedClock
+from sismic.clock import SimulatedClock, UtcClock, SynchronizedClock
 
 
 class TestSimulatedClock:
@@ -74,10 +74,10 @@ class TestSimulatedClock:
         assert 0.2 <= clock.time < 0.3
 
 
-class TestWallClock:
+class TestUtcClock:
     @pytest.fixture()
     def clock(self):
-        return WallClock()
+        return UtcClock()
 
     def test_increase(self, clock):
         current_time = clock.time

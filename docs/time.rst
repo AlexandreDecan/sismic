@@ -20,8 +20,8 @@ The value of that attribute is computed at the beginning of each executed step b
 
 Sismic provides three implementations of :py:class:`~sismic.clock.BaseClock` in its :py:mod:`sismic.clock` module.
 The first one is a :py:class:`~sismic.clock.SimulatedClock` that can be manually or automatically incremented. In the latter case, 
-the speed of the clock can be easily changed. The second implementation is a classical :py:class:`~sismic.clock.WallClock` with 
-no flourish. The third implemention is a :py:class:`~sismic.clock.SynchronizedClock` that synchronizes its time value 
+the speed of the clock can be easily changed. The second implementation is a classical :py:class:`~sismic.clock.UtcClock` that corresponds
+to a wall-clock in UTC with no flourish. The third implemention is a :py:class:`~sismic.clock.SynchronizedClock` that synchronizes its time value 
 based on the one of an interpreter. Its main use case is to support the co-execution of property statecharts.
 
 By default, the interpreter uses a :py:class:`~sismic.clock.SimulatedClock`. If you want the 
@@ -259,16 +259,16 @@ We can now check that our elevator is on the ground floor:
 Wall-clock 
 ----------
 
-The second clock provided by Sismic is a :py:class:`~sismic.clock.WallClock` whose time 
+The second clock provided by Sismic is a :py:class:`~sismic.clock.UtcClock` whose time 
 is synchronized with system time (it relies on the ``time.time()`` function of Python).
 
 
 .. testcode::
 
-    from sismic.clock import WallClock
+    from sismic.clock import UtcClock
     from time import time
 
-    clock = WallClock()
+    clock = UtcClock()
     assert (time() - clock.time) <= 1
 
 
