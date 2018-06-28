@@ -1,6 +1,5 @@
 import warnings
 
-from numbers import Number
 from collections import deque, defaultdict
 from itertools import combinations
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Union, cast, Tuple
@@ -90,7 +89,7 @@ class Interpreter:
         self._evaluator.execute_statechart(statechart)
 
     @property
-    def time(self) -> Number:
+    def time(self) -> float:
         """
         Time of the latest execution.
         """

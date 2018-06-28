@@ -1,6 +1,5 @@
 import abc
 
-from numbers import Number
 from time import time
 
 
@@ -15,7 +14,7 @@ class Clock(metaclass=abc.ABCMeta):
     to get the current time during the execution of a statechart. 
     """
     @abc.abstractproperty
-    def time(self) -> Number:
+    def time(self) -> float:
         """
         Current time
         """
@@ -36,7 +35,7 @@ class SimulatedClock(Clock):
     A value strictly greater than 1 increases clock speed while a value strictly 
     lower than 1 slows down the clock.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self._base = time()
         self._time = 0
         self._play = False
@@ -46,7 +45,7 @@ class SimulatedClock(Clock):
     def _elapsed(self):
         return (time() - self._base) * self._speed if self._play else 0
     
-    def start(self):
+    def start(self) -> None:
         """
         Clock will be automatically updated both based on real time and 
         its speed attribute.
@@ -55,7 +54,7 @@ class SimulatedClock(Clock):
             self._base = time()
             self._play = True
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Clock won't be automatically updated. 
         """
@@ -64,7 +63,7 @@ class SimulatedClock(Clock):
             self._play = False
 
     @property
-    def speed(self):
+    def speed(self) -> float:
         """
         Speed of the current clock. Only affects time if start() is called.
         """
@@ -77,7 +76,7 @@ class SimulatedClock(Clock):
         self._speed = speed
 
     @property
-    def time(self):
+    def time(self) -> float:
         """
         Time value of this clock.
         """
@@ -117,7 +116,7 @@ class UtcClock(Clock):
     """
     
     @property
-    def time(self):
+    def time(self) -> float:
         return time()
 
 
@@ -131,9 +130,9 @@ class SynchronizedClock(Clock):
 
     :param interpreter: an interpreter instance
     """
-    def __init__(self, interpreter):
+    def __init__(self, interpreter) -> None:
         self._interpreter = interpreter
 
     @property
-    def time(self):
+    def time(self) -> float:
         return self._interpreter.time
