@@ -7,10 +7,12 @@ Unreleased
  - (Added) Priority can be set for transitions (using *low*, *high* or any integer in yaml). transitions
    are selected according to their priorities (still following eventless and inner-first/source state semantics).
  - (Added) A ``sismic.testing`` module containing some primitives to ease unit testing.
+ - (Added) An ``AsyncRunner`` in module ``helpers`` to asynchronously run an interpreter at regular interval.
  - (Fixed) State *on entry* time (used for ``idle`` and ``after``) is set after the *on entry* 
    action is executed, making the two predicates more accurate when long-running actions are 
    executed when a state is entered. Similarly, ``idle`` is reset after the action of a transition
    is performed, not before.
+ - (Deprecated) ``helpers.run_in_background`` is deprecated, use ``helpers.AsyncRunner`` instead.
 
 
 1.2.2 (2018-06-21)
