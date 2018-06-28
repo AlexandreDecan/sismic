@@ -4,10 +4,10 @@ from numbers import Number
 from time import time
 
 
-__all__ = ['BaseClock', 'SimulatedClock', 'UtcClock', 'SynchronizedClock']
+__all__ = ['Clock', 'SimulatedClock', 'UtcClock', 'SynchronizedClock']
 
 
-class BaseClock(metaclass=abc.ABCMeta):
+class Clock(metaclass=abc.ABCMeta):
     """
     Abstract implementation of a clock, as used by an interpreter.
 
@@ -25,7 +25,7 @@ class BaseClock(metaclass=abc.ABCMeta):
         return '{}[{}]'.format(self.__class__.__name__, self.time)
 
 
-class SimulatedClock(BaseClock):
+class SimulatedClock(Clock):
     """
     A simulated clock, starting from 0, that can be manually or automatically
     incremented. 
@@ -109,7 +109,7 @@ class SimulatedClock(BaseClock):
         )
 
     
-class UtcClock(BaseClock):
+class UtcClock(Clock):
     """
     A clock that simulates a wall clock in UTC. 
 
@@ -121,7 +121,7 @@ class UtcClock(BaseClock):
         return time()
 
 
-class SynchronizedClock(BaseClock):
+class SynchronizedClock(Clock):
     """
     A clock that is synchronized with a given interpreter.
 

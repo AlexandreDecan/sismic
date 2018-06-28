@@ -7,7 +7,7 @@ Unreleased
  - (Added) Priority can be set for transitions (using *low*, *high* or any integer in yaml). transitions
    are selected according to their priorities (still following eventless and inner-first/source state semantics).
  - (Added) A ``sismic.testing`` module containing some primitives to ease unit testing.
- - (Added) A ``sismic.clock`` module with a ``BaseClock`` base class and three direct implementations, 
+ - (Added) A ``sismic.clock`` module with a ``Clock`` base class and three direct implementations, 
    namely ``SimulatedClock``, ``UtcClock`` and ``SynchronizedClock``. A ``SimulatedClock`` allows to manually or automatically 
    change the time, while a ``WallClock`` as the expected behaviour of a wall-clock. 
    ``Clock`` instances are used by the interpreter to get the current time during execution. 

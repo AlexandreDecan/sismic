@@ -18,14 +18,14 @@ Similarly, ``idle(x)`` evaluates to ``True`` if no transition was triggered duri
 These two predicates rely on the :py:attr:`~sismic.interpreter.Interpreter.time` attribute of an interpreter.
 The value of that attribute is computed at the beginning of each executed step based on a clock. 
 
-Sismic provides three implementations of :py:class:`~sismic.clock.BaseClock` in its :py:mod:`sismic.clock` module.
+Sismic provides three implementations of :py:class:`~sismic.clock.Clock` in its :py:mod:`sismic.clock` module.
 The first one is a :py:class:`~sismic.clock.SimulatedClock` that can be manually or automatically incremented. In the latter case, 
 the speed of the clock can be easily changed. The second implementation is a classical :py:class:`~sismic.clock.UtcClock` that corresponds
 to a wall-clock in UTC with no flourish. The third implemention is a :py:class:`~sismic.clock.SynchronizedClock` that synchronizes its time value 
 based on the one of an interpreter. Its main use case is to support the co-execution of property statecharts.
 
 By default, the interpreter uses a :py:class:`~sismic.clock.SimulatedClock`. If you want the 
-interpreter to rely on another kind of clock, pass an instance of :py:class:`~sismic.clock.BaseClock`
+interpreter to rely on another kind of clock, pass an instance of :py:class:`~sismic.clock.Clock`
 as the ``clock`` parameter of an interpreter constructor. 
 
 
@@ -101,8 +101,8 @@ new value for its :py:attr:`~sismic.clock.SimulatedClock.time` attribute:
     after 0.1: 10.1
 
 
-Finally, a clock based on real time can be accelerated or slowed down by changing the value 
-of its :py:attr:`~sismic.clock.BaseClock.speed` attribute. By default, the value of this 
+Finally, a simulated clock can be accelerated or slowed down by changing the value 
+of its :py:attr:`~sismic.clock.SimulatedClock.speed` attribute. By default, the value of this 
 attribute is set to ``1``. A higher value (e.g. ``2``) means that the clock will be faster
 than real time (e.g. 2 times faster), while a lower value slows down the clock. 
 
@@ -291,9 +291,9 @@ Implementing other clocks
 
 You can quite easily write your own clock implementation, for example if you need to
 synchronize different distributed interpreters. 
-Simply subclass the :py:class:`~sismic.clock.BaseClock` base class.
+Simply subclass the :py:class:`~sismic.clock.Clock` base class.
 
-.. autoclass:: sismic.clock.BaseClock
+.. autoclass:: sismic.clock.Clock
     :members:
     :member-order: bysource
     :noindex:

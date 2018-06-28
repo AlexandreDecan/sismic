@@ -48,7 +48,6 @@ def run_in_background(interpreter: Interpreter,
     import time
 
     def _task():
-        starttime = time.time()
         while not interpreter.final:
             steps = interpreter.execute()
             if callback:

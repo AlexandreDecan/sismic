@@ -1,5 +1,6 @@
 import warnings
 
+from numbers import Number
 from collections import deque, defaultdict
 from itertools import combinations
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Union, cast, Tuple
@@ -10,7 +11,7 @@ try:
 except ImportError:
     pass
 
-from ..clock import BaseClock, SimulatedClock, SynchronizedClock
+from ..clock import Clock, SimulatedClock, SynchronizedClock
 from ..model import (
     MacroStep, MicroStep, Event, InternalEvent, MetaEvent,
     Statechart, Transition,
@@ -54,7 +55,7 @@ class Interpreter:
     def __init__(self, statechart: Statechart, *,
                  evaluator_klass: Callable[..., Evaluator]=PythonEvaluator,
                  initial_context: Mapping[str, Any]=None,
-                 clock: BaseClock=None,
+                 clock: Clock=None,
                  ignore_contract: bool=False) -> None:
         # Internal variables
         self._ignore_contract = ignore_contract
@@ -89,7 +90,7 @@ class Interpreter:
         self._evaluator.execute_statechart(statechart)
 
     @property
-    def time(self) -> float:
+    def time(self) -> Number:
         """
         Time of the latest execution.
         """
