@@ -1,14 +1,9 @@
 import warnings
+import heapq
 
-from collections import deque, defaultdict
-from itertools import combinations
+from collections import defaultdict
+from itertools import combinations, count
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Union, cast, Tuple
-
-try:
-    # Because Deque was not available in early versions of typing...
-    from typing import Deque
-except ImportError:
-    pass
 
 from ..clock import Clock, SimulatedClock, SynchronizedClock
 from ..model import (
@@ -72,11 +67,9 @@ class Interpreter:
         # Set of active states
         self._configuration = set()  # type: Set[str]
 
-        # External events queue
-        self._external_events = deque()  # type: Deque[Event]
-
-        # Internal events queue
-        self._internal_events = deque()  # type: Deque[InternalEvent]
+        # Event queue, contains (time, is_external, n, event) where n is tie-breaker
+        self._event_queue = []  # type: List[Tuple[float, bool, int, Event]]
+        self._queued_events = 0
 
         # Bound callables
         self._bound = []  # type: List[Callable[[Event], Any]]
@@ -180,24 +173,26 @@ class Interpreter:
         # Add to the list of properties
         self._bound_properties.append(interpreter)
 
-    def queue(self, event_or_name: Union[str, Event], *events_or_names: Union[str, Event]) -> 'Interpreter':
+    def queue(self, event_or_name: Union[str, Event], *events_or_names: Union[str, Event], delay: float=0) -> 'Interpreter':
         """
         Queue one or more events to the interpreter external queue.
 
+        If `delay` is provided, it must be a positive number. The provided
+        events will be processed by the first call to `execute_once` as soon 
+        as the internal clock is greater or equal than `clock.time + delay`. 
+
         :param event_or_name: an *Event* instance, or the name of an event.
         :param events_or_names: additional *Event* instances, or names of events.
+        :param delay: positive number used to delay the events, default is 0.
         :return: *self* so it can be chained.
         """
-        if len(events_or_names) == 0:
-            events_or_names = tuple()
+        for event in [event_or_name] + list(events_or_names):
+            event = Event(event) if isinstance(event, str) else event
 
-        for item in [event_or_name] + list(events_or_names):
-            if isinstance(item, Event):
-                self._external_events.append(item)
-            elif isinstance(item, str):
-                self._external_events.append(Event(item))
+            if isinstance(event, Event):
+                self._queue_event(event, delay=delay, has_priority=False)
             else:
-                raise ValueError('{} is not a string nor an Event instance.'.format(item))
+                raise ValueError('{} is not a string nor an Event instance.'.format(event))
 
         return self
 
@@ -276,6 +271,16 @@ class Interpreter:
 
         return macro_step
 
+    def _queue_event(self, event, *, delay=0, has_priority=False):
+        item = (
+            self.clock.time + delay,
+            not has_priority, 
+            self._queued_events,
+            event
+        )
+        self._queued_events += 1
+        heapq.heappush(self._event_queue, item)
+
     def _raise_event(self, event: Event) -> None:
         """
         Raise an event from the statechart.
@@ -289,9 +294,9 @@ class Interpreter:
         :param event: event to be sent by the statechart.
         """
         if isinstance(event, InternalEvent):
-            # Add to current interpreter's internal queue
-            self._internal_events.append(event)
-
+            # TODO: Not easy to subclass this interpreter to change the priority :-/
+            self._queue_event(event, has_priority=True)
+                
             # Notify bound property statecharts
             self._notify_properties('event sent', event=event)
 
@@ -343,20 +348,16 @@ class Interpreter:
         :param consume: Indicates whether event should be consumed.
         :return: An instance of Event or None if no event is available
         """
-        # Internal events are processed first
-        if len(self._internal_events) > 0:
-            if consume:
-                return self._internal_events.popleft()
-            else:
-                return self._internal_events[0]
-        elif len(self._external_events) > 0:
-            if consume:
-                return self._external_events.popleft()
-            else:
-                return self._external_events[0]
-        else:
-            return None
+        if len(self._event_queue) > 0:
+            time, _, _, event = self._event_queue[0]
 
+            # Should we process this event now?
+            if time <= self.time:
+                if consume:
+                    heapq.heappop(self._event_queue)
+                return event
+        return None
+        
     def _select_transitions(self, event: Optional[Event], states: Iterable[str], *,
             eventless_first=True, inner_first=True) -> List[Transition]:
         """

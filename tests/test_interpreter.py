@@ -595,8 +595,10 @@ class TestInterpreterBinding:
         assert i2.queue in i1._bound
 
         i1._raise_event(InternalEvent('test'))
-        assert i1._internal_events.pop() == Event('test')
-        assert i2._external_events.pop() == Event('test')
+        assert i1._select_event(consume=False) == Event('test')
+        assert isinstance(i1._select_event(consume=False), InternalEvent)
+        assert i2._select_event(consume=False) == Event('test')
+        assert not isinstance(i2._select_event(consume=False), InternalEvent)
 
     def test_bind_callable(self, interpreter):
         i1, i2 = interpreter
@@ -606,8 +608,10 @@ class TestInterpreterBinding:
 
         i1._raise_event(InternalEvent('test'))
 
-        assert i1._internal_events.pop() == Event('test')
-        assert i2._external_events.pop() == Event('test')
+        assert i1._select_event(consume=False) == Event('test')
+        assert isinstance(i1._select_event(consume=False), InternalEvent)
+        assert i2._select_event(consume=False) == Event('test')
+        assert not isinstance(i2._select_event(consume=False), InternalEvent)
 
     def test_metaevent(self, interpreter):
         i1, i2 = interpreter
@@ -616,8 +620,8 @@ class TestInterpreterBinding:
 
         i1._raise_event(MetaEvent('test'))
 
-        assert len(i1._internal_events) == 0
-        assert len(i2._external_events) == 0
+        assert i1._select_event(consume=False) is None
+        assert i2._select_event(consume=False) is None
 
     def test_event(self, interpreter):
         i1, i2 = interpreter
@@ -627,8 +631,8 @@ class TestInterpreterBinding:
         with pytest.raises(ValueError):
             i1._raise_event(Event('test'))
 
-        assert len(i1._internal_events) == 0
-        assert len(i2._external_events) == 0
+        assert i1._select_event(consume=False) is None
+        assert i2._select_event(consume=False) is None
 
 
 def test_interpreter_is_serialisable(microwave):
@@ -647,3 +651,58 @@ def test_interpreter_is_serialisable(microwave):
 
     assert microwave.configuration == n_microwave.configuration
     assert microwave.context == n_microwave.context
+
+
+class TestDelayedEvent:
+    @pytest.fixture()
+    def interpreter(self, simple_statechart):
+        interpreter = Interpreter(simple_statechart, evaluator_klass=DummyEvaluator)
+
+        # Stabilization
+        interpreter.execute_once()
+
+        return interpreter
+
+    def test_delay(self, interpreter):
+        interpreter.queue('test1', delay=1)
+        interpreter.queue('test2', delay=-1)
+        interpreter.queue('test3', delay=0)
+        
+        interpreter._time += 10
+        
+        assert interpreter._select_event(consume=True) == Event('test2')
+        assert interpreter._select_event(consume=True) == Event('test3')
+        assert interpreter._select_event(consume=True) == Event('test1')
+
+    def test_consume_order(self, interpreter):
+        interpreter.queue('test3', delay=2)
+        interpreter.queue('test1', delay=0)
+        interpreter.queue('test2', delay=1)
+        interpreter.queue('test4', delay=2)
+        interpreter.queue('test5', delay=3)
+        
+        assert interpreter._select_event(consume=True) == Event('test1')
+        assert interpreter._select_event(consume=True) is None
+        
+        interpreter._time = 1
+        assert interpreter._select_event(consume=True) == Event('test2')
+        assert interpreter._select_event(consume=True) is None
+        
+        interpreter._time = 2
+        assert interpreter._select_event(consume=True) == Event('test3')
+        assert interpreter._select_event(consume=True) == Event('test4')
+        assert interpreter._select_event(consume=True) is None
+
+    def test_internal_first(self, interpreter):
+        interpreter.queue('test1', delay=0)
+        interpreter._raise_event(InternalEvent('test2'))
+        interpreter.queue('test3', delay=1)
+
+        assert interpreter._select_event(consume=True) == Event('test2')
+        assert interpreter._select_event(consume=True) == Event('test1')
+        assert interpreter._select_event(consume=True) is None
+        
+        interpreter._time = 1
+        assert interpreter._select_event(consume=True) == Event('test3')
+        
+        

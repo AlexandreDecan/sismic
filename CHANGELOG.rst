@@ -13,6 +13,7 @@ Unreleased
    ``Clock`` instances are used by the interpreter to get the current time during execution. 
    See documentation for more information.
  - (Added) An ``Interpreter.clock`` attribute that stores an instance of the newly added ``Clock`` class. 
+ - (Added) Events sent to an interpreter can be delayed with `interpreter.queue(..., delay=delay)`.
  - (Changed) ``interpreter.time`` represents the time of the last executed step, not the current
    time. Use ``interpreter.clock.time`` instead. 
  - (Changed) ``helpers.run_in_background`` no longer synchronizes the interpreter clock. 

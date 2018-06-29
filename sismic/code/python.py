@@ -73,7 +73,8 @@ class PythonEvaluator(Evaluator):
           that makes use of this evaluator.
     - On code execution:
         - A *send(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
-          raises an internal event with it.
+          raises an internal event with it. Raised events are propagated to bound statecharts as external events and 
+          to the current statechart as internal event. 
         - A *notify(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
           raises a meta-event with it. Meta-events are only sent to bound property statecharts.
         - If the code is related to a transition, the *event: Event* that fires the transition is exposed.
