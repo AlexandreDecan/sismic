@@ -18,7 +18,7 @@ Sismic Interactive Statechart Model Interpreter and Checker
 *Sismic* is a recursive acronym that stands for *Sismic Interactive Statechart Model Interpreter and Checker*.
 
 Statecharts are a well-known visual modeling language for representing the executable behavior
-of complex reactive event-based systems. Sismic library for Python (version 3.4 or higher) provides a set of
+of complex reactive event-based systems. Sismic library for Python (version 3.5 or higher) provides a set of
 tools to define, validate, simulate, execute and test statecharts.
 More specifically, Sismic provides:
 
@@ -37,7 +37,7 @@ Some experimental features are also available as `feature branches <https://gith
 Installation
 ------------
 
-Sismic requires Python >=3.4.
+Sismic requires Python >=3.5.
 Sismic can be installed using ``pip`` as usual: ``pip install sismic``.
 This will install the latest stable version.
 

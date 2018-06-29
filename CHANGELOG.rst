@@ -11,7 +11,7 @@ Unreleased
    action is executed, making the two predicates more accurate when long-running actions are 
    executed when a state is entered. Similarly, ``idle`` is reset after the action of a transition
    is performed, not before.
-
+ - (Changed) Drop support for Python 3.4.
 
 1.2.2 (2018-06-21)
 ------------------
