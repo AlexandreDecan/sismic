@@ -9,7 +9,7 @@ from typing import Any, Callable, List, Mapping, Optional
 from .interpreter import Interpreter
 from .model import MacroStep
 
-__all__ = ['log_trace', 'run_in_background', 'AsyncRunner', 'coverage_from_trace']
+__all__ = ['log_trace', 'run_in_background', 'coverage_from_trace']
 
 
 def log_trace(interpreter: Interpreter) -> List[MacroStep]:
@@ -60,88 +60,6 @@ def coverage_from_trace(trace: List[MacroStep]) -> Mapping[str, Counter]:
     }
 
 
-# TODO: Test
-class AsyncRunner:
-    """
-    An asynchronous runner that repeatedly call the `execute` method of an 
-    interpreter. 
-
-    The execution can be controlled with the `start` and `stop` methods.
-    
-    The runner tries to call `execute` every `interval` amount
-    of time, assuming that a call to `execute` takes less than `interval`
-    amount of time. The runner stops as soon as the underlying interpreter 
-    reaches a final configuration.
-
-    Methods `before_execute` and `after_execute` are hooks that are called
-    right before and right after the call to underlying interpreter's 
-    `execute()` method. They are meant to be overridden as by default, they
-    do nothing. 
-
-    :param interpreter: interpreter instance to run.
-    :param interval: interval between two calls to `execute`
-    """
-    def __init__(self, interpreter: Interpreter, interval: float=0.05) -> None:
-        self._running = threading.Event()
-        self.interpreter = interpreter
-        self.interval = interval
-        self._thread = None
-
-    def start(self):
-        """
-        Start the execution.
-        """
-        self._running.set()
-        self._run()
-
-    def stop(self):
-        """
-        Stop the execution.
-        """
-        self._running.clear()
-        if self._thread is not None:
-            self._thread.cancel()
-
-    def wait(self):
-        """
-        Wait for the execution.
-        """
-        # TODO: Not working, don't know why!
-        if self._thread is not None:
-            self._thread.join()
-
-    def before_execute(self):
-        """
-        Called before each call to `execute()`. 
-        """
-        pass
-
-    def after_execute(self, steps: Optional[MacroStep]):
-        """
-        Called after each call to `execute()` with the resulting steps.
-
-        :return: Steps returned by `execute()`.
-        """
-        pass
-
-    def _run(self):
-        starttime = time.time()
-        
-        self.before_execute()
-        steps = self.interpreter.execute()
-        self.after_execute(steps)
-
-        # TODO: Not thread-safe!!!
-        if self.interpreter.final:
-            self.stop()
-
-        if self._running.is_set():
-            elapsed = time.time() - starttime
-
-            self._thread = threading.Timer(max(0, self.interval - elapsed), self._run)
-            self._thread.start()
-
-
 def run_in_background(interpreter: Interpreter,
                       delay: float=0.05,
                       callback: Callable[[List[MacroStep]], Any]=None) -> threading.Thread:
@@ -156,9 +74,9 @@ def run_in_background(interpreter: Interpreter,
     :param delay: delay between each call to *execute()*
     :param callback: a function that accepts the result of *execute*.
     :return: started thread (instance of *threading.Thread*)
-    :deprecated: since 1.3.0.
+    :deprecated: since 1.3.0, use runner.AsyncRunner instead.
     """
-    warnings.warn('Deprecated since 1.3.0. Use AsyncRunner instead.', DeprecationWarning)
+    warnings.warn('Deprecated since 1.3.0. Use runner.AsyncRunner instead.', DeprecationWarning)
 
     def _task():
         starttime = time.time()
