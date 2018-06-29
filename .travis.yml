@@ -8,7 +8,7 @@ install:
 - pip install pip -U
 - pip install coveralls coverage wheel
 - pip install -r requirements.txt
-- pip install -e .
+- pip install -e . --ignore-requires-python
 script:
 - coverage run --source sismic -m pytest
 - cd docs && make doctest && cd ..

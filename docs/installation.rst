@@ -11,9 +11,11 @@ Starting from release 1.0.0, Sismic adheres to a `semantic versioning <https://s
 You can isolate Sismic installation by using virtual environments:
 
 1. Get the tool to create virtual environments: ``pip install virtualenv``
-2. Create the environment: ``virtualenv -p python3.4 env``
+2. Create the environment: ``virtualenv -p python3.5 env``
 3. Jump into: ``source env/bin/activate``
 4. Install Sismic: ``pip install sismic``
+
+Consider using `pew <https://github.com/berdario/pew>`__ or `pipenv <https://docs.pipenv.org/>`__ to manage your virtual environments.
 
 The development version can also be installed directly from its git repository:
 ``pip install git+git://github.com/AlexandreDecan/sismic.git``
