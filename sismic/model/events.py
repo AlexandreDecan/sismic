@@ -1,6 +1,6 @@
 from typing import Any
 
-__all__ = ['Event', 'InternalEvent', 'MetaEvent']
+__all__ = ['Event', 'InternalEvent', 'DelayedEvent', 'DelayedInternalEvent', 'MetaEvent']
 
 
 class Event:
@@ -58,6 +58,37 @@ class InternalEvent(Event):
     Subclass of Event that represents an internal event.
     """
     pass
+
+
+class DelayedEvent(Event):
+    """
+    Event that is delayed.
+    """
+    
+    __slots__ = ['name', 'delay', 'data']
+
+    def __init__(self, name: str, delay: float, **additional_parameters: Any) -> None:
+        super().__init__(name, **additional_parameters)
+        self.delay = delay
+
+    def __getstate__(self):
+        # For pickle and implicitly for multiprocessing
+        return self.name, self.delay, self.data
+
+    def __setstate__(self, state):
+        # For pickle and implicitly for multiprocessing
+        self.name, self.delay, self.data = state
+
+    def __dir__(self):
+        return ['name', 'delay'] + list(self.data.keys())    
+
+
+class DelayedInternalEvent(InternalEvent, DelayedEvent):
+    """
+    Internal event that is delayed.
+    """
+    def __init__(self, name: str, delay: float, **additional_parameters: Any) -> None:
+        DelayedEvent.__init__(self, name, delay, **additional_parameters)
 
 
 class MetaEvent(Event):

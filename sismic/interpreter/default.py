@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, 
 
 from ..clock import Clock, SimulatedClock, SynchronizedClock
 from ..model import (
-    MacroStep, MicroStep, Event, InternalEvent, MetaEvent,
+    MacroStep, MicroStep, Event, InternalEvent, DelayedEvent, DelayedInternalEvent, MetaEvent,
     Statechart, Transition,
     StateMixin, FinalState, OrthogonalState, CompoundState, DeepHistoryState, ShallowHistoryState,
 )
@@ -146,6 +146,7 @@ class Interpreter:
          - *step ended*: when a macro step ends.
          - *event consumed*: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
          - *event sent*: when an event is sent. The sent event is exposed through the ``event`` attribute.
+         - *delayed event sent*: when a delayed event is sent. The sent event is exposed through the ``event`` attribute.
          - *state exited*: when a state is exited. The exited state is exposed through the ``state`` attribute.
          - *state entered*: when a state is entered. The entered state is exposed through the ``state`` attribute.
          - *transition processed*: when a transition is processed. The source state, target state and the event are
@@ -173,24 +174,26 @@ class Interpreter:
         # Add to the list of properties
         self._bound_properties.append(interpreter)
 
-    def queue(self, event_or_name: Union[str, Event], *events_or_names: Union[str, Event], delay: float=0) -> 'Interpreter':
+    def queue(self, event_or_name: Union[str, Event], *events_or_names: Union[str, Event]) -> 'Interpreter':
         """
         Queue one or more events to the interpreter external queue.
 
-        If `delay` is provided, it must be a positive number. The provided
-        events will be processed by the first call to `execute_once` as soon 
-        as the internal clock is greater or equal than `clock.time + delay`. 
+        If a DelayedEvent is provided, its delay must be a positive number. 
+        The provided event will be processed by the first call to `execute_once` 
+        as soon as the internal clock is greater or equal than 
+        `clock.time + event.delay`. 
 
         :param event_or_name: an *Event* instance, or the name of an event.
         :param events_or_names: additional *Event* instances, or names of events.
-        :param delay: positive number used to delay the events, default is 0.
         :return: *self* so it can be chained.
         """
         for event in [event_or_name] + list(events_or_names):
             event = Event(event) if isinstance(event, str) else event
 
-            if isinstance(event, Event):
-                self._queue_event(event, delay=delay, has_priority=False)
+            if isinstance(event, InternalEvent):
+                raise ValueError('Internal event cannot be queue, use Event or DelayedEvent instead.')
+            elif isinstance(event, Event):
+                self._queue_event(event)
             else:
                 raise ValueError('{} is not a string nor an Event instance.'.format(event))
 
@@ -271,41 +274,50 @@ class Interpreter:
 
         return macro_step
 
-    def _queue_event(self, event, *, delay=0, has_priority=False):
+    def _queue_event(self, event):
+        has_priority = isinstance(event, InternalEvent)
+        time = self.time + (event.delay if isinstance(event, DelayedEvent) else 0)
+
         item = (
-            self.clock.time + delay,
+            time,
             not has_priority, 
             self._queued_events,
             event
         )
+
         self._queued_events += 1
         heapq.heappush(self._event_queue, item)
 
-    def _raise_event(self, event: Event) -> None:
+    def _raise_event(self, event: Union[InternalEvent, MetaEvent]) -> None:
         """
         Raise an event from the statechart.
 
-        InternalEvent instances are propagated to bound interpreters as non-internal events, and added to the internal
-        event queue of the current interpreter as an InternalEvent instance.
+        Only InternalEvent and MetaEvent (and their subclasses) are accepted. 
+        
+        InternalEvent instances are propagated to bound interpreters as normal events, and added to 
+        the event queue of the current interpreter as InternalEvent instance. If given event is 
+        delayed, it is propagated as DelayedEvent to bound interpreters, and put into current
+        event queue as a DelayedInternalEvent. 
 
-        If a MetaEvent instance is provided, it is used to notify the bound property statecharts and is neither
-        propagated to bound interpreters nor added to the internal event queue of the current interpreter.
+        MetaEvent instances are only propagated to bound property statecharts. 
 
         :param event: event to be sent by the statechart.
         """
         if isinstance(event, InternalEvent):
-            # TODO: Not easy to subclass this interpreter to change the priority :-/
-            self._queue_event(event, has_priority=True)
-                
-            # Notify bound property statecharts
-            self._notify_properties('event sent', event=event)
-
-            # Propagate event to bound callable as an "external" event
-            external_event = Event(event.name, **event.data)
-            for bound_callable in self._bound:
-                bound_callable(external_event)
+            # Add to current queue
+            self._queue_event(event)
+    
+            if isinstance(event, DelayedEvent):
+                external_event = DelayedEvent(event.name, event.delay, **event.data)
+                self._notify_properties('delayed event sent', event=external_event)
+                for bound_callable in self._bound:    
+                    bound_callable(external_event)
+            else:
+                external_event = Event(event.name, **event.data)
+                self._notify_properties('event sent', event=external_event)
+                for bound_callable in self._bound:
+                    bound_callable(external_event)
         elif isinstance(event, MetaEvent):
-            # Notify bound property statecharts
             self._notify_properties(event.name, **event.data)
         else:
             raise ValueError('Only InternalEvent and MetaEvent can be sent by a statechart, not {}'.format(type(event)))

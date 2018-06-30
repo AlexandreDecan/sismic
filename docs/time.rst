@@ -1,5 +1,5 @@
 Dealing with time
-=================
+#################
 
 It is quite usual in statecharts to find notations such as "*after 30 seconds*", often expressed as specific events
 on a transition. Sismic does not support the use of these *special events*, and proposes instead to deal with time
@@ -17,6 +17,9 @@ Similarly, ``idle(x)`` evaluates to ``True`` if no transition was triggered duri
 
 These two predicates rely on the :py:attr:`~sismic.interpreter.Interpreter.time` attribute of an interpreter.
 The value of that attribute is computed at the beginning of each executed step based on a clock. 
+
+Interpreter clock
+=================
 
 Sismic provides three implementations of :py:class:`~sismic.clock.Clock` in its :py:mod:`sismic.clock` module.
 The first one is a :py:class:`~sismic.clock.SimulatedClock` that can be manually or automatically incremented. In the latter case, 
@@ -297,4 +300,37 @@ Simply subclass the :py:class:`~sismic.clock.Clock` base class.
     :members:
     :member-order: bysource
     :noindex:
+
+
+
+Delayed events
+==============
+
+Sismic also provides support for delayed events. 
+
+When a delayed event is queued in an interpreter at time ``T`` with delay ``D``, 
+it is not processed by a call to :py:meth:`~sismic.interpreter.Interpreter.execute` 
+or to :py:meth:`~sismic.interpreter.Interpreter.execute_once` unless the current clock 
+time value exceeds ``T + D``. 
+
+Delayed events can be created using the :py:class:`~sismic.model.DelayedEvent` class 
+by providing a ``delay`` parameter:
+
+--- EXAMPLE to create delayed event
+
+The following example shows that delayed events are not directly processed by an interpreter:
+
+... ex 
+
+They are processed as soon as the clock time value exceeds the expected delay:
+
+... ex 
+
+
+Notice that the time when a delayed event will be processed is based on the time value of 
+the clock when the :py:meth:`~sismic.interpreter.Interpreter.queue` method is called, not 
+the :py:attr:`~sismic.interpreter.Interpreter.time` attribute that corresponds to the time of 
+the last executed step.
+
+... ex 
 

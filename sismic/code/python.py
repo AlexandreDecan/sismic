@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
 
 from . import Evaluator
 from ..exceptions import CodeEvaluationError
-from ..model import Statechart, StateMixin, Transition, Event, InternalEvent, MetaEvent
+from ..model import Statechart, StateMixin, Transition, Event, InternalEvent, DelayedInternalEvent, MetaEvent
 
 __all__ = ['PythonEvaluator']
 
@@ -43,21 +43,18 @@ class FrozenContext(collections.Mapping):
         return iter(self.__frozencontext)
 
 
-def create_send_function(event_list: List[Event], event_klass: Callable[..., Event]) -> Callable[..., None]:
-    """
-    Create and return a callable that takes a name and additional parameters, builds an Event of type event_klass,
-    and add it into given *event_list*.
-
-    :param event_list: list to complement
-    :param event_klass: Event to create inside the function
-    :return: the newly created function
-    """
-
-    def send(name, **kwargs):
-        event = event_klass(name, **kwargs)
-        event_list.append(event)
-
+def _create_send_function(event_list: List[Event]) -> Callable[..., None]:
+    def send(name, delay=None, **kwargs):
+        if delay is None:
+            event_list.append(InternalEvent(name, **kwargs))
+        else:
+            event_list.append(DelayedInternalEvent(name, delay, **kwargs))
     return send
+        
+def _create_notify_function(event_list: List[Event]) -> Callable[..., None]:
+    def notify(name, **kwargs):
+        event_list.append(MetaEvent(name, **kwargs))
+    return notify
 
 
 class PythonEvaluator(Evaluator):
@@ -72,9 +69,9 @@ class PythonEvaluator(Evaluator):
           if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
           that makes use of this evaluator.
     - On code execution:
-        - A *send(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
+        - A *send(name: str, delay=None, **kwargs) -> None* function that takes an event name and additional keyword parameters and
           raises an internal event with it. Raised events are propagated to bound statecharts as external events and 
-          to the current statechart as internal event. 
+          to the current statechart as internal event. If delay is provided, a delayed event is created.
         - A *notify(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
           raises a meta-event with it. Meta-events are only sent to bound property statecharts.
         - If the code is related to a transition, the *event: Event* that fires the transition is exposed.
@@ -226,8 +223,8 @@ class PythonEvaluator(Evaluator):
 
         exposed_context = {
             'active': self._active,
-            'send': create_send_function(sent_events, InternalEvent),
-            'notify': create_send_function(sent_events, MetaEvent),
+            'send': _create_send_function(sent_events),
+            'notify': _create_notify_function(sent_events),
             'time': self._interpreter.time,
         }
         exposed_context.update(additional_context if additional_context is not None else {})

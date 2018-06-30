@@ -5,7 +5,7 @@ from collections import Counter
 
 from sismic.exceptions import ExecutionError, NonDeterminismError, ConflictingTransitionsError
 from sismic.code import DummyEvaluator
-from sismic.interpreter import Interpreter, Event, InternalEvent
+from sismic.interpreter import Interpreter, Event, InternalEvent, DelayedEvent
 from sismic.helpers import coverage_from_trace, log_trace, run_in_background
 from sismic.model import Transition, MacroStep, MicroStep, MetaEvent
 from sismic import testing
@@ -45,14 +45,8 @@ class TestInterpreterWithSimple:
         interpreter.queue(Event('e1'))
         assert interpreter._select_event(consume=True) == Event('e1')
 
-        interpreter.queue(InternalEvent('e2'))
-        assert interpreter._select_event(consume=True) == InternalEvent('e2')
-
-        # Internal events are handled as external events, and thus have no priority
-        interpreter.queue(Event('external'))
-        interpreter.queue(InternalEvent('internal'))
-        assert interpreter._select_event(consume=True) == Event('external')
-        assert interpreter._select_event(consume=True) == InternalEvent('internal')
+        with pytest.raises(ValueError):
+            interpreter.queue(InternalEvent('e2'))
 
         interpreter.queue('e3')
         assert interpreter._select_event(consume=True) == Event('e3')
@@ -664,45 +658,55 @@ class TestDelayedEvent:
         return interpreter
 
     def test_delay(self, interpreter):
-        interpreter.queue('test1', delay=1)
-        interpreter.queue('test2', delay=-1)
-        interpreter.queue('test3', delay=0)
+        interpreter.queue(DelayedEvent('test1', delay=1))
+        interpreter.queue(DelayedEvent('test2', delay=-1))
+        interpreter.queue(DelayedEvent('test3', delay=0))
         
         interpreter._time += 10
         
-        assert interpreter._select_event(consume=True) == Event('test2')
-        assert interpreter._select_event(consume=True) == Event('test3')
-        assert interpreter._select_event(consume=True) == Event('test1')
+        event = interpreter._select_event(consume=True)
+        assert isinstance(event, DelayedEvent) and event == Event('test2')
+        event = interpreter._select_event(consume=True)
+        assert isinstance(event, DelayedEvent) and event == Event('test3')
+        event = interpreter._select_event(consume=True)
+        assert isinstance(event, DelayedEvent) and event == Event('test1')
 
     def test_consume_order(self, interpreter):
-        interpreter.queue('test3', delay=2)
-        interpreter.queue('test1', delay=0)
-        interpreter.queue('test2', delay=1)
-        interpreter.queue('test4', delay=2)
-        interpreter.queue('test5', delay=3)
+        interpreter.queue(DelayedEvent('test3', delay=2))
+        interpreter.queue(DelayedEvent('test1', delay=0))
+        interpreter.queue(DelayedEvent('test2', delay=1))
+        interpreter.queue(DelayedEvent('test4', delay=2))
+        interpreter.queue(DelayedEvent('test5', delay=3))
         
-        assert interpreter._select_event(consume=True) == Event('test1')
+        event = interpreter._select_event(consume=True)
+        assert isinstance(event, DelayedEvent) and event == Event('test1')
         assert interpreter._select_event(consume=True) is None
         
         interpreter._time = 1
-        assert interpreter._select_event(consume=True) == Event('test2')
+        event = interpreter._select_event(consume=True)
+        assert isinstance(event, DelayedEvent) and event == Event('test2')
         assert interpreter._select_event(consume=True) is None
         
         interpreter._time = 2
-        assert interpreter._select_event(consume=True) == Event('test3')
-        assert interpreter._select_event(consume=True) == Event('test4')
+        event = interpreter._select_event(consume=True)
+        assert isinstance(event, DelayedEvent) and event == Event('test3')
+        event = interpreter._select_event(consume=True)
+        assert isinstance(event, DelayedEvent) and event == Event('test4')
         assert interpreter._select_event(consume=True) is None
 
     def test_internal_first(self, interpreter):
-        interpreter.queue('test1', delay=0)
+        interpreter.queue(DelayedEvent('test1', delay=0))
         interpreter._raise_event(InternalEvent('test2'))
-        interpreter.queue('test3', delay=1)
+        interpreter.queue(DelayedEvent('test3', delay=1))
 
-        assert interpreter._select_event(consume=True) == Event('test2')
-        assert interpreter._select_event(consume=True) == Event('test1')
+        event = interpreter._select_event(consume=True)
+        assert isinstance(event, InternalEvent) and event == Event('test2')
+        event = interpreter._select_event(consume=True)
+        assert isinstance(event, DelayedEvent) and event == Event('test1')
         assert interpreter._select_event(consume=True) is None
         
         interpreter._time = 1
-        assert interpreter._select_event(consume=True) == Event('test3')
+        event = interpreter._select_event(consume=True)
+        assert isinstance(event, DelayedEvent) and event == Event('test3')
         
         
