@@ -316,15 +316,43 @@ time value exceeds ``T + D``.
 Delayed events can be created using the :py:class:`~sismic.model.DelayedEvent` class 
 by providing a ``delay`` parameter:
 
---- EXAMPLE to create delayed event
+.. testcode:: delayed
 
-The following example shows that delayed events are not directly processed by an interpreter:
 
-... ex 
+    from sismic.io import import_from_yaml
+    from sismic.interpreter import Interpreter, Event, DelayedEvent
+
+    statechart = import_from_yaml(filepath='examples/elevator/elevator.yaml')
+    interpreter = Interpreter(statechart)
+
+    interpreter.queue(DelayedEvent('floorSelected', floor=4, delay=5))
+
+
+Delayed events are not processed by the interpreter, as long as the current clock
+as not reach given delay. 
+
+.. testcode:: delayed
+
+    print('Current time:', interpreter.clock.time)  # 0
+    interpreter.execute()  
+    print('Current floor:', interpreter.context['current'])  # Still on ground floor
+
+.. testoutput:: delayed
+
+    Current time: 0
+    Current floor: 0
 
 They are processed as soon as the clock time value exceeds the expected delay:
 
-... ex 
+.. testcode:: delayed
+
+    interpreter.clock.time = 5
+    interpreter.execute()
+    print('Current floor:', interpreter.context['current'])  # Still on ground floor
+
+.. testoutput:: delayed
+
+    Current floor: 4
 
 
 Notice that the time when a delayed event will be processed is based on the time value of 
@@ -332,5 +360,26 @@ the clock when the :py:meth:`~sismic.interpreter.Interpreter.queue` method is ca
 the :py:attr:`~sismic.interpreter.Interpreter.time` attribute that corresponds to the time of 
 the last executed step.
 
-... ex 
+.. testcode:: delayed
 
+    interpreter.clock.time = 6
+    print('Interpreter time:', interpreter.time)
+    print('Clock time:', interpreter.clock.time)
+    
+    interpreter.queue(DelayedEvent('floorSelected', floor=2, delay=1))
+    
+.. testoutput:: delayed
+
+    Interpreter time: 5
+    Clock time: 6
+    
+.. testcode:: delayed
+
+    interpreter.clock.time = 7
+    interpreter.execute()  # Event is processed, because 6 + 1 <= 7
+
+    print('Current floor:', interpreter.context['current'])    
+
+.. testoutput:: delayed
+
+    Current floor: 2
