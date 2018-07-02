@@ -30,6 +30,71 @@ def sorted_groupby(iterable, key=None, reverse=False):
     return sorted(groups.items(), key=sort_key, reverse=reverse)
 
 
+class EventQueue:
+    """
+    Simple event queue that supports delayed and internal events. 
+
+    This class acts as a priority queue based on time. 
+
+    :param internal_first: set to True (default) if internal events should have priority.
+    """
+    def __init__(self, *, internal_first=True) -> None:
+        self._queue = []  # List[Tuple[float, bool, int, Event]]
+        self._nb = 0
+        self._internal_first = internal_first
+
+    def _get_event(self, t):
+        return (t[0], t[-1])
+
+    def _set_event(self, time, event):
+        self._nb += 1
+        return (
+            time + (event.delay if isinstance(event, DelayedEvent) else 0), 
+            (1 - int(isinstance(event, InternalEvent))) if self._internal_first else 0,
+            self._nb,
+            event
+        )
+
+    def push(self, time: float, event: Event) -> None:
+        """
+        Put given event in the queue. 
+
+        If given event is a DelayedEvent, appropriate modifications to time 
+        will be done by this queue. 
+        
+        :param time: Current time. 
+        :param event: Event to queue. 
+        """
+        heapq.heappush(self._queue, self._set_event(time, event))
+
+    def pop(self) -> Tuple[float, Event]:
+        """
+        Return and dismiss first event. 
+
+        :return: A pair (time, event). 
+        """
+        return self._get_event(heapq.heappop(self._queue))
+
+    @property
+    def first(self) -> Tuple[float, Event]:
+        """
+        Return the first event. 
+
+        :return: A pair (time, event).
+        """
+        return self._get_event(self._queue[0])
+
+    @property
+    def empty(self) -> bool:
+        """
+        Holds if current queue is empty. 
+        """
+        return len(self._queue) == 0
+
+    def __len__(self) -> int:
+        return len(self._queue)
+
+
 class Interpreter:
     """
     A discrete interpreter that executes a statechart according to a semantic close to SCXML
@@ -68,8 +133,7 @@ class Interpreter:
         self._configuration = set()  # type: Set[str]
 
         # Event queue, contains (time, is_external, n, event) where n is tie-breaker
-        self._event_queue = []  # type: List[Tuple[float, bool, int, Event]]
-        self._queued_events = 0
+        self._event_queue = EventQueue()
 
         # Bound callables
         self._bound = []  # type: List[Callable[[Event], Any]]
@@ -193,7 +257,7 @@ class Interpreter:
             if isinstance(event, InternalEvent):
                 raise ValueError('Internal event cannot be queue, use Event or DelayedEvent instead.')
             elif isinstance(event, Event):
-                self._queue_event(event)
+                self._event_queue.push(self.clock.time, event)
             else:
                 raise ValueError('{} is not a string nor an Event instance.'.format(event))
 
@@ -274,20 +338,6 @@ class Interpreter:
 
         return macro_step
 
-    def _queue_event(self, event):
-        has_priority = isinstance(event, InternalEvent)
-        time = self.time + (event.delay if isinstance(event, DelayedEvent) else 0)
-
-        item = (
-            time,
-            not has_priority, 
-            self._queued_events,
-            event
-        )
-
-        self._queued_events += 1
-        heapq.heappush(self._event_queue, item)
-
     def _raise_event(self, event: Union[InternalEvent, MetaEvent]) -> None:
         """
         Raise an event from the statechart.
@@ -304,9 +354,8 @@ class Interpreter:
         :param event: event to be sent by the statechart.
         """
         if isinstance(event, InternalEvent):
-            # Add to current queue
-            self._queue_event(event)
-    
+            self._event_queue.push(self.time, event)
+
             if isinstance(event, DelayedEvent):
                 external_event = DelayedEvent(event.name, event.delay, **event.data)
                 self._notify_properties('delayed event sent', event=external_event)
@@ -360,13 +409,11 @@ class Interpreter:
         :param consume: Indicates whether event should be consumed.
         :return: An instance of Event or None if no event is available
         """
-        if len(self._event_queue) > 0:
-            time, _, _, event = self._event_queue[0]
-
-            # Should we process this event now?
+        if not self._event_queue.empty:
+            time, event = self._event_queue.first
             if time <= self.time:
-                if consume:
-                    heapq.heappop(self._event_queue)
+                if consume: 
+                    self._event_queue.pop()
                 return event
         return None
         
