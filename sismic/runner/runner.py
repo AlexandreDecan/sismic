@@ -15,7 +15,7 @@ class AsyncRunner:
     An asynchronous runner that repeatedly execute given interpreter.
 
     The runner tries to call its `execute` method every `interval` seconds, assuming 
-    that a call to interpreter `execute` method takes less time than `interval`. 
+    that a call to that method takes less time than `interval`. 
     If not, subsequent call is queued and will occur as soon as possible with
     no delay. The runner stops as soon as the underlying interpreter reaches 
     a final configuration.
@@ -28,7 +28,7 @@ class AsyncRunner:
     The current state of a runner can be obtained using its `running` and 
     `paused` properties.
 
-    While this runner can be used "as is", it was designed to be subclassed and 
+    While this runner can be used "as is", it is designed to be subclassed and 
     as such, proposes several hooks to control the execution and additional 
     behaviours:
 
@@ -43,13 +43,15 @@ class AsyncRunner:
        
     :param interpreter: interpreter instance to run.
     :param interval: interval between two calls to `execute`
+    :param execute_once: If set, call interpreter's `execute_once` method instead of `execute`.
     """
-    def __init__(self, interpreter: Interpreter, interval: float=0.1) -> None:
+    def __init__(self, interpreter: Interpreter, interval: float=0.1, execute_once=False) -> None:
         self._unpaused = threading.Event()
         self._stop = threading.Event()
 
         self.interpreter = interpreter
         self.interval = interval
+        self._execute_once = execute_once
         self._thread = threading.Thread(target=self._run)
 
     @property
@@ -109,7 +111,17 @@ class AsyncRunner:
         """
         Called each time the interpreter has to be executed.
         """
-        return self.interpreter.execute()
+        steps = []
+        step = self.interpreter.execute_once()
+        
+        while step:
+            steps.append(step)
+            step = self.interpreter.execute_once()
+            
+            if self._execute_once:
+                break
+        
+        return steps
 
     def before_execute(self):
         """
