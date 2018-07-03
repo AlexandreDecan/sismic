@@ -303,6 +303,19 @@ that can be used to see what happens. In particular:
    the :py:meth:`~sismic.interpreter.Interpreter.bind` method of an interpreter (see :ref:`communication`).
 
 
+Asynchronous execution
+----------------------
+
+The calls to :py:meth:`~sismic.interpreter.Interpreter.execute` or :py:meth:`~sismic.interpreter.Interpreter.execute_once`
+are blocking calls, i.e. they are performed synchronously. To allow asynchronous execution of a statechart, one 
+has, e.g., to run the interpreter in a separate thread or to continuously loop over these calls. 
+
+Module :py:mod:`~sismic.runner` contains an :py:class:`~sismic.runner.AsyncRunner` that provides basic
+support for continuous asynchronous execution of statecharts:
+
+.. autoclass:: sismic.runner.AsyncRunner
+    :noindex:
+    
 
 Anatomy of the interpreter
 --------------------------

@@ -33,17 +33,24 @@ Queued events can be delayed when they are added to an interpreter event queue.
  - (Added) Delayed events can be sent from within a statechart by specifying a ``delay`` parameter to the ``sent`` function.
  - (Added) An ``EventQueue`` class (in ``sismic.interpreter.queue``) that controls how (delayed) events are handled by an interpreter.
 
+Several new interpreter runners that benefit from the clock-based handling of time and delayed events:
+
+ - (Added) An ``AsyncRunner`` in the newly added ``runner`` module to asynchronously run an interpreter at regular interval.
+ - (TODO) EventBasedRunner
+ - (Changed) ``helpers.run_in_background`` no longer synchronizes the interpreter clock. 
+   Use the ``start()`` method of ``interpreter.clock`` or an ``UtcClock`` instance instead.
+ - (Deprecated) ``helpers.run_in_background`` is deprecated, use ``runner.AsyncRunner`` instead.
+
 And other small changes: 
 
- - (Added) A ``sismic.testing`` module containing some primitives to ease unit testing.
+ - (Added) A ``sismic.testing`` module containing some testing primitives to ease the writing of unit tests.
  - (Changed) ``Interpreter.queue`` does not longer accept ``InternalEvent``.
- - (Changed) ``helpers.run_in_background`` no longer synchronizes the interpreter clock. 
-   Use the ``start()`` method of ``interpreter.clock`` or an ``UtcClock`` instance instead. 
  - (Fixed) State *on entry* time (used for ``idle`` and ``after``) is set after the *on entry* 
    action is executed, making the two predicates more accurate when long-running actions are 
    executed when a state is entered. Similarly, ``idle`` is reset after the action of a transition
    is performed, not before.
  - (Changed) Drop official support for Python 3.4.
+
 
 
 1.2.2 (2018-06-21)

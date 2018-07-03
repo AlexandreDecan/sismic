@@ -1,7 +1,10 @@
 import threading
+import time
+import warnings
+
 from collections import Counter
 from functools import wraps
-from typing import Any, Callable, List, Mapping
+from typing import Any, Callable, List, Mapping, Optional
 
 from .interpreter import Interpreter
 from .model import MacroStep
@@ -31,39 +34,6 @@ def log_trace(interpreter: Interpreter) -> List[MacroStep]:
     return trace
 
 
-def run_in_background(interpreter: Interpreter,
-                      delay: float=0.05,
-                      callback: Callable[[List[MacroStep]], Any]=None) -> threading.Thread:
-    """
-    Run given interpreter in background. The interpreter is ran until it reaches a final configuration.
-    You can manually stop the thread using the added *stop* of the returned Thread object.
-    This is for convenience only and should be avoided, because a call to *stop* puts the interpreter in
-    an empty (and thus final) configuration, without properly leaving the active states.
-
-    :param interpreter: an interpreter
-    :param delay: delay between each call to *execute()*
-    :param callback: a function that accepts the result of *execute*.
-    :return: started thread (instance of *threading.Thread*)
-    """
-    import time
-
-    def _task():
-        while not interpreter.final:
-            steps = interpreter.execute()
-            if callback:
-                callback(steps)
-            time.sleep(delay)
-    thread = threading.Thread(target=_task)
-
-    def stop_thread():
-        interpreter._configuration = set()
-
-    thread.stop = stop_thread  # type: ignore
-
-    thread.start()
-    return thread
-
-
 def coverage_from_trace(trace: List[MacroStep]) -> Mapping[str, Counter]:
     """
     Given a list of macro steps considered as the trace of a statechart execution, return *Counter* objects
@@ -88,3 +58,38 @@ def coverage_from_trace(trace: List[MacroStep]) -> Mapping[str, Counter]:
         'exited states': Counter(exited_states),
         'processed transitions': Counter(processed_transitions)
     }
+
+
+def run_in_background(interpreter: Interpreter,
+                      delay: float=0.05,
+                      callback: Callable[[List[MacroStep]], Any]=None) -> threading.Thread:
+    """
+    Run given interpreter in background. The interpreter is ran until it reaches a final configuration.
+    You can manually stop the thread using the added *stop* of the returned Thread object.
+    This is for convenience only and should be avoided, because a call to *stop* puts the interpreter in
+    an empty (and thus final) configuration, without properly leaving the active states.
+
+    :param interpreter: an interpreter
+    :param delay: delay between each call to *execute()*
+    :param callback: a function that accepts the result of *execute*.
+    :return: started thread (instance of *threading.Thread*)
+    :deprecated: since 1.3.0, use runner.AsyncRunner instead.
+    """
+    warnings.warn('Deprecated since 1.3.0. Use runner.AsyncRunner instead.', DeprecationWarning)
+
+    def _task():
+        while not interpreter.final:
+            steps = interpreter.execute()
+            if callback:
+                callback(steps)
+            time.sleep(delay)
+    thread = threading.Thread(target=_task)
+
+    def stop_thread():
+        interpreter._configuration = set()
+
+    thread.stop = stop_thread  # type: ignore
+
+    thread.start()
+    return thread
+

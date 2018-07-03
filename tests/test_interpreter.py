@@ -521,7 +521,8 @@ class TestLogTrace:
 def test_run_in_background(elevator):
     from time import sleep
 
-    task = run_in_background(elevator, 0.001)
+    with pytest.warns(DeprecationWarning):
+        task = run_in_background(elevator, 0.001)
     elevator.queue(Event('floorSelected', floor=4))
 
     sleep(0.01)

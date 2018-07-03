@@ -30,6 +30,7 @@ More specifically, Sismic provides:
 - Runtime checking of behavioral properties expressed as statecharts
 - Built-in support for behavior-driven development
 - Support for communication between statecharts
+- Synchronous and asynchronous executions
 - Statechart visualization using `PlantUML <http://www.plantuml.com/plantuml>`__
 
 Some experimental features are also available as `feature branches <https://github.com/AlexandreDecan/sismic/issues?q=is%3Aopen+is%3Aissue+label%3A%22feature+branch%22>`__.
