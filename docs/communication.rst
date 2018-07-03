@@ -82,9 +82,9 @@ is sent both to ``interpreter_1`` and ``interpreter_2``.
     # Manually create and raise an internal event
     interpreter_3._raise_event(InternalEvent('test'))
 
-    print('Events for interpreter_1:', interpreter_1._external_events.pop())
-    print('Events for interpreter_2:', interpreter_2._external_events.pop())
-    print('Events for interpreter_3:', interpreter_3._internal_events.pop())
+    print('Events for interpreter_1:', interpreter_1._select_event(consume=False))
+    print('Events for interpreter_2:', interpreter_2._select_event(consume=False))
+    print('Events for interpreter_3:', interpreter_3._select_event(consume=False))
 
 .. testoutput:: bind
 
@@ -129,21 +129,23 @@ are automatically propagated to ``elevator``:
 
 .. testcode:: buttons
 
-    print('Awaiting events in buttons:', list(buttons._external_events))  # Empty
+    print('Awaiting event in buttons:', buttons._select_event(consume=False))  # None
     buttons.queue(Event('button_2_pushed'))
 
-    print('Awaiting events in buttons:', list(buttons._external_events))  # External event
+    print('Awaiting event in buttons:', buttons._select_event(consume=False))  # External event
+    print('Awaiting event in elevator:', elevator._select_event(consume=False))  # None
 
     buttons.execute(max_steps=2)  # (1) initialize buttons, and (2) consume button_2_pushed
-    print('Awaiting events in buttons:', list(buttons._internal_events))
-    print('Awaiting events in elevator:', list(elevator._external_events))
+    print('Awaiting event in buttons:', buttons._select_event(consume=False))  # Internal event 
+    print('Awaiting event in elevator:', elevator._select_event(consume=False))  # External event
 
 .. testoutput:: buttons
 
-    Awaiting events in buttons: []
-    Awaiting events in buttons: [Event('button_2_pushed')]
-    Awaiting events in buttons: [InternalEvent('floorSelected', floor=2)]
-    Awaiting events in elevator: [Event('floorSelected', floor=2)]
+    Awaiting event in buttons: None
+    Awaiting event in buttons: Event('button_2_pushed')
+    Awaiting event in elevator: None
+    Awaiting event in buttons: InternalEvent('floorSelected', floor=2)
+    Awaiting event in elevator: Event('floorSelected', floor=2)
 
 The execution of bound statecharts does not differ from the execution of unbound statecharts:
 

@@ -55,7 +55,7 @@ Sismic statecharts provides full support for the majority of the UML 2 statechar
 - state transitions, guarded transitions, automatic (eventless) transitions, internal transitions and transition priorities
 - statechart variables and their initialisation
 - state entry and exit actions, transition actions
-- internal and external parametrized events
+- internal and external events, parametrized events, delayed events
 
 
 .. toctree::
