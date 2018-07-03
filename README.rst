@@ -24,6 +24,7 @@ More specifically, Sismic provides:
 
 - An easy way to define and to import statecharts, based on the human-friendly YAML markup language
 - A statechart interpreter offering a discrete, step-by-step, and fully observable simulation engine
+- Fully controllable simulation clock, with support for real and simulated time
 - Built-in support for expressing actions and guards using regular Python code, can be easily extended to other programming languages
 - A design-by-contract approach for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions
 - Runtime checking of behavioral properties expressed as statecharts

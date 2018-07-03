@@ -45,7 +45,7 @@ class TestElevator:
         elevator.queue(Event('floorSelected', floor=4)).execute()
         assert elevator.context['current'] == 4
 
-        elevator.time += 10
+        elevator.clock.time += 10
         elevator.execute()
 
         assert 'doorsOpen' in elevator.configuration

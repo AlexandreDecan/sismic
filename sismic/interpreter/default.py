@@ -1,3 +1,5 @@
+import warnings
+
 from collections import deque, defaultdict
 from itertools import combinations
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Union, cast, Tuple
@@ -8,6 +10,7 @@ try:
 except ImportError:
     pass
 
+from ..clock import Clock, SimulatedClock, SynchronizedClock
 from ..model import (
     MacroStep, MicroStep, Event, InternalEvent, MetaEvent,
     Statechart, Transition,
@@ -16,7 +19,7 @@ from ..model import (
 
 from ..code import Evaluator, PythonEvaluator
 from ..exceptions import (ConflictingTransitionsError, InvariantError, PropertyStatechartError,
-                          ExecutionError, NonDeterminismError, PostconditionError, PreconditionError)
+                          NonDeterminismError, PostconditionError, PreconditionError)
 
 __all__ = ['Interpreter']
 
@@ -38,17 +41,20 @@ class Interpreter:
     (eventless transitions first, inner-first/source state semantics).
 
     :param statechart: statechart to interpret
-    :param evaluator_klass: An optional callable (eg. a class) that takes an interpreter and an optional initial
-        context as input and return an *Evaluator* instance that will be used to initialize the interpreter.
+    :param evaluator_klass: An optional callable (e.g. a class) that takes an interpreter and an optional initial
+        context as input and returns an *Evaluator* instance that will be used to initialize the interpreter.
         By default, the *PythonEvaluator* class will be used.
     :param initial_context: an optional initial context that will be provided to the evaluator.
         By default, an empty context is provided
+    :param clock: A BaseClock instance that will be used to set this interpreter internal time.
+        By default, a SimulatedClock is used.
     :param ignore_contract: set to True to ignore contract checking during the execution.
     """
 
     def __init__(self, statechart: Statechart, *,
                  evaluator_klass: Callable[..., Evaluator]=PythonEvaluator,
                  initial_context: Mapping[str, Any]=None,
+                 clock: Clock=None,
                  ignore_contract: bool=False) -> None:
         # Internal variables
         self._ignore_contract = ignore_contract
@@ -57,7 +63,8 @@ class Interpreter:
         self._initialized = False
 
         # Internal clock
-        self._time = 0  # type: float
+        self.clock = SimulatedClock() if clock is None else clock
+        self._time = self.clock.time
 
         # History states memory
         self._memory = {}  # type: Dict[str, Optional[List[str]]]
@@ -84,25 +91,15 @@ class Interpreter:
     @property
     def time(self) -> float:
         """
-        Time value (in seconds) of the internal clock
+        Time of the latest execution.
         """
         return self._time
 
     @time.setter
     def time(self, value: float):
-        """
-        Set the time of the internal clock
-
-        :param value: time value (in seconds)
-        """
-        if self._time > value:
-            raise ExecutionError('Time must be monotonic, cannot set time to {} from {}'.format(value, self._time))
-        self._time = value
-
-        # Update bound properties
-        for property_statechart in self._bound_properties:
-            property_statechart.time = self._time
-
+        warnings.warn('Interpreter.time is deprecated since 1.3.0, use Interpreter.clock.time instead', DeprecationWarning)
+        self.clock.time = value  # type: ignore
+        
     @property
     def configuration(self) -> List[str]:
         """
@@ -178,7 +175,7 @@ class Interpreter:
             interpreter = statechart_or_interpreter
 
         # Sync clock
-        interpreter.time = self.time
+        interpreter.clock = SynchronizedClock(self)
 
         # Add to the list of properties
         self._bound_properties.append(interpreter)
@@ -237,6 +234,9 @@ class Interpreter:
 
         :return: a macro step or *None* if nothing happened
         """
+        # Store time to have a consistent time value during this step
+        self._time = self.clock.time
+
         # Compute steps
         computed_steps = self._compute_steps()
 
@@ -262,7 +262,7 @@ class Interpreter:
             executed_steps.append(self._apply_step(step))
             executed_steps.extend(self._stabilize())
 
-        macro_step = MacroStep(time=self.time, steps=executed_steps)
+        macro_step = MacroStep(time=self._time, steps=executed_steps)
 
         # Check state invariants
         configuration = self.configuration  # Use self.configuration to benefit from the sorting by depth

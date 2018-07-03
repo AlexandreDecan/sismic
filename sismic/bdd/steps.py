@@ -59,7 +59,7 @@ def send_event(context, name, parameter=None, value=None):
 @when('I wait {seconds:g} seconds')
 @when('I wait {seconds:g} second')
 def wait(context, seconds):
-    context.interpreter.time += seconds
+    context.interpreter.clock.time += seconds
 
 
 @then('state {name} is entered')

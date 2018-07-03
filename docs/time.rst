@@ -1,4 +1,3 @@
-
 Dealing with time
 =================
 
@@ -6,26 +5,127 @@ It is quite usual in statecharts to find notations such as "*after 30 seconds*",
 on a transition. Sismic does not support the use of these *special events*, and proposes instead to deal with time
 by making use of some specifics provided by its interpreter and the default Python code evaluator.
 
-Every interpreter has an internal clock whose value is initially set to 0. This internal clock is exposed by
-by the :py:attr:`~sismic.interpreter.Interpreter.time` property of an :py:class:`~sismic.interpreter.Interpreter`.
-This property allows one to execute a statechart using simulated time. In other word, the value of this property
-won't change, unless you set it by yourself.
+Every interpreter has an internal clock that is exposed through its :py:attr:`~sismic.interpreter.Interpreter.clock` 
+attribute and that can be used to manipulate the time of the simulation. 
 
 The built-in Python code evaluator allows one to make use of ``after(...)``, ``idle(...)`` in guards or contracts.
-These two Boolean predicates can be used to automatically compare the current time (as exposed by the interpreter)
+These two Boolean predicates can be used to automatically compare the current time (as exposed by interpreter clock)
 with a predefined value that depends on the state in which the predicate is used. For instance, ``after(x)`` will
-evaluate to ``True`` if the current time of the interpreter is at least ``x`` units greater than the time when the
+evaluate to ``True`` if the current time of the interpreter is at least ``x`` seconds greater than the time when the
 state using this predicate (or source state in the case of a transition) was entered.
-Similarly, ``idle(x)`` evaluates to ``True`` if no transition was triggered during the last ``x`` units of time.
+Similarly, ``idle(x)`` evaluates to ``True`` if no transition was triggered during the last ``x`` seconds.
 
-Note that while this property was initially designed to manage simulate time, it can also be used to synchronise
-the internal clock of an interpreter with the *real* time, i.e. wall-clock time.
+These two predicates rely on the :py:attr:`~sismic.interpreter.Interpreter.time` attribute of an interpreter.
+The value of that attribute is computed at the beginning of each executed step based on a clock. 
+
+Sismic provides three implementations of :py:class:`~sismic.clock.Clock` in its :py:mod:`sismic.clock` module.
+The first one is a :py:class:`~sismic.clock.SimulatedClock` that can be manually or automatically incremented. In the latter case, 
+the speed of the clock can be easily changed. The second implementation is a classical :py:class:`~sismic.clock.UtcClock` that corresponds
+to a wall-clock in UTC with no flourish. The third implemention is a :py:class:`~sismic.clock.SynchronizedClock` that synchronizes its time value 
+based on the one of an interpreter. Its main use case is to support the co-execution of property statecharts.
+
+By default, the interpreter uses a :py:class:`~sismic.clock.SimulatedClock`. If you want the 
+interpreter to rely on another kind of clock, pass an instance of :py:class:`~sismic.clock.Clock`
+as the ``clock`` parameter of an interpreter constructor. 
 
 
-Simulated time
---------------
+Simulated clock
+---------------
 
-The following example illustrates a statechart modeling the behavior of a simple *elevator*.
+The default clock is a :py:class:`~sismic.clock.SimulatedClock` instance.
+This clock always starts at ``0`` and accumulates the elapsed time. 
+
+Its current time value can be read from the :py:attr:`~sismic.clock.SimulatedClock.time` attribute. 
+By default, the value of this attribute does not change, unless manually modified (simulated time) or
+by starting the clock (using :py:meth:`~sismic.clock.SimulatedClock.start`, wall-clock time).
+
+
+To change the current time of a clock, simply set a new value to the :py:attr:`~sismic.clock.SimulatedClock.time` attribute.
+Notice that time is expected to be monotonic: it is not allowed to set a new value that is strictly lower than
+the previous one. 
+
+As expected, simulated time can be easily achieved by manually modifying this value:
+
+.. testcode:: clock
+
+    from sismic.clock import SimulatedClock
+
+    clock = SimulatedClock()
+    print('initial time:', clock.time)
+
+    clock.time += 10
+    print('new time:', clock.time)
+
+.. testoutput:: clock
+
+    initial time: 0
+    new time: 10
+
+
+To support real time, a :py:class:`~sismic.clock.SimulatedClock` object has two methods, namely 
+:py:meth:`~sismic.clock.SimulatedClock.start` and :py:meth:`~sismic.clock.SimulatedClock.stop`. 
+These methods can be used respectively to start and stop the synchronization with real time. 
+Internally, the clock relies on Python's ``time.time()`` function. 
+
+.. testcode:: clock
+
+    from time import sleep
+
+    clock = SimulatedClock()
+
+    clock.start()
+    sleep(0.1)
+    print('after 0.1: {:.1f}'.format(clock.time))
+
+
+.. testoutput:: clock
+
+    after 0.1: 0.1
+
+
+A clock based on real time can also be manually changed during the execution by setting a 
+new value for its :py:attr:`~sismic.clock.SimulatedClock.time` attribute:
+
+
+.. testcode:: clock
+
+    clock.time = 10
+    print('after having been set to 10: {:.1f}'.format(clock.time))
+    
+    sleep(0.1)
+    print('after 0.1: {:.1f}'.format(clock.time))
+
+.. testoutput:: clock
+
+    after having been set to 10: 10.0
+    after 0.1: 10.1
+
+
+Finally, a simulated clock can be accelerated or slowed down by changing the value 
+of its :py:attr:`~sismic.clock.SimulatedClock.speed` attribute. By default, the value of this 
+attribute is set to ``1``. A higher value (e.g. ``2``) means that the clock will be faster
+than real time (e.g. 2 times faster), while a lower value slows down the clock. 
+
+.. testcode:: clock
+
+    clock = SimulatedClock()
+    clock.speed = 100
+
+    clock.start()
+    sleep(0.1)
+    clock.stop()
+
+    print('new time: {:.0f}'.format(clock.time))
+
+.. testoutput:: clock
+
+    new time: 10
+
+
+Example: manual time
+~~~~~~~~~~~~~~~~~~~~
+
+The following example illustrates a statechart modelling the behavior of a simple *elevator*.
 If the elevator is sent to the 4th floor then, according to the YAML definition of this statechart,
 the elevator should automatically go back to the ground floor after 10 seconds.
 
@@ -38,7 +138,7 @@ the elevator should automatically go back to the ground floor after 10 seconds.
 Rather than waiting for 10 seconds, one can simulate this.
 First, one should load the statechart and initialize the interpreter:
 
-.. testcode:: clock
+.. testcode::
 
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter, Event
@@ -47,11 +147,10 @@ First, one should load the statechart and initialize the interpreter:
 
     interpreter = Interpreter(statechart)
 
-The internal clock of our interpreter is ``0``.
-This is, ``interpreter.time == 0`` holds.
+The time of the internal clock of our interpreter is set to ``0`` by default.
 We now ask our elevator to go to the 4th floor.
 
-.. testcode:: clock
+.. testcode::
 
     interpreter.queue(Event('floorSelected', floor=4))
     interpreter.execute()
@@ -59,12 +158,12 @@ We now ask our elevator to go to the 4th floor.
 The elevator should now be on the 4th floor.
 We inform the interpreter that 2 seconds have elapsed:
 
-.. testcode:: clock
+.. testcode::
 
-    interpreter.time += 2
+    interpreter.clock.time += 2
     print(interpreter.execute())
 
-.. testoutput:: clock
+.. testoutput::
     :hide:
 
     []
@@ -74,38 +173,29 @@ Of course, nothing happened since the condition ``after(10)`` is not
 satisfied yet.
 We now inform the interpreter that 8 additional seconds have elapsed.
 
-.. testcode:: clock
+.. testcode::
 
-    interpreter.time += 8
-    print(interpreter.execute())
+    interpreter.clock.time += 8
+    interpreter.execute()
 
-.. testoutput:: clock
-    :hide:
+The elevator must has moved down to the ground floor.
+Let's check the current floor:
 
-    [MacroStep(10, [MicroStep(transition=Transition('doorsOpen', 'doorsClosed', event=None), entered_states=['doorsClosed'], exited_states=['doorsOpen'])]), MacroStep(10, [MicroStep(transition=Transition('doorsClosed', 'movingDown', event=None), entered_states=['moving', 'movingDown'], exited_states=['doorsClosed'])]), MacroStep(10, [MicroStep(transition=Transition('movingDown', 'movingDown', event=None), entered_states=['movingDown'], exited_states=['movingDown'])]), MacroStep(10, [MicroStep(transition=Transition('movingDown', 'movingDown', event=None), entered_states=['movingDown'], exited_states=['movingDown'])]), MacroStep(10, [MicroStep(transition=Transition('movingDown', 'movingDown', event=None), entered_states=['movingDown'], exited_states=['movingDown'])]), MacroStep(10, [MicroStep(transition=Transition('moving', 'doorsOpen', event=None), entered_states=['doorsOpen'], exited_states=['movingDown', 'moving'])])]
-
-The output now contains a list of steps, from which we can see that the elevator has moved down to the ground floor.
-We can check the current floor:
-
-.. testcode:: clock
+.. testcode::
 
     print(interpreter.context.get('current'))
 
-.. testoutput:: clock
-    :hide:
+.. testoutput::
 
     0
 
-This displays ``0``.
 
+Example: automatic time
+~~~~~~~~~~~~~~~~~~~~~~~
 
+If the execution of a statechart needs to rely on a real clock, the simplest way to achieve this
+is by using the :py:meth:`~sismic.clock.SimulatedClock.start` method of an interpreter clock. 
 
-Real or wall-clock time
------------------------
-
-If a statechart needs to be aware of a real clock, the simplest way to achieve this is by using
-the :py:func:`time.time` function of Python.
-In a nutshell, the idea is to synchronize ``interpreter.time`` with a real clock.
 Let us first initialize an interpreter using one of our statechart example, the *elevator*:
 
 .. testcode:: realclock
@@ -117,16 +207,15 @@ Let us first initialize an interpreter using one of our statechart example, the 
 
     interpreter = Interpreter(statechart)
 
-The interpreter initially sets its clock to 0.
-As we are interested in a real-time simulation of the statechart,
-we need to set the internal clock of our interpreter.
-We import from :py:mod:`time` a real clock,
-and store its value into a ``starttime`` variable.
+Initially, the internal clock is set to 0. 
+As we want to simulate the statechart based on real-time, we need to start the clock. 
+For this example, as we don't want to have to wait 10 seconds for the elevator to 
+move to the ground floor, we speed up the internal clock by a factor of 100:
 
 .. testcode:: realclock
 
-    import time
-    starttime = time.time()
+    interpreter.clock.speed = 100
+    interpreter.clock.start()
 
 We can now execute the statechart by sending a ``floorSelected`` event, and wait for the output.
 For our example, we first ask the statechart to send to elevator to the 4th floor.
@@ -136,86 +225,76 @@ For our example, we first ask the statechart to send to elevator to the 4th floo
     interpreter.queue(Event('floorSelected', floor=4))
     interpreter.execute()
     print('Current floor:', interpreter.context.get('current'))
-    print('Current time:', interpreter.time)
+    print('Current time:', int(interpreter.clock.time))
 
 At this point, the elevator is on the 4th floor and is waiting for another input event.
-The internal clock value is still 0.
+The internal clock value is still close to 0.
 
 .. testoutput:: realclock
 
     Current floor: 4
     Current time: 0
 
-We should inform our interpreter of the new current time.
-Of course, as our interpreter follows a discrete simulation, nothing really happens until we call
-:py:meth:`~sismic.interpreter.Interpreter.execute` or :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
+Let's wait 0.1 second (remember that we speed up the internal clock, so 0.1 second means 10 seconds
+for our elevator):
 
 .. testcode:: realclock
 
-    interpreter.time = time.time() - starttime
-    # Does nothing if (time.time() - starttime) is less than 10!
+    from time import sleep
+
+    sleep(0.1)
     interpreter.execute()
 
-Assuming you quickly wrote these lines of code, nothing happened.
-But if you wait a little bit, and update the clock again, it should move the elevator to the ground floor.
+We can now check that our elevator is on the ground floor:
 
 .. testcode:: realclock
 
-    interpreter.time = time.time() - starttime
-    interpreter.execute()
+    print(interpreter.context.get('current'))
 
-And *voilà*!
+.. testoutput:: realclock
 
-As it is not very convenient to manually set the clock each time you want to execute something, it is best to
-put it in a loop. To avoid the use of a ``starttime`` variable, you can set the initial time of an interpreter
-right after its initialization.
-This is illustrated in the following example.
-
-.. code:: python
-
-    from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter, import Event
-
-    import time
-
-    # Load statechart and create an interpreter
-    statechart = import_from_yaml(filepath='examples/elevator.yaml')
-
-    # Set the initial time
-    interpreter = Interpreter(statechart)
-    interpreter.time = time.time()
-
-    # Send an initial event
-    interpreter.queue(Event('floorSelected', floor=4))
-
-    while not interpreter.final:
-        interpreter.time = time.time()
-        if interpreter.execute():
-            print('something happened at time {}'.format(interpreter.time))
-
-        time.sleep(0.5)  # 500ms
-
-Here, we called the :py:func:`~time.sleep` function to slow down the loop (optional).
-The output should look like::
-
-    something happened at time 1450383083.9943285
-    something happened at time 1450383093.9920669
-
-As our statechart does not define any way to reach a final configuration,
-the ``not interpreter.final`` condition always holds,
-and the execution needs to be interrupted manually.
+    0
 
 
-Asynchronous execution
-----------------------
+Wall-clock 
+----------
 
-Notice from previous example that using a loop makes it impossible to send events to the interpreter.
-For convenience, sismic provides a :py:func:`sismic.helpers.run_in_background`
-function that run an interpreter in a thread, and does the job of synchronizing the clock for you.
+The second clock provided by Sismic is a :py:class:`~sismic.clock.UtcClock` whose time 
+is synchronized with system time (it relies on the ``time.time()`` function of Python).
 
-.. autofunction:: sismic.helpers.run_in_background
+
+.. testcode::
+
+    from sismic.clock import UtcClock
+    from time import time
+
+    clock = UtcClock()
+    assert (time() - clock.time) <= 1
+
+
+Synchronized clock
+------------------
+
+The third clock is a :py:class:`~sismic.clock.SynchronizedClock` that expects an 
+:py:class:`~sismic.interpreter.Interpreter` instance, and synchronizes its time
+value based on the value of the ``time`` attribute of the interpreter.
+
+The main use cases are when statechart executions have to be synchronized to the 
+point where a shared clock instance is not sufficient because executions should 
+occur at exactly the same time, up to the milliseconds. Internally, this clock 
+is used when property statecharts are bound to an interpreter, as they need to be
+executed at the exact same time. 
+
+
+Implementing other clocks
+-------------------------
+
+You can quite easily write your own clock implementation, for example if you need to
+synchronize different distributed interpreters. 
+Simply subclass the :py:class:`~sismic.clock.Clock` base class.
+
+.. autoclass:: sismic.clock.Clock
+    :members:
+    :member-order: bysource
     :noindex:
 
-.. note:: An optional argument ``callback`` can be passed to :py:func:`~sismic.interpreter.helpers.run_in_background`.
-    It must be a callable that accepts the (possibly empty) list of :py:class:`~sismic.interpreter.MacroStep` returned by
-    the underlying call to :py:meth:`~sismic.interpreter.Interpreter.execute`. 

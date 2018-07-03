@@ -67,7 +67,7 @@ class PythonEvaluator(Evaluator):
     Depending on the method that is called, the context can expose additional values:
 
     - On both code execution and code evaluation:
-        - A *time: float* value that represents the current time exposed by the interpreter.
+        - A *time: float* value that represents the current time exposed by interpreter clock.
         - An *active(name: str) -> bool* Boolean function that takes a state name and return *True* if and only
           if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
           that makes use of this evaluator.
