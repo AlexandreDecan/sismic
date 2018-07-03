@@ -13,8 +13,14 @@ Unreleased
    ``Clock`` instances are used by the interpreter to get the current time during execution. 
    See documentation for more information.
  - (Added) An ``Interpreter.clock`` attribute that stores an instance of the newly added ``Clock`` class. 
+ - (Added) Delayed events are supported through ``DelayedEvent`` and ``DelayedInternalEvent``. If 
+   a delayed event with delay *d* is queued or sent by an interpreter at time *t*, it will not be processed 
+   unless `execute` or `execute_once` is called after the current clock exceeds *t + d*.
+ - (Added) Property statecharts receive a *delayed event sent* meta-event when a delayed event is sent by a statechart.
+ - (Added) Delayed events can be sent from within a statechart by specifying a ``delay`` parameter to the ``sent`` function.
  - (Changed) ``interpreter.time`` represents the time of the last executed step, not the current
    time. Use ``interpreter.clock.time`` instead. 
+ - (Changed) ``Interpreter.queue`` does not longer accept ``InternalEvent``.
  - (Changed) ``helpers.run_in_background`` no longer synchronizes the interpreter clock. 
    Use the ``start()`` method of ``interpreter.clock`` or an ``UtcClock`` instance instead. 
  - (Fixed) State *on entry* time (used for ``idle`` and ``after``) is set after the *on entry* 

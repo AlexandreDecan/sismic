@@ -3,7 +3,7 @@ import pytest
 from sismic import code
 from sismic.code.python import FrozenContext
 from sismic.exceptions import CodeEvaluationError
-from sismic.interpreter import Event, InternalEvent, MetaEvent
+from sismic.interpreter import Event, InternalEvent, DelayedInternalEvent, MetaEvent
 
 
 def test_dummy_evaluator(mocker):
@@ -80,6 +80,13 @@ class TestPythonEvaluator:
     def test_send(self, evaluator):
         events = evaluator._execute_code('send("hello")')
         assert events == [InternalEvent('hello')]
+
+    def test_send_with_delay(self, evaluator):
+        events = evaluator._execute_code('send("hello", delay=5)')
+        event = events[0]
+        assert isinstance(event, DelayedInternalEvent)
+        assert event.delay == 5
+        assert event.name == 'hello'
 
     def test_notify(self, evaluator):
         events = evaluator._execute_code('notify("hello", x=1, y="world")')
