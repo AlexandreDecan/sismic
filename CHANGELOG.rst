@@ -3,23 +3,39 @@ Changelog
 
 Unreleased
 ----------
- 
+
+Priority can be defined on transitions, allowing to simulate default transitions and to break non-deterministic
+situations when many transitions are triggered for a single source state: 
+
  - (Added) Priority can be set for transitions (using *low*, *high* or any integer in yaml). transitions
    are selected according to their priorities (still following eventless and inner-first/source state semantics).
- - (Added) A ``sismic.testing`` module containing some primitives to ease unit testing.
+ - (Added) Interpreter's ``_select_transitions`` gets two new parameters, ``eventless_first`` and ``inner_first``.
+   Both default to ``True`` and can be used in subclasses to change the default semantics of the interpreter.
+
+The current time of an interpreter is now clock-based driven, thanks to the `Clock` base class and its implementations.
+
  - (Added) A ``sismic.clock`` module with a ``Clock`` base class and three direct implementations, 
    namely ``SimulatedClock``, ``UtcClock`` and ``SynchronizedClock``. A ``SimulatedClock`` allows to manually or automatically 
    change the time, while a ``WallClock`` as the expected behaviour of a wall-clock. 
    ``Clock`` instances are used by the interpreter to get the current time during execution. 
    See documentation for more information.
  - (Added) An ``Interpreter.clock`` attribute that stores an instance of the newly added ``Clock`` class. 
+ - (Changed) ``interpreter.time`` represents the time of the last executed step, not the current
+   time. Use ``interpreter.clock.time`` instead. 
+ - (Deprecated) Setting ``Interpreter.time`` is deprecated, set time with ``Interpreter.clock.time`` instead.
+
+Queued events can be delayed when they are added to an interpreter event queue. 
+
  - (Added) Delayed events are supported through ``DelayedEvent`` and ``DelayedInternalEvent``. If 
    a delayed event with delay *d* is queued or sent by an interpreter at time *t*, it will not be processed 
    unless `execute` or `execute_once` is called after the current clock exceeds *t + d*.
  - (Added) Property statecharts receive a *delayed event sent* meta-event when a delayed event is sent by a statechart.
  - (Added) Delayed events can be sent from within a statechart by specifying a ``delay`` parameter to the ``sent`` function.
- - (Changed) ``interpreter.time`` represents the time of the last executed step, not the current
-   time. Use ``interpreter.clock.time`` instead. 
+ - (Added) An ``EventQueue`` class (in ``sismic.interpreter.queue``) that controls how (delayed) events are handled by an interpreter.
+
+And other small changes: 
+
+ - (Added) A ``sismic.testing`` module containing some primitives to ease unit testing.
  - (Changed) ``Interpreter.queue`` does not longer accept ``InternalEvent``.
  - (Changed) ``helpers.run_in_background`` no longer synchronizes the interpreter clock. 
    Use the ``start()`` method of ``interpreter.clock`` or an ``UtcClock`` instance instead. 
@@ -28,7 +44,6 @@ Unreleased
    executed when a state is entered. Similarly, ``idle`` is reset after the action of a transition
    is performed, not before.
  - (Changed) Drop official support for Python 3.4.
- - (Deprecated) Setting ``Interpreter.time`` is deprecated, set time with ``Interpreter.clock.time`` instead.
 
 
 1.2.2 (2018-06-21)

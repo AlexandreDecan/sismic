@@ -6,7 +6,8 @@ from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
 
 from . import Evaluator
 from ..exceptions import CodeEvaluationError
-from ..model import Statechart, StateMixin, Transition, Event, InternalEvent, DelayedInternalEvent, MetaEvent
+from ..model import (DelayedInternalEvent, Event, InternalEvent, MetaEvent,
+                     Statechart, StateMixin, Transition)
 
 __all__ = ['PythonEvaluator']
 

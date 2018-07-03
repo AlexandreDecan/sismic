@@ -1,98 +1,21 @@
 import warnings
-import heapq
+from itertools import combinations
+from typing import (Any, Callable, Dict, Iterable, List, Mapping, Optional,
+                    Set, Tuple, Union, cast)
 
-from collections import defaultdict
-from itertools import combinations, count
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Union, cast, Tuple
-
+from .._utilities import sorted_groupby
 from ..clock import Clock, SimulatedClock, SynchronizedClock
-from ..model import (
-    MacroStep, MicroStep, Event, InternalEvent, DelayedEvent, DelayedInternalEvent, MetaEvent,
-    Statechart, Transition,
-    StateMixin, FinalState, OrthogonalState, CompoundState, DeepHistoryState, ShallowHistoryState,
-)
-
 from ..code import Evaluator, PythonEvaluator
-from ..exceptions import (ConflictingTransitionsError, InvariantError, PropertyStatechartError,
-                          NonDeterminismError, PostconditionError, PreconditionError)
+from ..exceptions import (ConflictingTransitionsError, InvariantError,
+                          NonDeterminismError, PostconditionError,
+                          PreconditionError, PropertyStatechartError)
+from ..model import (CompoundState, DeepHistoryState, DelayedEvent,
+                     DelayedInternalEvent, Event, FinalState, InternalEvent,
+                     MacroStep, MetaEvent, MicroStep, OrthogonalState,
+                     ShallowHistoryState, Statechart, StateMixin, Transition)
+from .queue import EventQueue
 
 __all__ = ['Interpreter']
-
-
-def sorted_groupby(iterable, key=None, reverse=False):
-    """
-    Return pairs (label, group) grouped and sorted by label = key(item).
-    """
-    groups = defaultdict(list)
-    for value in iterable:
-        groups[key(value)].append(value)
-    sort_key = lambda e: e[0]
-    return sorted(groups.items(), key=sort_key, reverse=reverse)
-
-
-class EventQueue:
-    """
-    Simple event queue that supports delayed and internal events. 
-
-    This class acts as a priority queue based on time. 
-
-    :param internal_first: set to True (default) if internal events should have priority.
-    """
-    def __init__(self, *, internal_first=True) -> None:
-        self._queue = []  # List[Tuple[float, bool, int, Event]]
-        self._nb = 0
-        self._internal_first = internal_first
-
-    def _get_event(self, t):
-        return (t[0], t[-1])
-
-    def _set_event(self, time, event):
-        self._nb += 1
-        return (
-            time + (event.delay if isinstance(event, DelayedEvent) else 0), 
-            (1 - int(isinstance(event, InternalEvent))) if self._internal_first else 0,
-            self._nb,
-            event
-        )
-
-    def push(self, time: float, event: Event) -> None:
-        """
-        Put given event in the queue. 
-
-        If given event is a DelayedEvent, appropriate modifications to time 
-        will be done by this queue. 
-        
-        :param time: Current time. 
-        :param event: Event to queue. 
-        """
-        heapq.heappush(self._queue, self._set_event(time, event))
-
-    def pop(self) -> Tuple[float, Event]:
-        """
-        Return and dismiss first event. 
-
-        :return: A pair (time, event). 
-        """
-        return self._get_event(heapq.heappop(self._queue))
-
-    @property
-    def first(self) -> Tuple[float, Event]:
-        """
-        Return the first event. 
-
-        :return: A pair (time, event).
-        """
-        return self._get_event(self._queue[0])
-
-    @property
-    def empty(self) -> bool:
-        """
-        Holds if current queue is empty. 
-        """
-        return len(self._queue) == 0
-
-    def __len__(self) -> int:
-        return len(self._queue)
 
 
 class Interpreter:
@@ -738,7 +661,7 @@ class Interpreter:
             self._notify_properties('state entered', state=state.name)
 
         # Send events
-        for event in sent_events:
+        for event in cast(Union[InternalEvent, MetaEvent], sent_events):
             self._raise_event(event)
 
         return MicroStep(event=step.event, transition=step.transition,
