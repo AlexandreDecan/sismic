@@ -9,10 +9,10 @@ from ..code import Evaluator, PythonEvaluator
 from ..exceptions import (ConflictingTransitionsError, InvariantError,
                           NonDeterminismError, PostconditionError,
                           PreconditionError, PropertyStatechartError)
-from ..model import (CompoundState, DeepHistoryState, DelayedEvent,
-                     DelayedInternalEvent, Event, FinalState, InternalEvent,
-                     MacroStep, MetaEvent, MicroStep, OrthogonalState,
-                     ShallowHistoryState, Statechart, StateMixin, Transition)
+from ..model import (CompoundState, DeepHistoryState, DelayedEvent, Event,
+                     FinalState, InternalEvent, MacroStep, MetaEvent,
+                     MicroStep, OrthogonalState, ShallowHistoryState,
+                     Statechart, StateMixin, Transition)
 from .queue import EventQueue
 
 __all__ = ['Interpreter']
@@ -79,7 +79,7 @@ class Interpreter:
     def time(self, value: float):
         warnings.warn('Interpreter.time is deprecated since 1.3.0, use Interpreter.clock.time instead', DeprecationWarning)
         self.clock.time = value  # type: ignore
-        
+
     @property
     def configuration(self) -> List[str]:
         """
@@ -165,9 +165,9 @@ class Interpreter:
         """
         Queue one or more events to the interpreter external queue.
 
-        If a DelayedEvent is provided, its delay must be a positive number. 
-        The provided event will be processed by the first call to `execute_once` 
-        as soon as the internal clock is greater or equal than 
+        If a DelayedEvent is provided, its delay must be a positive number.
+        The provided event will be processed by the first call to `execute_once`
+        as soon as the internal clock is greater or equal than
         `clock.time + event.delay`. 
 
         :param event_or_name: an *Event* instance, or the name of an event.
@@ -266,7 +266,7 @@ class Interpreter:
         Raise an event from the statechart.
 
         Only InternalEvent and MetaEvent (and their subclasses) are accepted. 
-        
+
         InternalEvent instances are propagated to bound interpreters as normal events, and added to 
         the event queue of the current interpreter as InternalEvent instance. If given event is 
         delayed, it is propagated as DelayedEvent to bound interpreters, and put into current
@@ -339,9 +339,9 @@ class Interpreter:
                     self._event_queue.pop()
                 return event
         return None
-        
+
     def _select_transitions(self, event: Optional[Event], states: Iterable[str], *,
-            eventless_first=True, inner_first=True) -> List[Transition]:
+                            eventless_first=True, inner_first=True) -> List[Transition]:
         """
         Select and return the transitions that are triggered, based on given event
         (or None if no event can be consumed) and given list of states.
@@ -495,7 +495,6 @@ class Interpreter:
         event = None if transitions[0].event is None else event
 
         return self._create_steps(event, transitions)
-
 
     def _create_steps(self, event: Optional[Event],
                       transitions: Iterable[Transition]) -> List[MicroStep]:
