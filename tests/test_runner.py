@@ -71,26 +71,25 @@ class TestAsyncRunner:
         assert not runner.running
 
     def test_hooks(self, mocked_runner):
+
+        assert len(mocked_runner.before_run.call_args_list) == 0
+        assert len(mocked_runner.before_execute.call_args_list) == 0
+        assert len(mocked_runner.after_execute.call_args_list) == 0
+
         mocked_runner.start()
         sleep(self.INTERVAL)
-        with pytest.raises(AssertionError, message='before_run not called'):
-            mocked_runner.before_run.assert_not_called()
-
-        mocked_runner.pause()
-        mocked_runner.unpause()
+        assert len(mocked_runner.before_run.call_args_list) == 1
+        
         sleep(self.INTERVAL)
-        mocked_runner.pause()
+        
+        assert len(mocked_runner.before_execute.call_args_list) > 0
+        assert len(mocked_runner.after_execute.call_args_list) > 0
 
-        with pytest.raises(AssertionError, message='before_execute not called'):
-            mocked_runner.before_execute.assert_not_called()
-
-        with pytest.raises(AssertionError, message='after_execute not called'):
-            mocked_runner.after_execute.assert_not_called()
-
+        assert len(mocked_runner.after_run.call_args_list) == 0
         mocked_runner.stop()
         sleep(self.INTERVAL)
-        with pytest.raises(AssertionError, message='after_run not called'):
-            mocked_runner.after_run.assert_not_called()
+        assert len(mocked_runner.after_run.call_args_list) == 1
+
             
     def test_final(self, runner):
         runner.start()
