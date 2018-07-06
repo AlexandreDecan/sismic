@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased
-----------
+1.3.0 (2018-07-06)
+------------------
 
 Priority can be defined on transitions, allowing to simulate default transitions and to break non-deterministic
 situations when many transitions are triggered for a single source state: 
@@ -49,7 +49,6 @@ And other small changes:
    executed when a state is entered. Similarly, ``idle`` is reset after the action of a transition
    is performed, not before.
  - (Changed) Drop official support for Python 3.4.
-
 
 
 1.2.2 (2018-06-21)

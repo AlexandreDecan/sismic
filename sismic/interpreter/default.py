@@ -3,7 +3,7 @@ from itertools import combinations
 from typing import (Any, Callable, Dict, Iterable, List, Mapping, Optional,
                     Set, Tuple, Union, cast)
 
-from .._utilities import sorted_groupby
+from ..utilities import sorted_groupby
 from ..clock import Clock, SimulatedClock, SynchronizedClock
 from ..code import Evaluator, PythonEvaluator
 from ..exceptions import (ConflictingTransitionsError, InvariantError,
