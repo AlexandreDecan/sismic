@@ -2,12 +2,12 @@ import pytest
 
 from time import sleep 
 
-from sismic.runner import AsyncRunner
-from sismic.interpreter import Interpreter
+from sismic.runner import AsyncRunner, EventBasedRunner
+from sismic.interpreter import Interpreter, DelayedEvent
 
 
 class TestAsyncRunner:
-    INTERVAL = 0.05
+    INTERVAL = 0.02
 
     @pytest.fixture()
     def interpreter(self, simple_statechart):
@@ -15,7 +15,7 @@ class TestAsyncRunner:
 
     @pytest.fixture()
     def runner(self, interpreter):
-        r = AsyncRunner(interpreter, interval=self.INTERVAL)
+        r = AsyncRunner(interpreter, interval=0)
         yield r
         r.stop()
 
@@ -27,7 +27,7 @@ class TestAsyncRunner:
             after_execute = mocker.MagicMock()
             after_run = mocker.MagicMock()
         
-        r = MockedRunner(interpreter, interval=self.INTERVAL)
+        r = MockedRunner(interpreter, interval=0)
         yield r
         r.stop()
         
@@ -35,22 +35,21 @@ class TestAsyncRunner:
         assert runner.interpreter.configuration == []
 
         runner.interpreter.queue('goto s2')
-        sleep(self.INTERVAL * 2)
+        sleep(self.INTERVAL)
         assert runner.interpreter.configuration == []
 
         runner.start()
-        sleep(self.INTERVAL * 2)
+        sleep(self.INTERVAL)
         assert runner.interpreter.configuration == ['root', 's3']
 
     def test_start(self, runner):
         runner.start()
-        sleep(self.INTERVAL * 2)
+        sleep(self.INTERVAL)
         assert runner.interpreter.configuration == ['root', 's1']
         
         runner.interpreter.queue('goto s2')
-        sleep(self.INTERVAL * 2)
+        sleep(self.INTERVAL)
         assert runner.interpreter.configuration == ['root', 's3']
-
 
     def test_restart_stopped(self, runner):
         runner.start()
@@ -73,13 +72,13 @@ class TestAsyncRunner:
 
     def test_hooks(self, mocked_runner):
         mocked_runner.start()
-        sleep(self.INTERVAL * 2)
+        sleep(self.INTERVAL)
         with pytest.raises(AssertionError, message='before_run not called'):
             mocked_runner.before_run.assert_not_called()
 
         mocked_runner.pause()
         mocked_runner.unpause()
-        sleep(self.INTERVAL * 2)
+        sleep(self.INTERVAL)
         mocked_runner.pause()
 
         with pytest.raises(AssertionError, message='before_execute not called'):
@@ -89,7 +88,7 @@ class TestAsyncRunner:
             mocked_runner.after_execute.assert_not_called()
 
         mocked_runner.stop()
-        sleep(self.INTERVAL * 2)
+        sleep(self.INTERVAL)
         with pytest.raises(AssertionError, message='after_run not called'):
             mocked_runner.after_run.assert_not_called()
             
@@ -97,7 +96,8 @@ class TestAsyncRunner:
         runner.start()
         runner.interpreter.queue('goto s2')
         runner.interpreter.queue('goto final')
-        sleep(self.INTERVAL * 2)
+        sleep(self.INTERVAL)
+        sleep(self.INTERVAL)
         assert runner.interpreter.final
         assert not runner.running
         sleep(self.INTERVAL)  # Wait for the thread to finish
@@ -107,20 +107,20 @@ class TestAsyncRunner:
         runner.start()
         assert not runner.paused
 
-        sleep(self.INTERVAL * 2)
+        sleep(self.INTERVAL)
         runner.pause()
         assert runner.paused
         assert runner.running
         assert runner.interpreter.configuration == ['root', 's1']
         
         runner.interpreter.queue('goto s2')
-        sleep(self.INTERVAL * 2)
+        sleep(self.INTERVAL)
         assert runner.interpreter.configuration == ['root', 's1']
 
         runner.unpause()
         assert not runner.paused
         assert runner.running
-        sleep(self.INTERVAL * 2)
+        sleep(self.INTERVAL)
         assert runner.interpreter.configuration == ['root', 's3']
 
         

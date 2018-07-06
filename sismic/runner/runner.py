@@ -35,29 +35,29 @@ class AsyncRunner:
      - before_run: called (only once !) when the runner is started.
      - after_run: called (only once !) when the interpreter reaches a final configuration.
        configuration of the underlying interpreter is reached. 
-     - execute: called at each step of the run. By default, call the `execute()`
-       method of the underlying interpreter. 
+     - execute: called at each step of the run. By default, call the `execute_once`
+       method of the underlying interpreter and returns a *list* of macro steps. 
      - before_execute: called right before the call to `execute()`;
      - after_execute: called right after the call to `execute()`.
        This method is called with the returned value of `execute()`.
        
     :param interpreter: interpreter instance to run.
     :param interval: interval between two calls to `execute`
-    :param execute_once: If set, call interpreter's `execute_once` method instead of `execute`.
+    :param execute_all: If set, repeatedly call interpreter's `execute_once` method.
     """
-    def __init__(self, interpreter: Interpreter, interval: float=0.1, execute_once=False) -> None:
+    def __init__(self, interpreter: Interpreter, interval: float=0.1, execute_all=False) -> None:
         self._unpaused = threading.Event()
         self._stop = threading.Event()
 
         self.interpreter = interpreter
         self.interval = interval
-        self._execute_once = execute_once
+        self._execute_all = execute_all
         self._thread = threading.Thread(target=self._run)
 
     @property
     def running(self):
         """
-        Holds if execution is currently running (event if it's paused).
+        Holds if execution is currently running (even if it's paused).
         """
         return self._thread.is_alive()
 
@@ -84,8 +84,8 @@ class AsyncRunner:
         """
         Stop the execution.
         """
-        self._unpaused.set()
         self._stop.set()
+        self._unpaused.set()
         self.wait()
     
     def pause(self):
@@ -118,7 +118,7 @@ class AsyncRunner:
             steps.append(step)
             step = self.interpreter.execute_once()
             
-            if self._execute_once:
+            if not self._execute_all:
                 break
         
         return steps
@@ -152,10 +152,9 @@ class AsyncRunner:
 
     def _run(self):
         self.before_run()
+        self._unpaused.wait()
 
-        while not self.interpreter.final and not self._stop.is_set():
-            self._unpaused.wait()
-            
+        while not self.interpreter.final and not self._stop.is_set():    
             starttime = time.time()
             self.before_execute()
             r = self.execute()
@@ -163,6 +162,7 @@ class AsyncRunner:
 
             elapsed = time.time() - starttime
             time.sleep(max(0, self.interval - elapsed))
+            self._unpaused.wait()
 
         # Ensure that self._stop is set if self.interpreter.final holds
         self._stop.set()
@@ -171,3 +171,4 @@ class AsyncRunner:
 
     def __del__(self):
         self.stop()
+

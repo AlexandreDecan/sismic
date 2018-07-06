@@ -33,10 +33,9 @@ Queued events can be delayed when they are added to an interpreter event queue.
  - (Added) Delayed events can be sent from within a statechart by specifying a ``delay`` parameter to the ``sent`` function.
  - (Added) An ``EventQueue`` class (in ``sismic.interpreter.queue``) that controls how (delayed) events are handled by an interpreter.
 
-Several new interpreter runners that benefit from the clock-based handling of time and delayed events:
+A new interpreter runner that benefit from the clock-based handling of time and delayed events:
 
  - (Added) An ``AsyncRunner`` in the newly added ``runner`` module to asynchronously run an interpreter at regular interval.
- - (TODO) EventBasedRunner
  - (Changed) ``helpers.run_in_background`` no longer synchronizes the interpreter clock. 
    Use the ``start()`` method of ``interpreter.clock`` or an ``UtcClock`` instance instead.
  - (Deprecated) ``helpers.run_in_background`` is deprecated, use ``runner.AsyncRunner`` instead.
