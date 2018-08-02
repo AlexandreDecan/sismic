@@ -38,8 +38,8 @@ class MicrowaveApplication(tk.Frame):
         # Update the widget that contains the list of active states.
         self.w_states['text'] = '\n'.join(self.interpreter.configuration)
 
-        self.w_timer['text'] = 'M.timer: %d' % self.interpreter.context.get('controller.timer', 'undefined')
-        self.w_power['text'] = 'M.power: %d' % self.interpreter.context.get('controller.power', 'undefined')
+        self.w_timer['text'] = 'M.timer: %d' % self.interpreter.context.get('timer', 'undefined')
+        self.w_power['text'] = 'M.power: %d' % self.interpreter.context.get('power', 'undefined')
 
     def create_widgets(self):
         self.pack(fill=tk.BOTH)
@@ -53,31 +53,31 @@ class MicrowaveApplication(tk.Frame):
         input_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(8, 8))
 
         self.w_power_inc = tk.Button(input_frame, text='power +',
-                                     command=partial(self.send_event, event_name='input_power_inc'))
+                                     command=partial(self.send_event, event_name='power_inc'))
         self.w_power_dec = tk.Button(input_frame, text='power -',
-                                     command=partial(self.send_event, event_name='input_power_dec'))
+                                     command=partial(self.send_event, event_name='power_dec'))
         self.w_power_reset = tk.Button(input_frame, text='power reset',
-                                       command=partial(self.send_event, event_name='input_power_reset'))
+                                       command=partial(self.send_event, event_name='power_reset'))
 
         self.w_power_inc.pack(side=tk.TOP, fill=tk.X)
         self.w_power_dec.pack(side=tk.TOP, fill=tk.X)
         self.w_power_reset.pack(side=tk.TOP, fill=tk.X)
 
         self.w_timer_inc = tk.Button(input_frame, text='timer +',
-                                     command=partial(self.send_event, event_name='input_timer_inc'))
+                                     command=partial(self.send_event, event_name='timer_inc'))
         self.w_timer_dec = tk.Button(input_frame, text='timer -',
-                                     command=partial(self.send_event, event_name='input_timer_dec'))
+                                     command=partial(self.send_event, event_name='timer_dec'))
         self.w_timer_reset = tk.Button(input_frame, text='timer 0',
-                                       command=partial(self.send_event, event_name='input_timer_reset'))
+                                       command=partial(self.send_event, event_name='timer_reset'))
 
         self.w_timer_inc.pack(side=tk.TOP, fill=tk.X, pady=(8, 0))  # leave some space before first button
         self.w_timer_dec.pack(side=tk.TOP, fill=tk.X)
         self.w_timer_reset.pack(side=tk.TOP, fill=tk.X)
 
         self.w_cooking_start = tk.Button(input_frame, text='start',
-                                         command=partial(self.send_event, event_name='input_cooking_start'))
+                                         command=partial(self.send_event, event_name='cooking_start'))
         self.w_cooking_stop = tk.Button(input_frame, text='stop',
-                                        command=partial(self.send_event, event_name='input_cooking_stop'))
+                                        command=partial(self.send_event, event_name='cooking_stop'))
 
         self.w_cooking_start.pack(side=tk.TOP, fill=tk.X, pady=(8, 0))  # leave some space before first button
         self.w_cooking_stop.pack(side=tk.TOP, fill=tk.X)
