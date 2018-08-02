@@ -20,15 +20,13 @@ Sismic user manual
 About
 -----
 
-*Sismic* is a recursive acronym that stands for *Sismic Interactive Statechart Model Interpreter and Checker*.
+Statecharts are a well-known visual modeling language for specifying the executable behavior
+of reactive event-based systems. The essential complexity of statechart models solicits the need for advanced model testing and validation techniques. Sismic is a statechart library for Python (version 3.5 or higher) providing a set of tools to define, validate, simulate, execute and test statecharts. *Sismic* is a recursive acronym that stands for *Sismic Interactive Statechart Model Interpreter and Checker*.
 
-Statecharts are a well-known visual modeling language for representing the executable behavior
-of complex reactive event-based systems. Sismic library for Python (version 3.5 or higher) provides a set of
-tools to define, validate, simulate, execute and test statecharts.
+Sismic is mainly developed by Dr. Alexandre Decan as part of his research activities at the `Software Engineering Lab <http://informatique.umons.ac.be/genlog>`_ of the `University of Mons <http://www.umons.ac.be>`_. Sismic is released
+as open source under the  `GNU Lesser General Public Licence version 3.0 (LGPLv3) <http://www.gnu.org/licenses/lgpl-3.0.html>`_.
 
-Sismic is mainly developed by Alexandre Decan at the `University of Mons <http://www.umons.ac.be>`_ and released
-publicly under the  `GNU Lesser General Public Licence version 3.0 (LGPLv3) <http://www.gnu.org/licenses/lgpl-3.0.html>`_.
-
+The scientific article `A method for testing and validating executable statechart models <https://doi.org/10.1007/s10270-018-0676-3>`_, published in 2018 in the Springer Software & Systems Modeling journal, describes the method and techniques for modeling, testing and validating statecharts, as supported by Sismic.
 
 Features
 --------
@@ -110,12 +108,27 @@ https://github.com/AlexandreDecan/sismic
 
 Use GitHub's integrated services to contribute suggestions and feature requests for this library or to report bugs.
 
-You can cite Sismic using:
+You can cite the research article describing the method and techniques supported by Sismic using:
+
+Softw Syst Model (2018). https://doi.org/10.1007/s10270-018-0676-3
+.. code::
+
+    @software{sismic2018-sosym,
+      author = {Mens, Tom and Decan, Alexandre and Spanoudakis, Nikolaos},
+      journal = {Software and Systems Modeling},
+      publisher = {Springer},
+      year = 2018,
+      title = {A method for testing and validating executable statechart models},
+      doi = {10.1007/s10270-018-0676-3},
+      url = {https://link.springer.com/article/10.1007/s10270-018-0676-3},
+    }
+    
+You can cite the Sismic library itself using:
 
 .. code::
 
     @software{sismic,
-      author = {{Alexandre Decan}},
+      author = {Decan, Alexandre},
       title = {Sismic Interactive Statechart Model Interpreter and Checker},
       url = {https://github.com/AlexandreDecan/sismic},
     }
