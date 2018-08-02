@@ -87,6 +87,7 @@ You can cite the Sismic library using:
     }
 
 You can cite the associated research article using:
+
 .. code::
 
     @article{sismic2018-sosym,

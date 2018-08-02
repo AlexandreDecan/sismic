@@ -110,7 +110,6 @@ Use GitHub's integrated services to contribute suggestions and feature requests 
 
 You can cite the research article describing the method and techniques supported by Sismic using:
 
-Softw Syst Model (2018). https://doi.org/10.1007/s10270-018-0676-3
 .. code::
 
     @article{sismic2018-sosym,
