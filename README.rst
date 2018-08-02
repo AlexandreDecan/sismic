@@ -26,9 +26,9 @@ More specifically, Sismic provides:
 - A statechart interpreter offering a discrete, step-by-step, and fully observable simulation engine
 - Fully controllable simulation clock, with support for real and simulated time
 - Built-in support for expressing actions and guards using regular Python code, can be easily extended to other programming languages
-- A design-by-contract approach for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions
-- Runtime checking of behavioral properties expressed as statecharts
-- Built-in support for behavior-driven development
+- Support for Design by Contract (DbC) for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions
+- Runtime monitoring of behavioral properties expressed as statecharts
+- Built-in support for behavior-driven development (BDD)
 - Support for communication between statecharts
 - Synchronous and asynchronous executions
 - Statechart visualization using `PlantUML <http://www.plantuml.com/plantuml>`__
@@ -57,6 +57,8 @@ Many examples are available in `docs/examples <https://github.com/AlexandreDecan
 
 The documentation can also be directly built from the `docs <https://github.com/AlexandreDecan/sismic/tree/master/docs>`_ directory using Sphinx.
 
+The scientific article `A method for testing and validating executable statechart models <https://doi.org/10.1007/s10270-018-0676-3>`_ presenting the method and techniques supported by Sismic for validating and testing statecharts, is published in Springer's Software and Systems modeling journal in 2018. 
+
 
 Changelog
 ---------
@@ -68,21 +70,32 @@ Credits
 -------
 
 The Sismic library for Python is mainly developed by Alexandre Decan at the
-`University of Mons <http://www.umons.ac.be>`_ with the help of
-`many contributors <http://sismic.readthedocs.io/en/master/authors.html>`_.
+`Software Engineering Lab <http://informatique.umons.ac.be/genlog>`_ of the `University of Mons <http://www.umons.ac.be>`_ with the help of `many contributors <http://sismic.readthedocs.io/en/master/authors.html>`_.
 
-Sismic is released publicly under the `GNU Lesser General Public Licence version 3.0 (LGPLv3)
+Sismic is released as open source software under the `GNU Lesser General Public Licence version 3.0 (LGPLv3)
 <http://www.gnu.org/licenses/lgpl-3.0.html>`_.
 
 
-You can cite Sismic using:
+You can cite the Sismic library using:
 
 .. code::
 
     @software{sismic,
-      author = {{Alexandre Decan}},
+      author = {Decan, Alexandre},
       title = {Sismic Interactive Statechart Model Interpreter and Checker},
       url = {https://github.com/AlexandreDecan/sismic},
     }
 
+You can cite the associated research article using:
+.. code::
+
+    @article{sismic2018-sosym,
+       author = {Mens, Tom and Decan, Alexandre and Spanoudakis, Nikolaos},
+       journal = {Software and Systems Modeling},
+       publisher = {Springer},
+       year = 2018,
+       title = {A method for testing and validating executable statechart models},
+       doi = {10.1007/s10270-018-0676-3},
+       url = {https://link.springer.com/article/10.1007/s10270-018-0676-3},
+     }
 
