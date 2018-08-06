@@ -1,3 +1,8 @@
+import pytest
+import os
+
+from subprocess import check_call
+
 from sismic.interpreter import Event
 from sismic import testing
 
@@ -90,7 +95,6 @@ class TestMicrowave:
 
         microwave.queue(Event('cooking_start'))
         steps = microwave.execute()
-        
         assert testing.event_is_fired(steps, 'heating_on')
         assert testing.event_is_fired(steps, 'lamp_switch_on')
         assert testing.event_is_fired(steps, 'turntable_start')

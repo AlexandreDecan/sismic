@@ -12,6 +12,7 @@ install:
 script:
 - coverage run --source sismic -m pytest
 - cd docs && make doctest && cd ..
+- python -m unittest docs/examples/microwave
 after_success:
 - coveralls
 matrix:

@@ -39,18 +39,21 @@ class TestMicrowave:
         )
 
     def test_microwave_with_steps(self, microwave):
+        features = ['cooking_human', 'lighting_human', 'safety_human']
 
         assert 0 == execute_bdd(
             microwave.statechart,
-            [os.path.join('docs', 'examples', 'microwave', 'heating_human.feature')],
-            step_filepaths=[os.path.join('docs', 'examples', 'microwave', 'heating_steps.py')],
+            [os.path.join('docs', 'examples', 'microwave', f+'.feature') for f in features],
+            step_filepaths=[os.path.join('docs', 'examples', 'microwave', 'steps.py')],
         )
 
     def test_microwave_with_steps_and_properties(self, microwave, property_statecharts):
+        features = ['cooking_human', 'lighting_human', 'safety_human']
+
         assert 0 == execute_bdd(
             microwave.statechart,
-            [os.path.join('docs', 'examples', 'microwave', 'heating_human.feature')],
-            step_filepaths=[os.path.join('docs', 'examples', 'microwave', 'heating_steps.py')],
+            [os.path.join('docs', 'examples', 'microwave', f+'.feature') for f in features],
+            step_filepaths=[os.path.join('docs', 'examples', 'microwave', 'steps.py')],
             property_statecharts=property_statecharts
         )
 
@@ -58,8 +61,8 @@ class TestMicrowave:
 def test_cli():
     assert 0 == cli([
         'docs/examples/microwave/microwave.yaml',
-        '--features', 'docs/examples/microwave/heating.feature', 'docs/examples/microwave/heating_human.feature',
-        '--steps', 'docs/examples/microwave/heating_steps.py',
+        '--features', 'docs/examples/microwave/heating.feature', 'docs/examples/microwave/cooking_human.feature', 'docs/examples/microwave/lighting_human.feature', 'docs/examples/microwave/safety_human.feature',
+        '--steps', 'docs/examples/microwave/steps.py',
         '--properties', 'docs/examples/microwave/heating_on_property.yaml', 'docs/examples/microwave/heating_off_property.yaml'
     ])
 
