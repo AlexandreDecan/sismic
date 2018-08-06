@@ -39,17 +39,20 @@ class TestMicrowave:
         )
 
     def test_microwave_with_steps(self, microwave):
+        features = ['cooking_human', 'lighting_human', 'safety_human']
 
         assert 0 == execute_bdd(
             microwave.statechart,
-            [os.path.join('docs', 'examples', 'microwave', 'cooking_human.feature')],
+            [os.path.join('docs', 'examples', 'microwave', f+'.feature') for f in features],
             step_filepaths=[os.path.join('docs', 'examples', 'microwave', 'steps.py')],
         )
 
     def test_microwave_with_steps_and_properties(self, microwave, property_statecharts):
+        features = ['cooking_human', 'lighting_human', 'safety_human']
+
         assert 0 == execute_bdd(
             microwave.statechart,
-            [os.path.join('docs', 'examples', 'microwave', 'cooking_human.feature')],
+            [os.path.join('docs', 'examples', 'microwave', f+'.feature') for f in features],
             step_filepaths=[os.path.join('docs', 'examples', 'microwave', 'steps.py')],
             property_statecharts=property_statecharts
         )

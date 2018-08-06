@@ -289,7 +289,7 @@ more intuitive to use when writing scenarios.
 
 Consider the following scenarios expressed using a domain-specific language:
 
-.. literalinclude:: examples/microwave/heating_human.feature
+.. literalinclude:: examples/microwave/cooking_human.feature
     :language: gherkin
 
 
@@ -324,23 +324,23 @@ predefined steps, Sismic provides two convenient helpers to map new steps to pre
 
 Using these helpers, one can easily implement the domain-specific steps of our example:
 
-.. literalinclude:: examples/microwave/heating_steps.py
+.. literalinclude:: examples/microwave/steps.py
     :language: python
 
 
-Assuming that the features are defined in ``heating.feature``, these steps in ``steps.py``, and the microwave in
+Assuming that the features are defined in ``cooking.feature``, these steps in ``steps.py``, and the microwave in
 ``microwave.yaml``, then ``sismic-bdd`` can be used as follows:
 
 .. code-block:: none
 
-    $ sismic-bdd microwave.yaml --steps steps.py --features heating.feature
+    $ sismic-bdd microwave.yaml --steps steps.py --features cooking.feature
 
-    Feature: Cook food # heating.feature:1
+    Feature: Cooking # cooking.feature:1
 
     [...]
 
     1 feature passed, 0 failed, 0 skipped
-    5 scenarios passed, 0 failed, 0 skipped
-    21 steps passed, 0 failed, 0 skipped, 0 undefined
+    3 scenarios passed, 0 failed, 0 skipped
+    17 steps passed, 0 failed, 0 skipped, 0 undefined
     Took 0m0.040s
 
