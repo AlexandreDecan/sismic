@@ -7,7 +7,7 @@ Changelog
 Priority can be defined on transitions, allowing to simulate default transitions and to break non-deterministic
 situations when many transitions are triggered for a single source state: 
 
- - (Added) Priority can be set for transitions (using *low*, *high* or any integer in yaml). transitions
+ - (Added) Priority can be set for transitions (using *low*, *high* or any integer in yaml). Transitions
    are selected according to their priorities (still following eventless and inner-first/source state semantics).
  - (Added) Interpreter's ``_select_transitions`` gets two new parameters, ``eventless_first`` and ``inner_first``.
    Both default to ``True`` and can be used in subclasses to change the default semantics of the interpreter.
@@ -16,7 +16,7 @@ The current time of an interpreter is now clock-based driven, thanks to the `Clo
 
  - (Added) A ``sismic.clock`` module with a ``Clock`` base class and three direct implementations, 
    namely ``SimulatedClock``, ``UtcClock`` and ``SynchronizedClock``. A ``SimulatedClock`` allows to manually or automatically 
-   change the time, while a ``WallClock`` as the expected behaviour of a wall-clock. 
+   change the time, while a ``UtcClock`` as the expected behaviour of a wall-clock and a ``SynchronizedClock`` is a clock that synchronizes with another interpreter. 
    ``Clock`` instances are used by the interpreter to get the current time during execution. 
    See documentation for more information.
  - (Added) An ``Interpreter.clock`` attribute that stores an instance of the newly added ``Clock`` class. 
@@ -24,7 +24,7 @@ The current time of an interpreter is now clock-based driven, thanks to the `Clo
    time. Use ``interpreter.clock.time`` instead. 
  - (Deprecated) Setting ``Interpreter.time`` is deprecated, set time with ``Interpreter.clock.time`` instead.
 
-Queued events can be delayed when they are added to an interpreter event queue. 
+Queued events can be delayed when they are added to the interpreter event queue. 
 
  - (Added) Delayed events are supported through ``DelayedEvent`` and ``DelayedInternalEvent``. If 
    a delayed event with delay *d* is queued or sent by an interpreter at time *t*, it will not be processed 
