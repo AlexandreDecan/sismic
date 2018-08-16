@@ -1,7 +1,7 @@
 .. _communication:
 
-Communication between statecharts
-=================================
+Running multiple statecharts
+============================
 
 It is not unusual to have to deal with multiple distinct components in which the behavior of a component is driven
 by things that happen in the other components.
@@ -22,8 +22,8 @@ Sismic allows to define multiple components in multiple statecharts, and brings 
 communicate and synchronize via events.
 
 
-Binding statecharts
--------------------
+Communicating statecharts
+-------------------------
 
 Every instance of :py:class:`~sismic.interpreter.Interpreter` exposes a :py:meth:`~sismic.interpreter.Interpreter.bind`
 method which allows to bind statecharts.
@@ -94,7 +94,7 @@ is sent both to ``interpreter_1`` and ``interpreter_2``.
 
 
 Example of communicating statecharts
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Consider our running example, the elevator statechart.
 This statechart expects to receive *floorSelected* events (with a *floor* parameter representing the selected floor).
@@ -157,3 +157,116 @@ The execution of bound statecharts does not differ from the execution of unbound
 .. testoutput:: buttons
 
     Current floor: 2
+
+
+Synchronizing the clock 
+-----------------------
+
+Each interpreter in Sismic has its own clock to deal with time (see :ref:`dealing_time`). 
+When creating an interpreter, it is possible to specify which clock should be used to compute the 
+``time`` attribute of the interpreter. 
+When multiple statecharts have to be run concurrently, it is often convenient to have their 
+time synchronized. This can be achieved (to some extent) by providing a shared instance
+of a clock to their interpreter.
+
+.. testcode:: time_sync
+
+    from sismic.io import import_from_yaml
+
+    elevator_sc = import_from_yaml(filepath='examples/elevator/elevator.yaml')
+    buttons_sc = import_from_yaml(filepath='examples/elevator/elevator_buttons.yaml')
+
+
+    from sismic.clock import SimulatedClock
+    from sismic.interpreter import Interpreter
+
+    # Create the clock and share its instance with all interpreters
+    clock = SimulatedClock()
+    elevator = Interpreter(elevator_sc, clock=clock)
+    buttons = Interpreter(buttons_sc, clock=clock)
+
+.. note::
+
+    As :py:class:`~sismic.clock.SimulatedClock` is the default clock used in Sismic, we could have written the three
+    last lines of this example as follow:
+
+    .. code-block:: python
+
+        elevator = Interpreter(elevator_sc)
+        buttons = Interpreter(buttons_sc, clock=elevator.clock)
+
+We can now execute the statecharts and check their time value.
+
+.. testcode:: time_sync
+
+    clock.start()
+     
+    elevator_step = elevator.execute_once()
+    buttons_step = buttons.execute_once()
+
+    clock.stop()
+
+As a single instance of a clock is used by both interpreter, the values exposed by their clocks 
+are obviously the same: 
+
+.. testcode:: time_sync
+
+    assert elevator.clock.time == buttons.clock.time
+
+However, even if the clock is the same for all interpreters, this does not always mean that the calls
+to :py:meth:`~sismic.interpreter.Interpreter.execute_once` are all performed at the same time. 
+Depending on the time required to process the first ``execute_once``, the second one will be called
+with a delay of (at least) a few milliseconds.
+
+We can check this by looking at the :py:attr:`~sismic.model.MacroStep.time` attribute of the returned
+steps, or by looking at the :py:attr:`~sismic.interpreter.Interpreter.time` attribute of the interpreter
+that corresponds to the time of the last executed step:
+
+.. testcode:: time_sync
+
+    assert elevator_step.time != buttons_step.time
+    assert elevator.time != buttons.time
+
+To avoid these slight variations between different calls to :py:meth:`~sismic.interpreter.Interpreter.execute_once` 
+or to :py:meth:`~sismic.interpreter.Interpreter.execute`, Sismic offers a :py:class:`~sismic.clock.SynchronizedClock` 
+whose value is based on another interpreter's time.
+
+.. testcode:: time_sync
+
+    from sismic.clock import SynchronizedClock
+
+    elevator = Interpreter(elevator_sc)
+    buttons = Interpreter(buttons_sc, clock=SynchronizedClock(elevator))
+
+With the help of this :py:class:`~sismic.clock.SynchronizedClock`, it is possible to perfectly "align" the time of several
+interpreters. Obviously, in this context, we first need to execute the interpreter that "drives" the time:
+
+.. testcode:: time_sync
+
+    elevator.clock.start()
+     
+    elevator_step = elevator.execute_once()
+    buttons_step = buttons.execute_once()
+
+    elevator.clock.stop()
+    
+Now we can check that the time of the last executed steps are the same:
+
+.. testcode:: time_sync
+
+    assert elevator_step.time == buttons_step.time
+    assert elevator.time == buttons.time
+    
+.. note::
+
+    While the two interpreters were virtually executed at the same time value, 
+    their clocks still have different values as a :py:class:`~sismic.clock.SynchronizedClock` is based 
+    on the ``time`` attribute of given interpreter and not on its internal clock.
+
+    .. testcode:: time_sync
+
+        assert elevator.clock.time != buttons.clock.time
+    
+    
+    
+
