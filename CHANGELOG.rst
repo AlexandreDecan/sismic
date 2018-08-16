@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+ - (Fixed) Hook-errors reported by ``sismic-bdd`` CLI are a little bit more verbose (`#81 <https://github.com/AlexandreDecan/sismic/issues/81>`__).
+
+
 1.3.0 (2018-07-06)
 ------------------
 

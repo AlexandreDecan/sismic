@@ -202,7 +202,7 @@ class PythonEvaluator(Evaluator):
         try:
             return eval(compiled_code, exposed_context, self._context)  # type: ignore
         except Exception as e:
-            raise CodeEvaluationError('The above exception occurred while evaluating:\n{}'.format(code)) from e
+            raise CodeEvaluationError('"{}" occurred while evaluating "{}"'.format(e, code)) from e
 
     def _execute_code(self, code: Optional[str], *, additional_context: Mapping=None) -> List[Event]:
         """
@@ -234,7 +234,7 @@ class PythonEvaluator(Evaluator):
             exec(compiled_code, exposed_context, self._context)  # type: ignore
             return sent_events
         except Exception as e:
-            raise CodeEvaluationError('The above exception occurred while executing:\n{}'.format(code)) from e
+            raise CodeEvaluationError('"{}" occurred while executing "{}"\n'.format(e, code)) from e
 
     def execute_statechart(self, statechart: Statechart):
         """
