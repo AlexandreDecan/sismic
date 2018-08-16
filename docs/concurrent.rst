@@ -227,8 +227,8 @@ that corresponds to the time of the last executed step:
     assert elevator_step.time != buttons_step.time
     assert elevator.time != buttons.time
 
-To avoid these slight variations between different calls to :py:meth:`~sismic.interpreter.Interpreter.execute_once` 
-or to :py:meth:`~sismic.interpreter.Interpreter.execute`, Sismic offers a :py:class:`~sismic.clock.SynchronizedClock` 
+To avoid these slight variations between different calls to :py:meth:`~sismic.interpreter.Interpreter.execute_once`, 
+Sismic offers a :py:class:`~sismic.clock.SynchronizedClock` 
 whose value is based on another interpreter's time.
 
 .. testcode:: time_sync
@@ -267,6 +267,8 @@ Now we can check that the time of the last executed steps are the same:
 
         assert elevator.clock.time != buttons.clock.time
     
-    
-    
+.. warning:: 
 
+    Because the time of an interpreter is set by the clock each time :py:meth:`~sismic.interpreter.Interpreter.execute_once` is called, you should avoid using :py:meth:`~sismic.interpreter.Interpreter.execute` (that repeatedly calls :py:meth:`~sismic.interpreter.Interpreter.execute_once`) if you want a perfect synchronization between two or more interpreters. 
+    In our example, a call to :py:meth:`~sismic.interpreter.Interpreter.execute` instead of :py:meth:`~sismic.interpreter.Interpreter.execute_once` for the first interpreter implies that the time value of the second interpreter will equal the time value of the first interpreter after having executed all its macro steps. 
+    In other words, the execution of the second interpreter will be synchronized with the execution of the last macro step of the first interpreter in that case. 
