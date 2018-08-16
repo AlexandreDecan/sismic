@@ -32,18 +32,23 @@ class AsyncRunner:
     as such, proposes several hooks to control the execution and additional 
     behaviours:
 
-     - before_run: called (only once !) when the runner is started.
+     - before_run: called (only once !) when the runner is started. By default, do nothing.
      - after_run: called (only once !) when the interpreter reaches a final configuration.
-       configuration of the underlying interpreter is reached. 
+       configuration of the underlying interpreter is reached. By default, do nothing.
      - execute: called at each step of the run. By default, call the `execute_once`
        method of the underlying interpreter and returns a *list* of macro steps. 
-     - before_execute: called right before the call to `execute()`;
-     - after_execute: called right after the call to `execute()`.
-       This method is called with the returned value of `execute()`.
+     - before_execute: called right before the call to `execute()`. By default, do nothing.
+     - after_execute: called right after the call to `execute()` with the returned value 
+       of `execute()`. By default, do nothing.
+
+    By default, this runner calls the interpreter's `execute_once` method only once per cycle
+    (meaning at least one macro step is processed during each cycle). If `execute_all` is 
+    set to True, then `execute_once` is repeatedly called until no macro step can be 
+    processed in the current cycle. 
        
     :param interpreter: interpreter instance to run.
     :param interval: interval between two calls to `execute`
-    :param execute_all: If set, repeatedly call interpreter's `execute_once` method.
+    :param execute_all: Repeatedly call interpreter's `execute_once` method at each step. 
     """
     def __init__(self, interpreter: Interpreter, interval: float=0.1, execute_all=False) -> None:
         self._unpaused = threading.Event()

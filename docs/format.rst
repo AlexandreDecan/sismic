@@ -135,8 +135,6 @@ Importantly, the *memory* value **must** refer to a parent's substate.
     type: deep history
     memory: s1
 
-.. seealso:: We refer to the semantics of UML for the difference between both types of histories.
-
 
 Composite states
 ****************
@@ -299,10 +297,6 @@ See `schema library <https://pypi.python.org/pypi/schema>`__ for more informatio
     :pyobject: SCHEMA
 
 
-.. seealso:: Consider having a look at the `feature branches of Sismic repository <https://github.com/AlexandreDecan/sismic/issues?q=is%3Aopen+is%3Aissue+label%3A%22feature+branch%22>`__
-    to get more information about the various statechart formats that are currently (experimentally)
-    supported but not yet released in Sismic.
-
 
 Visualising statecharts
 -----------------------
@@ -326,13 +320,13 @@ can be used to generate the previously given representation of the elevator.
     By default, ``-->`` transitions correspond to downward transitions of good length.
 
     A transition can be shortened by using ``->`` instead of ``-->``, and the direction of a transition can be
-    changed by using ``-up->`, ``-right->`, ``-down->` or ``-left->``. Both changes can be applied at the same time
-    using `-u->`, ``-r->`, ``-d->`` or ``-l->``.
+    changed by using ``-up->``, ``-right->``, ``-down->`` or ``-left->``. Both changes can be applied at the same time
+    using ``-u->``, ``-r->``, ``-d->`` or ``-l->``.
     See `PlantUML documentation <http://plantuml.com/state-diagram>`__ for more information.
 
-If you have already exported a statechart to PlantUML and made some changes to the direction or length of the
-transitions, it is likely that you will want to retrieve these changes when you export the (possibly modified)
-statechart again to PlantUML.
+If you already have exported a statechart to PlantUML and have made some changes to the direction or length of the
+transitions, it is likely that you want to keep these changes when exporting again the (possibly modified)
+statechart to PlantUML.
 
 The :py:func:`~sismic.io.export_to_plantuml` function accepts two optional (mutually exclusive) parameters ``based_on``
 and ``based_on_filepath`` that can be used to provide an earlier version of a PlantUML text representation

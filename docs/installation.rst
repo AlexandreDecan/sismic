@@ -33,7 +33,7 @@ You can also install Sismic from its repository by cloning it.
 5. Install Sismic: ``pip install .`` or ``pip install -e .`` (editable mode)
 6. Install test dependencies: ``pip install -r requirements.txt``
 
-Sismic is now available from the root directory. Its code is in the *sismic* repository.
+Sismic is now available from the root directory. Its code is in the *sismic* directory.
 The documentation can be built from the *docs* directory using ``make html``.
 
 Tests are available both for the code and the documentation:

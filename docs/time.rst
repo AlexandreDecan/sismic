@@ -1,3 +1,5 @@
+.. _dealing_time:
+
 Dealing with time
 #################
 
@@ -36,18 +38,10 @@ Simulated clock
 ---------------
 
 The default clock is a :py:class:`~sismic.clock.SimulatedClock` instance.
-This clock always starts at ``0`` and accumulates the elapsed time. 
-
 Its current time value can be read from the :py:attr:`~sismic.clock.SimulatedClock.time` attribute. 
-By default, the value of this attribute does not change, unless manually modified (simulated time) or
-by starting the clock (using :py:meth:`~sismic.clock.SimulatedClock.start`, wall-clock time).
+The clock starts at 0 and can either be manually changed by setting its time value, or 
+automatically (after having called its :py:meth:`~sismic.clock.SimulatedClock.start` method). 
 
-
-To change the current time of a clock, simply set a new value to the :py:attr:`~sismic.clock.SimulatedClock.time` attribute.
-Notice that time is expected to be monotonic: it is not allowed to set a new value that is strictly lower than
-the previous one. 
-
-As expected, simulated time can be easily achieved by manually modifying this value:
 
 .. testcode:: clock
 
@@ -64,11 +58,16 @@ As expected, simulated time can be easily achieved by manually modifying this va
     initial time: 0
     new time: 10
 
+.. note::
 
-To support real time, a :py:class:`~sismic.clock.SimulatedClock` object has two methods, namely 
+    Notice that time is expected to be monotonic: it is not allowed to set a new value that is strictly lower than
+    the previous one. 
+
+
+To support pseudo real time, a :py:class:`~sismic.clock.SimulatedClock` instance exposes two methods, namely 
 :py:meth:`~sismic.clock.SimulatedClock.start` and :py:meth:`~sismic.clock.SimulatedClock.stop`. 
-These methods can be used respectively to start and stop the synchronization with real time. 
-Internally, the clock relies on Python's ``time.time()`` function. 
+When the :py:meth:`~sismic.clock.SimulatedClock.start` method is called, the clock measures the elapsed time
+using Python's ``time.time()`` function.
 
 .. testcode:: clock
 
@@ -85,10 +84,7 @@ Internally, the clock relies on Python's ``time.time()`` function.
 
     after 0.1: 0.1
 
-
-A clock based on real time can also be manually changed during the execution by setting a 
-new value for its :py:attr:`~sismic.clock.SimulatedClock.time` attribute:
-
+You can still change the current time value even if the clock is started:
 
 .. testcode:: clock
 
@@ -103,11 +99,10 @@ new value for its :py:attr:`~sismic.clock.SimulatedClock.time` attribute:
     after having been set to 10: 10.0
     after 0.1: 10.1
 
-
 Finally, a simulated clock can be accelerated or slowed down by changing the value 
 of its :py:attr:`~sismic.clock.SimulatedClock.speed` attribute. By default, the value of this 
-attribute is set to ``1``. A higher value (e.g. ``2``) means that the clock will be faster
-than real time (e.g. 2 times faster), while a lower value slows down the clock. 
+attribute is set to ``1``. A higher value (e.g., ``2``) means that the clock will be faster
+than real time (e.g., 2 times faster), while a lower value slows down the clock. 
 
 .. testcode:: clock
 

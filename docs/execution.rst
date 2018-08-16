@@ -315,10 +315,18 @@ support for continuous asynchronous execution of statecharts:
 
 .. autoclass:: sismic.runner.AsyncRunner
     :noindex:
+
+
     
 
 Anatomy of the interpreter
 --------------------------
+
+.. note::
+
+    This section explains which are the methods that are called during the execution of a statechart, and is 
+    mainly useful if you plan to extend or alter the semantics of the execution.
+    
 
 An :py:class:`~sismic.interpreter.Interpreter` makes use of several *private* methods for its initialization and computations.
 These methods computes the transition(s) that should be processed, the resulting steps, etc.

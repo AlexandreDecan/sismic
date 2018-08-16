@@ -125,6 +125,13 @@ These entries are covered in the docstring of a :py:class:`~sismic.code.PythonEv
 Anatomy of a code evaluator
 ---------------------------
 
+
+.. note::
+
+    This section explains which are the methods that are called during the execution or evaluation of 
+    a piece of code, and is mainly useful if you plan to write your own statechart code interpreter. 
+    
+
 An :py:class:`~sismic.code.Evaluator` subclass must at lest implement the following methods and attributes:
 
 .. automethod:: sismic.code.Evaluator._evaluate_code
