@@ -20,6 +20,12 @@ Similarly, ``idle(x)`` evaluates to ``True`` if no transition was triggered duri
 These two predicates rely on the :py:attr:`~sismic.interpreter.Interpreter.time` attribute of an interpreter.
 The value of that attribute is computed at the beginning of each executed step based on a clock. 
 
+.. note:: 
+
+    The interpreter's time is set by the clock each time :py:meth:`~sismic.interpreter.Interpreter.execute_once` is called. 
+    Consequently, a call to :py:meth:`~sismic.interpreter.Interpreter.execute` (that repeatedly calls :py:meth:`~sismic.interpreter.Interpreter.execute_once`) could lead to macro steps with different time values, depending on the duration required to process the underlying calls to :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
+
+
 Interpreter clock
 =================
 
