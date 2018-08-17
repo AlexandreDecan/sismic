@@ -4,6 +4,8 @@ Changelog
 Unreleased
 ----------
 
+ - (Added) Some documentation about running multiple statecharts.
+ - (Added) An ``unbind`` method for an ``Interpreter``.
  - (Fixed) Hook-errors reported by ``sismic-bdd`` CLI are a little bit more verbose (`#81 <https://github.com/AlexandreDecan/sismic/issues/81>`__).
 
 

@@ -92,6 +92,10 @@ is sent both to ``interpreter_1`` and ``interpreter_2``.
     Events for interpreter_2: Event('test')
     Events for interpreter_3: InternalEvent('test')
 
+.. note::
+
+    Bound interpreters or callables can be unbound using the :py:meth:`~sismic.interpreter.Interpreter.unbind` method.
+
 
 Example of communicating statecharts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

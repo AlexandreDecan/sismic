@@ -123,6 +123,17 @@ class Interpreter:
         else:
             self._bound.append(interpreter_or_callable)
 
+    def unbind(self, interpreter_or_callable: Union['Interpreter', Callable[[Event], Any]]) -> None:
+        """
+        Unbind a previously bound interpreter or callable. 
+
+        :param interpreter_or_callable: interpreter or callable to unbind
+        """
+        if isinstance(interpreter_or_callable, Interpreter):
+            self._bound.remove(interpreter_or_callable.queue)
+        else:
+            self._bound.remove(interpreter_or_callable)
+
     def bind_property_statechart(self, statechart_or_interpreter: Union[Statechart, 'Interpreter']) -> None:
         """
         Bind a property statechart to the current interpreter.

@@ -608,6 +608,21 @@ class TestInterpreterBinding:
         assert i2._select_event(consume=False) == Event('test')
         assert not isinstance(i2._select_event(consume=False), InternalEvent)
 
+    def test_unbind(self, interpreter):
+        i1, i2 = interpreter
+
+        i1.bind(i2)
+        i1.unbind(i2)
+        assert i2.queue not in i1._bound
+
+        i1.bind(i2.queue)
+        i1.unbind(i2)
+        assert i2.queue not in i1._bound
+
+        i1.bind(i2.queue)
+        i1.unbind(i2.queue)
+        assert i2.queue not in i1._bound
+
     def test_metaevent(self, interpreter):
         i1, i2 = interpreter
 
