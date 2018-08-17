@@ -117,7 +117,6 @@ class Interpreter:
         This is, if *i1* and *i2* are interpreters, *i1.bind(i2)* is equivalent to *i1.bind(i2.queue)*.
 
         :param interpreter_or_callable: interpreter or callable to bind
-        :return: *self* so it can be chained
         """
         if isinstance(interpreter_or_callable, Interpreter):
             self._bound.append(interpreter_or_callable.queue)
