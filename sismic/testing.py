@@ -105,7 +105,7 @@ def event_is_consumed(steps: MacroSteps, name: Optional[str], parameters: Mappin
     return False
 
 
-def transition_is_processed(steps: MacroSteps, transition: Optional[Transition]) -> bool:
+def transition_is_processed(steps: MacroSteps, transition: Optional[Transition]=None) -> bool:
     """
     Holds if a transition was processed during given steps. 
 
