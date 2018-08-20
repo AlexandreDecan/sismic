@@ -26,7 +26,7 @@ class TestInterpreterMetaEvents:
 
     def test_empty_step(self, microwave, property_statechart):
         microwave.execute()
-        assert property_statechart.queue.call_args_list[0][0][0] == MetaEvent('step started')
+        assert property_statechart.queue.call_args_list[0][0][0] == MetaEvent('step started', time=0)
         assert property_statechart.queue.call_args_list[-1][0][0] == MetaEvent('step ended')
 
         for call in property_statechart.queue.call_args_list:
@@ -56,13 +56,13 @@ class TestInterpreterMetaEvents:
         microwave.execute()
 
         call_list = [
-            MetaEvent('step started'),
+            MetaEvent('step started', time=0),
             MetaEvent('state entered', state='controller'),
             MetaEvent('state entered', state='door closed'),
             MetaEvent('state entered', state='closed without item'),
             MetaEvent('step ended'),
 
-            MetaEvent('step started'),
+            MetaEvent('step started', time=0),
             MetaEvent('event consumed', event=Event('door_opened')),
             MetaEvent('state exited', state='closed without item'),
             MetaEvent('state exited', state='door closed'),

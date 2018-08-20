@@ -320,8 +320,7 @@ class PythonEvaluator(Evaluator):
         })  # type: ignore
 
         # Only needed if there is an invariant, a postcondition or a sequential condition
-        if len(getattr(obj, 'invariants', [])) > 0 or len(getattr(obj, 'postconditions', [])) > 0 or len(
-                getattr(obj, 'sequences', [])) > 0:
+        if len(getattr(obj, 'invariants', [])) > 0 or len(getattr(obj, 'postconditions', [])) > 0:
             self._memory[id(obj)] = FrozenContext(self._context)
 
         return filter(
