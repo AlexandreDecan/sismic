@@ -139,7 +139,7 @@ class Interpreter:
         Bind a property statechart to the current interpreter.
         A property statechart receives meta-events from the current interpreter depending on what happens:
 
-         - *step started*: when a macro step starts.
+         - *step started*: when a macro step starts. The current time of the step is available through the ``time`` attribute.
          - *step ended*: when a macro step ends.
          - *event consumed*: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
          - *event sent*: when an event is sent. The sent event is exposed through the ``event`` attribute.
@@ -241,7 +241,7 @@ class Interpreter:
             return None
 
         # Notify properties
-        self._notify_properties('step started')
+        self._notify_properties('step started', time=self._time)
 
         # Consume event if it triggered a transition
         if computed_steps[0].event is not None:
