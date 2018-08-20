@@ -44,7 +44,6 @@ Sismic provides the following features:
 - Synchronous and asynchronous executions
 - Statechart visualization using `PlantUML <http://www.plantuml.com/plantuml>`__
 
-Some experimental features are also available as `feature branches <https://github.com/AlexandreDecan/sismic/issues?q=is%3Aopen+is%3Aissue+label%3A%22feature+branch%22>`__.
 
 The semantics of the statechart interpreter is based on the specification of the SCXML semantics (with a few exceptions),
 but can be easily tuned to other semantics.
