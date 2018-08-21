@@ -8,9 +8,11 @@ Unreleased
  - (Added) An ``unbind`` method for an ``Interpreter``.
  - (Added) A ``remove`` method on ``EventQueue`` and a corresponding ``cancel`` method on ``Interpreter``.
  - (Changed) Meta-Event *step started* has a ``time`` attribute.
+ - (Changed) The current event queue can be consulted as a list using ``interpreter._event_queue``. 
  - (Fixed) Hook-errors reported by ``sismic-bdd`` CLI are a little bit more verbose (`#81 <https://github.com/AlexandreDecan/sismic/issues/81>`__).
  - (Fixed) Optional transition for ``testing.transition_is_processed``, as previously promised by its documentation but not implemented.
- 
+ - (Removed) Internal module ``sismic.interpreter.queue``.
+
 
 1.3.0 (2018-07-06)
 ------------------

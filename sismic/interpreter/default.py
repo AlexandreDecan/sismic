@@ -1,4 +1,7 @@
+import abc
+import bisect
 import warnings
+
 from itertools import combinations
 from typing import (Any, Callable, Dict, Iterable, List, Mapping, Optional,
                     Set, Tuple, Union, cast)
@@ -13,9 +16,20 @@ from ..model import (CompoundState, DeepHistoryState, DelayedEvent, Event,
                      FinalState, InternalEvent, MacroStep, MetaEvent,
                      MicroStep, OrthogonalState, ShallowHistoryState,
                      Statechart, StateMixin, Transition)
-from .queue import EventQueue
 
 __all__ = ['Interpreter']
+
+
+class _KeyifyList():
+    def __init__(self, inner, key):
+        self.inner = inner
+        self.key = key
+
+    def __len__(self):
+        return len(self.inner)
+
+    def __getitem__(self, k):
+        return self.key(self.inner[k])
 
 
 class Interpreter:
@@ -55,8 +69,8 @@ class Interpreter:
         # Set of active states
         self._configuration = set()  # type: Set[str]
 
-        # Event queue, contains (time, is_external, n, event) where n is tie-breaker
-        self._event_queue = EventQueue()
+        # Event queue
+        self._event_queue = []  # type: List[Tuple[float, Event]]
 
         # Bound callables
         self._bound = []  # type: List[Callable[[Event], Any]]
@@ -190,7 +204,7 @@ class Interpreter:
             if isinstance(event, InternalEvent):
                 raise ValueError('Internal event cannot be queued, use Event or DelayedEvent instead.')
             elif isinstance(event, Event):
-                self._event_queue.push(self.clock.time, event)
+                self._queue_event(event)
             else:
                 raise ValueError('{} is not a string nor an Event instance.'.format(event))
 
@@ -204,7 +218,11 @@ class Interpreter:
         :return: True if the event was found and removed, False otherwise.
         """
         event = Event(event_or_name) if isinstance(event_or_name, str) else event_or_name
-        return self._event_queue.remove(event) is not None
+        for i, (time, queued_event) in enumerate(self._event_queue):
+            if queued_event == event: 
+                self._event_queue.pop(i)
+                return True
+        return False
 
     def execute(self, max_steps: int = -1) -> List[MacroStep]:
         """
@@ -281,6 +299,19 @@ class Interpreter:
 
         return macro_step
 
+    def _queue_event(self, event: Event):
+        """
+        Convenient helper to queue events to the current event queue.
+
+        :param event: Event to queue.
+        """
+        time = self._time + (event.delay if isinstance(event, DelayedEvent) else 0)
+        position = bisect.bisect_right(  # type: ignore
+            _KeyifyList(self._event_queue, lambda t: (t[0], not isinstance(t[1], InternalEvent))),
+            (time, not isinstance(event, InternalEvent))
+        )
+        self._event_queue.insert(position, (time, event))
+
     def _raise_event(self, event: Union[InternalEvent, MetaEvent]) -> None:
         """
         Raise an event from the statechart.
@@ -297,7 +328,7 @@ class Interpreter:
         :param event: event to be sent by the statechart.
         """
         if isinstance(event, InternalEvent):
-            self._event_queue.push(self.time, event)
+            self._queue_event(event)
 
             if isinstance(event, DelayedEvent):
                 external_event = DelayedEvent(event.name, event.delay, **event.data)
@@ -352,11 +383,11 @@ class Interpreter:
         :param consume: Indicates whether event should be consumed.
         :return: An instance of Event or None if no event is available
         """
-        if not self._event_queue.empty:
-            time, event = self._event_queue.first
+        if len(self._event_queue) > 0:
+            time, event = self._event_queue[0]
             if time <= self.time:
-                if consume: 
-                    self._event_queue.pop()
+                if consume:
+                    self._event_queue.pop(0)
                 return event
         return None
 

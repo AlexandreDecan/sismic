@@ -161,10 +161,30 @@ For convenience, :py:meth:`~sismic.interpreter.Interpreter.queue` returns the in
 
 .. testcode:: interpreter
 
-    interpreter.queue('click', 'clack').execute_once()
+    interpreter.queue('click', 'clack', 'clock').execute_once()
 
 Notice that :py:meth:`~sismic.interpreter.Interpreter.execute_once` consumes at most one event at a time.
 In the above example, the *clack* event is not yet processed.
+This can be checked by looking at the current event queue of the interpreter.
+
+.. testcode:: interpreter
+
+    for time, event in interpreter._event_queue:
+        print(event.name)
+
+.. testoutput:: interpreter
+
+    clack
+    clock
+
+Queued events can be removed from the queue by calling the :py:meth:`~sismic.interpreter.cancel` method of 
+the interpreter. This method accepts both the name of an event or an event instance, and remove the 
+first corresponding event from the queue.
+
+.. testcode:: interpreter
+
+    interpreter.cancel('clock')
+    assert interpreter._event_queue == [(0, Event('clack'))]
 
 To process all events **at once**, one can repeatedly call :py:meth:`~sismic.interpreter.Interpreter.execute_once` until
 it returns a ``None`` value, meaning that nothing happened during the last call. For instance:
