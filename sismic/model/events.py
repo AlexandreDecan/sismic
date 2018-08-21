@@ -5,14 +5,16 @@ __all__ = ['Event', 'InternalEvent', 'DelayedEvent', 'DelayedInternalEvent', 'Me
 
 class Event:
     """
-    Simple event with a name and (optionally) some data.
-    Unless the attribute already exists, each key from *data* is exposed as an attribute
-    of this class.
+    An event with a name and (optionally) some data passed as named parameters.
 
-    The list of defined attributes can be obtained using *dir(event)*.
+    The list of parameters can be obtained using *dir(event)*. Notice that
+    *name* and *data* are reserved names. 
 
-    :param name: Name of the event
-    :param data: additional data (mapping, dict-like)
+    When two events are compared, they are considered equal if their names
+    and their data are equal.
+
+    :param name: name of the event.
+    :param data: additional data passed as named parameters.
     """
 
     __slots__ = ['name', 'data']
@@ -63,6 +65,8 @@ class InternalEvent(Event):
 class DelayedEvent(Event):
     """
     Event that is delayed.
+
+    When used, *delay* is a reserved name (ie. cannot be used as event parameter).
     """
     
     __slots__ = ['name', 'delay', 'data']

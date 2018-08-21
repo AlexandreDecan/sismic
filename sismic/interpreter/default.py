@@ -173,7 +173,7 @@ class Interpreter:
 
     def queue(self, event_or_name: Union[str, Event], *events_or_names: Union[str, Event]) -> 'Interpreter':
         """
-        Queue one or more events to the interpreter external queue.
+        Queue one or more events to the interpreter queue.
 
         If a DelayedEvent is provided, its delay must be a positive number.
         The provided event will be processed by the first call to `execute_once`
@@ -188,13 +188,23 @@ class Interpreter:
             event = Event(event) if isinstance(event, str) else event
 
             if isinstance(event, InternalEvent):
-                raise ValueError('Internal event cannot be queue, use Event or DelayedEvent instead.')
+                raise ValueError('Internal event cannot be queued, use Event or DelayedEvent instead.')
             elif isinstance(event, Event):
                 self._event_queue.push(self.clock.time, event)
             else:
                 raise ValueError('{} is not a string nor an Event instance.'.format(event))
 
         return self
+
+    def cancel(self, event_or_name: Union[str, Event]) -> bool:
+        """
+        Remove first occurrence of given event (or name) from the interpreter queue.
+
+        :param event_or_name: an *Event* instance of the name of an event to cancel.
+        :return: True if the event was found and removed, False otherwise.
+        """
+        event = Event(event_or_name) if isinstance(event_or_name, str) else event_or_name
+        return self._event_queue.remove(event) is not None
 
     def execute(self, max_steps: int = -1) -> List[MacroStep]:
         """

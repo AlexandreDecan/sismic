@@ -6,6 +6,7 @@ Unreleased
 
  - (Added) Some documentation about running multiple statecharts.
  - (Added) An ``unbind`` method for an ``Interpreter``.
+ - (Added) A ``remove`` method on ``EventQueue`` and a corresponding ``cancel`` method on ``Interpreter``.
  - (Changed) Meta-Event *step started* has a ``time`` attribute.
  - (Fixed) Hook-errors reported by ``sismic-bdd`` CLI are a little bit more verbose (`#81 <https://github.com/AlexandreDecan/sismic/issues/81>`__).
  - (Fixed) Optional transition for ``testing.transition_is_processed``, as previously promised by its documentation but not implemented.

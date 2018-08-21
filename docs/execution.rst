@@ -164,7 +164,7 @@ For convenience, :py:meth:`~sismic.interpreter.Interpreter.queue` returns the in
     interpreter.queue('click', 'clack').execute_once()
 
 Notice that :py:meth:`~sismic.interpreter.Interpreter.execute_once` consumes at most one event at a time.
-In this example, the *clack* event is not processed.
+In the above example, the *clack* event is not yet processed.
 
 To process all events **at once**, one can repeatedly call :py:meth:`~sismic.interpreter.Interpreter.execute_once` until
 it returns a ``None`` value, meaning that nothing happened during the last call. For instance:
@@ -174,7 +174,7 @@ it returns a ``None`` value, meaning that nothing happened during the last call.
     while interpreter.execute_once():
       pass
 
-For convenience, an interpreter has a :py:meth:`~sismic.interpreter.Interpreter.execute` method that repeatedly
+For convenience, an interpreter has an :py:meth:`~sismic.interpreter.Interpreter.execute` method that repeatedly
 call :py:meth:`~sismic.interpreter.Interpreter.execute_once` and that returns a list of its output (a list of
 :py:class:`sismic.model.MacroStep`).
 
@@ -193,7 +193,7 @@ As a call to :py:meth:`~sismic.interpreter.Interpreter.execute` could lead to an
 (see for example `simple/infinite.yaml <https://github.com/AlexandreDecan/sismic/blob/master/tests/yaml/infinite.yaml>`__),
 an additional parameter ``max_steps`` can be specified to limit the number of steps that are computed
 and executed by the method. By default, this parameter is set to ``-1``, meaning there is no limit on the number
-of calls to :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
+of underlying calls to :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
 
 .. testcode:: interpreter
 
@@ -203,9 +203,9 @@ of calls to :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
     # 'clock' is not yet processed
     assert len(interpreter.execute()) == 1
 
-In these examples, none of *click*, *clack* or *clock* are expected to be received by the statechart.
-The statechart was not written to react to those events, and thus sending them has no effect on the active
-configuration.
+The statechart used for these examples did not react to *click*, *clack* and *clock* because none of 
+these events are expected to be received by the statechart (or, in other words, the statechart was
+not written to react to these events). 
 
 For convenience, a :py:class:`~sismic.model.Statechart` has an :py:meth:`~sismic.model.Statechart.events_for` method
 that returns the list of all possible events that are expected by this statechart.
@@ -231,7 +231,7 @@ These parameters can be accessed by action code and guards in the statechart.
 For example, the *floorSelecting* state of the *elevator* example has a transition
 ``floorSelected / destination = event.floor``.
 
-Executing the statechart will make the elevator reaching first floor:
+Executing the statechart will move the elevator to first floor:
 
 .. testcode:: interpreter
 
@@ -245,8 +245,9 @@ Executing the statechart will make the elevator reaching first floor:
     Current floor is 0
     Current floor is 1
 
-Notice how we can access to the current values of *internal variables* by use of ``context``.
+Notice how we can access the current values of *internal variables* by use of ``interpreter.context``.
 This attribute is a mapping between internal variable names and their current value.
+
 
 
 .. _steps:

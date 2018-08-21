@@ -5,7 +5,7 @@ from collections import Counter
 
 from sismic.exceptions import ExecutionError, NonDeterminismError, ConflictingTransitionsError
 from sismic.code import DummyEvaluator
-from sismic.interpreter import Interpreter, Event, InternalEvent, DelayedEvent
+from sismic.interpreter import Interpreter, Event, InternalEvent, DelayedEvent, DelayedInternalEvent
 from sismic.helpers import coverage_from_trace, log_trace, run_in_background
 from sismic.model import Transition, MacroStep, MicroStep, MetaEvent
 from sismic import testing
@@ -663,7 +663,7 @@ def test_interpreter_is_serialisable(microwave):
     assert microwave.context == n_microwave.context
 
 
-class TestDelayedEvent:
+class TestEventQueue:
     @pytest.fixture()
     def interpreter(self, simple_statechart):
         interpreter = Interpreter(simple_statechart, evaluator_klass=DummyEvaluator)
@@ -693,7 +693,7 @@ class TestDelayedEvent:
         interpreter.queue(DelayedEvent('test2', delay=1))
         interpreter.queue(DelayedEvent('test4', delay=2))
         interpreter.queue(DelayedEvent('test5', delay=3))
-        
+                
         event = interpreter._select_event(consume=True)
         assert isinstance(event, DelayedEvent) and event == Event('test1')
         assert interpreter._select_event(consume=True) is None
@@ -724,5 +724,31 @@ class TestDelayedEvent:
         interpreter._time = 1
         event = interpreter._select_event(consume=True)
         assert isinstance(event, DelayedEvent) and event == Event('test3')
+    
+    def test_cancel_event(self, interpreter):
+        interpreter.queue('test1')
+        interpreter.queue(Event('test2', x=1))
+        interpreter.queue('test3')
+
+        # Normal cancellation
+        assert interpreter.cancel('test1')
+        assert interpreter._select_event(consume=False) == Event('test2', x=1)
+
+        # Cancellation of unknown event
+        assert not interpreter.cancel('test4')
         
-        
+        # Cancellation satisfies event parameters
+        assert not interpreter.cancel('test2')
+        assert interpreter._select_event(consume=False) == Event('test2', x=1)
+        assert not interpreter.cancel(Event('test2', x=2))
+        assert interpreter._select_event(consume=False) == Event('test2', x=1)
+        assert interpreter.cancel(Event('test2', x=1))
+        assert interpreter._select_event(consume=False) == Event('test3')
+
+        # Cancellation only cancels first occurrence
+        interpreter.queue('test3')
+        interpreter.queue('test3')
+        interpreter.cancel('test3')
+        assert interpreter._select_event(consume=True) == Event('test3')
+        assert interpreter._select_event(consume=True) == Event('test3')
+        assert interpreter._select_event(consume=True) is None

@@ -1,7 +1,7 @@
 import heapq
 
-from typing import Tuple, List
-
+from typing import Tuple, List, Optional
+from itertools import count
 from ..model import Event, InternalEvent, DelayedEvent
 
 
@@ -18,18 +18,17 @@ class EventQueue:
     """
     def __init__(self, *, internal_first=True) -> None:
         self._queue = []  # type: List[Tuple[float, bool, int, Event]]
-        self._nb = 0
+        self._nb = count()
         self._internal_first = internal_first
 
     def _get_event(self, t):
         return (t[0], t[-1])
 
     def _set_event(self, time, event):
-        self._nb += 1
         return (
             time + (event.delay if isinstance(event, DelayedEvent) else 0), 
             (1 - int(isinstance(event, InternalEvent))) if self._internal_first else 0,
-            self._nb,
+            next(self._nb),
             event
         )
 
@@ -53,6 +52,20 @@ class EventQueue:
         """
         return self._get_event(heapq.heappop(self._queue))
 
+    def remove(self, event: Event) -> Optional[Tuple[float, Event]]:
+        """
+        Remove the first occurrence of given event from the queue.
+
+        :param event: event to remove.
+        :return: A pair (time, event) or None if the event is not found.
+        """
+        for i, (time, _, _, e) in enumerate(self._queue):
+            if e == event:
+                self._queue.pop(i)
+                heapq.heapify(self._queue)
+                return time, e
+        return None
+
     @property
     def first(self) -> Tuple[float, Event]:
         """
@@ -71,4 +84,3 @@ class EventQueue:
 
     def __len__(self) -> int:
         return len(self._queue)
-
