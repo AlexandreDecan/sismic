@@ -7,6 +7,7 @@ Unreleased
  - (Added) Some documentation about running multiple statecharts.
  - (Added) An ``unbind`` method for an ``Interpreter``.
  - (Added) A ``remove`` method on ``EventQueue`` and a corresponding ``cancel`` method on ``Interpreter``.
+ - (Added) A ``setdefault`` function that can be used in the preamble of a statechart to assign default values to variables.
  - (Changed) Meta-Event *step started* has a ``time`` attribute.
  - (Changed) The current event queue can be consulted as a list using ``interpreter._event_queue``. 
  - (Fixed) Hook-errors reported by ``sismic-bdd`` CLI are a little bit more verbose (`#81 <https://github.com/AlexandreDecan/sismic/issues/81>`__).

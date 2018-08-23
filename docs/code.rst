@@ -23,8 +23,9 @@ In the following, we will implicitly assume that the code evaluator is an instan
 Context of the Python code evaluator
 ------------------------------------
 
-When a code evaluator is created or provided to an interpreter, its ``context`` is exposed through the ``context``
-attribute of the interpreter. The context of an evaluator is a mapping between variable names and their values.
+When a code evaluator is created or provided to an interpreter, all the variables that are defined or used by the 
+statechart are stored in an *execution context*. This context is exposed through the ``context``
+attribute of the interpreter and can be seen as a mapping between variable names and their values.
 When a piece of code contained in a statechart has to be evaluated or executed, the context of the evaluator is used to
 populate the local and global variables that are available for this piece of code.
 
@@ -46,19 +47,68 @@ populated with ``{'x': 1, 'y': 0}``. When the statechart is further executed (in
 *s1* is entered, the code ``x += 1`` contained in the ``on entry`` field of *s1* is then executed in this context.
 After execution, the context is ``{'x': 2, 'y': 0}``.
 
-The default code evaluator has a global context that is always exposed when a piece of code has to be evaluated
-or executed. When a :py:class:`~sismic.code.PythonEvaluator` instance is initialized, an initial context can be specified.
-For convenience, the initial context can be directly provided to the constructor of an :py:class:`~sismic.interpreter.Interpreter`.
+The default code evaluator uses a global context, meaning that all variables that are defined in the statechart are
+exposed by the evaluator when a piece of code has to be evaluated or executed. The main limitation of this approach
+is that you cannot have distinct variables with a same name in different states or, in other words, there is
+only one scope for all your variables. 
 
-It should be noticed that the initial context is set *before* executing the preamble of a statechart.
-While this should be expected, it has the direct consequence that if a variable defined in the initial context is
-also defined by the preamble, the latter will override its value, as illustrated by the following example:
+The preamble of a statechart can be used to provide default values for some variables. However, the preamble is part of 
+the statechart and as such, cannot be used to *parametrize* the statechart. To circumvent this, an initial context
+can be specified when a :py:class:`~sismic.code.PythonEvaluator` is created. For convenience, this initial context
+can also be passed to the constructor of an :py:class:`~sismic.interpreter.Interpreter`.
 
-.. testcode:: variable_override
+Considered the following toy example:
+
+.. testcode:: initial_context
 
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter
-    import math as my_favorite_module
+
+    yaml = """statechart:
+      name: example
+      preamble:
+        x = DEFAULT_X
+      root state:
+        name: s
+    """
+
+    statechart = import_from_yaml(yaml)
+
+Notice that variable ``DEFAULT_X`` is used in the preamble but not defined. The statechart expects this 
+variable to be provided in the initial context, as illustrated next:
+
+.. testcode:: initial_context
+
+    interpreter = Interpreter(statechart, initial_context={'DEFAULT_X': 1})
+
+We can check that the value of ``x`` is ``1`` by accessing the ``context`` attribute of the interpreter:
+
+.. testcode:: initial_context
+
+    assert interpreter.context['x'] == 1
+
+Omitting to provide the ``DEFAULT_X`` variable in the initial context leads to an error, as an unknown
+variable is accessed by the preamble: 
+
+.. testcode:: initial_context
+
+    try:
+        Interpreter(statechart)
+    except Exception as e: 
+        print(e)
+
+.. testoutput:: initial_context
+
+    "name 'DEFAULT_X' is not defined" occurred while executing "x = DEFAULT_X"
+
+It could be tempting to define a default value for ``x`` in the preamble **and** overriding this 
+value by providing an initial context where ``x`` is defined. However, the initial context of an 
+interpreter is set **before** executing the preamble of a statechart. As a consequence, if a variable
+is defined both in the initial context and the preamble, its value will be overridden by the preamble.
+
+Consider the following example where ``x`` is both defined in the initial context and the preamble:
+
+.. testcode:: initial_context
 
     yaml = """statechart:
       name: example
@@ -69,36 +119,44 @@ also defined by the preamble, the latter will override its value, as illustrated
     """
 
     statechart = import_from_yaml(yaml)
-    context = {
-        'x': 2,
-        'math': my_favorite_module
-    }
+    interpreter = Interpreter(statechart, initial_context={'x': 2})
 
-    interpreter = Interpreter(statechart, initial_context=context)
+    assert interpreter.context['x'] == 1
 
-    print(interpreter.context['x'])
+The value of ``x`` is eventually set to ``1``. 
 
-.. testoutput:: variable_override
+While the initial context provided to the interpreter defined the value of ``x`` to ``2``, the code 
+contained in the preamble overrode its value. If you want to make use of the initial context to 
+somehow *parametrize* the execution of the statechart while still providing *default* values for 
+these parameters, you should either check the existence of the variables before setting their values 
+or rely on the ``setdefault`` function that is exposed by the Python code evaluator when the preamble
+of a statechart is executed. 
 
-    1
+This function can be used to define (and return) a variable, very similarly to the 
+``setdefault`` method of a dictionary. Using this function, we can easily rewrite the preamble 
+of our statechart to deal with the optional default values of ``x`` (and ``y`` and ``z`` in this 
+example):
 
-In this example, the value of ``x`` is eventually set to ``1``.
-While the initial context provided to the interpreter defined the value of ``x`` to ``2``, the code contained in the
-preamble overrode its value.
-If you want to make use of the initial context to somehow *parametrize* the execution of the statechart, while still
-providing *default* values for these parameters, you should check the existence of the variables before setting
-their values. This can be done as follows:
+.. testcode:: initial_context
 
-.. testcode::
+    yaml = """statechart:
+      name: example
+      preamble: |
+        x = setdefault('x', 1)
+        setdefault('y', 1)  # Value is affected to y implicitly
+        setdefault('z', 1)  # Value is affected to z implicitly
+      root state:
+        name: s
+        on entry: print(x, y, z)
+    """
 
-    if not 'x' in locals():
-        x = 1
+    statechart = import_from_yaml(yaml)
+    interpreter = Interpreter(statechart, initial_context={'x': 2, 'z': 3})
+    interpreter.execute()
 
-or equivalently,
+.. testoutput:: initial_context
 
-.. testcode::
-
-    x = locals().get('x', 1)
+    2 1 3
 
 
 .. warning::

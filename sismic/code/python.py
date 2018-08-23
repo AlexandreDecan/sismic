@@ -92,6 +92,9 @@ class PythonEvaluator(Evaluator):
           was sent during the current step.
         - A *received(name: str) -> bool* function  that takes an event name and return True if an event with the
           same name is currently processed in this step.
+    - On preamble execution:
+        - A *default(name:str, value: Any) -> Any* function that defines and returns variable *name* in 
+          the global scope if it is not yet defined. 
 
     If an exception occurred while executing or evaluating a piece of code, it is propagated by the
     evaluator.
@@ -134,6 +137,16 @@ class PythonEvaluator(Evaluator):
         """
         self._sent_events.clear()
         self._received_event = event
+
+    def _setdefault(self, name: str, value: Any) -> Any:
+        """
+        Define and return variable "name". 
+
+        :param name: name of the variable
+        :param value: value to use for that variable, if not defined
+        :return: value of the variable
+        """
+        return self._context.setdefault(name, value)
 
     def _received(self, name: str) -> bool:
         """
@@ -234,7 +247,7 @@ class PythonEvaluator(Evaluator):
             exec(compiled_code, exposed_context, self._context)  # type: ignore
             return sent_events
         except Exception as e:
-            raise CodeEvaluationError('"{}" occurred while executing "{}"\n'.format(e, code)) from e
+            raise CodeEvaluationError('"{}" occurred while executing "{}"'.format(e, code)) from e
 
     def execute_statechart(self, statechart: Statechart):
         """
@@ -244,7 +257,10 @@ class PythonEvaluator(Evaluator):
         :param statechart: statechart to consider
         """
         if statechart.preamble:
-            events = self._execute_code(statechart.preamble)
+            additional_context = {
+                'setdefault': self._setdefault
+            }
+            events = self._execute_code(statechart.preamble, additional_context=additional_context)
             if len(events) > 0:
                 raise CodeEvaluationError('Events cannot be raised by statechart preamble')
 
