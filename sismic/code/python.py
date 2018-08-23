@@ -76,6 +76,8 @@ class PythonEvaluator(Evaluator):
         - A *notify(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
           raises a meta-event with it. Meta-events are only sent to bound property statecharts.
         - If the code is related to a transition, the *event: Event* that fires the transition is exposed.
+        - A *default(name:str, value: Any) -> Any* function that defines and returns variable *name* in 
+          the global scope if it is not yet defined. 
     - On guard or contract evaluation:
         - If the code is related to a transition, the *event: Event* that fires the transition is exposed.
     - On guard or contract (except preconditions) evaluation:
@@ -92,9 +94,6 @@ class PythonEvaluator(Evaluator):
           was sent during the current step.
         - A *received(name: str) -> bool* function  that takes an event name and return True if an event with the
           same name is currently processed in this step.
-    - On preamble execution:
-        - A *default(name:str, value: Any) -> Any* function that defines and returns variable *name* in 
-          the global scope if it is not yet defined. 
 
     If an exception occurred while executing or evaluating a piece of code, it is propagated by the
     evaluator.
@@ -240,6 +239,7 @@ class PythonEvaluator(Evaluator):
             'send': _create_send_function(sent_events),
             'notify': _create_notify_function(sent_events),
             'time': self._interpreter.time,
+            'setdefault': self._setdefault,
         }
         exposed_context.update(additional_context if additional_context is not None else {})
 
@@ -257,10 +257,7 @@ class PythonEvaluator(Evaluator):
         :param statechart: statechart to consider
         """
         if statechart.preamble:
-            additional_context = {
-                'setdefault': self._setdefault
-            }
-            events = self._execute_code(statechart.preamble, additional_context=additional_context)
+            events = self._execute_code(statechart.preamble)
             if len(events) > 0:
                 raise CodeEvaluationError('Events cannot be raised by statechart preamble')
 

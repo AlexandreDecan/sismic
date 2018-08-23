@@ -63,14 +63,11 @@ class TestPythonEvaluator:
         assert evaluator._evaluate_code('event.data[\'a\'] == 1', additional_context={'event': Event('test', a=1)})
         assert evaluator._evaluate_code('event.name == \'test\'', additional_context={'event': Event('test')})
 
-    def test_setdefault(self, evaluator, mocker):
-        statechart = mocker.MagicMock()
-        statechart.preamble = 'setdefault("x", 2)'
-        evaluator.execute_statechart(statechart)
+    def test_setdefault(self, evaluator):
+        evaluator._execute_code('setdefault("x", 2)')
         assert evaluator.context['x'] == 1
 
-        statechart.preamble = 'b = setdefault("a", 0)'
-        evaluator.execute_statechart(statechart)
+        evaluator._execute_code('b = setdefault("a", 0)')
         assert evaluator.context['a'] == 0
         assert evaluator.context['b'] == 0
 

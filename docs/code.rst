@@ -129,8 +129,8 @@ While the initial context provided to the interpreter defined the value of ``x``
 contained in the preamble overrode its value. If you want to make use of the initial context to 
 somehow *parametrize* the execution of the statechart while still providing *default* values for 
 these parameters, you should either check the existence of the variables before setting their values 
-or rely on the ``setdefault`` function that is exposed by the Python code evaluator when the preamble
-of a statechart is executed. 
+or rely on the ``setdefault`` function that is exposed by the Python code evaluator when a piece of
+code is executed (not only in the preamble). 
 
 This function can be used to define (and return) a variable, very similarly to the 
 ``setdefault`` method of a dictionary. Using this function, we can easily rewrite the preamble 
