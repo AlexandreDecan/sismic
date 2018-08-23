@@ -45,8 +45,13 @@ We decide to follow Rhapsody and to raise an error (in fact, a :py:exc:`~sismic.
 nondeterminism occur during the execution. Notice that this only concerns multiple transitions in the same
 composite state, not in parallel states.
 
-.. note:: Sismic allows to define priorities on transitions to address nondeterminism: transitions with 
-        higher priorities will be selected first for execution, ignoring transitions with lower priorities.
+.. note:: 
+
+    Sismic allows to define priorities on transitions. This can be used to address some cases of 
+    nondeterminism. During execution, if a transition can be triggered, then transitions originating 
+    from the same state and whose priority is strictly lower than the selected one won't be considered. 
+    Note that, as usual, transitions with no event are considered before transitions with event, 
+    regardless of the associated priorities.
 
 When multiple transitions are triggered from within distinct parallel states, the situation is even more intricate.
 According to the Rhapsody implementation:
@@ -93,7 +98,7 @@ This default evaluator can parse and interpret Python code in statecharts.
 
 Consider the following example:
 
-.. testsetup:: interpreter
+.. testcode:: interpreter
 
     from sismic.io import import_from_yaml
     from sismic.interpreter import Interpreter

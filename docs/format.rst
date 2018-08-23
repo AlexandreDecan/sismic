@@ -224,10 +224,12 @@ Priorities can be set for transitions using the *priority* property. By default,
 have a priority of 0. A priority can be any integer, or *low* (equivalent to -1) or *high* 
 (equivalent to 1). 
 
-.. note:: Transition priorities can be used to simulate default transitions or to fix non-determinism
-    when multiple transitions from a single state can be triggered at the same time. Notice that 
-    transition priorities are considered **after** the default semantics of Sismic (eventless
-    transitions first, and inner-first/source state first). 
+.. note:: 
+
+    Transition priorities are considered after the default semantics of Sismic, i.e., 
+    after the eventless transition first and inner-first/source state semantics. 
+    Because of this, transition priorities cannot be used to, e.g., give priority to
+    a transition with event versus a transition without event. 
     
 
 Statechart examples
