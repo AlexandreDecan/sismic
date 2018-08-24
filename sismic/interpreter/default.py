@@ -210,19 +210,19 @@ class Interpreter:
 
         return self
 
-    def cancel(self, event_or_name: Union[str, Event]) -> bool:
-        """
-        Remove first occurrence of given event (or name) from the interpreter queue.
+    # def cancel(self, event_or_name: Union[str, Event]) -> bool:
+    #     """
+    #     Remove first occurrence of given event (or name) from the interpreter queue.
 
-        :param event_or_name: an *Event* instance of the name of an event to cancel.
-        :return: True if the event was found and removed, False otherwise.
-        """
-        event = Event(event_or_name) if isinstance(event_or_name, str) else event_or_name
-        for i, (time, queued_event) in enumerate(self._event_queue):
-            if queued_event == event: 
-                self._event_queue.pop(i)
-                return True
-        return False
+    #     :param event_or_name: an *Event* instance of the name of an event to cancel.
+    #     :return: True if the event was found and removed, False otherwise.
+    #     """
+    #     event = Event(event_or_name) if isinstance(event_or_name, str) else event_or_name
+    #     for i, (time, queued_event) in enumerate(self._event_queue):
+    #         if queued_event == event: 
+    #             self._event_queue.pop(i)
+    #             return True
+    #     return False
 
     def execute(self, max_steps: int = -1) -> List[MacroStep]:
         """
@@ -524,7 +524,7 @@ class Interpreter:
         # Initialization
         if not self._initialized:
             self._initialized = True
-            return [MicroStep(entered_states=[self._statechart.root])]
+            return [MicroStep(entered_states=[cast(str, self._statechart.root)])]
 
         # Select transitions
         event = self._select_event(consume=False)
@@ -620,9 +620,9 @@ class Interpreter:
 
         for leaf in leaves:
             if isinstance(leaf, FinalState) and self._statechart.parent_for(leaf.name) == self._statechart.root:
-                return MicroStep(exited_states=[leaf.name, self._statechart.root])
+                return MicroStep(exited_states=[leaf.name, cast(str, self._statechart.root)])
             if isinstance(leaf, (ShallowHistoryState, DeepHistoryState)):
-                states_to_enter = self._memory.get(leaf.name, [leaf.memory])
+                states_to_enter = cast(List[str], self._memory.get(leaf.name, [leaf.memory]))
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_for(x), x))
                 return MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, OrthogonalState) and self._statechart.children_for(leaf.name):

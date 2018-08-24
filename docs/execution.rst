@@ -182,12 +182,11 @@ This can be checked by looking at the current event queue of the interpreter.
     clack
     clock
 
-Queued events can be removed from the queue by calling the :py:meth:`~sismic.interpreter.cancel` method of 
-the interpreter. This method accepts both the name of an event or an event instance, and remove the 
-first corresponding event from the queue.
-
-.. testcode:: interpreter
-
+.. 
+    Queued events can be removed from the queue by calling the :py:meth:`~sismic.interpreter.cancel` method of 
+    the interpreter. This method accepts both the name of an event or an event instance, and remove the 
+    first corresponding event from the queue.
+    .. testcode:: interpreter
     interpreter.cancel('clock')
     assert interpreter._event_queue == [(0, Event('clack'))]
 

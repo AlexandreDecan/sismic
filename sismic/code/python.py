@@ -76,7 +76,7 @@ class PythonEvaluator(Evaluator):
         - A *notify(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
           raises a meta-event with it. Meta-events are only sent to bound property statecharts.
         - If the code is related to a transition, the *event: Event* that fires the transition is exposed.
-        - A *default(name:str, value: Any) -> Any* function that defines and returns variable *name* in 
+        - A *setdefault(name:str, value: Any) -> Any* function that defines and returns variable *name* in 
           the global scope if it is not yet defined. 
     - On guard or contract evaluation:
         - If the code is related to a transition, the *event: Event* that fires the transition is exposed.
