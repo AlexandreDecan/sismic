@@ -69,8 +69,9 @@ class Interpreter:
         # Set of active states
         self._configuration = set()  # type: Set[str]
 
-        # Event queue
-        self._event_queue = []  # type: List[Tuple[float, Event]]
+        # Event queues
+        self._internal_queue = []  # type: List[Tuple[float, InternalEvent]]
+        self._external_queue = []  # type: List[Tuple[Float, Event]]
 
         # Bound callables
         self._bound = []  # type: List[Callable[[Event], Any]]
@@ -187,7 +188,7 @@ class Interpreter:
 
     def queue(self, event_or_name: Union[str, Event], *events_or_names: Union[str, Event]) -> 'Interpreter':
         """
-        Queue one or more events to the interpreter queue.
+        Queue one or more events to the external event queue.
 
         If a DelayedEvent is provided, its delay must be a positive number.
         The provided event will be processed by the first call to `execute_once`
@@ -209,20 +210,6 @@ class Interpreter:
                 raise ValueError('{} is not a string nor an Event instance.'.format(event))
 
         return self
-
-    # def cancel(self, event_or_name: Union[str, Event]) -> bool:
-    #     """
-    #     Remove first occurrence of given event (or name) from the interpreter queue.
-
-    #     :param event_or_name: an *Event* instance of the name of an event to cancel.
-    #     :return: True if the event was found and removed, False otherwise.
-    #     """
-    #     event = Event(event_or_name) if isinstance(event_or_name, str) else event_or_name
-    #     for i, (time, queued_event) in enumerate(self._event_queue):
-    #         if queued_event == event: 
-    #             self._event_queue.pop(i)
-    #             return True
-    #     return False
 
     def execute(self, max_steps: int = -1) -> List[MacroStep]:
         """
@@ -269,7 +256,7 @@ class Interpreter:
             return None
 
         # Notify properties
-        self._notify_properties('step started', time=self._time)
+        self._notify_properties('step started', time=self.time)
 
         # Consume event if it triggered a transition
         if computed_steps[0].event is not None:
@@ -285,7 +272,7 @@ class Interpreter:
             executed_steps.append(self._apply_step(step))
             executed_steps.extend(self._stabilize())
 
-        macro_step = MacroStep(time=self._time, steps=executed_steps)
+        macro_step = MacroStep(time=self.time, steps=executed_steps)
 
         # Check state invariants
         configuration = self.configuration  # Use self.configuration to benefit from the sorting by depth
@@ -301,16 +288,18 @@ class Interpreter:
 
     def _queue_event(self, event: Event):
         """
-        Convenient helper to queue events to the current event queue.
+        Convenient helper to queue events wrt. to internal/external and their time.
 
         :param event: Event to queue.
         """
-        time = self._time + (event.delay if isinstance(event, DelayedEvent) else 0)
+        queue = self._internal_queue if isinstance(event, InternalEvent) else self._external_queue
+
+        time = self.time + (event.delay if isinstance(event, DelayedEvent) else 0)
         position = bisect.bisect_right(  # type: ignore
-            _KeyifyList(self._event_queue, lambda t: (t[0], not isinstance(t[1], InternalEvent))),
+            _KeyifyList(queue, lambda t: (t[0], not isinstance(t[1], InternalEvent))),
             (time, not isinstance(event, InternalEvent))
         )
-        self._event_queue.insert(position, (time, event))
+        queue.insert(position, (time, event))
 
     def _raise_event(self, event: Union[InternalEvent, MetaEvent]) -> None:
         """
@@ -375,20 +364,21 @@ class Interpreter:
             if property_statechart.final:
                 raise PropertyStatechartError(property_statechart, self.configuration, macro_step, self.context)
 
-    def _select_event(self, *, consume: bool) -> Optional[Event]:
+    def _select_event(self, *, consume: bool=False) -> Optional[Event]:
         """
-        Return the next available event if any.
-        This method prioritizes internal events over external ones.
-
-        :param consume: Indicates whether event should be consumed.
+        Return the next event to process. 
+        Internal events have priority over external ones. 
+        
+        :param consume: Indicates whether event should be consumed, default to False.
         :return: An instance of Event or None if no event is available
         """
-        if len(self._event_queue) > 0:
-            time, event = self._event_queue[0]
-            if time <= self.time:
-                if consume:
-                    self._event_queue.pop(0)
-                return event
+        for queue in (self._internal_queue, self._external_queue):
+            if len(queue) > 0:
+                time, event = queue[0]
+                if time <= self.time:
+                    if consume:
+                        queue.pop(0)
+                    return event
         return None
 
     def _select_transitions(self, event: Optional[Event], states: Iterable[str], *,
@@ -527,7 +517,7 @@ class Interpreter:
             return [MicroStep(entered_states=[cast(str, self._statechart.root)])]
 
         # Select transitions
-        event = self._select_event(consume=False)
+        event = self._select_event()
         transitions = self._select_transitions(event, states=self._configuration)
 
         # No transition can be triggered?

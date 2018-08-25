@@ -12,7 +12,8 @@ In particular, eventless transitions are processed *before* transitions containi
 *before* external events, and the simulation follows a inner-first/source-state and run-to-completion semantics.
 
 The main difference between SCXML and Sismic's default interpreter resides in how multiple transitions
-can be triggered simultaneously. This may occur for transitions in orthogonal/parallel states, or when transitions declaring the same event have guards that are not mutually exclusive.
+can be triggered simultaneously. This may occur for transitions in orthogonal/parallel states, or when transitions 
+declaring the same event have guards that are not mutually exclusive.
 
 Simulating the simultaneous triggering of multiple transitions is problematic,
 since it implies to make a non-deterministic choice on the order in which the transitions must be processed,
@@ -170,11 +171,11 @@ For convenience, :py:meth:`~sismic.interpreter.Interpreter.queue` returns the in
 
 Notice that :py:meth:`~sismic.interpreter.Interpreter.execute_once` consumes at most one event at a time.
 In the above example, the *clack* event is not yet processed.
-This can be checked by looking at the current event queue of the interpreter.
+This can be checked by looking at the external event queue of the interpreter.
 
 .. testcode:: interpreter
 
-    for time, event in interpreter._event_queue:
+    for time, event in interpreter._external_queue:
         print(event.name)
 
 .. testoutput:: interpreter
@@ -182,13 +183,14 @@ This can be checked by looking at the current event queue of the interpreter.
     clack
     clock
 
-.. 
-    Queued events can be removed from the queue by calling the :py:meth:`~sismic.interpreter.cancel` method of 
-    the interpreter. This method accepts both the name of an event or an event instance, and remove the 
-    first corresponding event from the queue.
-    .. testcode:: interpreter
-    interpreter.cancel('clock')
-    assert interpreter._event_queue == [(0, Event('clack'))]
+.. note::
+
+    An interpreter has two event queues, one for external events (the ones that are added using 
+    :py:meth:`~sismic.interpreter.Interpreter.queue`, and one for internal events (the ones that 
+    are sent from within the statechart). External events are stored in ``_external_queue`` while 
+    internal events are stored in ``_internal_queue``. Internal events are always processed before
+    external ones. To access the next event that will be processed by the interpreter, use the 
+    :py:meth:`~sismic.interpreter.Interpreter._select_event` method. 
 
 To process all events **at once**, one can repeatedly call :py:meth:`~sismic.interpreter.Interpreter.execute_once` until
 it returns a ``None`` value, meaning that nothing happened during the last call. For instance:

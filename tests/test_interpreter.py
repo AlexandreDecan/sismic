@@ -590,10 +590,10 @@ class TestInterpreterBinding:
         assert i2.queue in i1._bound
 
         i1._raise_event(InternalEvent('test'))
-        assert i1._select_event(consume=False) == Event('test')
-        assert isinstance(i1._select_event(consume=False), InternalEvent)
-        assert i2._select_event(consume=False) == Event('test')
-        assert not isinstance(i2._select_event(consume=False), InternalEvent)
+        assert i1._select_event() == Event('test')
+        assert isinstance(i1._select_event(), InternalEvent)
+        assert i2._select_event() == Event('test')
+        assert not isinstance(i2._select_event(), InternalEvent)
 
     def test_bind_callable(self, interpreter):
         i1, i2 = interpreter
@@ -603,10 +603,10 @@ class TestInterpreterBinding:
 
         i1._raise_event(InternalEvent('test'))
 
-        assert i1._select_event(consume=False) == Event('test')
-        assert isinstance(i1._select_event(consume=False), InternalEvent)
-        assert i2._select_event(consume=False) == Event('test')
-        assert not isinstance(i2._select_event(consume=False), InternalEvent)
+        assert i1._select_event() == Event('test')
+        assert isinstance(i1._select_event(), InternalEvent)
+        assert i2._select_event() == Event('test')
+        assert not isinstance(i2._select_event(), InternalEvent)
 
     def test_unbind(self, interpreter):
         i1, i2 = interpreter
@@ -630,8 +630,8 @@ class TestInterpreterBinding:
 
         i1._raise_event(MetaEvent('test'))
 
-        assert i1._select_event(consume=False) is None
-        assert i2._select_event(consume=False) is None
+        assert i1._select_event() is None
+        assert i2._select_event() is None
 
     def test_event(self, interpreter):
         i1, i2 = interpreter
@@ -641,8 +641,8 @@ class TestInterpreterBinding:
         with pytest.raises(ValueError):
             i1._raise_event(Event('test'))
 
-        assert i1._select_event(consume=False) is None
-        assert i2._select_event(consume=False) is None
+        assert i1._select_event() is None
+        assert i2._select_event() is None
 
 
 def test_interpreter_is_serialisable(microwave):
@@ -713,42 +713,24 @@ class TestEventQueue:
     def test_internal_first(self, interpreter):
         interpreter.queue(DelayedEvent('test1', delay=0))
         interpreter._raise_event(InternalEvent('test2'))
-        interpreter.queue(DelayedEvent('test3', delay=1))
+        interpreter.queue(DelayedEvent('test3', delay=2))
+        
+        event = interpreter._select_event()
+        assert isinstance(event, InternalEvent) and event == Event('test2')
 
+        interpreter._time = 2
         event = interpreter._select_event(consume=True)
         assert isinstance(event, InternalEvent) and event == Event('test2')
+
+        interpreter._raise_event(InternalEvent('test4'))
+        # Queue is (0, test1) ; (2, test3) ; (2, test4) but test4 is internal
+        
+        event = interpreter._select_event(consume=True)
+        assert isinstance(event, InternalEvent) and event == Event('test4')
         event = interpreter._select_event(consume=True)
         assert isinstance(event, DelayedEvent) and event == Event('test1')
-        assert interpreter._select_event(consume=True) is None
-        
-        interpreter._time = 1
         event = interpreter._select_event(consume=True)
         assert isinstance(event, DelayedEvent) and event == Event('test3')
-    
-    # def test_cancel_event(self, interpreter):
-    #     interpreter.queue('test1')
-    #     interpreter.queue(Event('test2', x=1))
-    #     interpreter.queue('test3')
-
-    #     # Normal cancellation
-    #     assert interpreter.cancel('test1')
-    #     assert interpreter._select_event(consume=False) == Event('test2', x=1)
-
-    #     # Cancellation of unknown event
-    #     assert not interpreter.cancel('test4')
         
-    #     # Cancellation satisfies event parameters
-    #     assert not interpreter.cancel('test2')
-    #     assert interpreter._select_event(consume=False) == Event('test2', x=1)
-    #     assert not interpreter.cancel(Event('test2', x=2))
-    #     assert interpreter._select_event(consume=False) == Event('test2', x=1)
-    #     assert interpreter.cancel(Event('test2', x=1))
-    #     assert interpreter._select_event(consume=False) == Event('test3')
-
-    #     # Cancellation only cancels first occurrence
-    #     interpreter.queue('test3')
-    #     interpreter.queue('test3')
-    #     interpreter.cancel('test3')
-    #     assert interpreter._select_event(consume=True) == Event('test3')
-    #     assert interpreter._select_event(consume=True) == Event('test3')
-    #     assert interpreter._select_event(consume=True) is None
+        
+    
