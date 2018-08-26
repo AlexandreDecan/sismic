@@ -149,9 +149,10 @@ class Interpreter:
         else:
             self._bound.remove(interpreter_or_callable)
 
-    def bind_property_statechart(self, statechart_or_interpreter: Union[Statechart, 'Interpreter']) -> None:
+    def bind_property_statechart(self, statechart: Statechart, *, interpreter_klass: Callable[[Statechart, Clock], 'Interpreter']=None) -> None:
         """
         Bind a property statechart to the current interpreter.
+
         A property statechart receives meta-events from the current interpreter depending on what happens:
 
          - *step started*: when a macro step starts. The current time of the step is available through the ``time`` attribute.
@@ -166,24 +167,26 @@ class Interpreter:
 
         Additionally, MetaEvent instances that are sent from within the statechart are directly passed to all
         bound property statecharts. This allows more advanced communication and synchronisation patterns with
-        the bound property statecharts.
+        bound property statecharts.
 
-        The internal clock of all property statecharts will be synced with the one of the current interpreter.
+        The internal clock of all property statecharts is synced with the one of the current interpreter.
         As soon as a property statechart reaches a final state, a ``PropertyStatechartError`` will be raised,
-        implicitly meaning that the property expressed by the corresponding property statechart is not satisfied.
+        meaning that the property expressed by the corresponding property statechart is not satisfied.
 
-        :param statechart_or_interpreter: A property statechart or an interpreter of a property statechart.
+        Since Sismic 1.4.0, passing an interpreter as first argument is deprecated.
+
+        :param statechart: A statechart instance.
+        :param interpreter_klass: An optional callable that accepts a statechart as first parameter and a 
+        named parameter clock. Default to Interpreter.
         """
-        # Create interpreter if required
-        if isinstance(statechart_or_interpreter, Statechart):
-            interpreter = Interpreter(statechart_or_interpreter)
+        if isinstance(statechart, Interpreter):
+            warnings.warn('Passing an interpreter to bind_property_statechart is deprecated since 1.4.0. Use interpreter_klass instead.', DeprecationWarning)
+            interpreter = statechart
+            interpreter.clock = SynchronizedClock(self)
         else:
-            interpreter = statechart_or_interpreter
-
-        # Sync clock
-        interpreter.clock = SynchronizedClock(self)
-
-        # Add to the list of properties
+            interpreter_klass = Interpreter if interpreter_klass is None else interpreter_klass
+            interpreter = interpreter_klass(statechart, clock=SynchronizedClock(self))
+        
         self._bound_properties.append(interpreter)
 
     def queue(self, event_or_name: Union[str, Event], *events_or_names: Union[str, Event]) -> 'Interpreter':

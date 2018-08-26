@@ -7,17 +7,23 @@ from sismic.exceptions import PropertyStatechartError
 class TestInterpreterMetaEvents:
     @pytest.fixture
     def property_statechart(self, microwave, mocker):
-        # Create mock for property
-        property = mocker.MagicMock(name='Interpreter', spec=microwave)
-        property.queue = mocker.MagicMock(return_value=None)
-        property.execute = mocker.MagicMock(return_value=None)
-        property.final = False
-        property.time = 0
+        prop_sc = mocker.MagicMock(name='Interpreter', spec=microwave)
+        prop_sc.queue = mocker.MagicMock(return_value=None)
+        prop_sc.execute = mocker.MagicMock(return_value=None)
+        prop_sc.final = False
+        prop_sc.time = 0
+        
+        def prop_sc_call(statechart, clock):    
+            return prop_sc
 
         # Bind it
-        microwave.bind_property_statechart(property)
+        microwave.bind_property_statechart(None, interpreter_klass=prop_sc_call)
 
-        return property
+        return prop_sc
+
+    def test_deprecated_interpreter(self, microwave):
+        with pytest.warns(DeprecationWarning):
+            microwave.bind_property_statechart(microwave)
 
     def test_synchronised_time(self, microwave, property_statechart):
         assert microwave.time == property_statechart.time

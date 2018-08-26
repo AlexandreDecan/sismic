@@ -4,7 +4,7 @@ Changelog
 Unreleased
 ----------
 
- - (Added) Some documentation about running multiple statecharts.
+ - (Added) Documentation about concurrently running multiple statecharts.
  - (Added) An ``unbind`` method for an ``Interpreter``.
  - (Added) A ``setdefault`` function that can be used in the preamble and actions of a statechart to assign default values to variables.
  - (Changed) Meta-Event *step started* has a ``time`` attribute.
@@ -12,6 +12,7 @@ Unreleased
  - (Fixed) Hook-errors reported by ``sismic-bdd`` CLI are a little bit more verbose (`#81 <https://github.com/AlexandreDecan/sismic/issues/81>`__).
  - (Fixed) Optional transition for ``testing.transition_is_processed``, as previously promised by its documentation but not implemented.
  - (Removed) Internal module ``sismic.interpreter.queue``. 
+ - (Deprecated) Passing an interpreter to ``bind_property_statechart`` is deprecated, use ``interpreter_klass`` instead. 
 
 
 1.3.0 (2018-07-06)
@@ -25,7 +26,7 @@ situations when many transitions are triggered for a single source state:
  - (Added) Interpreter's ``_select_transitions`` gets two new parameters, ``eventless_first`` and ``inner_first``.
    Both default to ``True`` and can be used in subclasses to change the default semantics of the interpreter.
 
-The current time of an interpreter is now clock-based driven, thanks to the `Clock` base class and its implementations.
+The current time of an interpreter is now clock-based driven, thanks to the ``Clock`` base class and its implementations.
 
  - (Added) A ``sismic.clock`` module with a ``Clock`` base class and three direct implementations, 
    namely ``SimulatedClock``, ``UtcClock`` and ``SynchronizedClock``. A ``SimulatedClock`` allows to manually or automatically 

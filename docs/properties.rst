@@ -36,12 +36,10 @@ being executed. Those meta-events are automatically send to any previously bound
 
 To bind a property statechart to an interpreter, it suffices to provide the property statechart as a
 parameter of the :py:meth:`~sismic.interpreter.Interpreter.bind_property_statechart` method of an interpreter.
-This method accepts either a :py:class:`~sismic.model.Statechart` or an :py:class:`~sismic.interpreter.Interpreter`
-instance.
-
-When a property statechart is bound to an interpreter, its internal clock (the
-:py:attr:`~sismic.interpreter.Interpreter.time` attribute) is automatically synchronised with the one of the
-interpreter.
+This method accepts a :py:class:`~sismic.model.Statechart` instance that is used to create an interpreter for 
+the property statechart. This method also accepts an optional ``interpreter_klass`` parameter as a callable accepting
+a :py:class:`~sismic.model.Statechart` and a named parameter ``clock`` (a :py:class:`~sismic.clock.Clock`instance)
+and is used to build an interpreter for the property statechart. 
 
 If a property statechart reaches a final state during its execution, then the property is considered as not
 satisfied, and a :py:class:`~sismic.exceptions.PropertyStatechartError` is raised.
