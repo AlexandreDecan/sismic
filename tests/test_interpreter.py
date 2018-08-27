@@ -5,7 +5,7 @@ from collections import Counter
 
 from sismic.exceptions import ExecutionError, NonDeterminismError, ConflictingTransitionsError
 from sismic.code import DummyEvaluator
-from sismic.interpreter import Interpreter, Event, InternalEvent, DelayedEvent, DelayedInternalEvent
+from sismic.interpreter import Interpreter, Event, InternalEvent
 from sismic.helpers import coverage_from_trace, log_trace, run_in_background
 from sismic.model import Transition, MacroStep, MicroStep, MetaEvent
 from sismic import testing
@@ -42,11 +42,8 @@ class TestInterpreterWithSimple:
             assert interpreter.clock.time == 1
 
     def test_queue(self, interpreter):
-        interpreter.queue(Event('e1'))
+        interpreter.queue('e1')
         assert interpreter._select_event(consume=True) == Event('e1')
-
-        with pytest.raises(ValueError):
-            interpreter.queue(InternalEvent('e2'))
 
         interpreter.queue('e3')
         assert interpreter._select_event(consume=True) == Event('e3')
@@ -55,7 +52,7 @@ class TestInterpreterWithSimple:
         assert interpreter._select_event(consume=True) == Event('e4')
         assert interpreter._select_event(consume=True) == Event('e5')
 
-        interpreter.queue('e6', 'e7', Event('e8'))
+        interpreter.queue('e6', 'e7', 'e8')
         assert interpreter._select_event(consume=True) == Event('e6')
         assert interpreter._select_event(consume=True) == Event('e7')
         assert interpreter._select_event(consume=True) == Event('e8')
@@ -63,7 +60,7 @@ class TestInterpreterWithSimple:
     def test_simple_configuration(self, interpreter):
         assert interpreter.execute_once() is None  # Should do nothing!
 
-        interpreter.queue(Event('goto s2')).execute_once()
+        interpreter.queue('goto s2').execute_once()
 
         assert interpreter.configuration == ['root', 's2']
 
@@ -71,17 +68,17 @@ class TestInterpreterWithSimple:
         assert interpreter.configuration == ['root', 's3']
 
     def test_simple_entered(self, interpreter):
-        interpreter.queue(Event('goto s2'))
+        interpreter.queue('goto s2')
         assert interpreter.execute_once().entered_states == ['s2']
 
-        interpreter.queue(Event('goto final'))
+        interpreter.queue('goto final')
         assert interpreter.execute_once().entered_states == ['s3']
         assert interpreter.execute_once().entered_states == ['final']
         assert interpreter.configuration == []
         assert interpreter.final
 
     def test_simple_final(self, interpreter):
-        interpreter.queue(Event('goto s2')).queue(Event('goto final')).execute()
+        interpreter.queue('goto s2').queue('goto final').execute()
         assert interpreter.final
 
 
@@ -101,7 +98,7 @@ class TestInterpreterWithInternal:
         assert step.event.name == 'next'
 
     def test_internal_before_external(self, interpreter):
-        assert interpreter.queue(Event('not_next')).execute_once().event.name == 'next'
+        assert interpreter.queue('not_next').execute_once().event.name == 'next'
 
         step = interpreter.execute_once()
         assert step.event is None
@@ -183,19 +180,15 @@ class TestInterpreterWithHistory:
         return interpreter
 
     def test_memory(self, interpreter):
-        interpreter.queue(Event('next')).execute_once()
+        interpreter.queue('next').execute_once()
         assert interpreter.configuration == ['root', 'loop', 's2']
 
-        step = interpreter.queue(Event('pause')).execute_once()
+        step = interpreter.queue('pause').execute_once()
         assert step.exited_states == ['s2', 'loop']
         assert interpreter.configuration == ['root', 'pause']
 
     def test_resume_memory(self, interpreter):
-        interpreter.queue(
-            Event('next'),
-            Event('pause'),
-            Event('continue')
-        )
+        interpreter.queue('next', 'pause', 'continue')
         last_step = interpreter.execute()[-1]
 
         assert last_step.entered_states == ['loop', 'loop.H', 's2']
@@ -203,17 +196,11 @@ class TestInterpreterWithHistory:
         assert interpreter.configuration == ['root', 'loop', 's2']
 
     def test_after_memory(self, interpreter):
-        interpreter.queue(
-            Event('next'),
-            Event('pause'),
-            Event('continue'),
-            Event('next'),
-            Event('next')
-        ).execute()
+        interpreter.queue('next', 'pause', 'continue', 'next', 'next').execute()
 
         assert interpreter.configuration == ['root', 'loop', 's1']
 
-        interpreter.queue(Event('pause'), Event('stop')).execute()
+        interpreter.queue('pause', 'stop').execute()
         assert interpreter.final
 
 
@@ -228,34 +215,27 @@ class TestInterpreterWithDeephistory:
         return interpreter
 
     def test_deep_memory(self, interpreter):
-        interpreter.queue(
-            Event('next1'),
-            Event('next2')
-        ).execute()
+        interpreter.queue('next1', 'next2').execute()
         assert set(interpreter.configuration) == {'active', 'concurrent_processes', 'process_1',
                                                   'process_2', 'root', 's12', 's22'}
 
-        interpreter.queue(Event('error1')).execute()
+        interpreter.queue('error1').execute()
         assert interpreter.configuration == ['root', 'pause']
         assert set(interpreter._memory['active.H*']) == {'concurrent_processes', 'process_1', 'process_2',
                                                          's12', 's22'}
 
-        interpreter.queue(Event('continue')).execute()
+        interpreter.queue('continue').execute()
         assert set(interpreter.configuration) == {'active', 'concurrent_processes', 'process_1',
                                                   'process_2', 'root', 's12', 's22'}
 
     def test_entered_order(self, interpreter):
-        interpreter.queue(
-            Event('next1'),
-            Event('next2'),
-            Event('pause')
-        )
+        interpreter.queue('next1', 'next2', 'pause')
         last_step = interpreter.execute()[-1]
 
         assert last_step.entered_states == ['pause']
         assert interpreter.configuration == ['root', 'pause']
 
-        step = interpreter.queue(Event('continue')).execute_once()
+        step = interpreter.queue('continue').execute_once()
 
         assert step.entered_states.index('active') < step.entered_states.index('active.H*')
         assert step.entered_states.index('active.H*') < step.entered_states.index('concurrent_processes')
@@ -264,25 +244,21 @@ class TestInterpreterWithDeephistory:
         assert step.entered_states.index('process_1') < step.entered_states.index('s12')
         assert step.entered_states.index('process_2') < step.entered_states.index('s22')
 
-        interpreter.queue(Event('next1')).queue(Event('next2')).execute()
+        interpreter.queue('next1', 'next2').execute()
         assert 's13' in interpreter.configuration and 's23' in interpreter.configuration
         assert not interpreter.final
 
     def test_exited_order(self, interpreter):
-        interpreter.queue(
-            Event('next1'),
-            Event('next2'),
-            Event('pause')
-        )
+        interpreter.queue('next1', 'next2', 'pause')
         last_step = interpreter.execute()[-1]
 
         assert last_step.exited_states == ['s12', 's22', 'process_1', 'process_2', 'concurrent_processes', 'active']
         assert interpreter.configuration == ['root', 'pause']
 
-        step = interpreter.queue(Event('continue')).execute_once()
+        step = interpreter.queue('continue').execute_once()
         assert step.exited_states == ['pause', 'active.H*']
 
-        interpreter.queue(Event('next1'), Event('next2')).execute()
+        interpreter.queue('next1', 'next2').execute()
         assert 's13' in interpreter.configuration and 's23' in interpreter.configuration
         assert not interpreter.final
 
@@ -334,28 +310,28 @@ class TestInterpreterWithParallel:
         return interpreter
 
     def test_concurrent_transitions(self, interpreter):
-        step = interpreter.queue(Event('nextA')).execute_once()
+        step = interpreter.queue('nextA').execute_once()
 
         assert interpreter.configuration == ['root', 's1', 'p1', 'p2', 'a1', 'a2']
         assert step.exited_states.index('initial1') < step.exited_states.index('initial2')
         assert step.entered_states.index('a1') < step.entered_states.index('a2')
 
     def test_concurrent_transitions_nested_target(self, interpreter):
-        interpreter.queue(Event('nextA'), Event('reset1')).execute()
+        interpreter.queue('nextA', 'reset1').execute()
 
         assert interpreter.configuration == ['root', 's1', 'p1', 'p2', 'a2', 'initial1']
 
     def test_unnested_transitions(self, interpreter):
-        interpreter.queue(Event('nextA'), Event('nextA')).execute()
+        interpreter.queue('nextA', 'nextA').execute()
         assert interpreter.configuration == ['root', 's1', 'p1', 'p2', 'a2', 'initial1']
 
     def test_unnested_transitions_2(self, interpreter):
-        interpreter.queue(Event('nextA'), Event('nextB')).execute()
+        interpreter.queue('nextA', 'nextB').execute()
 
         assert interpreter.configuration == ['root', 's1', 'p1', 'p2', 'b1', 'b2']
 
     def test_conflicting_transitions(self, interpreter):
-        interpreter.queue(Event('nextA'), Event('nextB'), Event('conflict1'))
+        interpreter.queue('nextA', 'nextB', 'conflict1')
         interpreter.execute_once()
         interpreter.execute_once()
 
@@ -363,7 +339,7 @@ class TestInterpreterWithParallel:
             interpreter.execute_once()
 
     def test_conflicting_transitions_2(self, interpreter):
-        interpreter.queue(Event('nextA'), Event('nextB'), Event('conflict2'))
+        interpreter.queue('nextA', 'nextB', 'conflict2')
         interpreter.execute_once()
         interpreter.execute_once()
 
@@ -387,7 +363,7 @@ class TestInterpreterWithNestedParallel:
         assert interpreter.configuration == self.common_states + ['i1', 'i2', 'i3', 'i4']
 
     def test_parallel_order(self, interpreter):
-        step = interpreter.queue(Event('next')).execute_once()
+        step = interpreter.queue('next').execute_once()
 
         assert interpreter.configuration == self.common_states + ['j1', 'j2', 'j3', 'j4']
         assert step.exited_states == ['i1', 'i2', 'i3', 'i4']
@@ -395,7 +371,7 @@ class TestInterpreterWithNestedParallel:
         assert [t.source for t in step.transitions] == ['i1', 'i2', 'i3', 'i4']
 
     def test_partial_parallel_order(self, interpreter):
-        interpreter.queue(Event('next'), Event('click'))
+        interpreter.queue('next', 'click')
         interpreter.execute_once()
         step = interpreter.execute_once()
 
@@ -405,7 +381,7 @@ class TestInterpreterWithNestedParallel:
         assert [t.source for t in step.transitions] == ['j2', 'j4']
 
     def test_partial_unnested_transition(self, interpreter):
-        interpreter.queue(Event('next'), Event('reset'))
+        interpreter.queue('next', 'reset')
         interpreter.execute_once()
         step = interpreter.execute_once()
 
@@ -424,12 +400,7 @@ class TestInterpreterWithNestedParallel:
         assert [t.source for t in step.transitions] == ['r2', 'r4']
 
     def test_name_order(self, interpreter):
-        interpreter.queue(
-            Event('next'),
-            Event('click'),
-            Event('next'),
-            Event('next')
-        )
+        interpreter.queue('next', 'click', 'next', 'next')
         interpreter.execute_once()
         interpreter.execute_once()
         interpreter.execute_once()
@@ -447,7 +418,7 @@ class TestInterpreterWithNestedParallel:
 
         assert [t.source for t in step.transitions] == ['k1', 'k3', 'x', 'y']
 
-        step = interpreter.queue(Event('next')).execute_once()
+        step = interpreter.queue('next').execute_once()
 
         assert step.exited_states.index('k1') < step.exited_states.index('x')
         assert step.exited_states.index('x') < step.exited_states.index('y')
@@ -510,11 +481,11 @@ class TestLogTrace:
         assert self.steps == []
 
     def test_nonempty_trace(self, elevator):
-        elevator.queue(Event('floorSelected', floor=4)).execute()
+        elevator.queue('floorSelected', floor=4).execute()
         assert len(self.steps) > 0
 
     def test_log_content(self, elevator):
-        steps = elevator.queue(Event('floorSelected', floor=4)).execute()
+        steps = elevator.queue('floorSelected', floor=4).execute()
         assert steps == self.steps
 
 
@@ -523,7 +494,7 @@ def test_run_in_background(elevator):
 
     with pytest.warns(DeprecationWarning):
         task = run_in_background(elevator, 0.001)
-    elevator.queue(Event('floorSelected', floor=4))
+    elevator.queue('floorSelected', floor=4)
 
     sleep(0.01)
 
@@ -674,46 +645,46 @@ class TestEventQueue:
         return interpreter
 
     def test_delay(self, interpreter):
-        interpreter.queue(DelayedEvent('test1', delay=1))
-        interpreter.queue(DelayedEvent('test2', delay=-1))
-        interpreter.queue(DelayedEvent('test3', delay=0))
+        interpreter.queue('test1', delay=1)
+        interpreter.queue('test2', delay=-1)
+        interpreter.queue('test3', delay=0)
         
         interpreter._time += 10
         
         event = interpreter._select_event(consume=True)
-        assert isinstance(event, DelayedEvent) and event == Event('test2')
+        assert event == Event('test2', delay=-1)
         event = interpreter._select_event(consume=True)
-        assert isinstance(event, DelayedEvent) and event == Event('test3')
+        assert event == Event('test3', delay=0)
         event = interpreter._select_event(consume=True)
-        assert isinstance(event, DelayedEvent) and event == Event('test1')
+        assert event == Event('test1', delay=1)
 
     def test_consume_order(self, interpreter):
-        interpreter.queue(DelayedEvent('test3', delay=2))
-        interpreter.queue(DelayedEvent('test1', delay=0))
-        interpreter.queue(DelayedEvent('test2', delay=1))
-        interpreter.queue(DelayedEvent('test4', delay=2))
-        interpreter.queue(DelayedEvent('test5', delay=3))
+        interpreter.queue('test3', delay=2)
+        interpreter.queue('test1', delay=0)
+        interpreter.queue('test2', delay=1)
+        interpreter.queue('test4', delay=2)
+        interpreter.queue('test5', delay=3)
                 
         event = interpreter._select_event(consume=True)
-        assert isinstance(event, DelayedEvent) and event == Event('test1')
+        assert event == Event('test1', delay=0)
         assert interpreter._select_event(consume=True) is None
         
         interpreter._time = 1
         event = interpreter._select_event(consume=True)
-        assert isinstance(event, DelayedEvent) and event == Event('test2')
+        assert event == Event('test2', delay=1)
         assert interpreter._select_event(consume=True) is None
         
         interpreter._time = 2
         event = interpreter._select_event(consume=True)
-        assert isinstance(event, DelayedEvent) and event == Event('test3')
+        assert event == Event('test3', delay=2)
         event = interpreter._select_event(consume=True)
-        assert isinstance(event, DelayedEvent) and event == Event('test4')
+        assert event == Event('test4', delay=2)
         assert interpreter._select_event(consume=True) is None
 
     def test_internal_first(self, interpreter):
-        interpreter.queue(DelayedEvent('test1', delay=0))
+        interpreter.queue('test1', delay=0)
         interpreter._raise_event(InternalEvent('test2'))
-        interpreter.queue(DelayedEvent('test3', delay=2))
+        interpreter.queue('test3', delay=2)
         
         event = interpreter._select_event()
         assert isinstance(event, InternalEvent) and event == Event('test2')
@@ -728,9 +699,9 @@ class TestEventQueue:
         event = interpreter._select_event(consume=True)
         assert isinstance(event, InternalEvent) and event == Event('test4')
         event = interpreter._select_event(consume=True)
-        assert isinstance(event, DelayedEvent) and event == Event('test1')
+        assert event == Event('test1', delay=0)
         event = interpreter._select_event(consume=True)
-        assert isinstance(event, DelayedEvent) and event == Event('test3')
+        assert event == Event('test3', delay=2)
         
         
     

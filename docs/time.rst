@@ -307,26 +307,27 @@ Simply subclass the :py:class:`~sismic.clock.Clock` base class.
 Delayed events
 ==============
 
-Sismic also provides support for delayed events. 
+Sismic also has support for delayed events, i.e. events that will be triggered in the future.
 
 When a delayed event is queued in an interpreter at time ``T`` with delay ``D``, 
 it is not processed by a call to :py:meth:`~sismic.interpreter.Interpreter.execute` 
 or to :py:meth:`~sismic.interpreter.Interpreter.execute_once` unless the current clock 
 time value exceeds ``T + D``. 
 
-Delayed events can be created using the :py:class:`~sismic.model.DelayedEvent` class 
-by providing a ``delay`` parameter:
+Delayed events can be created simply by providing a ``delay`` parameter when an 
+:py:class:`~sismic.model.Event` instance is created, or when calling 
+an interpreter's :py:meth:`~sismic.interpreter.Interpreter.queue` method. 
+
 
 .. testcode:: delayed
 
-
     from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter, Event, DelayedEvent
+    from sismic.interpreter import Interpreter
 
     statechart = import_from_yaml(filepath='examples/elevator/elevator.yaml')
     interpreter = Interpreter(statechart)
 
-    interpreter.queue(DelayedEvent('floorSelected', floor=4, delay=5))
+    interpreter.queue('floorSelected', floor=4, delay=5)
 
 
 Delayed events are not processed by the interpreter, as long as the current clock
@@ -367,7 +368,7 @@ the last executed step.
     print('Interpreter time:', interpreter.time)
     print('Clock time:', interpreter.clock.time)
     
-    interpreter.queue(DelayedEvent('floorSelected', floor=2, delay=1))
+    interpreter.queue('floorSelected', floor=2, delay=1)
     
 .. testoutput:: delayed
 

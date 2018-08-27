@@ -4,17 +4,19 @@ Changelog
 Unreleased
 ----------
 
- - (Added) Documentation about concurrently running multiple statecharts.
  - (Added) An ``unbind`` method for an ``Interpreter``.
- - (Added) A ``setdefault`` function that can be used in the preamble and actions of a statechart to assign default values to variables.
- - (Changed) Meta-Event *step started* has a ``time`` attribute.
+ - (Added) A ``setdefault`` function that can be used in the preamble and actions of a statechart to assign a default value to a variable.
+ - (Added) Event parameters can be passed to ``Interpreter.queue``.
+ - (Added) Meta-Event *step started* has a ``time`` attribute.
+ - (Added) Documentation about concurrently running multiple statecharts.
  - (Fixed) Internal events are processed before external ones (regression introduced in 1.3.0).
  - (Fixed) Hook-errors reported by ``sismic-bdd`` CLI are a little bit more verbose (`#81 <https://github.com/AlexandreDecan/sismic/issues/81>`__).
- - (Fixed) Optional transition for ``testing.transition_is_processed``, as previously promised by its documentation but not implemented.
+ - (Fixed) Optional transition for ``testing.transition_is_processed``, as promised by its documentation but not implemented.
  - (Removed) Internal module ``sismic.interpreter.queue``. 
  - (Deprecated) Passing an interpreter to ``bind_property_statechart`` is deprecated, use ``interpreter_klass`` instead. 
  - (Deprecated) BDD step *delayed event sent*, use *event sent* instead.
- 
+ - (Deprecated) ``DelayedEvent``, use ``Event`` with a ``delay`` parameter instead.
+
 
 1.3.0 (2018-07-06)
 ------------------

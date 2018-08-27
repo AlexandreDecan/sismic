@@ -75,7 +75,7 @@ def execute_bdd(statechart: Statechart,
     :param feature_filepaths: list of filepaths to feature files.
     :param step_filepaths: list of filepaths to step definitions.
     :param property_statecharts: list of property statecharts
-    :param interpreter_klass: a callable that accepts a statechart and returns an Interpreter
+    :param interpreter_klass: a callable that accepts a statechart and an optional clock and returns an Interpreter
     :param debug_on_error: set to True to drop to (i)pdb in case of error.
     :param behave_parameters: additional CLI parameters used by Behave (see http://behave.readthedocs.io/en/latest/behave.html#command-line-arguments)
     :return: exit code of behave CLI.

@@ -37,7 +37,7 @@ class TestElevator:
         # Stabilisation
         elevator.execute_once()
 
-        elevator.queue(Event('floorSelected', floor=4)).execute_once()
+        elevator.queue('floorSelected', floor=4).execute_once()
         assert elevator.context['destination'] == 4
 
         elevator.execute_once()
@@ -47,7 +47,7 @@ class TestElevator:
         # Stabilisation
         elevator.execute_once()
 
-        elevator.queue(Event('floorSelected', floor=4)).execute()
+        elevator.queue('floorSelected', floor=4).execute()
         assert elevator.context['current'] == 4
 
         elevator.clock.time += 10
@@ -61,7 +61,7 @@ class TestRemoteElevator:
     def test_button(self, elevator, remote_elevator):
         assert elevator.context['current'] == 0
 
-        steps = remote_elevator.queue(Event('button_2_pushed')).execute()
+        steps = remote_elevator.queue('button_2_pushed').execute()
         assert testing.event_is_fired(steps, 'floorSelected', {'floor': 2})
 
         elevator.execute()
@@ -70,7 +70,7 @@ class TestRemoteElevator:
     def test_button_0_on_groundfloor(self, elevator, remote_elevator):
         assert elevator.context['current'] == 0
 
-        remote_elevator.queue(Event('button_0_pushed')).execute()
+        remote_elevator.queue('button_0_pushed').execute()
         elevator.execute()
 
         assert elevator.context['current'] == 0
@@ -79,21 +79,16 @@ class TestRemoteElevator:
 class TestMicrowave:
     def test_lamp_on(self, microwave):
         microwave.execute_once()
-        microwave.queue(Event('door_opened'))
+        microwave.queue('door_opened')
 
         steps = microwave.execute_once()
         assert testing.event_is_fired(steps, 'lamp_switch_on')
 
     def test_heating_on(self, microwave):
         microwave.execute_once()
-        microwave.queue(
-            Event('door_opened'),
-            Event('item_placed'),
-            Event('door_closed'),
-            Event('timer_inc')
-        ).execute()
+        microwave.queue('door_opened', 'item_placed', 'door_closed', 'timer_inc').execute()
 
-        microwave.queue(Event('cooking_start'))
+        microwave.queue('cooking_start')
         steps = microwave.execute()
         assert testing.event_is_fired(steps, 'heating_on')
         assert testing.event_is_fired(steps, 'lamp_switch_on')

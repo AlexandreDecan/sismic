@@ -77,7 +77,7 @@ is sent both to ``interpreter_1`` and ``interpreter_2``.
 
 .. testcode:: bind
 
-    from sismic.interpreter import InternalEvent, Event
+    from sismic.interpreter import InternalEvent
 
     # Manually create and raise an internal event
     interpreter_3._raise_event(InternalEvent('test'))
@@ -120,7 +120,7 @@ We bind our panel with our elevator, such that the panel can control the elevato
 .. testcode:: buttons
 
     from sismic.io import import_from_yaml
-    from sismic.interpreter import Interpreter, Event, InternalEvent
+    from sismic.interpreter import Interpreter
 
     elevator = Interpreter(import_from_yaml(filepath='examples/elevator/elevator.yaml'))
     buttons = Interpreter(import_from_yaml(filepath='examples/elevator/elevator_buttons.yaml'))
@@ -133,15 +133,15 @@ are automatically propagated to ``elevator``:
 
 .. testcode:: buttons
 
-    print('Awaiting event in buttons:', buttons._select_event(consume=False))  # None
-    buttons.queue(Event('button_2_pushed'))
+    print('Awaiting event in buttons:', buttons._select_event())  # None
+    buttons.queue('button_2_pushed')
 
-    print('Awaiting event in buttons:', buttons._select_event(consume=False))  # External event
-    print('Awaiting event in elevator:', elevator._select_event(consume=False))  # None
+    print('Awaiting event in buttons:', buttons._select_event())  # External event
+    print('Awaiting event in elevator:', elevator._select_event())  # None
 
     buttons.execute(max_steps=2)  # (1) initialize buttons, and (2) consume button_2_pushed
-    print('Awaiting event in buttons:', buttons._select_event(consume=False))  # Internal event 
-    print('Awaiting event in elevator:', elevator._select_event(consume=False))  # External event
+    print('Awaiting event in buttons:', buttons._select_event())  # Internal event 
+    print('Awaiting event in elevator:', elevator._select_event())  # External event
 
 .. testoutput:: buttons
 

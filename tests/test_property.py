@@ -58,7 +58,7 @@ class TestInterpreterMetaEvents:
         assert MetaEvent('test', x=1, y='hello') in [x[0][0] for x in property_statechart.queue.call_args_list]
 
     def test_trace(self, microwave, property_statechart):
-        microwave.queue(Event('door_opened'))
+        microwave.queue('door_opened')
         microwave.execute()
 
         call_list = [

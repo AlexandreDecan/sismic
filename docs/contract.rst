@@ -128,7 +128,7 @@ at runtime (as explained above) and may raise a subclass of :py:exc:`~sismic.exc
     statechart.state_for('movingUp').preconditions[0] = 'current > destination'
 
     interpreter = Interpreter(statechart)
-    interpreter.queue(Event('floorSelected', floor=4))
+    interpreter.queue('floorSelected', floor=4)
     interpreter.execute()
 
 

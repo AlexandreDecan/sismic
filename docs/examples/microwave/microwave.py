@@ -1,7 +1,7 @@
 import tkinter as tk
 from functools import partial
 
-from sismic.interpreter import Interpreter, Event
+from sismic.interpreter import Interpreter
 from sismic.io import import_from_yaml
 
 # The two following lines are NOT needed in a typical environment.
@@ -203,7 +203,7 @@ class MicrowaveApplication(tk.Frame):
             raise ValueError('Unknown event %s' % event)
 
     def send_event(self, event_name):
-        self.interpreter.queue(Event(event_name))
+        self.interpreter.queue(event_name)
         self.execute()
 
     def _quit(self):

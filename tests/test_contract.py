@@ -7,7 +7,7 @@ from sismic.model import StateMixin, Transition
 
 
 def test_no_error(elevator):
-    elevator.queue(Event('floorSelected', floor=4))
+    elevator.queue('floorSelected', floor=4)
     elevator.execute()
 
     assert not elevator.final
@@ -15,7 +15,7 @@ def test_no_error(elevator):
 
 def test_state_precondition(elevator):
     elevator.statechart.state_for('movingUp').preconditions.append('False')
-    elevator.queue(Event('floorSelected', floor=4))
+    elevator.queue('floorSelected', floor=4)
 
     with pytest.raises(PreconditionError) as e:
         elevator.execute()
@@ -25,7 +25,7 @@ def test_state_precondition(elevator):
 
 def test_state_postcondition(elevator):
     elevator.statechart.state_for('movingUp').postconditions.append('False')
-    elevator.queue(Event('floorSelected', floor=4))
+    elevator.queue('floorSelected', floor=4)
 
     with pytest.raises(PostconditionError) as e:
         elevator.execute()
@@ -35,7 +35,7 @@ def test_state_postcondition(elevator):
 
 def test_state_invariant(elevator):
     elevator.statechart.state_for('movingUp').invariants.append('False')
-    elevator.queue(Event('floorSelected', floor=4))
+    elevator.queue('floorSelected', floor=4)
 
     with pytest.raises(InvariantError) as e:
         elevator.execute()
@@ -46,7 +46,7 @@ def test_state_invariant(elevator):
 def test_transition_precondition(elevator):
     transitions = elevator.statechart.transitions_from('floorSelecting')
     transitions[0].preconditions.append('False')
-    elevator.queue(Event('floorSelected', floor=4))
+    elevator.queue('floorSelected', floor=4)
 
     with pytest.raises(PreconditionError) as e:
         elevator.execute()
@@ -57,7 +57,7 @@ def test_transition_precondition(elevator):
 def test_transition_postcondition(elevator):
     transitions = elevator.statechart.transitions_from('floorSelecting')
     transitions[0].postconditions.append('False')
-    elevator.queue(Event('floorSelected', floor=4))
+    elevator.queue('floorSelected', floor=4)
 
     with pytest.raises(PostconditionError) as e:
         elevator.execute()
@@ -70,4 +70,4 @@ def test_do_not_raise(elevator):
     transitions = elevator.statechart.transitions_from('floorSelecting')
     transitions[0].postconditions.append('False')
 
-    elevator.queue(Event('floorSelected', floor=4)).execute()
+    elevator.queue('floorSelected', floor=4).execute()

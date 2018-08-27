@@ -1,4 +1,4 @@
 from .default import Interpreter
-from ..model.events import Event, InternalEvent, MetaEvent, DelayedEvent, DelayedInternalEvent
+from ..model.events import Event, InternalEvent, MetaEvent
 
-__all__ = ['Interpreter', 'Event', 'InternalEvent',  'DelayedEvent', 'DelayedInternalEvent', 'MetaEvent']
+__all__ = ['Interpreter', 'Event', 'InternalEvent', 'MetaEvent']

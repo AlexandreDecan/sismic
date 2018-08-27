@@ -6,8 +6,7 @@ from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
 
 from . import Evaluator
 from ..exceptions import CodeEvaluationError
-from ..model import (DelayedInternalEvent, Event, InternalEvent, MetaEvent,
-                     Statechart, StateMixin, Transition)
+from ..model import (Event, InternalEvent, MetaEvent, Statechart, StateMixin, Transition)
 
 __all__ = ['PythonEvaluator']
 
@@ -45,11 +44,8 @@ class FrozenContext(collections.Mapping):
 
 
 def _create_send_function(event_list: List[Event]) -> Callable[..., None]:
-    def send(name, delay=None, **kwargs):
-        if delay is None:
-            event_list.append(InternalEvent(name, **kwargs))
-        else:
-            event_list.append(DelayedInternalEvent(name, delay, **kwargs))
+    def send(name, **kwargs):
+        event_list.append(InternalEvent(name, **kwargs))
     return send
         
 def _create_notify_function(event_list: List[Event]) -> Callable[..., None]:
@@ -70,7 +66,7 @@ class PythonEvaluator(Evaluator):
           if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
           that makes use of this evaluator.
     - On code execution:
-        - A *send(name: str, delay=None, **kwargs) -> None* function that takes an event name and additional keyword parameters and
+        - A *send(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
           raises an internal event with it. Raised events are propagated to bound statecharts as external events and 
           to the current statechart as internal event. If delay is provided, a delayed event is created.
         - A *notify(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
@@ -106,7 +102,8 @@ class PythonEvaluator(Evaluator):
     def __init__(self, interpreter=None, *, initial_context: Mapping[str, Any]=None) -> None:
         super().__init__(interpreter, initial_context=initial_context)
 
-        self._context = {} if initial_context is None else initial_context  # type: Mapping[str, Any]
+        self._context = {}  # type: Dict[str, Any]
+        self._context.update(initial_context if initial_context else {})
         self._interpreter = interpreter
 
         # Memory and entry time
@@ -190,7 +187,7 @@ class PythonEvaluator(Evaluator):
         """
         return self._interpreter.time - seconds >= self._idle_time[name]
 
-    def _evaluate_code(self, code: Optional[str], *, additional_context: Mapping=None) -> bool:
+    def _evaluate_code(self, code: Optional[str], *, additional_context: Mapping[str, Any]=None) -> bool:
         """
         Evaluate given code using Python.
 
@@ -216,7 +213,7 @@ class PythonEvaluator(Evaluator):
         except Exception as e:
             raise CodeEvaluationError('"{}" occurred while evaluating "{}"'.format(e, code)) from e
 
-    def _execute_code(self, code: Optional[str], *, additional_context: Mapping=None) -> List[Event]:
+    def _execute_code(self, code: Optional[str], *, additional_context: Mapping[str, Any]=None) -> List[Event]:
         """
         Execute given code using Python.
 

@@ -108,11 +108,11 @@ class TestSteps:
 
     def test_send_event(self, context):
         steps.send_event(context, 'event_name')
-        context.interpreter.queue.assert_called_with(Event('event_name'))
+        context.interpreter.queue.assert_called_with('event_name')
 
     def test_send_event_with_parameter(self, context):
         steps.send_event(context, 'event_name', 'x', '1')
-        context.interpreter.queue.assert_called_with(Event('event_name', x=1))
+        context.interpreter.queue.assert_called_with('event_name', x=1)
 
     def test_wait(self, context):
         context.interpreter.clock.time = 0

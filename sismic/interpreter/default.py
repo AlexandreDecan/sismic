@@ -12,7 +12,7 @@ from ..code import Evaluator, PythonEvaluator
 from ..exceptions import (ConflictingTransitionsError, InvariantError,
                           NonDeterminismError, PostconditionError,
                           PreconditionError, PropertyStatechartError)
-from ..model import (CompoundState, DeepHistoryState, DelayedEvent, Event,
+from ..model import (CompoundState, DeepHistoryState, Event,
                      FinalState, InternalEvent, MacroStep, MetaEvent,
                      MicroStep, OrthogonalState, ShallowHistoryState,
                      Statechart, StateMixin, Transition)
@@ -71,7 +71,7 @@ class Interpreter:
 
         # Event queues
         self._internal_queue = []  # type: List[Tuple[float, InternalEvent]]
-        self._external_queue = []  # type: List[Tuple[Float, Event]]
+        self._external_queue = []  # type: List[Tuple[float, Event]]
 
         # Bound callables
         self._bound = []  # type: List[Callable[[Event], Any]]
@@ -80,7 +80,7 @@ class Interpreter:
         self._bound_properties = []  # type: List[Interpreter]
 
         # Evaluator
-        self._evaluator = evaluator_klass(self, initial_context=initial_context)  # type: ignore
+        self._evaluator = evaluator_klass(self, initial_context=initial_context)
         self._evaluator.execute_statechart(statechart)
 
     @property
@@ -149,7 +149,7 @@ class Interpreter:
         else:
             self._bound.remove(interpreter_or_callable)
 
-    def bind_property_statechart(self, statechart: Statechart, *, interpreter_klass: Callable[[Statechart, Clock], 'Interpreter']=None) -> None:
+    def bind_property_statechart(self, statechart: Statechart, *, interpreter_klass: Callable=None) -> None:
         """
         Bind a property statechart to the current interpreter.
 
@@ -188,29 +188,24 @@ class Interpreter:
         
         self._bound_properties.append(interpreter)
 
-    def queue(self, event_or_name: Union[str, Event], *events_or_names: Union[str, Event]) -> 'Interpreter':
+    def queue(self, event_or_name:Union[str, Event], *event_or_names:Union[str, Event], **parameters) -> 'Interpreter':
         """
-        Queue one or more events to the external event queue.
+        Create and queue given events to the external event queue. 
+        
+        If an event has a `delay` parameter, it will be processed by the first call to `execute_once` 
+        as soon as `self.clock.time` exceeds current `self.time + event.delay`.
 
-        If a DelayedEvent is provided, its delay must be a positive number.
-        The provided event will be processed by the first call to `execute_once`
-        as soon as the internal clock is greater or equal than
-        `clock.time + event.delay`. 
-
-        :param event_or_name: an *Event* instance, or the name of an event.
-        :param events_or_names: additional *Event* instances, or names of events.
+        If named parameters are provided, they will be added to all events 
+        that are provided by name. 
+        
+        :param event_or_name: name of the event or Event instance
+        :param event_or_names: additional events
+        :param parameters: event parameters.
         :return: *self* so it can be chained.
         """
-        for event in [event_or_name] + list(events_or_names):
-            event = Event(event) if isinstance(event, str) else event
-
-            if isinstance(event, InternalEvent):
-                raise ValueError('Internal event cannot be queued, use Event or DelayedEvent instead.')
-            elif isinstance(event, Event):
-                self._queue_event(event)
-            else:
-                raise ValueError('{} is not a string nor an Event instance.'.format(event))
-
+        for event in [event_or_name] + list(event_or_names):
+            event = Event(event, **parameters) if isinstance(event, str) else event
+            self._queue_event(event)
         return self
 
     def execute(self, max_steps: int = -1) -> List[MacroStep]:
@@ -290,13 +285,16 @@ class Interpreter:
 
     def _queue_event(self, event: Event):
         """
-        Convenient helper to queue events wrt. to internal/external and their time.
+        Convenient helper to queue events wrt. to internal/external and their (optional) delay.
 
         :param event: Event to queue.
         """
-        queue = self._internal_queue if isinstance(event, InternalEvent) else self._external_queue
+        if isinstance(event, InternalEvent):
+            queue = cast(List[Tuple[float, Event]], self._internal_queue)
+        else:
+            queue = self._external_queue
 
-        time = self.time + (event.delay if isinstance(event, DelayedEvent) else 0)
+        time = self.time + getattr(event, 'delay', 0)
         position = bisect.bisect_right(  # type: ignore
             _KeyifyList(queue, lambda t: (t[0], not isinstance(t[1], InternalEvent))),
             (time, not isinstance(event, InternalEvent))
@@ -320,15 +318,13 @@ class Interpreter:
         """
         if isinstance(event, InternalEvent):
             self._queue_event(event)
-
-            if isinstance(event, DelayedEvent):
-                external_event = DelayedEvent(event.name, event.delay, **event.data)
+            external_event = Event(event.name, **event.data)
+            if hasattr(event, 'delay'):
                 # Deprecated since 1.4.0:
                 self._notify_properties('delayed event sent', event=external_event)
-            else:
-                external_event = Event(event.name, **event.data)
 
             self._notify_properties('event sent', event=external_event)
+
             for bound_callable in self._bound:
                 bound_callable(external_event)
         elif isinstance(event, MetaEvent):
@@ -343,7 +339,6 @@ class Interpreter:
         :param event_name: name of the event
         :param kwargs: additional parameters that should be made available as event parameters
         """
-
         # Create meta-event
         event = MetaEvent(event_name, **kwargs)
 
@@ -374,7 +369,7 @@ class Interpreter:
         :param consume: Indicates whether event should be consumed, default to False.
         :return: An instance of Event or None if no event is available
         """
-        for queue in (self._internal_queue, self._external_queue):
+        for queue in (self._internal_queue, self._external_queue):  # type: List[Tuple[float, Event]]
             if len(queue) > 0:
                 time, event = queue[0]
                 if time <= self.time:

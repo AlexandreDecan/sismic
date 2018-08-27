@@ -14,7 +14,7 @@ def before_scenario(context, scenario):
 
     # Bind property statecharts
     for property_statechart in context.config.userdata.get('property_statecharts'):
-        context.interpreter.bind_property_statechart(interpreter_klass(property_statechart))
+        context.interpreter.bind_property_statechart(property_statechart, interpreter_klass=interpreter_klass)
 
 
 def before_step(context, step):

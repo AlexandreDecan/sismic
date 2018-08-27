@@ -50,8 +50,7 @@ def send_event(context, name, parameter=None, value=None):
     if parameter and value:
         parameters[parameter.strip()] = eval(value.strip(), {}, {})
 
-    event = Event(name, **parameters)
-    context.interpreter.queue(event)
+    context.interpreter.queue(name, **parameters)
 
 
 @given('I wait {seconds:g} seconds')

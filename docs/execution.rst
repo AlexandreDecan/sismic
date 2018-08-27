@@ -151,9 +151,7 @@ Multiple events (or names) can be provided at once.
 
 .. testcode:: interpreter
 
-    from sismic.interpreter import Event
-
-    interpreter.queue(Event('click'))
+    interpreter.queue('click')
     interpreter.execute_once()  # Process the "click" event
 
     interpreter.queue('clack')  # An event name can be provided as well
@@ -246,24 +244,24 @@ that returns the list of all possible events that are expected by this statechar
 
 The *elevator* statechart, the one used for this example, only reacts to *floorSelected* events.
 Moreover, it assumes that *floorSelected* events have an additional parameter named ``floor``.
-These events are *parametrized* events, and can be created by providing keyword arguments when
-instanciating :py:class:`~sismic.interpreter.Event`.
+These events are *parametrized* events, and their parameters be accessed by action code and guards 
+in the statechart during execution. 
 
-.. testcode:: interpreter
-
-    selecting_floor = Event('floorSelected', floor=1)
-
-These parameters can be accessed by action code and guards in the statechart.
 For example, the *floorSelecting* state of the *elevator* example has a transition
-``floorSelected / destination = event.floor``.
+``floorSelected / destination = event.floor`` that stores the value of the *floor* parameter
+into the *destination* variable.
 
-Executing the statechart will move the elevator to first floor:
+To add parameters to an event, simply pass these parameters as named arguments to the 
+:py:meth:`~sismic.interpreter.Interpreter.queue` method of the interpreter.
+
 
 .. testcode:: interpreter
 
     print('Current floor is', interpreter.context['current'])
 
-    interpreter.queue(selecting_floor).execute()
+    interpreter.queue('floorSelected', floor=1)
+    interpreter.execute()
+
     print('Current floor is', interpreter.context['current'])
 
 .. testoutput:: interpreter
@@ -273,7 +271,6 @@ Executing the statechart will move the elevator to first floor:
 
 Notice how we can access the current values of *internal variables* by use of ``interpreter.context``.
 This attribute is a mapping between internal variable names and their current value.
-
 
 
 .. _steps:
@@ -376,5 +373,7 @@ These methods can be overridden or combined to define variants of statechart sem
 
 These methods are all used (even indirectly) by :py:class:`~sismic.interpreter.Interpreter.execute_once`.
 
-.. seealso:: Consider looking at the source of :py:class:`~sismic.interpreter.Interpreter.execute_once` to understand
+.. seealso:: 
+
+    Consider looking at the source of :py:class:`~sismic.interpreter.Interpreter.execute_once` to understand
     how these methods are related and organized.

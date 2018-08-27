@@ -3,7 +3,7 @@ import pytest
 from time import sleep 
 
 from sismic.runner import AsyncRunner
-from sismic.interpreter import Interpreter, DelayedEvent
+from sismic.interpreter import Interpreter
 
 
 class TestAsyncRunner:
