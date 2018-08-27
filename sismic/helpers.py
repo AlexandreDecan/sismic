@@ -4,7 +4,7 @@ import warnings
 
 from collections import Counter
 from functools import wraps
-from typing import Any, Callable, List, Mapping, Optional
+from typing import Any, Callable, List, Mapping
 
 from .interpreter import Interpreter
 from .model import MacroStep

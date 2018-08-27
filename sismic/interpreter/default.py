@@ -1,4 +1,3 @@
-import abc
 import bisect
 import warnings
 
@@ -140,7 +139,7 @@ class Interpreter:
 
     def unbind(self, interpreter_or_callable: Union['Interpreter', Callable[[Event], Any]]) -> None:
         """
-        Unbind a previously bound interpreter or callable. 
+        Unbind a previously bound interpreter or callable.
 
         :param interpreter_or_callable: interpreter or callable to unbind
         """
@@ -175,7 +174,7 @@ class Interpreter:
         Since Sismic 1.4.0, passing an interpreter as first argument is deprecated.
 
         :param statechart: A statechart instance.
-        :param interpreter_klass: An optional callable that accepts a statechart as first parameter and a 
+        :param interpreter_klass: An optional callable that accepts a statechart as first parameter and a
         named parameter clock. Default to Interpreter.
         """
         if isinstance(statechart, Interpreter):
@@ -185,19 +184,19 @@ class Interpreter:
         else:
             interpreter_klass = Interpreter if interpreter_klass is None else interpreter_klass
             interpreter = interpreter_klass(statechart, clock=SynchronizedClock(self))
-        
+
         self._bound_properties.append(interpreter)
 
     def queue(self, event_or_name:Union[str, Event], *event_or_names:Union[str, Event], **parameters) -> 'Interpreter':
         """
-        Create and queue given events to the external event queue. 
-        
-        If an event has a `delay` parameter, it will be processed by the first call to `execute_once` 
+        Create and queue given events to the external event queue.
+
+        If an event has a `delay` parameter, it will be processed by the first call to `execute_once`
         as soon as `self.clock.time` exceeds current `self.time + event.delay`.
 
-        If named parameters are provided, they will be added to all events 
-        that are provided by name. 
-        
+        If named parameters are provided, they will be added to all events
+        that are provided by name.
+
         :param event_or_name: name of the event or Event instance
         :param event_or_names: additional events
         :param parameters: event parameters.
@@ -305,14 +304,14 @@ class Interpreter:
         """
         Raise an event from the statechart.
 
-        Only InternalEvent and MetaEvent (and their subclasses) are accepted. 
+        Only InternalEvent and MetaEvent (and their subclasses) are accepted.
 
-        InternalEvent instances are propagated to bound interpreters as normal events, and added to 
-        the event queue of the current interpreter as InternalEvent instance. If given event is 
+        InternalEvent instances are propagated to bound interpreters as normal events, and added to
+        the event queue of the current interpreter as InternalEvent instance. If given event is
         delayed, it is propagated as DelayedEvent to bound interpreters, and put into current
-        event queue as a DelayedInternalEvent. 
+        event queue as a DelayedInternalEvent.
 
-        MetaEvent instances are only propagated to bound property statecharts. 
+        MetaEvent instances are only propagated to bound property statecharts.
 
         :param event: event to be sent by the statechart.
         """
@@ -363,13 +362,13 @@ class Interpreter:
 
     def _select_event(self, *, consume: bool=False) -> Optional[Event]:
         """
-        Return the next event to process. 
-        Internal events have priority over external ones. 
-        
+        Return the next event to process.
+        Internal events have priority over external ones.
+
         :param consume: Indicates whether event should be consumed, default to False.
         :return: An instance of Event or None if no event is available
         """
-        for queue in (self._internal_queue, self._external_queue):  # type: List[Tuple[float, Event]]
+        for queue in cast(Tuple[List[Tuple[float, Event]]], (self._internal_queue, self._external_queue)):
             if len(queue) > 0:
                 time, event = queue[0]
                 if time <= self.time:

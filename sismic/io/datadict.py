@@ -73,7 +73,7 @@ def _import_transition_from_dict(state_name: str, transition_d: Mapping[str, Any
     guard = transition_d.get('guard', None)
     action = transition_d.get('action', None)
     priority = transition_d.get('priority', None)
-    
+
     if priority == 'low':
         priority = Transition.LOW_PRIORITY
     elif priority == 'high':

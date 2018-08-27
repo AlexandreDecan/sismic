@@ -47,7 +47,7 @@ def _create_send_function(event_list: List[Event]) -> Callable[..., None]:
     def send(name, **kwargs):
         event_list.append(InternalEvent(name, **kwargs))
     return send
-        
+
 def _create_notify_function(event_list: List[Event]) -> Callable[..., None]:
     def notify(name, **kwargs):
         event_list.append(MetaEvent(name, **kwargs))
@@ -67,13 +67,13 @@ class PythonEvaluator(Evaluator):
           that makes use of this evaluator.
     - On code execution:
         - A *send(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
-          raises an internal event with it. Raised events are propagated to bound statecharts as external events and 
+          raises an internal event with it. Raised events are propagated to bound statecharts as external events and
           to the current statechart as internal event. If delay is provided, a delayed event is created.
         - A *notify(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
           raises a meta-event with it. Meta-events are only sent to bound property statecharts.
         - If the code is related to a transition, the *event: Event* that fires the transition is exposed.
-        - A *setdefault(name:str, value: Any) -> Any* function that defines and returns variable *name* in 
-          the global scope if it is not yet defined. 
+        - A *setdefault(name:str, value: Any) -> Any* function that defines and returns variable *name* in
+          the global scope if it is not yet defined.
     - On guard or contract evaluation:
         - If the code is related to a transition, the *event: Event* that fires the transition is exposed.
     - On guard or contract (except preconditions) evaluation:
@@ -136,7 +136,7 @@ class PythonEvaluator(Evaluator):
 
     def _setdefault(self, name: str, value: Any) -> Any:
         """
-        Define and return variable "name". 
+        Define and return variable "name".
 
         :param name: name of the variable
         :param value: value to use for that variable, if not defined
@@ -283,7 +283,7 @@ class PythonEvaluator(Evaluator):
         :return: a list of sent events
         """
         execution = self._execute_code(getattr(transition, 'action', None), additional_context={'event': event})
-        
+
         self._idle_time[transition.source] = self._interpreter.time
 
         return execution
@@ -302,7 +302,7 @@ class PythonEvaluator(Evaluator):
         self._idle_time[state.name] = self._interpreter.time
 
         return execution
-        
+
 
     def execute_on_exit(self, state: StateMixin) -> List[Event]:
         """

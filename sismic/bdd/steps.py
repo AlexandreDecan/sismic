@@ -77,7 +77,7 @@ def state_is_not_entered(context, name):
 
     test = not testing.state_is_entered(context.monitored_trace, name)
     assert test, 'State {} is entered'.format(name)
-    
+
 
 @then('state {name} is exited')
 def state_is_exited(context, name):
@@ -95,7 +95,7 @@ def state_is_not_exited(context, name):
 
     test = not testing.state_is_exited(context.monitored_trace, name)
     assert test, 'State {} is exited'.format(name)
-    
+
 
 @then('state {name} is active')
 def state_is_active(context, name):
@@ -125,7 +125,7 @@ def event_is_fired(context, name, parameter=None, value=None):
         parameters[parameter.strip()] = eval(value.strip(), {}, {})
 
     test = testing.event_is_fired(context.monitored_trace, name, parameters)
-    
+
     if len(parameters) == 0:
         assert test, 'Event {} is not fired'.format(name)
     else:
