@@ -159,7 +159,6 @@ class Interpreter:
          - *step ended*: when a macro step ends.
          - *event consumed*: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
          - *event sent*: when an event is sent. The sent event is exposed through the ``event`` attribute.
-         - *delayed event sent*: when a delayed event is sent. The sent event is exposed through the ``event`` attribute.
          - *state exited*: when a state is exited. The exited state is exposed through the ``state`` attribute.
          - *state entered*: when a state is entered. The entered state is exposed through the ``state`` attribute.
          - *transition processed*: when a transition is processed. The source state, target state and the event are
@@ -324,14 +323,14 @@ class Interpreter:
 
             if isinstance(event, DelayedEvent):
                 external_event = DelayedEvent(event.name, event.delay, **event.data)
+                # Deprecated since 1.4.0:
                 self._notify_properties('delayed event sent', event=external_event)
-                for bound_callable in self._bound:    
-                    bound_callable(external_event)
             else:
                 external_event = Event(event.name, **event.data)
-                self._notify_properties('event sent', event=external_event)
-                for bound_callable in self._bound:
-                    bound_callable(external_event)
+
+            self._notify_properties('event sent', event=external_event)
+            for bound_callable in self._bound:
+                bound_callable(external_event)
         elif isinstance(event, MetaEvent):
             self._notify_properties(event.name, **event.data)
         else:

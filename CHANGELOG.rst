@@ -13,7 +13,8 @@ Unreleased
  - (Fixed) Optional transition for ``testing.transition_is_processed``, as previously promised by its documentation but not implemented.
  - (Removed) Internal module ``sismic.interpreter.queue``. 
  - (Deprecated) Passing an interpreter to ``bind_property_statechart`` is deprecated, use ``interpreter_klass`` instead. 
-
+ - (Deprecated) BDD step *delayed event sent*, use *event sent* instead.
+ 
 
 1.3.0 (2018-07-06)
 ------------------
