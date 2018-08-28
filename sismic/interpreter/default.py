@@ -246,7 +246,7 @@ class Interpreter:
         # Compute steps
         computed_steps = self._compute_steps()
 
-        if computed_steps is None:
+        if len(computed_steps) == 0:
             # No step (no transition, no event). However, check properties
             self._check_properties(None)
             return None
@@ -413,12 +413,12 @@ class Interpreter:
         # Group and sort transitions based on the event
         eventless_first_order = lambda t: t.event is not None
         for has_event, transitions in sorted_groupby(considered_transitions, key=eventless_first_order, reverse=not eventless_first):
-            # Event shouldn't be exposed to guards if we're processing eventless transition
-            exposed_event = event if has_event else None
-
             # If there are selected transitions (from previous group), ignore new ones
             if len(selected_transitions) > 0:
                 break
+
+            # Event shouldn't be exposed to guards if we're processing eventless transition
+            exposed_event = event if has_event else None
 
             # Group and sort transitions based on the source state depth
             depth_order = lambda t: _state_depth_cache[t.source]
@@ -500,12 +500,12 @@ class Interpreter:
 
         return transitions
 
-    def _compute_steps(self) -> Optional[List[MicroStep]]:
+    def _compute_steps(self) -> List[MicroStep]:
         """
         Compute and returns the next steps based on current configuration
         and event queues.
 
-        :return A (possibly None) list of steps.
+        :return: a possibly empty list of steps
         """
         # Initialization
         if not self._initialized:
@@ -520,7 +520,7 @@ class Interpreter:
         if len(transitions) == 0:
             if event is None:
                 # No event, no step!
-                return None
+                return []
             else:
                 # Empty step, so that event is eventually consumed
                 return [MicroStep(event=event)]

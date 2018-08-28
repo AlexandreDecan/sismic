@@ -33,8 +33,8 @@ The current time of an interpreter is now clock-based driven, thanks to the ``Cl
 
  - (Added) A ``sismic.clock`` module with a ``Clock`` base class and three direct implementations, 
    namely ``SimulatedClock``, ``UtcClock`` and ``SynchronizedClock``. A ``SimulatedClock`` allows to manually or automatically 
-   change the time, while a ``UtcClock`` as the expected behaviour of a wall-clock and a ``SynchronizedClock`` is a clock that synchronizes with another interpreter. 
-   ``Clock`` instances are used by the interpreter to get the current time during execution. 
+   change the time, while a ``UtcClock`` as the expected behaviour of a wall-clock and a ``SynchronizedClock`` is a clock that 
+   synchronizes with another interpreter. ``Clock`` instances are used by the interpreter to get the current time during execution. 
    See documentation for more information.
  - (Added) An ``Interpreter.clock`` attribute that stores an instance of the newly added ``Clock`` class. 
  - (Changed) ``interpreter.time`` represents the time of the last executed step, not the current
@@ -71,7 +71,7 @@ And other small changes:
 1.2.2 (2018-06-21)
 ------------------
 
-- (Fixed) Event is not exposed when guard of eventless transitions are evaluated (regression 
+- (Fixed) Event shouldn't be exposed when guards of eventless transitions are evaluated (regression 
   introduced in version 1.2.1).
 - (Changed) Improve performances when selecting transitions that could/will be triggered.
 
