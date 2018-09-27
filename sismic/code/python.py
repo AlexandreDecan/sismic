@@ -246,18 +246,6 @@ class PythonEvaluator(Evaluator):
         except Exception as e:
             raise CodeEvaluationError('"{}" occurred while executing "{}"'.format(e, code)) from e
 
-    def execute_statechart(self, statechart: Statechart):
-        """
-        Execute the initial code of a statechart.
-        This method is called at the very beginning of the execution.
-
-        :param statechart: statechart to consider
-        """
-        if statechart.preamble:
-            events = self._execute_code(statechart.preamble)
-            if len(events) > 0:
-                raise CodeEvaluationError('Events cannot be raised by statechart preamble')
-
     def evaluate_guard(self, transition: Transition, event: Optional[Event]=None) -> bool:
         """
         Evaluate the guard for given transition.
@@ -302,17 +290,6 @@ class PythonEvaluator(Evaluator):
         self._idle_time[state.name] = self._interpreter.time
 
         return execution
-
-
-    def execute_on_exit(self, state: StateMixin) -> List[Event]:
-        """
-        Execute the on exit action for given state.
-        This method is called for every state that is exited, even those with no *on_exit*.
-
-        :param state: the considered state
-        :return: a list of sent events
-        """
-        return self._execute_code(getattr(state, 'on_exit', None))
 
     def evaluate_preconditions(self, obj, event: Optional[Event]=None) -> Iterator[str]:
         """
