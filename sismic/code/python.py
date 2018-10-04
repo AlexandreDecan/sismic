@@ -39,7 +39,7 @@ class PythonEvaluator(EnhancedEvaluator):
         self._evaluable_code = {}  # type: Dict[str, CodeType]
         self._executable_code = {}  # type: Dict[str, CodeType]
 
-    def _evaluate_code(self, code: Optional[str], *, additional_context: Mapping[str, Any]=None) -> bool:
+    def _evaluate_code(self, code: Optional[str]=None, *, additional_context: Mapping[str, Any]=None) -> bool:
         """
         Evaluate given code using Python.
 
@@ -65,7 +65,7 @@ class PythonEvaluator(EnhancedEvaluator):
         except Exception as e:
             raise CodeEvaluationError('"{}" occurred while evaluating "{}"'.format(e, code)) from e
 
-    def _execute_code(self, code: Optional[str], *, additional_context: Mapping[str, Any]=None) -> List[Event]:
+    def _execute_code(self, code: Optional[str]=None, *, additional_context: Mapping[str, Any]=None) -> List[Event]:
         """
         Execute given code using Python.
 
