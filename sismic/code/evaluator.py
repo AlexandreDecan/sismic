@@ -36,16 +36,8 @@ class Evaluator(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
-    def on_step_starts(self, event: Optional[Event]=None) -> None:
-        """
-        Called each time the interpreter starts a macro step.
-
-        :param event: Optional processed event
-        """
-        pass
-
     @abc.abstractmethod
-    def _evaluate_code(self, code: str, *, additional_context: Mapping[str, Any]=None) -> bool:
+    def _evaluate_code(self, code: Optional[str], *, additional_context: Mapping[str, Any]=None) -> bool:
         """
         Generic method to evaluate a piece of code. This method is a fallback if one of
         the other evaluate_* methods is not overridden.
@@ -57,7 +49,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _execute_code(self, code: str, *, additional_context: Mapping[str, Any]=None) -> List[Event]:
+    def _execute_code(self, code: Optional[str], *, additional_context: Mapping[str, Any]=None) -> List[Event]:
         """
         Generic method to execute a piece of code. This method is a fallback if one
         of the other execute_* methods is not overridden.
@@ -68,6 +60,14 @@ class Evaluator(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
+    def on_step_starts(self, event: Optional[Event]=None) -> None:
+        """
+        Called each time the interpreter starts a macro step.
+
+        :param event: Optional processed event
+        """
+        pass
+
     def execute_statechart(self, statechart: Statechart):
         """
         Execute the initial code of a statechart.
@@ -75,10 +75,9 @@ class Evaluator(metaclass=abc.ABCMeta):
 
         :param statechart: statechart to consider
         """
-        if statechart.preamble:
-            events = self._execute_code(statechart.preamble)
-            if len(events) > 0:
-                raise CodeEvaluationError('Events cannot be raised by statechart preamble')
+        events = self._execute_code(statechart.preamble)
+        if len(events) > 0:
+            raise CodeEvaluationError('Events cannot be raised by statechart preamble')
 
     def evaluate_guard(self, transition: Transition, event: Optional[Event]=None) -> Optional[bool]:
         """
@@ -88,9 +87,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param event: instance of *Event* if any
         :return: truth value of *code*
         """
-        if transition.guard:
-            return self._evaluate_code(transition.guard, additional_context={'event': event})
-        return None
+        return self._evaluate_code(getattr(transition, 'guard', None), additional_context={'event': event})
 
     def execute_action(self, transition: Transition, event: Optional[Event]=None) -> List[Event]:
         """
@@ -101,10 +98,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param event: instance of *Event* if any
         :return: a list of sent events
         """
-        if transition.action:
-            return self._execute_code(transition.action, additional_context={'event': event})
-        else:
-            return []
+        return self._execute_code(getattr(transition, 'action', None), additional_context={'event': event})
 
     def execute_on_entry(self, state: StateMixin) -> List[Event]:
         """
@@ -114,11 +108,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param state: the considered state
         :return: a list of sent events
         """
-        code = getattr(state, 'on_entry', None)
-        if code:
-            return self._execute_code(code)
-        else:
-            return []
+        return self._execute_code(getattr(state, 'on_entry', None))
 
     def execute_on_exit(self, state: StateMixin) -> List[Event]:
         """
@@ -128,11 +118,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param state: the considered state
         :return: a list of sent events
         """
-        code = getattr(state, 'on_exit', None)
-        if code:
-            return self._execute_code(code)
-        else:
-            return []
+        return self._execute_code(getattr(state, 'on_exit', None))
 
     def evaluate_preconditions(self, obj, event: Optional[Event]=None) -> Iterable[str]:
         """
@@ -143,9 +129,10 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param event: an optional *Event* instance, in the case of a transition
         :return: list of unsatisfied conditions
         """
-        event_d = {'event': event} if isinstance(obj, Transition) else None
+        additional_context = {'event': event} if isinstance(obj, Transition) else None
         return filter(
-            lambda c: not self._evaluate_code(c, additional_context=event_d), getattr(obj, 'preconditions', [])
+            lambda c: not self._evaluate_code(c, additional_context=additional_context),
+            getattr(obj, 'preconditions', [])
         )
 
     def evaluate_invariants(self, obj, event: Optional[Event]=None) -> Iterable[str]:
@@ -157,9 +144,10 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param event: an optional *Event* instance, in the case of a transition
         :return: list of unsatisfied conditions
         """
-        event_d = {'event': event} if isinstance(obj, Transition) else None
+        additional_context = {'event': event} if isinstance(obj, Transition) else None
         return filter(
-            lambda c: not self._evaluate_code(c, additional_context=event_d), getattr(obj, 'invariants', [])
+            lambda c: not self._evaluate_code(c, additional_context=additional_context),
+            getattr(obj, 'invariants', [])
         )
 
     def evaluate_postconditions(self, obj, event: Optional[Event]=None) -> Iterable[str]:
@@ -171,7 +159,8 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param event: an optional *Event* instance, in the case of a transition
         :return: list of unsatisfied conditions
         """
-        event_d = {'event': event} if isinstance(obj, Transition) else None
+        additional_context = {'event': event} if isinstance(obj, Transition) else None
         return filter(
-            lambda c: not self._evaluate_code(c, additional_context=event_d), getattr(obj, 'postconditions', [])
+            lambda c: not self._evaluate_code(c, additional_context=additional_context),
+            getattr(obj, 'postconditions', [])
         )
