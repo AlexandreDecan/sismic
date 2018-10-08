@@ -2,7 +2,8 @@ import copy
 from types import CodeType
 from typing import Any, Callable, Dict, List, Mapping, Optional
 
-from . import EnhancedEvaluator
+from . import Evaluator
+from . import EnhancedEvaluatorMixin
 from ..exceptions import CodeEvaluationError
 from ..model import (Event, InternalEvent, MetaEvent)
 
@@ -20,7 +21,7 @@ def _create_notify_function(event_list: List[Event]) -> Callable[..., None]:
     return notify
 
 
-class PythonEvaluator(EnhancedEvaluator):
+class PythonEvaluator(EnhancedEvaluatorMixin, Evaluator):
     """
     A code evaluator that understands Python.
 

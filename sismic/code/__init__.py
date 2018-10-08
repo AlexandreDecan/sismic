@@ -1,6 +1,6 @@
 from .evaluator import Evaluator
 from .dummy import DummyEvaluator
-from .enhanced import EnhancedEvaluator
+from .enhanced import EnhancedEvaluatorMixin
 from .python import PythonEvaluator
 
-__all__ = ['Evaluator', 'DummyEvaluator', 'EnhancedEvaluator', 'PythonEvaluator']
+__all__ = ['Evaluator', 'DummyEvaluator', 'EnhancedEvaluatorMixin', 'PythonEvaluator']

@@ -6,7 +6,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional
 from . import Evaluator
 from ..model import (Event, StateMixin, Transition)
 
-__all__ = ['EnhancedEvaluator']
+__all__ = ['EnhancedEvaluatorMixin']
 
 
 class FrozenContext(collections.Mapping):
@@ -41,7 +41,7 @@ class FrozenContext(collections.Mapping):
         return iter(self.__frozencontext)
 
 
-class EnhancedEvaluator(Evaluator):
+class EnhancedEvaluatorMixin():
     """
     Enhances the Evaluator Class with additional capabilitesself.
 
