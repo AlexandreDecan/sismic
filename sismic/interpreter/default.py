@@ -128,14 +128,27 @@ class Interpreter:
         """
         Bind an event listener the current interpreter.
 
-        If `internal` is set (set by default), internal events sent by this interpreter will be
-        propagated to given listener. If `meta` is set (not set by default), meta events sent by
-        this interpreter will be propagated to given listener. A list of possible meta-events can
-        be found in the documentation of `bind_property_statechart` method of an interpreter.
-        
         If *interpreter_or_callable* is an *Interpreter* instance,  its *queue* method is called.
         This is, if *i1* and *i2* are interpreters, *i1.bind(i2)* is equivalent to *i1.bind(i2.queue)*.
+        
+        By default, all internal events sent by the current interpreter are propagated to the
+        listener, unless ``internal`` is set to False. 
 
+        If `meta` is set (not set by default), meta events sent by this interpreter will be propagated to 
+        the listener. Here is a list of supported meta-events:
+
+         - *step started*: when a macro step starts. The current time of the step is available through the ``time`` attribute.
+         - *step ended*: when a macro step ends.
+         - *event consumed*: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
+         - *event sent*: when an event is sent. The sent event is exposed through the ``event`` attribute.
+         - *state exited*: when a state is exited. The exited state is exposed through the ``state`` attribute.
+         - *state entered*: when a state is entered. The entered state is exposed through the ``state`` attribute.
+         - *transition processed*: when a transition is processed. The source state, target state and the event are
+           exposed respectively through the ``source``, ``target`` and ``event`` attribute.
+
+        Additionally, MetaEvent instances that are sent from within the statechart are also passed to all
+        bound listeners. Internally, these meta-events are used by property statecharts. 
+        
         :param interpreter_or_callable: interpreter or callable to bind
         :param internal: if set, propagates internal events
         :param meta: if set, propagates meta events
@@ -175,28 +188,15 @@ class Interpreter:
         """
         Bind a property statechart to the current interpreter.
 
-        A property statechart receives meta-events from the current interpreter depending on what happens:
-
-         - *step started*: when a macro step starts. The current time of the step is available through the ``time`` attribute.
-         - *step ended*: when a macro step ends.
-         - *event consumed*: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
-         - *event sent*: when an event is sent. The sent event is exposed through the ``event`` attribute.
-         - *state exited*: when a state is exited. The exited state is exposed through the ``state`` attribute.
-         - *state entered*: when a state is entered. The entered state is exposed through the ``state`` attribute.
-         - *transition processed*: when a transition is processed. The source state, target state and the event are
-           exposed respectively through the ``source``, ``target`` and ``event`` attribute.
-
-        Additionally, MetaEvent instances that are sent from within the statechart are directly passed to all
-        bound property statecharts. This allows more advanced communication and synchronisation patterns with
-        bound property statecharts. Property statecharts are automatically executed when they are bound
-        to an interpreter. 
-
+        A property statechart receives meta-events from the current interpreter depending on what happens.
+        See ``bind`` method for a full list of meta-events. 
+        
         The internal clock of all property statecharts is synced with the one of the current interpreter.
         As soon as a property statechart reaches a final state, a ``PropertyStatechartError`` will be raised,
         meaning that the property expressed by the corresponding property statechart is not satisfied.
+        Property statecharts are automatically executed when they are bound to an interpreter. 
 
-        Since Sismic 1.4.0: passing an interpreter as first argument is deprecated. Meta-events can 
-        be propagated to bound (using ``bind``) listeners as well. 
+        Since Sismic 1.4.0: passing an interpreter as first argument is deprecated. 
 
         :param statechart: A statechart instance.
         :param interpreter_klass: An optional callable that accepts a statechart as first parameter and a
@@ -211,6 +211,7 @@ class Interpreter:
             interpreter = interpreter_klass(statechart, clock=SynchronizedClock(self))
 
         self._bound_properties.append(interpreter)
+        self.bind(interpreter, internal=False, meta=True)
 
     def queue(self, event_or_name:Union[str, Event], *event_or_names:Union[str, Event], **parameters) -> 'Interpreter':
         """
@@ -345,19 +346,18 @@ class Interpreter:
             self._queue_event(event)
             external_event = Event(event.name, **event.data)
 
-            for listener in self._bound_internal:
-                listener(external_event)
+            for internal_listener in self._bound_internal:
+                internal_listener(external_event)
 
             self._raise_event(MetaEvent('event sent', event=external_event))
             if hasattr(event, 'delay'):
                 # Deprecated since 1.4.0:
                 self._raise_event(MetaEvent('delayed event sent', event=external_event))
         elif isinstance(event, MetaEvent):
-            for listener in self._bound_meta:
-                listener(event)
+            for meta_listener in self._bound_meta:
+                meta_listener(event)
 
             for property_statechart in self._bound_properties:
-                property_statechart.queue(event)
                 property_statechart.execute()
         else:
             raise ValueError('Only InternalEvent and MetaEvent can be sent by a statechart, not {}'.format(type(event)))
