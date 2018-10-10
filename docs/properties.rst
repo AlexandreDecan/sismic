@@ -56,6 +56,13 @@ documentation of the :py:meth:`~sismic.interpreter.Interpreter.bind_property_sta
 .. automethod:: sismic.interpreter.Interpreter.bind_property_statechart
     :noindex:
 
+.. note:: 
+
+    Property statecharts are not the only way to listen to these meta-events. Any listener
+    that is bound with :py:meth:`~sismic.interpreter.Interpreter.bind` could receive these 
+    meta-events if parameter ``meta`` is set to ``True``.
+    
+
 
 Examples of property statecharts
 --------------------------------

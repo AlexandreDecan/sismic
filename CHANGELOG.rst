@@ -4,9 +4,12 @@ Changelog
 Unreleased
 ----------
 
- - (Added) An ``unbind`` method for an ``Interpreter``.
- - (Added) A ``setdefault`` function that can be used in the preamble and actions of a statechart to assign a default value to a variable.
- - (Added) Event parameters can be passed to ``Interpreter.queue``.
+ - (Added) Boolean parameters ``internal`` (default to true) and ``meta`` (default to false) for ``Interpreter.bind``.
+   If ``meta`` is set, meta-events are also propagated to given listener.
+ - (Added) ``Interpreter.unbind`` method to remove a previously bound listener.
+ - (Added) A ``setdefault`` function that can be used in the preamble and actions of a 
+   statechart to assign a default value to a variable.
+ - (Added) Event parameters can be directly passed to ``Interpreter.queue``.
  - (Added) Meta-Event *step started* has a ``time`` attribute.
  - (Added) Documentation about concurrently running multiple statecharts.
  - (Fixed) Internal events are processed before external ones (regression introduced in 1.3.0).

@@ -558,7 +558,15 @@ class TestInterpreterBinding:
         i1, i2 = interpreter
 
         i1.bind(i2)
-        assert i2.queue in i1._bound
+        assert i2.queue in i1._bound_internal
+        assert i2.queue not in i1._bound_meta
+
+        i1.bind(i2, internal=False, meta=True)
+        assert i2.queue in i1._bound_meta
+
+        i1._raise_event(MetaEvent('metatest'))
+        assert i1._select_event() == None
+        assert i2._select_event(consume=True) == MetaEvent('metatest')
 
         i1._raise_event(InternalEvent('test'))
         assert i1._select_event() == Event('test')
@@ -570,7 +578,7 @@ class TestInterpreterBinding:
         i1, i2 = interpreter
 
         i1.bind(i2.queue)
-        assert i2.queue in i1._bound
+        assert i2.queue in i1._bound_internal
 
         i1._raise_event(InternalEvent('test'))
 
@@ -584,15 +592,15 @@ class TestInterpreterBinding:
 
         i1.bind(i2)
         i1.unbind(i2)
-        assert i2.queue not in i1._bound
+        assert i2.queue not in i1._bound_internal
 
         i1.bind(i2.queue)
         i1.unbind(i2)
-        assert i2.queue not in i1._bound
+        assert i2.queue not in i1._bound_internal
 
         i1.bind(i2.queue)
         i1.unbind(i2.queue)
-        assert i2.queue not in i1._bound
+        assert i2.queue not in i1._bound_internal
 
     def test_metaevent(self, interpreter):
         i1, i2 = interpreter
