@@ -42,50 +42,19 @@ class PropertyStatechartError(SismicError):
     Raised when a property statechart reaches a final state.
 
     :param property_statechart: the property statechart that reaches a final state
-    :param configuration: list of active states
-    :param step: latest executed macro step
-    :param context: the context in which the condition failed
     """
 
-    __slots__ = ['_property', '_configuration', '_step', '_context']
-
-    def __init__(self, property_statechart, configuration, step, context):
+    def __init__(self, property_statechart):
         super().__init__()
         self._property = property_statechart
-        self._configuration = configuration
-        self._step = step
-        self._context = context
-
+        
     @property
     def property_statechart(self):
         return self._property
 
-    @property
-    def configuration(self):
-        return self._configuration
-
-    @property
-    def step(self):
-        return self._step
-
-    @property
-    def context(self):
-        return self._context
-
     def __str__(self):  # pragma: no cover
-        message = [
-            '{}'.format(self.__class__.__name__),
-            'Property is not satisfied, {} has reached a final state'.format(self._property),
-            'Configuration: {}'.format(self._configuration),
-            'Step: {}'.format(self._step),
-            'Context:'
-        ]
-
-        for key, value in sorted(self._context.items(), key=lambda t: t[0]):
-            message.append(' - {key} = {value}'.format(key=key, value=value))
-
-        return '\n'.join(message)
-
+        return '{}\nProperty is not satisfied, {} has reached a final state'.format(self.__class__.__name__, self._property)
+        
 
 class ContractError(SismicError):
     """

@@ -204,14 +204,14 @@ class Interpreter:
         """
         if isinstance(statechart, Interpreter):
             warnings.warn('Passing an interpreter to bind_property_statechart is deprecated since 1.4.0. Use interpreter_klass instead.', DeprecationWarning)
-            interpreter = statechart
-            interpreter.clock = SynchronizedClock(self)
+            p_interpreter = statechart
+            p_interpreter.clock = SynchronizedClock(self)
         else:
             interpreter_klass = Interpreter if interpreter_klass is None else interpreter_klass
-            interpreter = interpreter_klass(statechart, clock=SynchronizedClock(self))
+            p_interpreter = interpreter_klass(statechart, clock=SynchronizedClock(self))
 
-        self._bound_properties.append(interpreter)
-        self.bind(interpreter, internal=False, meta=True)
+        self._bound_properties.append(p_interpreter)
+        self.bind(p_interpreter, internal=False, meta=True)
 
     def queue(self, event_or_name:Union[str, Event], *event_or_names:Union[str, Event], **parameters) -> 'Interpreter':
         """
@@ -269,32 +269,30 @@ class Interpreter:
         # Store time to have a consistent time value during this step
         self._time = self.clock.time
 
+        # Notify listeners
+        self._raise_event(MetaEvent('step started', time=self.time))
+        
         # Compute steps
         computed_steps = self._compute_steps()
 
-        if len(computed_steps) == 0:
-            # No step (no transition, no event). However, check properties
-            self._check_properties(None)
-            return None
+        if len(computed_steps) > 0:
+            # Consume event if it triggered a transition
+            if computed_steps[0].event is not None:
+                event = self._select_event(consume=True)
+                self._raise_event(MetaEvent('event consumed', event=event))
+            else:
+                event = None
 
-        # Notify properties
-        self._raise_event(MetaEvent('step started', time=self.time))
+            # Execute the steps
+            self._evaluator.on_step_starts(event)
+            executed_steps = []
+            for step in computed_steps:
+                executed_steps.append(self._apply_step(step))
+                executed_steps.extend(self._stabilize())
 
-        # Consume event if it triggered a transition
-        if computed_steps[0].event is not None:
-            event = self._select_event(consume=True)
-            self._raise_event(MetaEvent('event consumed', event=event))
-        else:
-            event = None
-
-        # Execute the steps
-        self._evaluator.on_step_starts(event)
-        executed_steps = []
-        for step in computed_steps:
-            executed_steps.append(self._apply_step(step))
-            executed_steps.extend(self._stabilize())
-
-        macro_step = MacroStep(time=self.time, steps=executed_steps)
+            macro_step = MacroStep(time=self.time, steps=executed_steps)  # type: Optional[MacroStep]
+        else:  # No step
+            macro_step = None
 
         # Check state invariants
         configuration = self.configuration  # Use self.configuration to benefit from the sorting by depth
@@ -302,9 +300,7 @@ class Interpreter:
             state = self._statechart.state_for(name)
             self._evaluate_contract_conditions(state, 'invariants', macro_step)
 
-        # End step and check for property statechart violations
         self._raise_event(MetaEvent('step ended'))
-        self._check_properties(macro_step)
 
         return macro_step
 
@@ -359,19 +355,10 @@ class Interpreter:
 
             for property_statechart in self._bound_properties:
                 property_statechart.execute()
+                if property_statechart.final:
+                    raise PropertyStatechartError(property_statechart)
         else:
             raise ValueError('Only InternalEvent and MetaEvent can be sent by a statechart, not {}'.format(type(event)))
-
-    def _check_properties(self, macro_step: Optional[MacroStep]):
-        """
-        Check property statecharts for failure (ie. final state is reached).
-
-        :param macro_step: current macro step being processed
-        """
-        for property_statechart in self._bound_properties:
-            # Check for failure
-            if property_statechart.final:
-                raise PropertyStatechartError(property_statechart, self.configuration, macro_step, self.context)
 
     def _select_event(self, *, consume: bool=False) -> Optional[Event]:
         """
@@ -733,7 +720,7 @@ class Interpreter:
 
     def _evaluate_contract_conditions(self, obj: Union[Transition, StateMixin],
                                       cond_type: str,
-                                      step: Union[MacroStep, MicroStep]=None) -> None:
+                                      step: Optional[Union[MacroStep, MicroStep]]=None) -> None:
         """
         Evaluate the conditions for given object.
 
