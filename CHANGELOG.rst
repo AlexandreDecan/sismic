@@ -4,29 +4,43 @@ Changelog
 Unreleased
 ----------
 
+A new binding system has been deployed on ``Interpreter``, allowing listeners to be notified about 
+meta-events as well. Property statecharts are now implemented based on this new system:
+
  - (Added) Boolean parameters ``internal`` (default to true) and ``meta`` (default to false) for ``Interpreter.bind``.
    If ``meta`` is set, meta-events are also propagated to given listener.
  - (Added) ``Interpreter.unbind`` method to remove a previously bound listener.
- - (Added) A ``setdefault`` function that can be used in the preamble and actions of a 
-   statechart to assign a default value to a variable.
- - (Added) Event parameters can be directly passed to ``Interpreter.queue``.
  - (Added) Meta-Event *step started* has a ``time`` attribute.
- - (Added) Documentation about concurrently running multiple statecharts.
- - (Added) ``TimeContextProvider`` and ``EventContextProvider`` in ``sismic.code.context`` that
-   exposes most of the predicates that are used in ``PythonEvaluator``.
  - (Changed) Property statecharts are now implemented on top of ``Interpreter.bind(..., internal=False, meta=True)``.
  - (Changed) Property statecharts are checked for each meta-events, not only at the end of the step.
  - (Changed) Meta-events *step started* and *step ended* are sent even if no step can be processed.
- - (Changed) State invariants are checked even if no step can be processed.
+ - (Deprecated) Passing an interpreter to ``bind_property_statechart`` is deprecated, use ``interpreter_klass`` instead. 
+
+The time and event related predicates were extracted from ``PythonEvaluator`` to ease their reuse. 
+They can be found in ``TimeContextProvider`` and ``EventContextProvider`` of ``sismic.code.context`` and
+rely on the new binding system:
+
+ - (Added) A ``setdefault`` function that can be used in the preamble and actions of a 
+   statechart to assign a default value to a variable.
+ - (Added) ``TimeContextProvider`` and ``EventContextProvider`` in ``sismic.code.context`` that
+   exposes most of the predicates that are used in ``PythonEvaluator``.
  - (Changed) Most predicates of the ``PythonEvaluator`` rely on context providers.
+ - (Deprecated) ``on_step_starts`` method of an ``Evaluator``.
+
+We also refactored how events are created and processed. The main visible consequences are:
+
+ - (Added) Event parameters can be directly passed to ``Interpreter.queue``.
  - (Fixed) Internal events are processed before external ones (regression introduced in 1.3.0).
- - (Fixed) Hook-errors reported by ``sismic-bdd`` CLI are a little bit more verbose (`#81 <https://github.com/AlexandreDecan/sismic/issues/81>`__).
  - (Fixed) Optional transition for ``testing.transition_is_processed``, as promised by its documentation but not implemented.
  - (Removed) Internal module ``sismic.interpreter.queue``. 
- - (Deprecated) Passing an interpreter to ``bind_property_statechart`` is deprecated, use ``interpreter_klass`` instead. 
  - (Deprecated) BDD step *delayed event sent*, use *event sent* instead.
  - (Deprecated) ``DelayedEvent``, use ``Event`` with a ``delay`` parameter instead.
- - (Deprecated) ``on_step_starts`` method of an ``Evaluator``.
+
+And some other small changes:
+
+ - (Added) Documentation about concurrently running multiple statecharts.
+ - (Changed) State invariants are checked even if no step can be processed.
+ - (Fixed) Hook-errors reported by ``sismic-bdd`` CLI are a little bit more verbose (`#81 <https://github.com/AlexandreDecan/sismic/issues/81>`__).
 
 
 1.3.0 (2018-07-06)
