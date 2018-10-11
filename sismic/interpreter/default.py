@@ -137,8 +137,8 @@ class Interpreter:
         If `meta` is set (not set by default), meta events sent by this interpreter will be propagated to 
         the listener. Here is a list of supported meta-events:
 
-         - *step started*: when a macro step starts. The current time of the step is available through the ``time`` attribute.
-         - *step ended*: when a macro step ends.
+         - *step started*: when a (possibly empty) macro step starts. The current time of the step is available through the ``time`` attribute.
+         - *step ended*: when a (possibly empty) macro step ends.
          - *event consumed*: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
          - *event sent*: when an event is sent. The sent event is exposed through the ``event`` attribute.
          - *state exited*: when a state is exited. The exited state is exposed through the ``state`` attribute.
@@ -148,7 +148,7 @@ class Interpreter:
 
         Additionally, MetaEvent instances that are sent from within the statechart are also passed to all
         bound listeners. Internally, these meta-events are used by property statecharts. 
-        
+
         :param interpreter_or_callable: interpreter or callable to bind
         :param internal: if set, propagates internal events
         :param meta: if set, propagates meta events
