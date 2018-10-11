@@ -36,14 +36,6 @@ class Evaluator(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
-    def on_step_starts(self, event: Optional[Event]=None) -> None:
-        """
-        Called each time the interpreter starts a macro step.
-
-        :param event: Optional processed event
-        """
-        pass
-
     @abc.abstractmethod
     def _evaluate_code(self, code: str, *, additional_context: Mapping[str, Any]=None) -> bool:
         """

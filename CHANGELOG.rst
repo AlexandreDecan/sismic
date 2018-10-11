@@ -12,10 +12,13 @@ Unreleased
  - (Added) Event parameters can be directly passed to ``Interpreter.queue``.
  - (Added) Meta-Event *step started* has a ``time`` attribute.
  - (Added) Documentation about concurrently running multiple statecharts.
+ - (Added) ``TimeContextProvider`` and ``EventContextProvider`` in ``sismic.code.context`` that
+   exposes most of the predicates that are used in ``PythonEvaluator``.
  - (Changed) Property statecharts are now implemented on top of ``Interpreter.bind(..., internal=False, meta=True)``.
  - (Changed) Property statecharts are checked for each meta-events, not only at the end of the step.
  - (Changed) Meta-events *step started* and *step ended* are sent even if no step can be processed.
  - (Changed) State invariants are checked even if no step can be processed.
+ - (Changed) Most predicates of the ``PythonEvaluator`` rely on context providers.
  - (Fixed) Internal events are processed before external ones (regression introduced in 1.3.0).
  - (Fixed) Hook-errors reported by ``sismic-bdd`` CLI are a little bit more verbose (`#81 <https://github.com/AlexandreDecan/sismic/issues/81>`__).
  - (Fixed) Optional transition for ``testing.transition_is_processed``, as promised by its documentation but not implemented.
@@ -23,6 +26,7 @@ Unreleased
  - (Deprecated) Passing an interpreter to ``bind_property_statechart`` is deprecated, use ``interpreter_klass`` instead. 
  - (Deprecated) BDD step *delayed event sent*, use *event sent* instead.
  - (Deprecated) ``DelayedEvent``, use ``Event`` with a ``delay`` parameter instead.
+ - (Deprecated) ``on_step_starts`` method of an ``Evaluator``.
 
 
 1.3.0 (2018-07-06)

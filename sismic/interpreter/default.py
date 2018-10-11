@@ -284,7 +284,10 @@ class Interpreter:
                 event = None
 
             # Execute the steps
-            self._evaluator.on_step_starts(event)
+            if hasattr(self._evaluator, 'on_step_starts'):
+                warnings.warn('Evaluator.on_step_starts is deprecated since 1.4.0.', DeprecationWarning)
+                self._evaluator.on_step_starts(event)
+
             executed_steps = []
             for step in computed_steps:
                 executed_steps.append(self._apply_step(step))
@@ -353,6 +356,7 @@ class Interpreter:
             for meta_listener in self._bound_meta:
                 meta_listener(event)
 
+            # Check for property statechart violations
             for property_statechart in self._bound_properties:
                 property_statechart.execute()
                 if property_statechart.final:
