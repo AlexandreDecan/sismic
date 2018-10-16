@@ -184,7 +184,7 @@ class Interpreter:
             interpreter_klass = Interpreter if interpreter_klass is None else interpreter_klass
             p_interpreter = interpreter_klass(statechart, clock=SynchronizedClock(self))
 
-        self.bind(p_interpreter)
+        self.bind(p_interpreter, hint='PropertyStatechartBind') # TODO depending on how this gets refactored, the hint is probably necessary here.
 
     def queue(self, event_or_name:Union[str, Event], *event_or_names:Union[str, Event], **parameters) -> 'Interpreter':
         """
