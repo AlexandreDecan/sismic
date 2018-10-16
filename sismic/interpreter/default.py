@@ -72,12 +72,8 @@ class Interpreter:
         self._internal_queue = []  # type: List[Tuple[float, InternalEvent]]
         self._external_queue = []  # type: List[Tuple[float, Event]]
 
-        # Bound callables
-        self._bound_internal = []  # type: List[Callable[[Event], Any]]
-        self._bound_meta = []  # type: List[Callable[[MetaEvent], Any]]
-
-        # Bound property statecharts
-        self._bound_properties = []  # type: List[Interpreter]
+        # Bound Targets
+        self._bind_list = []  # type: List[BindInterface]
 
         # Evaluator
         self._evaluator = evaluator_klass(self, initial_context=initial_context)
@@ -124,84 +120,62 @@ class Interpreter:
         """
         return self._statechart
 
-    def bind(self, interpreter_or_callable: Union['Interpreter', Callable[[Event], Any]], *, internal=True, meta=False) -> None:
-        """
-        Bind an event listener the current interpreter.
+    def bind(self, target, *, hint=None) -> None:
+        if isinstance(BindInterface, target):
+            self._bind_list.append(target)
 
-        If *interpreter_or_callable* is an *Interpreter* instance,  its *queue* method is called.
-        This is, if *i1* and *i2* are interpreters, *i1.bind(i2)* is equivalent to *i1.bind(i2.queue)*.
-        
-        By default, all internal events sent by the current interpreter are propagated to the
-        listener, unless ``internal`` is set to False. 
+        elif isinstance(Interpreter, target):
+            # Target is an Interpreter, use the hint for a bind class, or bind
+            # as a StatechartBind by default.
+            # TODO use the hint for creating the Bind Wrapper to the Target.
+            self._bind_list.append(StatechartBind(target))
 
-        If `meta` is set (not set by default), meta events sent by this interpreter will be propagated to 
-        the listener. Here is a list of supported meta-events:
+        elif isinstance(Statechart, target):
+            # Target is a Statechart, wrap it in the default Interpreter and then
+            # wrap again according to the hint, or use PropertyStatechartBind by default
+            # as this is legacy from the bind_property_statechart interface.
+            # TODO use the hint for creating the Bind Wrapper to the Target.
+            self._bind_list.append(PropertyStatechartBind(Interpreter(target, clock=SynchronizedClock(self))))
 
-         - *step started*: when a (possibly empty) macro step starts. The current time of the step is available through the ``time`` attribute.
-         - *step ended*: when a (possibly empty) macro step ends.
-         - *event consumed*: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
-         - *event sent*: when an event is sent. The sent event is exposed through the ``event`` attribute.
-         - *state exited*: when a state is exited. The exited state is exposed through the ``state`` attribute.
-         - *state entered*: when a state is entered. The entered state is exposed through the ``state`` attribute.
-         - *transition processed*: when a transition is processed. The source state, target state and the event are
-           exposed respectively through the ``source``, ``target`` and ``event`` attribute.
-
-        Additionally, MetaEvent instances that are sent from within the statechart are also passed to all
-        bound listeners. Internally, these meta-events are used by property statecharts. 
-
-        :param interpreter_or_callable: interpreter or callable to bind
-        :param internal: if set, propagates internal events
-        :param meta: if set, propagates meta events
-        """
-        if isinstance(interpreter_or_callable, Interpreter):
-            listener = cast(Callable[[Event], Any], interpreter_or_callable.queue)
         else:
-            listener = interpreter_or_callable
+            # This is probably a "callable", which is a StatechartBind. We only
+            # need to satisfy the call chain :
+            #   target.queue where queue is the "callable"
+            # TODO : Can we have a CallableBind? The __init__ needs a different
+            # paramter type ... but otherwise it seems good.
+            self._bind_list.append(CallableBind(target))
 
-        if internal:
-            self._bound_internal.append(listener)
-        if meta:
-            self._bound_meta.append(listener)
 
-    def unbind(self, interpreter_or_callable: Union['Interpreter', Callable[[Event], Any]]) -> None:
-        """
-        Unbind a previously bound listener.
-
-        :param interpreter_or_callable: interpreter or callable to unbind
-        """
-        if isinstance(interpreter_or_callable, Interpreter):
-            listener = cast(Callable[[Event], Any], interpreter_or_callable.queue)
-        else:
-            listener = interpreter_or_callable
-
-        try:
-            self._bound_internal.remove(listener)
-        except ValueError:
-            pass
-
-        try:
-            self._bound_meta.remove(listener)
-        except ValueError:
-            pass
+    def unbind(self, target) -> None:
+        # TODO : OK the thing to try here is to implement the __eq__ on the BindInterface or derived classes.
+        for bind in self._bind_list:
+            if bind == target:
+                try:
+                    self._bind_list.remove(bind)
+                except ValueError:
+                    pass
 
     def bind_property_statechart(self, statechart: Statechart, *, interpreter_klass: Callable=None) -> None:
         """
         Bind a property statechart to the current interpreter.
 
         A property statechart receives meta-events from the current interpreter depending on what happens.
-        See ``bind`` method for a full list of meta-events. 
-        
+        See ``bind`` method for a full list of meta-events.
+
         The internal clock of all property statecharts is synced with the one of the current interpreter.
         As soon as a property statechart reaches a final state, a ``PropertyStatechartError`` will be raised,
         meaning that the property expressed by the corresponding property statechart is not satisfied.
-        Property statecharts are automatically executed when they are bound to an interpreter. 
+        Property statecharts are automatically executed when they are bound to an interpreter.
 
-        Since Sismic 1.4.0: passing an interpreter as first argument is deprecated. 
+        Since Sismic 1.4.0: passing an interpreter as first argument is deprecated.
 
         :param statechart: A statechart instance.
         :param interpreter_klass: An optional callable that accepts a statechart as first parameter and a
         named parameter clock. Default to Interpreter.
         """
+
+        # TODO I just changed the bind call, so everything should just work
+        #  not sure the depreciation is really necessary anymore.
         if isinstance(statechart, Interpreter):
             warnings.warn('Passing an interpreter to bind_property_statechart is deprecated since 1.4.0. Use interpreter_klass instead.', DeprecationWarning)
             p_interpreter = statechart
@@ -210,8 +184,7 @@ class Interpreter:
             interpreter_klass = Interpreter if interpreter_klass is None else interpreter_klass
             p_interpreter = interpreter_klass(statechart, clock=SynchronizedClock(self))
 
-        self._bound_properties.append(p_interpreter)
-        self.bind(p_interpreter, internal=False, meta=True)
+        self.bind(p_interpreter)
 
     def queue(self, event_or_name:Union[str, Event], *event_or_names:Union[str, Event], **parameters) -> 'Interpreter':
         """
@@ -271,7 +244,7 @@ class Interpreter:
 
         # Notify listeners
         self._raise_event(MetaEvent('step started', time=self.time))
-        
+
         # Compute steps
         computed_steps = self._compute_steps()
 
@@ -336,33 +309,32 @@ class Interpreter:
         delayed, it is propagated as DelayedEvent to bound listeners, and put into current
         event queue as a DelayedInternalEvent.
 
-        MetaEvent instances are propagated to bound listeners that subscribed to 
-        meta events, and to bound property statecharts. 
-        
+        MetaEvent instances are propagated to bound listeners that subscribed to
+        meta events, and to bound property statecharts.
+
         :param event: event to be sent by the statechart.
         """
+
+        # Put the internal event to the pending queue.
         if isinstance(event, InternalEvent):
             self._queue_event(event)
-            external_event = Event(event.name, **event.data)
 
-            for internal_listener in self._bound_internal:
-                internal_listener(external_event)
+        # TODO review the following, is the sequence correct, this is currently
+        #   per Bind Target ... previously it was a little different. Its possible
+        #   that it does not matter. Anyway, need to think more on that.
 
-            self._raise_event(MetaEvent('event sent', event=external_event))
-            if hasattr(event, 'delay'):
-                # Deprecated since 1.4.0:
-                self._raise_event(MetaEvent('delayed event sent', event=external_event))
-        elif isinstance(event, MetaEvent):
-            for meta_listener in self._bound_meta:
-                meta_listener(event)
+        # Raise the event on all Bind Targets.
+        for bind in self._bind_list:
+            bind_events = bind.raise(event)
+            bind.execute()
+            if bind.final:
+                raise PropertyStatechartError(property_statechart)
 
-            # Check for property statechart violations
-            for property_statechart in self._bound_properties:
-                property_statechart.execute()
-                if property_statechart.final:
-                    raise PropertyStatechartError(property_statechart)
-        else:
-            raise ValueError('Only InternalEvent and MetaEvent can be sent by a statechart, not {}'.format(type(event)))
+            # Raise any events which where returned by the Bind Target.
+            for event in bind_events:
+                if isinstance(event, MetaEvent): # TODO: So far only MetaEvents right?
+                    self._raise_event(event)
+
 
     def _select_event(self, *, consume: bool=False) -> Optional[Event]:
         """
