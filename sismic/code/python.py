@@ -65,8 +65,8 @@ class PythonEvaluator(Evaluator):
         self._event_provider = EventContextProvider()
         self._time_provider = TimeContextProvider()
 
-        self._interpreter.bind(self._event_provider, internal=False, meta=True)
-        self._interpreter.bind(self._time_provider, internal=False, meta=True)
+        self._interpreter.attach(self._event_provider)
+        self._interpreter.attach(self._time_provider)
 
         # Precompiled code
         self._evaluable_code = {}  # type: Dict[str, CodeType]

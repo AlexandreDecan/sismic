@@ -8,13 +8,17 @@ This new release contains many internal changes. While the public API is stable 
 compatible, expect some breaking changes if you relied on Sismic internal API.
 
 A new binding system has been deployed on ``Interpreter``, allowing listeners to be notified about 
-meta-events as well. Property statecharts are now implemented based on this new system:
+meta-events. Listeners are simply callables that accept meta-events instances. 
 
- - (Added) Boolean parameters ``internal`` (default to true) and ``meta`` (default to false) for ``Interpreter.bind``.
-   If ``meta`` is set, meta-events are also propagated to given listener. 
- - (Added) ``Interpreter.unbind`` method to remove a previously bound listener.
- - (Added) Meta-Event *step started* has a ``time`` attribute.
- - (Changed) Property statecharts rely on ``Interpreter.bind(..., internal=False, meta=True)``.
+ - (Added) An ``Interpreter.attach`` method that accepts any callable. Meta-events raised by the interpreter
+   are propagated to attached listeners. 
+ - (Added) An ``Interpreter.detach`` method to detach a previously attached listener.
+ - (Added) Module ``sismic.interpreter.listener`` with two convenient listeners for the newly introduced ``Interpreter.attach`` method.
+   The ``InternalEventListener`` identifies sent events and propagates them as external events. The ``PropertyStatechartListener`` 
+   propagates meta-events, executes and checks property statecharts.
+ - (Changed) ``Interpreter.bind`` is built on top of ``attach`` and ``InternalEventListener``.
+ - (Changed) ``Interpreter.bind_property_statechart`` is built on top of ``attach`` and ``PropertyStatechartListener``.
+ - (Changed) Meta-Event *step started* has a ``time`` attribute.
  - (Changed) Property statecharts are checked for each meta-events, not only at the end of the step.
  - (Changed) Meta-events *step started* and *step ended* are sent even if no step can be processed.
  - (Deprecated) Passing an interpreter to ``bind_property_statechart`` is deprecated, use ``interpreter_klass`` instead. 
@@ -37,8 +41,8 @@ The main visible consequences are:
  - (Fixed) Internal events are processed before external ones (regression introduced in 1.3.0).
  - (Fixed) Optional transition for ``testing.transition_is_processed``, as promised by its documentation but not implemented.
  - (Removed) Internal module ``sismic.interpreter.queue``. 
- - (Deprecated) BDD step *delayed event sent*, use *event sent* instead.
  - (Deprecated) ``DelayedEvent``, use ``Event`` with a ``delay`` parameter instead.
+ - (Deprecated) BDD step *delayed event sent*, use *event sent* instead.
 
 And some other small changes:
 

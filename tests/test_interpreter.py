@@ -557,50 +557,27 @@ class TestInterpreterBinding:
     def test_bind(self, interpreter):
         i1, i2 = interpreter
 
-        i1.bind(i2)
-        assert i2.queue in i1._bound_internal
-        assert i2.queue not in i1._bound_meta
-
-        i1.bind(i2, internal=False, meta=True)
-        assert i2.queue in i1._bound_meta
-
-        i1._raise_event(MetaEvent('metatest'))
-        assert i1._select_event() == None
-        assert i2._select_event(consume=True) == MetaEvent('metatest')
+        x = i1.bind(i2)
+        assert x in i1._listeners
 
         i1._raise_event(InternalEvent('test'))
-        assert i1._select_event() == Event('test')
-        assert isinstance(i1._select_event(), InternalEvent)
-        assert i2._select_event() == Event('test')
-        assert not isinstance(i2._select_event(), InternalEvent)
+        assert i1._select_event(consume=False) == Event('test')
+        assert isinstance(i1._select_event(consume=False), InternalEvent)
+        assert i2._select_event(consume=False) == Event('test')
+        assert not isinstance(i2._select_event(consume=False), InternalEvent)
 
     def test_bind_callable(self, interpreter):
         i1, i2 = interpreter
 
-        i1.bind(i2.queue)
-        assert i2.queue in i1._bound_internal
+        x = i1.bind(i2.queue)
+        assert x in i1._listeners
 
         i1._raise_event(InternalEvent('test'))
 
-        assert i1._select_event() == Event('test')
-        assert isinstance(i1._select_event(), InternalEvent)
-        assert i2._select_event() == Event('test')
-        assert not isinstance(i2._select_event(), InternalEvent)
-
-    def test_unbind(self, interpreter):
-        i1, i2 = interpreter
-
-        i1.bind(i2)
-        i1.unbind(i2)
-        assert i2.queue not in i1._bound_internal
-
-        i1.bind(i2.queue)
-        i1.unbind(i2)
-        assert i2.queue not in i1._bound_internal
-
-        i1.bind(i2.queue)
-        i1.unbind(i2.queue)
-        assert i2.queue not in i1._bound_internal
+        assert i1._select_event(consume=False) == Event('test')
+        assert isinstance(i1._select_event(consume=False), InternalEvent)
+        assert i2._select_event(consume=False) == Event('test')
+        assert not isinstance(i2._select_event(consume=False), InternalEvent)
 
     def test_metaevent(self, interpreter):
         i1, i2 = interpreter
@@ -609,8 +586,8 @@ class TestInterpreterBinding:
 
         i1._raise_event(MetaEvent('test'))
 
-        assert i1._select_event() is None
-        assert i2._select_event() is None
+        assert i1._select_event(consume=False) is None
+        assert i2._select_event(consume=False) is None
 
     def test_event(self, interpreter):
         i1, i2 = interpreter
@@ -620,8 +597,8 @@ class TestInterpreterBinding:
         with pytest.raises(ValueError):
             i1._raise_event(Event('test'))
 
-        assert i1._select_event() is None
-        assert i2._select_event() is None
+        assert i1._select_event(consume=False) is None
+        assert i2._select_event(consume=False) is None
 
 
 def test_interpreter_is_serialisable(microwave):

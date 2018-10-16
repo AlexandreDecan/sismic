@@ -15,7 +15,7 @@ class TimeContextProvider:
     This context exposes time, after, idle, and active.
     Look at their respective documentation for more information.
 
-    This provider needs to be bound to the meta-events of an interpreter.
+    This provider needs to be attached to an interpreter.
     """
     def __init__(self) -> None:
         self._entry_time = dict()  # type: Dict[str, float]
@@ -85,7 +85,7 @@ class EventContextProvider:
     available through the ``pending`` attribute. This list should be returned
     by the evaluator on code execution for the events to be effectively sent.
 
-    This provider needs to be bound to the meta-events of an interpreter.
+    This provider needs to be attached to an interpreter.
     """
     def __init__(self) -> None:
         self.pending = []  # type: List[Event]
