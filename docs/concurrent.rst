@@ -94,8 +94,14 @@ is sent both to ``interpreter_1`` and ``interpreter_2``.
 
 .. note::
 
-    Bound interpreters or callables can be unbound using the :py:meth:`~sismic.interpreter.Interpreter.unbind` method.
-
+    The :py:meth:`~sismic.interpreter.Interpreter.bind` method is a high-level interface for 
+    :py:meth:`~sismic.interpreter.Interpreter.attach`. Internally, the former wraps given
+    interpreter or callable with an appropriate listener before calling 
+    :py:meth:`~sismic.interpreter.Interpreter.attach`. You can unbound a previously
+    bound interpreter with :py:meth:`~sismic.interpreter.Interpreter.detach` method.
+    This method accepts a previously attached listener, so you'll need to keep track of the listener returned
+    by the initial call to :py:meth:`~sismic.interpreter.Interpreter.bind`.
+    
 
 Example of communicating statecharts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

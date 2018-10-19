@@ -5,6 +5,7 @@ from itertools import combinations
 from typing import (Any, Callable, Dict, Iterable, List, Mapping, Optional,
                     Set, Tuple, Union, cast)
 
+from .listener import InternalEventListener, PropertyStatechartListener
 from ..utilities import sorted_groupby
 from ..clock import Clock, SimulatedClock, SynchronizedClock
 from ..code import Evaluator, PythonEvaluator
@@ -72,12 +73,8 @@ class Interpreter:
         self._internal_queue = []  # type: List[Tuple[float, InternalEvent]]
         self._external_queue = []  # type: List[Tuple[float, Event]]
 
-        # Bound callables
-        self._bound_internal = []  # type: List[Callable[[Event], Any]]
-        self._bound_meta = []  # type: List[Callable[[MetaEvent], Any]]
-
-        # Bound property statecharts
-        self._bound_properties = []  # type: List[Interpreter]
+        # Bound listeners
+        self._listeners = []  # type: List[Callable[[MetaEvent], Any]]
 
         # Evaluator
         self._evaluator = evaluator_klass(self, initial_context=initial_context)
@@ -124,19 +121,13 @@ class Interpreter:
         """
         return self._statechart
 
-    def bind(self, interpreter_or_callable: Union['Interpreter', Callable[[Event], Any]], *, internal=True, meta=False) -> None:
+    def attach(self, listener: Callable[[MetaEvent], Any]) -> None:
         """
-        Bind an event listener the current interpreter.
+        Attach given listener to the current interpreter. 
 
-        If *interpreter_or_callable* is an *Interpreter* instance,  its *queue* method is called.
-        This is, if *i1* and *i2* are interpreters, *i1.bind(i2)* is equivalent to *i1.bind(i2.queue)*.
+        The listener is called each time a meta-event is emitted by current interpreter.
+        Emitted meta-events are:
         
-        By default, all internal events sent by the current interpreter are propagated to the
-        listener, unless ``internal`` is set to False. 
-
-        If `meta` is set (not set by default), meta events sent by this interpreter will be propagated to 
-        the listener. Here is a list of supported meta-events:
-
          - *step started*: when a (possibly empty) macro step starts. The current time of the step is available through the ``time`` attribute.
          - *step ended*: when a (possibly empty) macro step ends.
          - *event consumed*: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
@@ -145,51 +136,54 @@ class Interpreter:
          - *state entered*: when a state is entered. The entered state is exposed through the ``state`` attribute.
          - *transition processed*: when a transition is processed. The source state, target state and the event are
            exposed respectively through the ``source``, ``target`` and ``event`` attribute.
+         - Every meta-event that is sent from within the statechart.
 
-        Additionally, MetaEvent instances that are sent from within the statechart are also passed to all
-        bound listeners. Internally, these meta-events are used by property statecharts. 
+        This is a low-level interface for ``self.bind`` and ``self.bind_property_statechart``. 
 
-        :param interpreter_or_callable: interpreter or callable to bind
-        :param internal: if set, propagates internal events
-        :param meta: if set, propagates meta events
+        Consult ``sismic.interpreter.listener`` for common listeners/wrappers.
+
+        :param listener: A callable that accepts meta-event instances.
+        """
+        self._listeners.append(listener)
+
+    def detach(self, listener: Callable[[MetaEvent], Any]) -> None:
+        """
+        Remove given listener from the ones that are currently attached to this interpreter.
+        
+        :param listener: A previously attached listener.
+        """
+        self._listeners.remove(listener)
+
+    def bind(self, interpreter_or_callable: Union['Interpreter', Callable[[Event], Any]]) -> Callable[[MetaEvent], Any]:
+        """
+        Bind an interpreter (or a callable) to the current interpreter.
+
+        Internal events sent by this interpreter will be propagated as external events. 
+        If *interpreter_or_callable* is an *Interpreter* instance,  its *queue* method is called.
+        This is, if *i1* and *i2* are interpreters, *i1.bind(i2)* is equivalent to *i1.bind(i2.queue)*.
+        
+        This method is a higher-level interface for ``self.attach``. 
+        If ``x = interpreter.bind(...)``, use ``interpreter.detach(x)`` to unbind a
+        previously bound interpreter. 
+        
+        :param interpreter_or_callable: interpreter or callable to bind.
+        :return: the resulting attached listener.
         """
         if isinstance(interpreter_or_callable, Interpreter):
-            listener = cast(Callable[[Event], Any], interpreter_or_callable.queue)
+            listener = InternalEventListener(interpreter_or_callable.queue)
         else:
-            listener = interpreter_or_callable
+            listener = InternalEventListener(interpreter_or_callable)
 
-        if internal:
-            self._bound_internal.append(listener)
-        if meta:
-            self._bound_meta.append(listener)
+        self.attach(listener)
+        
+        return listener
 
-    def unbind(self, interpreter_or_callable: Union['Interpreter', Callable[[Event], Any]]) -> None:
-        """
-        Unbind a previously bound listener.
-
-        :param interpreter_or_callable: interpreter or callable to unbind
-        """
-        if isinstance(interpreter_or_callable, Interpreter):
-            listener = cast(Callable[[Event], Any], interpreter_or_callable.queue)
-        else:
-            listener = interpreter_or_callable
-
-        try:
-            self._bound_internal.remove(listener)
-        except ValueError:
-            pass
-
-        try:
-            self._bound_meta.remove(listener)
-        except ValueError:
-            pass
-
-    def bind_property_statechart(self, statechart: Statechart, *, interpreter_klass: Callable=None) -> None:
+    def bind_property_statechart(self, statechart: Statechart, *, interpreter_klass: Callable=None) -> Callable[[MetaEvent], Any]:
         """
         Bind a property statechart to the current interpreter.
 
         A property statechart receives meta-events from the current interpreter depending on what happens.
-        See ``bind`` method for a full list of meta-events. 
+        See ``attach`` method for a full list of meta-events. 
         
         The internal clock of all property statecharts is synced with the one of the current interpreter.
         As soon as a property statechart reaches a final state, a ``PropertyStatechartError`` will be raised,
@@ -198,20 +192,27 @@ class Interpreter:
 
         Since Sismic 1.4.0: passing an interpreter as first argument is deprecated. 
 
+        This method is a higher-level interface for ``self.attach``. 
+        If ``x = interpreter.bind_property_statechart(...)``, use ``interpreter.detach(x)`` to unbind a
+        previously bound property statechart. 
+
         :param statechart: A statechart instance.
         :param interpreter_klass: An optional callable that accepts a statechart as first parameter and a
         named parameter clock. Default to Interpreter.
+        :return: the resulting attached listener.
         """
         if isinstance(statechart, Interpreter):
             warnings.warn('Passing an interpreter to bind_property_statechart is deprecated since 1.4.0. Use interpreter_klass instead.', DeprecationWarning)
-            p_interpreter = statechart
-            p_interpreter.clock = SynchronizedClock(self)
+            interpreter = statechart
+            interpreter.clock = SynchronizedClock(self)
         else:
             interpreter_klass = Interpreter if interpreter_klass is None else interpreter_klass
-            p_interpreter = interpreter_klass(statechart, clock=SynchronizedClock(self))
+            interpreter = interpreter_klass(statechart, clock=SynchronizedClock(self))
 
-        self._bound_properties.append(p_interpreter)
-        self.bind(p_interpreter, internal=False, meta=True)
+        listener = PropertyStatechartListener(interpreter)
+        self.attach(listener)
+
+        return listener
 
     def queue(self, event_or_name:Union[str, Event], *event_or_names:Union[str, Event], **parameters) -> 'Interpreter':
         """
@@ -330,37 +331,18 @@ class Interpreter:
         Raise an event from the statechart.
 
         Only InternalEvent and MetaEvent (and their subclasses) are accepted.
-
-        InternalEvent instances are propagated to bound listeners  as normal events, and added to
-        the event queue of the current interpreter as InternalEvent instance. If given event is
-        delayed, it is propagated as DelayedEvent to bound listeners, and put into current
-        event queue as a DelayedInternalEvent.
-
-        MetaEvent instances are propagated to bound listeners that subscribed to 
-        meta events, and to bound property statecharts. 
         
         :param event: event to be sent by the statechart.
         """
         if isinstance(event, InternalEvent):
             self._queue_event(event)
-            external_event = Event(event.name, **event.data)
-
-            for internal_listener in self._bound_internal:
-                internal_listener(external_event)
-
-            self._raise_event(MetaEvent('event sent', event=external_event))
+            self._raise_event(MetaEvent('event sent', event=event))
             if hasattr(event, 'delay'):
-                # Deprecated since 1.4.0:
-                self._raise_event(MetaEvent('delayed event sent', event=external_event))
+                # Deprecated since 1.4.0
+                self._raise_event(MetaEvent('delayed event sent', event=event))
         elif isinstance(event, MetaEvent):
-            for meta_listener in self._bound_meta:
-                meta_listener(event)
-
-            # Check for property statechart violations
-            for property_statechart in self._bound_properties:
-                property_statechart.execute()
-                if property_statechart.final:
-                    raise PropertyStatechartError(property_statechart)
+            for listener in self._listeners:
+                listener(event)
         else:
             raise ValueError('Only InternalEvent and MetaEvent can be sent by a statechart, not {}'.format(type(event)))
 
