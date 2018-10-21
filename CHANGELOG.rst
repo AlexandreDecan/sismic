@@ -1,13 +1,13 @@
 Changelog
 =========
 
-Unreleased
-----------
+1.4.0 (2018-10-21)
+------------------
 
 This new release contains many internal changes. While the public API is stable and/or backwards
 compatible, expect some breaking changes if you relied on Sismic internal API.
 
-A new binding system has been deployed on ``Interpreter``, allowing listeners to be notified about 
+A new binding/monitoring system has been deployed on ``Interpreter``, allowing listeners to be notified about 
 meta-events. Listeners are simply callables that accept meta-events instances. 
 
  - (Added) An ``Interpreter.attach`` method that accepts any callable. Meta-events raised by the interpreter
@@ -25,7 +25,7 @@ meta-events. Listeners are simply callables that accept meta-events instances.
 
 Time and event related predicates were extracted from ``PythonEvaluator`` to ease their reuse. 
 They can be found in ``TimeContextProvider`` and ``EventContextProvider`` of ``sismic.code.context`` and
-rely on the new binding system:
+rely on the new monitoring system:
 
  - (Added) ``TimeContextProvider`` and ``EventContextProvider`` in ``sismic.code.context`` that
    exposes most of the predicates that are used in ``PythonEvaluator``.
