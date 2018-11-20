@@ -1,5 +1,6 @@
 Sphinx>=1.4.1
 sphinx-rtd-theme>=0.1.9
-sphinx-autodoc-typehints>=1.2.5
+# Workaround for agronholm/sphinx-autodoc-typehints#59
+sphinx-autodoc-typehints<1.5.0
 pytest>=3.4.2
 pytest-mock>=1.7.1
