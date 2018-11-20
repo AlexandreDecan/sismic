@@ -83,7 +83,7 @@ Each state consist of at least a mandatory *name*. Depending on the state type, 
 .. code:: yaml
 
     statechart:
-      name: with state
+      name: statechart with defined state
       root state:
         name: root
 
@@ -179,7 +179,7 @@ They must declare their nested states using *parallel states* instead of *states
 
   statechart:
     name: statechart containing multiple orthogonal states
-    initial state:
+    root state:
       name: processes
       parallel states:
         - name: process 1
@@ -290,7 +290,7 @@ The function also supports importing from a given filepath:
     assert isinstance(statechart, Statechart)
 
 
-The parser performs several checks using statechart's :py:class:`~sismic.model.Statechart.validate` method.
+The parser performs several checks using :py:class:`~sismic.model.Statechart`'s :py:class:`~sismic.model.Statechart.validate` method.
 It also does an automatic validation against some kind of schema to prevent erroneous keys.
 See `schema library <https://pypi.python.org/pypi/schema>`__ for more information about the semantics.
 
@@ -304,10 +304,10 @@ Visualising statecharts
 -----------------------
 
 Sismic is not bundle with any graphical tool that can be used to edit or even view a statechart.
-Module :py:mod:`sismic.io` contains routines that can be used to (import and) export statecharts to other format,
+Module :py:mod:`sismic.io` contains routines that can be used to (import and) export statecharts to other formats,
 some of them being used by third-party tools that support visualising (or editing) statecharts.
 
-Notably, module :py:mod:`sismic.io` contains a function :py:func:`~sismic.io.export_to_plantuml` that export a given statechart to
+Notably, module :py:mod:`sismic.io` contains a function :py:func:`~sismic.io.export_to_plantuml` that exports a given statechart to
 `PlantUML <http://plantuml.com/>`__, a tool based on graphviz that can automatically render statecharts (to some extent).
 An online version of PlantUML can be found `here <http://www.plantuml.com/plantuml/>`__.
 
@@ -326,14 +326,14 @@ can be used to generate the previously given representation of the elevator.
     using ``-u->``, ``-r->``, ``-d->`` or ``-l->``.
     See `PlantUML documentation <http://plantuml.com/state-diagram>`__ for more information.
 
-If you already have exported a statechart to PlantUML and have made some changes to the direction or length of the
+If you already exported a statechart to PlantUML and made some changes to the direction or length of the
 transitions, it is likely that you want to keep these changes when exporting again the (possibly modified)
 statechart to PlantUML.
 
 The :py:func:`~sismic.io.export_to_plantuml` function accepts two optional (mutually exclusive) parameters ``based_on``
 and ``based_on_filepath`` that can be used to provide an earlier version of a PlantUML text representation
 (or a path to such a version if ``based_on_filepath`` is used).
-This will then be used to incorporate as much as possible the changes made on the transitions.
+This will then be used to incorporate as much as possible the changes made on transitions.
 
 .. autofunction:: sismic.io.export_to_plantuml
     :noindex:
