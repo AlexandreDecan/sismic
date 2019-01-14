@@ -69,6 +69,13 @@ class Interpreter:
         # Set of active states
         self._configuration = set()  # type: Set[str]
 
+        # Entry and idle times
+        self._entry_time = dict()  # type: Dict[str, float]
+        self._idle_time = dict()  # type: Dict[str, float]
+
+        # Events sent during current macro step
+        self._sent_events = []  # type: List[Event]
+
         # Event queues
         self._internal_queue = []  # type: List[Tuple[float, InternalEvent]]
         self._external_queue = []  # type: List[Tuple[float, Event]]
@@ -270,6 +277,9 @@ class Interpreter:
         # Store time to have a consistent time value during this step
         self._time = self.clock.time
 
+        # Reset the list of events that were sent
+        self._sent_events.clear()
+
         # Notify listeners
         self._raise_event(MetaEvent('step started', time=self.time))
         
@@ -277,6 +287,7 @@ class Interpreter:
         computed_steps = self._compute_steps()
 
         if len(computed_steps) > 0:
+
             # Consume event if it triggered a transition
             if computed_steps[0].event is not None:
                 event = self._select_event(consume=True)
@@ -660,6 +671,9 @@ class Interpreter:
             self._evaluate_contract_conditions(step.transition, 'postconditions', step)
             self._evaluate_contract_conditions(step.transition, 'invariants', step)
 
+            # Update idle time
+            self._idle_time[step.transition.source] = self.time
+
             # Notify properties
             self._raise_event(MetaEvent(
                 'transition processed',
@@ -678,6 +692,8 @@ class Interpreter:
 
             # Update configuration
             self._configuration.add(state.name)
+            self._entry_time[state.name] = self.time
+            self._idle_time[state.name] = self.time
 
             # Notify properties
             self._raise_event(MetaEvent('state entered', state=state.name))
@@ -685,6 +701,7 @@ class Interpreter:
         # Send events
         for event in cast(Union[InternalEvent, MetaEvent], sent_events):
             self._raise_event(event)
+            self._sent_events.append(event)
 
         return MicroStep(event=step.event, transition=step.transition,
                          entered_states=step.entered_states, exited_states=step.exited_states,

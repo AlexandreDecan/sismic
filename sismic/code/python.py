@@ -1,13 +1,47 @@
+import collections
+import copy
 from functools import partial
 from types import CodeType
 from typing import Any, Dict, List, Optional, Mapping, Iterator
 
 from . import Evaluator
-from .context import FrozenContext, EventContextProvider, TimeContextProvider
 from ..exceptions import CodeEvaluationError
-from ..model import Event, Statechart, Transition
+from ..model import Event, InternalEvent, MetaEvent, Statechart, Transition
+
 
 __all__ = ['PythonEvaluator']
+
+
+class FrozenContext(collections.Mapping):
+    """
+    A shallow copy of a context. The keys of the underlying context are
+    exposed as attributes.
+    """
+    __slots__ = ['__frozencontext']
+
+    def __init__(self, context: Dict) -> None:
+        self.__frozencontext = {k: copy.copy(v) for k, v in context.items()}
+
+    def __getattr__(self, item):
+        try:
+            return self.__frozencontext[item]
+        except KeyError:
+            raise AttributeError('{} has no attribute {}'.format(self, item))
+
+    def __getstate__(self):
+        return self.__frozencontext
+
+    def __setstate__(self, state):
+        self.__frozencontext = state
+
+    def __getitem__(self, key):
+        return self.__frozencontext[key]
+
+    def __len__(self):
+        return len(self.__frozencontext)
+
+    def __iter__(self):
+        return iter(self.__frozencontext)
 
 
 class PythonEvaluator(Evaluator):
@@ -61,13 +95,6 @@ class PythonEvaluator(Evaluator):
         self._context.update(initial_context if initial_context else {})
         self._interpreter = interpreter
 
-        # Context providers
-        self._event_provider = EventContextProvider()
-        self._time_provider = TimeContextProvider()
-
-        self._interpreter.attach(self._event_provider)
-        self._interpreter.attach(self._time_provider)
-
         # Precompiled code
         self._evaluable_code = {}  # type: Dict[str, CodeType]
         self._executable_code = {}  # type: Dict[str, CodeType]
@@ -105,8 +132,8 @@ class PythonEvaluator(Evaluator):
             compiled_code = self._evaluable_code.setdefault(code, compile(code, '<string>', 'eval'))
 
         exposed_context = {
-            'active': self._time_provider.active,
-            'time': self._time_provider.time,
+            'active': lambda s: s in self._interpreter.configuration,
+            'time': self._interpreter.time,
         }
         exposed_context.update(additional_context if additional_context is not None else {})
 
@@ -131,18 +158,20 @@ class PythonEvaluator(Evaluator):
         if compiled_code is None:
             compiled_code = self._executable_code.setdefault(code, compile(code, '<string>', 'exec'))
 
+        sent_events = []  # type: List[Event]
+
         exposed_context = {
-            'active': self._time_provider.active,
-            'time': self._time_provider.time,
-            'send': self._event_provider.send,
-            'notify': self._event_provider.notify,
+            'active': lambda name: name in self._interpreter.configuration,
+            'time': self._interpreter.time,
+            'send': lambda name, **kwargs: sent_events.append(InternalEvent(name, **kwargs)),
+            'notify': lambda name, **kwargs: sent_events.append(MetaEvent(name, **kwargs)),
             'setdefault': self._setdefault,
         }
         exposed_context.update(additional_context if additional_context is not None else {})
 
         try:
             exec(compiled_code, exposed_context, self._context)  # type: ignore
-            return self._event_provider.pending
+            return sent_events
         except Exception as e:
             raise CodeEvaluationError('"{}" occurred while executing "{}"'.format(e, code)) from e
 
@@ -155,8 +184,8 @@ class PythonEvaluator(Evaluator):
         :return: truth value of *code*
         """
         additional_context = {
-            'after': partial(self._time_provider.after, transition.source),
-            'idle': partial(self._time_provider.idle, transition.source),
+            'after': lambda seconds: self._interpreter.time - seconds >= self._interpreter._entry_time[transition.source],
+            'idle': lambda seconds: self._interpreter.time - seconds >= self._interpreter._idle_time[transition.source],
             'event': event,
         }
         return self._evaluate_code(getattr(transition, 'guard', None), additional_context=additional_context)
@@ -167,13 +196,13 @@ class PythonEvaluator(Evaluator):
         *Transition*) and return a list of conditions that are not satisfied.
 
         :param obj: the considered state or transition
-        :param event: an optional *Event* instance, in the case of a transition
+        :param event: an optional *Event* instance, if any
         :return: list of unsatisfied conditions
         """
         additional_context = {
-            'received': self._event_provider.received,
-            'sent': self._event_provider.sent,
-            'event': event if isinstance(obj, Transition) else None,
+            'received': lambda name: name == getattr(event, 'name', None),
+            'sent': lambda name: name in [e.name for e in self._interpreter._sent_events],
+            'event': event,
         }
 
         # Deal with __old__ in contracts, only required if there is an invariant or a postcondition
@@ -191,18 +220,18 @@ class PythonEvaluator(Evaluator):
         *Transition*) and return a list of conditions that are not satisfied.
 
         :param obj: the considered state or transition
-        :param event: an optional *Event* instance, in the case of a transition
+        :param event: an optional *Event* instance, if any
         :return: list of unsatisfied conditions
         """
         state_name = obj.source if isinstance(obj, Transition) else obj.name
 
         additional_context = {
             '__old__': self._memory.get(id(obj), None),
-            'after': partial(self._time_provider.after, state_name),
-            'idle': partial(self._time_provider.idle, state_name),
-            'received': self._event_provider.received,
-            'sent': self._event_provider.sent,
-            'event': event if isinstance(obj, Transition) else None,
+            'after': lambda seconds: self._interpreter.time - seconds >= self._interpreter._entry_time[state_name],
+            'idle': lambda seconds: self._interpreter.time - seconds >= self._interpreter._idle_time[state_name],
+            'received': lambda name: name == getattr(event, 'name', None),
+            'sent': lambda name: name in [e.name for e in self._interpreter._sent_events],
+            'event': event,
         }
 
         return filter(
@@ -216,18 +245,18 @@ class PythonEvaluator(Evaluator):
         *Transition*) and return a list of conditions that are not satisfied.
 
         :param obj: the considered state or transition
-        :param event: an optional *Event* instance, in the case of a transition
+        :param event: an optional *Event* instance, if any
         :return: list of unsatisfied conditions
         """
         state_name = obj.source if isinstance(obj, Transition) else obj.name
         
         additional_context = {
             '__old__': self._memory.get(id(obj), None),
-            'after': partial(self._time_provider.after, state_name),
-            'idle': partial(self._time_provider.idle, state_name),
-            'received': self._event_provider.received,
-            'sent': self._event_provider.sent,
-            'event': event if isinstance(obj, Transition) else None,
+            'after': lambda seconds: self._interpreter.time - seconds >= self._interpreter._entry_time[state_name],
+            'idle': lambda seconds: self._interpreter.time - seconds >= self._interpreter._idle_time[state_name],
+            'received': lambda name: name == getattr(event, 'name', None),
+            'sent': lambda name: name in [e.name for e in self._interpreter._sent_events],
+            'event': event,
         }
 
         return filter(

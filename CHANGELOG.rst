@@ -1,6 +1,17 @@
 Changelog
 =========
 
+
+1.4.1 (unreleased)
+------------------
+
+The internals required to expose time and event-related predicates in a ``PythonEvaluator`` are moved
+to the ``Interpreter`` instead of being handled by context providers. This eases the implementation by other 
+code evaluators of uniform semantics for these predicates. This change does not affect Sismic public API.
+
+ - (Deprecated) Internal module ``sismic.code.context``.
+
+
 1.4.0 (2018-10-21)
 ------------------
 

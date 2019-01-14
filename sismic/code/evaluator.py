@@ -132,7 +132,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         *Transition*) and return a list of conditions that are not satisfied.
 
         :param obj: the considered state or transition
-        :param event: an optional *Event* instance, in the case of a transition
+        :param event: an optional *Event* instance, if any
         :return: list of unsatisfied conditions
         """
         event_d = {'event': event} if isinstance(obj, Transition) else None
@@ -146,7 +146,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         *Transition*) and return a list of conditions that are not satisfied.
 
         :param obj: the considered state or transition
-        :param event: an optional *Event* instance, in the case of a transition
+        :param event: an optional *Event* instance, if any
         :return: list of unsatisfied conditions
         """
         event_d = {'event': event} if isinstance(obj, Transition) else None
@@ -160,7 +160,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         *Transition*) and return a list of conditions that are not satisfied.
 
         :param obj: the considered state or transition
-        :param event: an optional *Event* instance, in the case of a transition
+        :param event: an optional *Event* instance, if any
         :return: list of unsatisfied conditions
         """
         event_d = {'event': event} if isinstance(obj, Transition) else None

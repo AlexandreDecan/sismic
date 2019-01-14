@@ -212,9 +212,3 @@ An :py:class:`~sismic.code.Evaluator` subclass must at lest implement the follow
     :exclude-members: _evaluate_code, _execute_code, context
     :member-order: bysource
     :noindex:
-
-.. note::
-    Many of the "advanced features" (e.g. time related predicates) of :py:class:`~sismic.code.PythonEvaluator` 
-    are based on the context providers defined in :py:mod:`sismic.code.context`. 
-    These context providers are meant to be reusable for other code evaluators.
-    

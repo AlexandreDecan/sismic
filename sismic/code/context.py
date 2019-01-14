@@ -1,11 +1,16 @@
 import collections
 import copy
+import warnings
+
 from typing import Optional, Union, List, Dict
 
 from ..model import Event, InternalEvent, MetaEvent
 
 
 __all__ = ['TimeContextProvider', 'EventContextProvider', 'FrozenContext']
+
+
+warnings.warn('sismic.code.context is deprecated since Sismic 1.4.1', DeprecationWarning)
 
 
 class TimeContextProvider:
