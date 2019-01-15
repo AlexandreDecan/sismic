@@ -13,7 +13,7 @@ __all__ = ['TimeContextProvider', 'EventContextProvider', 'FrozenContext']
 warnings.warn('sismic.code.context is deprecated since Sismic 1.4.1', DeprecationWarning)
 
 
-class TimeContextProvider:
+class TimeContextProvider:  # pragma: no cover
     """
     A context provider for time related predicates. 
 
@@ -79,7 +79,7 @@ class TimeContextProvider:
             self._idle_time[event.source] = self._time
 
 
-class EventContextProvider:
+class EventContextProvider:  # pragma: no cover
     """
     A context provider for event related predicates.
     
@@ -147,7 +147,7 @@ class EventContextProvider:
             self.pending = []
         
 
-class FrozenContext(collections.Mapping):
+class FrozenContext(collections.Mapping):  # pragma: no cover
     """
     A shallow copy of a context. The keys of the underlying context are
     exposed as attributes.
