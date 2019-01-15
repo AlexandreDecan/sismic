@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.4.1 (unreleased)
+1.4.1 (2019-01-15)
 ------------------
 
 The internals required to expose time and event-related predicates in a ``PythonEvaluator`` are moved
