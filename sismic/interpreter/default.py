@@ -135,15 +135,15 @@ class Interpreter:
         The listener is called each time a meta-event is emitted by current interpreter.
         Emitted meta-events are:
         
-         - *step started*: when a (possibly empty) macro step starts. The current time of the step is available through the ``time`` attribute.
-         - *step ended*: when a (possibly empty) macro step ends.
-         - *event consumed*: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
-         - *event sent*: when an event is sent. The sent event is exposed through the ``event`` attribute.
-         - *state exited*: when a state is exited. The exited state is exposed through the ``state`` attribute.
-         - *state entered*: when a state is entered. The entered state is exposed through the ``state`` attribute.
-         - *transition processed*: when a transition is processed. The source state, target state and the event are
-           exposed respectively through the ``source``, ``target`` and ``event`` attribute.
-         - Every meta-event that is sent from within the statechart.
+        - *step started*: when a (possibly empty) macro step starts. The current time of the step is available through the ``time`` attribute.
+        - *step ended*: when a (possibly empty) macro step ends.
+        - *event consumed*: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
+        - *event sent*: when an event is sent. The sent event is exposed through the ``event`` attribute.
+        - *state exited*: when a state is exited. The exited state is exposed through the ``state`` attribute.
+        - *state entered*: when a state is entered. The entered state is exposed through the ``state`` attribute.
+        - *transition processed*: when a transition is processed. The source state, target state and the event are
+        exposed respectively through the ``source``, ``target`` and ``event`` attribute.
+        - Every meta-event that is sent from within the statechart.
 
         This is a low-level interface for ``self.bind`` and ``self.bind_property_statechart``. 
 

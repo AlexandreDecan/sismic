@@ -38,7 +38,7 @@ To bind a property statechart to an interpreter, it suffices to provide the prop
 parameter of the :py:meth:`~sismic.interpreter.Interpreter.bind_property_statechart` method of an interpreter.
 This method accepts a :py:class:`~sismic.model.Statechart` instance that is used to create an interpreter for 
 the property statechart. This method also accepts an optional ``interpreter_klass`` parameter as a callable accepting
-a :py:class:`~sismic.model.Statechart` and a named parameter ``clock`` (a :py:class:`~sismic.clock.Clock`instance)
+a :py:class:`~sismic.model.Statechart` and a named parameter ``clock`` (a :py:class:`~sismic.clock.Clock` instance)
 and is used to build an interpreter for the property statechart. 
 
 If a property statechart reaches a final state during its execution, then the property is considered as not
