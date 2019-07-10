@@ -184,7 +184,7 @@ This can be checked by looking at the external event queue of the interpreter.
 .. note::
 
     An interpreter has two event queues, one for external events (the ones that are added using 
-    :py:meth:`~sismic.interpreter.Interpreter.queue`, and one for internal events (the ones that 
+    :py:meth:`~sismic.interpreter.Interpreter.queue`), and one for internal events (the ones that 
     are sent from within the statechart). External events are stored in ``_external_queue`` while 
     internal events are stored in ``_internal_queue``. Internal events are always processed before
     external ones. To access the next event that will be processed by the interpreter, use the 
@@ -286,7 +286,7 @@ of triggered transitions. A macro step also includes every consecutive *stabiliz
 (i.e., the steps that are needed to enter nested states, or to switch into the configuration of a history state).
 
 A :py:class:`~sismic.model.MacroStep` exposes the consumed :py:attr:`~sismic.model.MacroStep.event` if any, a (possibly
-empty) list :py:attr:`~sismic.model.MacroStep.transitions` of :py:class:`~sismic.interpreter.Transition` instances,
+empty) list :py:attr:`~sismic.model.MacroStep.transition` of :py:class:`~sismic.interpreter.Transition` instances,
 and two aggregated ordered sequences of state names, :py:attr:`~sismic.model.MacroStep.entered_states` and
 :py:attr:`~sismic.model.MacroStep.exited_states`.
 In addition, a :py:class:`~sismic.model.MacroStep` exposes a list :py:attr:`~sismic.model.MacroStep.sent_events` of
@@ -325,6 +325,8 @@ that can be used to see what happens. In particular:
    (see :ref:`code_evaluation`).
  - It is possible to bind a callable that will be called each time an event is sent by the statechart using
    the :py:meth:`~sismic.interpreter.Interpreter.bind` method of an interpreter (see :ref:`communication`).
+ - Meta-events are raised by the interpreter for specific events (e.g. a state is entered, a state is exited, etc.). 
+   Listeners can subscribe to these meta-events with :py:attr:`~sismic.interpreter.Interpreter.attach`.
 
 
 Asynchronous execution
