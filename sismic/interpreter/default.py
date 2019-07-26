@@ -142,7 +142,7 @@ class Interpreter:
         - *state exited*: when a state is exited. The exited state is exposed through the ``state`` attribute.
         - *state entered*: when a state is entered. The entered state is exposed through the ``state`` attribute.
         - *transition processed*: when a transition is processed. The source state, target state and the event are
-        exposed respectively through the ``source``, ``target`` and ``event`` attribute.
+          exposed respectively through the ``source``, ``target`` and ``event`` attribute.
         - Every meta-event that is sent from within the statechart.
 
         This is a low-level interface for ``self.bind`` and ``self.bind_property_statechart``. 
@@ -205,7 +205,7 @@ class Interpreter:
 
         :param statechart: A statechart instance.
         :param interpreter_klass: An optional callable that accepts a statechart as first parameter and a
-        named parameter clock. Default to Interpreter.
+            named parameter clock. Default to Interpreter.
         :return: the resulting attached listener.
         """
         if isinstance(statechart, Interpreter):
