@@ -2,6 +2,12 @@ Changelog
 =========
 
 
+1.4.2 (2019-07-19)
+------------------
+
+ - (Fixed) Transitions are no longer duplicated when calling ``copy_from_statechart``  (`#91 <https://github.com/AlexandreDecan/sismic/issues/91>`__).
+
+
 1.4.1 (2019-01-15)
 ------------------
 
