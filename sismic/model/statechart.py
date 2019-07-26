@@ -552,14 +552,16 @@ class Statechart:
             self.add_state(statechart_copy.state_for(new_name), statechart_copy.parent_for(new_name))
 
         # Copy transitions
+        transitions = set()
         for name in [source_name] + statechart_copy.descendants_for(source_name):
-            transitions = set(statechart_copy.transitions_from(name) + statechart_copy.transitions_to(name))
-            for transition in transitions:
-                try:
-                    self.add_transition(transition)
-                except StatechartError as e:
-                    raise StatechartError('Cannot copy {} because transition {} is not contained in {}'.
-                                          format(transition.source, transition, source)) from e
+            transitions.update(statechart_copy.transitions_from(name))
+            transitions.update(statechart_copy.transitions_to(name))
+        for transition in transitions:
+            try:
+                self.add_transition(transition)
+            except StatechartError as e:
+                raise StatechartError('Cannot copy {} because transition {} is not contained in {}'.
+                                        format(transition.source, transition, source)) from e
 
     # ######### VALIDATION ##########
 
