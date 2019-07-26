@@ -14,3 +14,4 @@ Contributors
 * Ali Parsai
 * Nikos Spanoudakis
 * Timothy Rule
+* Jan Wouter Versluis
