@@ -547,6 +547,11 @@ class TestCopyFromStatechart:
             composite_statechart.copy_from_statechart(modified_simple_statechart, source='sc1_final', replace='s1b1')
             assert 'not contained in' in str(e.value)
 
+    # See https://github.com/AlexandreDecan/sismic/issues/91
+    def test_non_duplicated_transitions(self, modified_simple_statechart, composite_statechart):
+        composite_statechart.copy_from_statechart(modified_simple_statechart, source='sc1_root', replace='s1b1')
+        assert len(composite_statechart.transitions) == len(set(composite_statechart.transitions))
+
     def test_invalid_plug(self, modified_simple_statechart, composite_statechart):
         # On compound
         with pytest.raises(StatechartError) as e:
