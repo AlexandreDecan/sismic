@@ -11,7 +11,7 @@ class Event:
     The list of parameters can be obtained using *dir(event)*. Notice that
     *name* and *data* are reserved names. If a *delay* parameter is provided,
     then this event will be considered as a delayed event (and won't be
-    executed until delay has elapsed).
+    executed until given delay has elapsed).
 
     When two events are compared, they are considered equal if their names
     and their data are equal.

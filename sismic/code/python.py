@@ -65,7 +65,8 @@ class PythonEvaluator(Evaluator):
         - A *setdefault(name:str, value: Any) -> Any* function that defines and returns variable *name* in
           the global scope if it is not yet defined.
     - On guard or contract evaluation:
-        - If the code is related to a transition, the *event: Event* that fires the transition is exposed.          
+        - If the code is related to a transition, an *event: Optional[Event]* variable is exposed. This variable
+          contains the currently considered event, or None. 
     - On guard or contract (except preconditions) evaluation:
         - An *after(sec: float) -> bool* Boolean function that returns *True* if and only if the source state
           was entered more than *sec* seconds ago. The time is evaluated according to Interpreter's clock.
@@ -138,7 +139,7 @@ class PythonEvaluator(Evaluator):
         exposed_context.update(additional_context if additional_context is not None else {})
 
         try:
-            return eval(compiled_code, exposed_context, self._context)  # type: ignore
+            return bool(eval(compiled_code, exposed_context, self._context))
         except Exception as e:
             raise CodeEvaluationError('"{}" occurred while evaluating "{}"'.format(e, code)) from e
 

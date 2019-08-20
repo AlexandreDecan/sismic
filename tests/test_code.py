@@ -63,6 +63,9 @@ class TestPythonEvaluator:
         assert evaluator._evaluate_code('event.data[\'a\'] == 1', additional_context={'event': Event('test', a=1)})
         assert evaluator._evaluate_code('event.name == \'test\'', additional_context={'event': Event('test')})
 
+        assert evaluator._evaluate_code('event', additional_context={'event': Event('a')}) is True
+        assert evaluator._evaluate_code('not event', additional_context={'event': None}) is True
+
     def test_setdefault(self, evaluator):
         evaluator._execute_code('setdefault("x", 2)')
         assert evaluator.context['x'] == 1

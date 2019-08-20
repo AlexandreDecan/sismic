@@ -13,6 +13,10 @@ class TestEvents:
         with pytest.raises(TypeError):
             Event()
 
+    def test_truth_value(self):
+        assert bool(Event('a'))
+        assert (not Event('a')) is False
+
     def test_parametrized_events(self):
         event = Event('test', a=1, b=2, c=3)
 
