@@ -55,6 +55,7 @@ setup(
     entry_points={
         'console_scripts': [
             'sismic-bdd=sismic.bdd.__main__:cli',
+            'sismic-plantuml=sismic.io.plantuml:cli',
         ],
     },
 

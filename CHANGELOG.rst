@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+ - (Added) A ``sismic-plantuml`` command-line utility to access ``sismic.io.export_to_plantuml``.
+
 
 1.4.2 (2019-07-19)
 ------------------

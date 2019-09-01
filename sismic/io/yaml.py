@@ -46,7 +46,7 @@ class SCHEMA:
     }
 
 
-def import_from_yaml(text: Iterable[str]=None, filepath: str=None, *, ignore_schema: bool=False, ignore_validation: bool=False) -> Statechart:
+def import_from_yaml(text: str=None, filepath: str=None, *, ignore_schema: bool=False, ignore_validation: bool=False) -> Statechart:
     """
     Import a statechart from a YAML representation (first argument) or a YAML file (filepath argument).
 

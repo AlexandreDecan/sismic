@@ -1,6 +1,9 @@
+import argparse
 import re
+import sys
 
 from typing import Dict, List, Tuple, Optional
+from ..io import import_from_yaml
 from ..model import (
     DeepHistoryState, FinalState, Transition, CompoundState,
     OrthogonalState, ShallowHistoryState, Statechart,
@@ -298,3 +301,51 @@ def export_to_plantuml(
             f.write(output)
 
     return output
+
+
+def cli(args=None) -> int:
+    parser = argparse.ArgumentParser(
+        prog='sismic-plantuml', 
+        description='Command-line utility to export Sismic statecharts to plantUML.\n'
+                    'See sismic.io.export_to_plantuml for more informations.'
+    )
+
+    parser.add_argument('statechart', metavar='statechart', type=str,
+        help='A YAML file describing a statechart')
+    parser.add_argument('--based-on', metavar='based', type=str, default=None, 
+        help='A previously exported PlantUML representation for this statechart.')
+    
+    parser.add_argument('--show-description', dest='statechart_description', action='store_true', default=False, help='Show statechart description')
+    parser.add_argument('--show-preamble', dest='statechart_preamble', action='store_true', default=False, help='Show statechart preamble')
+    parser.add_argument('--show-state-contracts', dest='state_contracts', action='store_true', default=False, help='Show state contracts')
+    parser.add_argument('--show-transition-contracts', dest='transition_contracts', action='store_false', default=False, help='Show transition contracts')
+    parser.add_argument('--hide-state-action', dest='state_action', action='store_false', default=True, help='Hide state action')
+    parser.add_argument('--hide-name', dest='statechart_name', action='store_false', default=True, help='Hide statechart name')
+    parser.add_argument('--hide-transition-action', dest='transition_action', action='store_false', default=True, help='Hide transition action')
+            
+    args, parameters = parser.parse_known_args(args)
+
+    statechart = import_from_yaml(filepath=args.statechart)
+
+    if args.based_on:
+        with open(args.based_on, 'r') as f:
+            args.based_on = f.read()
+            
+    exporter = PlantUMLExporter(
+        statechart,
+        based_on=args.based_on,
+        statechart_name=args.statechart_name,
+        statechart_description=args.statechart_description,
+        statechart_preamble=args.statechart_preamble,
+        state_contracts=args.state_contracts,
+        state_action=args.state_action,
+        transition_contracts=args.transition_contracts,
+        transition_action=args.transition_action,
+    )
+
+    print(exporter.export())
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(cli())

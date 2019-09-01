@@ -3,6 +3,7 @@ import pytest
 from sismic.model import Statechart
 from sismic.exceptions import StatechartError
 from sismic.io import import_from_yaml, export_to_yaml, export_to_plantuml
+from sismic.io.plantuml import cli
 
 
 def compare_statecharts(s1, s2):
@@ -152,3 +153,18 @@ class TestExportToPlantUML:
         assert p1 == export_to_plantuml(statechart, based_on_filepath=filepath)
 
 
+    def test_cli(self, capsys):
+        filepath = 'docs/examples/elevator/elevator.yaml'
+        statechart = import_from_yaml(filepath=filepath)
+
+        # Check default parameters
+        cli([filepath])
+        out, _ = capsys.readouterr()
+        assert export_to_plantuml(statechart) == out.strip()
+
+        # Check all parameters
+        cli([filepath, '--based-on', 'docs/examples/elevator/elevator.plantuml', '--show-description', '--show-preamble', '--show-state-contracts', '--show-transition-contracts', '--hide-state-action', '--hide-name', '--hide-transition-action'])
+        out, _ = capsys.readouterr()
+        export = export_to_plantuml(statechart, based_on_filepath='docs/examples/elevator/elevator.plantuml', statechart_description=True, statechart_preamble=True, state_contracts=True, transition_contracts=True, state_action=False, statechart_name=False, transition_action=False)
+        assert export == out.strip()
+        
