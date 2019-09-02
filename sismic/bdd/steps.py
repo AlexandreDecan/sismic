@@ -1,5 +1,4 @@
 from behave import given, when, then  # type: ignore
-from ..interpreter import Event
 from .. import testing
 
 

@@ -1,12 +1,12 @@
 import collections
 import copy
-from functools import partial
+
 from types import CodeType
 from typing import Any, Dict, List, Optional, Mapping, Iterator
 
 from . import Evaluator
 from ..exceptions import CodeEvaluationError
-from ..model import Event, InternalEvent, MetaEvent, Statechart, Transition
+from ..model import Event, InternalEvent, MetaEvent, Transition
 
 
 __all__ = ['PythonEvaluator']
@@ -66,7 +66,7 @@ class PythonEvaluator(Evaluator):
           the global scope if it is not yet defined.
     - On guard or contract evaluation:
         - If the code is related to a transition, an *event: Optional[Event]* variable is exposed. This variable
-          contains the currently considered event, or None. 
+          contains the currently considered event, or None.
     - On guard or contract (except preconditions) evaluation:
         - An *after(sec: float) -> bool* Boolean function that returns *True* if and only if the source state
           was entered more than *sec* seconds ago. The time is evaluated according to Interpreter's clock.
@@ -250,7 +250,7 @@ class PythonEvaluator(Evaluator):
         :return: list of unsatisfied conditions
         """
         state_name = obj.source if isinstance(obj, Transition) else obj.name
-        
+
         additional_context = {
             '__old__': self._memory.get(id(obj), None),
             'after': lambda seconds: self._interpreter.time - seconds >= self._interpreter._entry_time[state_name],

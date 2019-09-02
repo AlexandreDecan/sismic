@@ -1,6 +1,6 @@
 from typing import Callable, Any
 
-from ..model import MetaEvent, InternalEvent, Event
+from ..model import MetaEvent, Event
 
 from ..exceptions import PropertyStatechartError
 

@@ -11,7 +11,7 @@ from ..clock import Clock, SimulatedClock, SynchronizedClock
 from ..code import Evaluator, PythonEvaluator
 from ..exceptions import (ConflictingTransitionsError, InvariantError,
                           NonDeterminismError, PostconditionError,
-                          PreconditionError, PropertyStatechartError)
+                          PreconditionError)
 from ..model import (CompoundState, DeepHistoryState, Event,
                      FinalState, InternalEvent, MacroStep, MetaEvent,
                      MicroStep, OrthogonalState, ShallowHistoryState,
@@ -130,7 +130,7 @@ class Interpreter:
 
     def attach(self, listener: Callable[[MetaEvent], Any]) -> None:
         """
-        Attach given listener to the current interpreter. 
+        Attach given listener to the current interpreter.
 
         The listener is called each time a meta-event is emitted by current interpreter.
         Emitted meta-events are:
@@ -145,7 +145,7 @@ class Interpreter:
           exposed respectively through the ``source``, ``target`` and ``event`` attribute.
         - Every meta-event that is sent from within the statechart.
 
-        This is a low-level interface for ``self.bind`` and ``self.bind_property_statechart``. 
+        This is a low-level interface for ``self.bind`` and ``self.bind_property_statechart``.
 
         Consult ``sismic.interpreter.listener`` for common listeners/wrappers.
 
@@ -165,13 +165,13 @@ class Interpreter:
         """
         Bind an interpreter (or a callable) to the current interpreter.
 
-        Internal events sent by this interpreter will be propagated as external events. 
+        Internal events sent by this interpreter will be propagated as external events.
         If *interpreter_or_callable* is an *Interpreter* instance,  its *queue* method is called.
         This is, if *i1* and *i2* are interpreters, *i1.bind(i2)* is equivalent to *i1.bind(i2.queue)*.
         
-        This method is a higher-level interface for ``self.attach``. 
+        This method is a higher-level interface for ``self.attach``.
         If ``x = interpreter.bind(...)``, use ``interpreter.detach(x)`` to unbind a
-        previously bound interpreter. 
+        previously bound interpreter.
         
         :param interpreter_or_callable: interpreter or callable to bind.
         :return: the resulting attached listener.
@@ -190,18 +190,18 @@ class Interpreter:
         Bind a property statechart to the current interpreter.
 
         A property statechart receives meta-events from the current interpreter depending on what happens.
-        See ``attach`` method for a full list of meta-events. 
+        See ``attach`` method for a full list of meta-events.
         
         The internal clock of all property statecharts is synced with the one of the current interpreter.
         As soon as a property statechart reaches a final state, a ``PropertyStatechartError`` will be raised,
         meaning that the property expressed by the corresponding property statechart is not satisfied.
-        Property statecharts are automatically executed when they are bound to an interpreter. 
+        Property statecharts are automatically executed when they are bound to an interpreter.
 
-        Since Sismic 1.4.0: passing an interpreter as first argument is deprecated. 
+        Since Sismic 1.4.0: passing an interpreter as first argument is deprecated.
 
-        This method is a higher-level interface for ``self.attach``. 
+        This method is a higher-level interface for ``self.attach``.
         If ``x = interpreter.bind_property_statechart(...)``, use ``interpreter.detach(x)`` to unbind a
-        previously bound property statechart. 
+        previously bound property statechart.
 
         :param statechart: A statechart instance.
         :param interpreter_klass: An optional callable that accepts a statechart as first parameter and a
@@ -342,7 +342,7 @@ class Interpreter:
         Raise an event from the statechart.
 
         Only InternalEvent and MetaEvent (and their subclasses) are accepted.
-        
+
         :param event: event to be sent by the statechart.
         """
         if isinstance(event, InternalEvent):

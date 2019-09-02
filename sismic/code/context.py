@@ -15,7 +15,7 @@ warnings.warn('sismic.code.context is deprecated since Sismic 1.4.1', Deprecatio
 
 class TimeContextProvider:  # pragma: no cover
     """
-    A context provider for time related predicates. 
+    A context provider for time related predicates.
 
     This context exposes time, after, idle, and active.
     Look at their respective documentation for more information.
@@ -31,14 +31,14 @@ class TimeContextProvider:  # pragma: no cover
     @property
     def time(self) -> float:
         """
-        Current time of the interpreter. 
+        Current time of the interpreter.
         """
         return self._time
 
     def after(self, name: str, seconds: float) -> bool:
         """
         Return True if and only if given state was entered for more than given
-        time, expressed in seconds. 
+        time, expressed in seconds.
 
         :param name: name of the state.
         :param seconds: elapsed time to use for comparison.
@@ -48,8 +48,8 @@ class TimeContextProvider:  # pragma: no cover
 
     def idle(self, name: str, seconds: float) -> bool:
         """
-        Return True if and only if given state did not fire a transition for more 
-        than given time, expressed in seconds. 
+        Return True if and only if given state did not fire a transition for
+        more than given time, expressed in seconds.
 
         :param name: name of the state.
         :param seconds: elapsed time to use for comparison.
@@ -82,11 +82,11 @@ class TimeContextProvider:  # pragma: no cover
 class EventContextProvider:  # pragma: no cover
     """
     A context provider for event related predicates.
-    
+
     This context exposes send, notify, sent and received.
     Look at their respective documentation for more information.
 
-    The list of events that were sent during the last executed step is 
+    The list of events that were sent during the last executed step is
     available through the ``pending`` attribute. This list should be returned
     by the evaluator on code execution for the events to be effectively sent.
 
@@ -117,7 +117,7 @@ class EventContextProvider:  # pragma: no cover
 
     def sent(self, name: str) -> bool:
         """
-        Return True if and only if given internal event was sent during 
+        Return True if and only if given internal event was sent during
         current step.
 
         :param name: name of the event.
@@ -145,7 +145,7 @@ class EventContextProvider:  # pragma: no cover
             self._consumed = None
             self._sent = []
             self.pending = []
-        
+
 
 class FrozenContext(collections.Mapping):  # pragma: no cover
     """
