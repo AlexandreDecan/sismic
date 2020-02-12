@@ -4,7 +4,7 @@ python:
 - 3.5
 - 3.6
 - 3.7
-- 3.8-dev
+- 3.8
 install:
 - pip install pip -U
 - pip install coveralls coverage wheel
@@ -16,9 +16,6 @@ script:
 - cd docs/examples/microwave/ && python -m unittest && cd ../../..
 after_success:
 - coveralls
-matrix:
-  allow_failures:
-  - python: 3.8-dev
 deploy:
   provider: pypi
   distributions: sdist bdist_wheel
