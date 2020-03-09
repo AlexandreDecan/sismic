@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased
-----------
+1.5.0 (2020-03-09)
+------------------
 
  - (Added) A ``sismic-plantuml`` command-line utility to access ``sismic.io.export_to_plantuml``.
 
@@ -17,7 +17,7 @@ Unreleased
 ------------------
 
 The internals required to expose time and event-related predicates in a ``PythonEvaluator`` are moved
-to the ``Interpreter`` instead of being handled by context providers. This eases the implementation by other 
+to the ``Interpreter`` instead of being handled by context providers. This eases the implementation by other
 code evaluators of uniform semantics for these predicates. This change does not affect Sismic public API.
 
  - (Deprecated) Internal module ``sismic.code.context``.
@@ -29,40 +29,40 @@ code evaluators of uniform semantics for these predicates. This change does not 
 This new release contains many internal changes. While the public API is stable and/or backwards
 compatible, expect some breaking changes if you relied on Sismic internal API.
 
-A new binding/monitoring system has been deployed on ``Interpreter``, allowing listeners to be notified about 
-meta-events. Listeners are simply callables that accept meta-events instances. 
+A new binding/monitoring system has been deployed on ``Interpreter``, allowing listeners to be notified about
+meta-events. Listeners are simply callables that accept meta-events instances.
 
  - (Added) An ``Interpreter.attach`` method that accepts any callable. Meta-events raised by the interpreter
-   are propagated to attached listeners. 
+   are propagated to attached listeners.
  - (Added) An ``Interpreter.detach`` method to detach a previously attached listener.
  - (Added) Module ``sismic.interpreter.listener`` with two convenient listeners for the newly introduced ``Interpreter.attach`` method.
-   The ``InternalEventListener`` identifies sent events and propagates them as external events. The ``PropertyStatechartListener`` 
+   The ``InternalEventListener`` identifies sent events and propagates them as external events. The ``PropertyStatechartListener``
    propagates meta-events, executes and checks property statecharts.
  - (Changed) ``Interpreter.bind`` is built on top of ``attach`` and ``InternalEventListener``.
  - (Changed) ``Interpreter.bind_property_statechart`` is built on top of ``attach`` and ``PropertyStatechartListener``.
  - (Changed) Meta-Event *step started* has a ``time`` attribute.
  - (Changed) Property statecharts are checked for each meta-events, not only at the end of the step.
  - (Changed) Meta-events *step started* and *step ended* are sent even if no step can be processed.
- - (Deprecated) Passing an interpreter to ``bind_property_statechart`` is deprecated, use ``interpreter_klass`` instead. 
+ - (Deprecated) Passing an interpreter to ``bind_property_statechart`` is deprecated, use ``interpreter_klass`` instead.
 
-Time and event related predicates were extracted from ``PythonEvaluator`` to ease their reuse. 
+Time and event related predicates were extracted from ``PythonEvaluator`` to ease their reuse.
 They can be found in ``TimeContextProvider`` and ``EventContextProvider`` of ``sismic.code.context`` and
 rely on the new monitoring system:
 
  - (Added) ``TimeContextProvider`` and ``EventContextProvider`` in ``sismic.code.context`` that
    exposes most of the predicates that are used in ``PythonEvaluator``.
- - (Added) A ``setdefault`` function that can be used in the preamble and actions of a 
+ - (Added) A ``setdefault`` function that can be used in the preamble and actions of a
    statechart to assign a default value to a variable.
  - (Changed) Most predicates exposed by ``PythonEvaluator`` are implemented by context providers.
  - (Deprecated) ``on_step_starts`` method of an ``Evaluator``.
 
-We also refactored how events are passed and processed by the interpreter. 
+We also refactored how events are passed and processed by the interpreter.
 The main visible consequences are:
 
  - (Added) Event parameters can be directly passed to ``Interpreter.queue``.
  - (Fixed) Internal events are processed before external ones (regression introduced in 1.3.0).
  - (Fixed) Optional transition for ``testing.transition_is_processed``, as promised by its documentation but not implemented.
- - (Removed) Internal module ``sismic.interpreter.queue``. 
+ - (Removed) Internal module ``sismic.interpreter.queue``.
  - (Deprecated) ``DelayedEvent``, use ``Event`` with a ``delay`` parameter instead.
  - (Deprecated) BDD step *delayed event sent*, use *event sent* instead.
 
@@ -77,7 +77,7 @@ And some other small changes:
 ------------------
 
 Priority can be defined on transitions, allowing to simulate default transitions and to break non-deterministic
-situations when many transitions are triggered for a single source state: 
+situations when many transitions are triggered for a single source state:
 
  - (Added) Priority can be set for transitions (using *low*, *high* or any integer in yaml). Transitions
    are selected according to their priorities (still following eventless and inner-first/source state semantics).
@@ -86,20 +86,20 @@ situations when many transitions are triggered for a single source state:
 
 The current time of an interpreter is now clock-based driven, thanks to the ``Clock`` base class and its implementations.
 
- - (Added) A ``sismic.clock`` module with a ``Clock`` base class and three direct implementations, 
-   namely ``SimulatedClock``, ``UtcClock`` and ``SynchronizedClock``. A ``SimulatedClock`` allows to manually or automatically 
-   change the time, while a ``UtcClock`` as the expected behaviour of a wall-clock and a ``SynchronizedClock`` is a clock that 
-   synchronizes with another interpreter. ``Clock`` instances are used by the interpreter to get the current time during execution. 
+ - (Added) A ``sismic.clock`` module with a ``Clock`` base class and three direct implementations,
+   namely ``SimulatedClock``, ``UtcClock`` and ``SynchronizedClock``. A ``SimulatedClock`` allows to manually or automatically
+   change the time, while a ``UtcClock`` as the expected behaviour of a wall-clock and a ``SynchronizedClock`` is a clock that
+   synchronizes with another interpreter. ``Clock`` instances are used by the interpreter to get the current time during execution.
    See documentation for more information.
- - (Added) An ``Interpreter.clock`` attribute that stores an instance of the newly added ``Clock`` class. 
+ - (Added) An ``Interpreter.clock`` attribute that stores an instance of the newly added ``Clock`` class.
  - (Changed) ``interpreter.time`` represents the time of the last executed step, not the current
-   time. Use ``interpreter.clock.time`` instead. 
+   time. Use ``interpreter.clock.time`` instead.
  - (Deprecated) Setting ``Interpreter.time`` is deprecated, set time with ``Interpreter.clock.time`` instead.
 
-Queued events can be delayed when they are added to the interpreter event queue. 
+Queued events can be delayed when they are added to the interpreter event queue.
 
- - (Added) Delayed events are supported through ``DelayedEvent`` and ``DelayedInternalEvent``. If 
-   a delayed event with delay *d* is queued or sent by an interpreter at time *t*, it will not be processed 
+ - (Added) Delayed events are supported through ``DelayedEvent`` and ``DelayedInternalEvent``. If
+   a delayed event with delay *d* is queued or sent by an interpreter at time *t*, it will not be processed
    unless `execute` or `execute_once` is called after the current clock exceeds *t + d*.
  - (Added) Property statecharts receive a *delayed event sent* meta-event when a delayed event is sent by a statechart.
  - (Added) Delayed events can be sent from within a statechart by specifying a ``delay`` parameter to the ``sent`` function.
@@ -108,16 +108,16 @@ Queued events can be delayed when they are added to the interpreter event queue.
 A new interpreter runner that benefit from the clock-based handling of time and delayed events:
 
  - (Added) An ``AsyncRunner`` in the newly added ``runner`` module to asynchronously run an interpreter at regular interval.
- - (Changed) ``helpers.run_in_background`` no longer synchronizes the interpreter clock. 
+ - (Changed) ``helpers.run_in_background`` no longer synchronizes the interpreter clock.
    Use the ``start()`` method of ``interpreter.clock`` or an ``UtcClock`` instance instead.
  - (Deprecated) ``helpers.run_in_background`` is deprecated, use ``runner.AsyncRunner`` instead.
 
-And other small changes: 
+And other small changes:
 
  - (Added) A ``sismic.testing`` module containing some testing primitives to ease the writing of unit tests.
  - (Changed) ``Interpreter.queue`` does not longer accept ``InternalEvent``.
- - (Fixed) State *on entry* time (used for ``idle`` and ``after``) is set after the *on entry* 
-   action is executed, making the two predicates more accurate when long-running actions are 
+ - (Fixed) State *on entry* time (used for ``idle`` and ``after``) is set after the *on entry*
+   action is executed, making the two predicates more accurate when long-running actions are
    executed when a state is entered. Similarly, ``idle`` is reset after the action of a transition
    is performed, not before.
  - (Changed) Drop official support for Python 3.4.
@@ -126,7 +126,7 @@ And other small changes:
 1.2.2 (2018-06-21)
 ------------------
 
-- (Fixed) Event shouldn't be exposed when guards of eventless transitions are evaluated (regression 
+- (Fixed) Event shouldn't be exposed when guards of eventless transitions are evaluated (regression
   introduced in version 1.2.1).
 - (Changed) Improve performances when selecting transitions that could/will be triggered.
 
