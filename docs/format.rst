@@ -220,17 +220,17 @@ Instead, it **must** either define an event or define a guard to determine when 
 Notice that such a transition does not trigger the *on entry* and *on exit* of its state, and can thus be used
 to model an *internal action*.
 
-Priorities can be set for transitions using the *priority* property. By default, all transitions 
-have a priority of 0. A priority can be any integer, or *low* (equivalent to -1) or *high* 
-(equivalent to 1). 
+Priorities can be set for transitions using the *priority* property. By default, all transitions
+have a priority of 0. A priority can be any integer, or *low* (equivalent to -1) or *high*
+(equivalent to 1).
 
-.. note:: 
+.. note::
 
-    Transition priorities are considered after the default semantics of Sismic, i.e., 
-    after the eventless transition first and inner-first/source state semantics. 
+    Transition priorities are considered after the default semantics of Sismic, i.e.,
+    after the eventless transition first and inner-first/source state semantics.
     Because of this, transition priorities cannot be used to, e.g., give priority to
-    a transition with event versus a transition without event. 
-    
+    a transition with event versus a transition without event.
+
 
 Statechart examples
 *******************
@@ -299,41 +299,3 @@ See `schema library <https://pypi.python.org/pypi/schema>`__ for more informatio
     :pyobject: SCHEMA
 
 
-
-Visualising statecharts
------------------------
-
-Sismic is not bundle with any graphical tool that can be used to edit or even view a statechart.
-Module :py:mod:`sismic.io` contains routines that can be used to (import and) export statecharts to other formats,
-some of them being used by third-party tools that support visualising (or editing) statecharts.
-
-Notably, module :py:mod:`sismic.io` contains a function :py:func:`~sismic.io.export_to_plantuml` that exports a given statechart to
-`PlantUML <http://plantuml.com/>`__, a tool based on graphviz that can automatically render statecharts (to some extent).
-An online version of PlantUML can be found `here <http://www.plantuml.com/plantuml/>`__.
-
-For example, the elevator statechart can be exported to the following PlantUML file, which in turns
-can be used to generate the previously given representation of the elevator.
-
-.. literalinclude:: /examples/elevator/elevator.plantuml
-
-
-
-.. seealso:: PlantUML's rendering can be modified to some extent by adjusting the notation used for transitions.
-    By default, ``-->`` transitions correspond to downward transitions of good length.
-
-    A transition can be shortened by using ``->`` instead of ``-->``, and the direction of a transition can be
-    changed by using ``-up->``, ``-right->``, ``-down->`` or ``-left->``. Both changes can be applied at the same time
-    using ``-u->``, ``-r->``, ``-d->`` or ``-l->``.
-    See `PlantUML documentation <http://plantuml.com/state-diagram>`__ for more information.
-
-If you already exported a statechart to PlantUML and made some changes to the direction or length of the
-transitions, it is likely that you want to keep these changes when exporting again the (possibly modified)
-statechart to PlantUML.
-
-The :py:func:`~sismic.io.export_to_plantuml` function accepts two optional (mutually exclusive) parameters ``based_on``
-and ``based_on_filepath`` that can be used to provide an earlier version of a PlantUML text representation
-(or a path to such a version if ``based_on_filepath`` is used).
-This will then be used to incorporate as much as possible the changes made on transitions.
-
-.. autofunction:: sismic.io.export_to_plantuml
-    :noindex:
