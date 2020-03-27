@@ -1,5 +1,3 @@
-from typing import Iterable
-
 import ruamel.yaml as yaml
 import schema
 

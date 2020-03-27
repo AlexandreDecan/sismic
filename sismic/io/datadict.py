@@ -164,7 +164,7 @@ def export_to_dict(statechart: Statechart, ordered=True) -> Mapping[str, Any]:
     if statechart.preamble:
         d['preamble'] = statechart.preamble
 
-    d['root state'] = _export_state_to_dict(statechart, statechart.root, ordered)
+    d['root state'] = _export_state_to_dict(statechart, cast(str, statechart.root), ordered)
 
     return {'statechart': d}
 

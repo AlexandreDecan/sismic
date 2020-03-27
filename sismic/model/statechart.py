@@ -560,8 +560,9 @@ class Statechart:
             try:
                 self.add_transition(transition)
             except StatechartError as e:
-                raise StatechartError('Cannot copy {} because transition {} is not contained in {}'.
-                                        format(transition.source, transition, source)) from e
+                raise StatechartError(
+                    'Cannot copy {} because transition {} is not contained in {}'.format(transition.source, transition, source)
+                ) from e
 
     # ######### VALIDATION ##########
 
