@@ -38,9 +38,9 @@ class PlantUMLExporter:
         self._based_on_arrows = dict()  # type: Dict[Tuple[str, str], str]
         if self.based_on:
             for line in self.based_on.splitlines():
-                matches = re.findall(r'(\[\*\]|[a-zA-Z0-9]+) -([^ ]*)> (\[\*\]|[a-zA-Z0-9]+)', line)
+                matches = re.findall(r'(\[\*\]|[a-zA-Z0-9]+) -([^ ]*)-> (\[\*\]|[a-zA-Z0-9]+)', line)
                 if matches:
-                    self._based_on_arrows[(matches[0][0], matches[0][2])] = '-{}>'.format(matches[0][1])
+                    self._based_on_arrows[(matches[0][0], matches[0][2])] = '-{}->'.format(matches[0][1])
 
         self._output = []  # type: List[str]
         self._indent = 0
