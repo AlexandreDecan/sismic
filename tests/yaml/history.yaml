@@ -10,7 +10,7 @@ statechart:
     initial: loop
     states:
     - name: loop
-      initial: s1
+      initial: loop.H
       transitions:
         - target: pause
           event: pause
@@ -29,6 +29,7 @@ statechart:
               event: next
         - name: loop.H
           type: shallow history
+          memory: s1
     - name: pause
       transitions:
         - target: loop.H
