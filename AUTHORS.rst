@@ -15,3 +15,4 @@ Contributors
 * Nikos Spanoudakis
 * Timothy Rule
 * Jan Wouter Versluis
+* Frederik Mathiesen

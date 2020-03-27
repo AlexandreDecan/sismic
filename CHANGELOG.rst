@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Development
+-----------
+
+ - (Fixed) Issue preventing initial memory to be defined for history states (see (`#95 <https://github.com/AlexandreDecan/sismic/pull/95>`__).
+
+
 1.5.0 (2020-03-09)
 ------------------
 
