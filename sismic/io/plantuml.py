@@ -2,7 +2,7 @@ import argparse
 import re
 import sys
 
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Union
 from ..io import import_from_yaml
 from ..model import (
     DeepHistoryState, FinalState, Transition, CompoundState,
@@ -170,6 +170,9 @@ class PlantUMLExporter:
 
         self.export_transitions(name)
 
+        if isinstance(state, (ShallowHistoryState, DeepHistoryState)):
+            self.export_history_memory(state)
+
         # Nested states
         for i, child in enumerate(self.statechart.children_for(name)):
             if i != 0 and isinstance(state, OrthogonalState):
@@ -225,6 +228,16 @@ class PlantUMLExporter:
             target=target_name,
             text=''.join(text),
         ))
+
+    def export_history_memory(self, history_state: Union[ShallowHistoryState, DeepHistoryState]):
+        if history_state.memory:
+            target = self.statechart.state_for(history_state.memory)
+
+            self.output('{source} {arrow} {target}'.format(
+                source=self.state_id(history_state.name),
+                arrow=self.arrow(history_state, target),
+                target=self.state_id(target.name)
+            ))
 
     def export(self) -> str:
         self.output('@startuml')
