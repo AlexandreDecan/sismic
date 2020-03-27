@@ -4,7 +4,8 @@ Changelog
 Development
 -----------
 
- - (Fixed) Issue preventing initial memory to be defined for history states (see (`#95 <https://github.com/AlexandreDecan/sismic/pull/95>`__).
+ - (Added) Arrows to represent initial memory of an history state for ``sismic.io.export_to_plantuml`` (`#96 <https://github.com/AlexandreDecan/sismic/pull/96>`__).
+ - (Fixed) Issue preventing initial memory to be defined for history states (`#95 <https://github.com/AlexandreDecan/sismic/pull/95>`__).
 
 
 1.5.0 (2020-03-09)
