@@ -72,7 +72,7 @@ In the last example, when an internal event is sent by ``interpreter_3``, then a
 is sent both to ``interpreter_1`` and ``interpreter_2``.
 
 .. note:: Practically, unless you subclassed :py:class:`~sismic.interpreter.Interpreter`, the only difference between
-    internal and external events are the priority order in which they are processed by the interpreter.
+    internal and external events is the priority order in which they are processed by the interpreter.
 
 
 .. testcode:: bind
