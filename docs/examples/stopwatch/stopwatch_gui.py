@@ -34,9 +34,6 @@ class StopwatchApplication(tk.Frame):
         self.run()
 
     def run(self):
-        # This function does essentially the same job than ``sismic.interpreter.run_in_background``
-        # but uses Tkinter's mainloop instead of a Thread, which is more adequate.
-
         # Update internal clock and execute interpreter
         self.interpreter.time = time.time()
         self.interpreter.execute()
