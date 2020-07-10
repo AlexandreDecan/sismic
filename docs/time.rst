@@ -378,7 +378,7 @@ the last executed step.
 .. testcode:: delayed
 
     interpreter.clock.time = 7
-    interpreter.execute()  # Event is processed, because 6 + 1 <= 7
+    interpreter.execute()  # Event is processed, because 6 + 1 >= 7
 
     print('Current floor:', interpreter.context['current'])    
 
