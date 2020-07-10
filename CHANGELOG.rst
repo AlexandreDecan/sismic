@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.6.1 (2020-07-10)
+------------------
+
+ - (Fixed) Remove dependency to ``typing`` since it is no longer required for Python 3.5 and prevents the installation of Sismic.
+
+
 1.6.0 (2020-03-28)
 ------------------
 

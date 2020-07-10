@@ -40,6 +40,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
     keywords='statechart state machine interpreter model uml scxml harel',
 
@@ -49,7 +50,6 @@ setup(
         'ruamel.yaml>=0.12.10',
         'schema>=0.6.2',
         'behave>=1.2.6',
-        'typing>=3.5.1'
     ],
 
     entry_points={
