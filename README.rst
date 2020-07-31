@@ -9,7 +9,7 @@ Sismic for Python
     :target: https://www.codacy.com/app/alexandre-decan/sismic
 .. image:: https://badge.fury.io/py/sismic.svg
     :target: https://pypi.org/project/sismic/
-.. image:: https://readthedocs.org/projects/sismic/badge/?version=master
+.. image:: https://readthedocs.org/projects/sismic/badge/?version=latest
     :target: https://sismic.readthedocs.io/
 
 Sismic Interactive Statechart Model Interpreter and Checker
