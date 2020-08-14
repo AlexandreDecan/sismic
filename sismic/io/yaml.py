@@ -13,16 +13,18 @@ __all__ = ['import_from_yaml', 'export_to_yaml']
 
 class SCHEMA:
     contract = {schema.Or('before', 'after', 'always'): schema.Use(str)}
-
-    transition = {
+    # initial transitions can't have a guard and do not need a priority
+    initial_transition = {
         schema.Optional('target'): schema.Use(str),
+        schema.Optional('action'): schema.Use(str),
+    }
+    transition = {
         schema.Optional('event'): schema.Use(str),
         schema.Optional('guard'): schema.Use(str),
-        schema.Optional('action'): schema.Use(str),
         schema.Optional('contract'): [contract],
         schema.Optional('priority'): schema.Or(schema.Use(int), 'high', 'low'),
     }
-
+    transition.update(initial_transition)
     state = dict()  # type: ignore
     state.update({
         'name': schema.Use(str),
@@ -31,7 +33,7 @@ class SCHEMA:
         schema.Optional('on exit'): schema.Use(str),
         schema.Optional('transitions'): [transition],
         schema.Optional('contract'): [contract],
-        schema.Optional('initial'): schema.Or(str, transition),
+        schema.Optional('initial'): schema.Or(str, initial_transition),
         schema.Optional('parallel states'): [state],
         schema.Optional('states'): [state],
     })
