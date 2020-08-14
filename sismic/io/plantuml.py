@@ -162,11 +162,17 @@ class PlantUMLExporter:
                 self.output('{} : **post:** {}'.format(self.state_id(name), cond))
 
         # Transitions
-        if isinstance(state, CompoundState) and state.initial:
-            self.output('[*] {arrow} {target}'.format(
-                arrow=self.arrow(None, state.initial),
-                target=self.state_id(state.initial)
-            ))
+        if isinstance(state, CompoundState):
+            if isinstance(state.initial, Transition):
+                self.output('[*] {arrow} {target}'.format(
+                    arrow=self.arrow(None, state.initial.target),
+                    target=self.state_id(state.initial.target)
+                ))
+            elif state.initial:
+                self.output('[*] {arrow} {target}'.format(
+                    arrow=self.arrow(None, state.initial),
+                    target=self.state_id(state.initial)
+                ))
 
         self.export_transitions(name)
 

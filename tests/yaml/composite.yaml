@@ -2,10 +2,10 @@ statechart:
   name: statechart with composite states
   root state:
     name: root
-    initial: s1
     states:
       - name: s1
-        initial: s1a
+        initial:
+          target: s1a
         transitions:
         - target: s2
           event: close

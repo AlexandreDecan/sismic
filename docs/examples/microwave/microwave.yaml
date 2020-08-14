@@ -19,7 +19,6 @@ statechart:
       - name: door closed
         initial:
           target: closed without item
-          action: print("on the way to door closed without item")
         states:
           - name: closed without item
             transitions:

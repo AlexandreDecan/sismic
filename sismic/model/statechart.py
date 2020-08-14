@@ -1,6 +1,6 @@
 from copy import deepcopy
 from typing import Callable, Dict, Iterable, List, Optional, Union, cast
-
+import warnings
 from ..exceptions import StatechartError
 
 from .elements import (CompositeStateMixin, CompoundState, HistoryStateMixin,
@@ -583,6 +583,8 @@ class Statechart:
                         raise StatechartError('Initial state {} of {} does not exist'.format(initial, state))
                     if initial not in self.children_for(name):
                         raise StatechartError('Initial state {} of {} must be a child state'.format(initial, state))
+                elif any([name == transition.target for transition in self._transitions]):
+                    warnings.warn('Composite state {} is missing will have a default to {} as an initial state'.format(name, self.children_for(name)[0].name))
         return True
 
     def _validate_historystate_memory(self) -> bool:

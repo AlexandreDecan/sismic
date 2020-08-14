@@ -132,9 +132,12 @@ def _import_state_from_dict(state_d: Mapping[str, Any]) -> StateMixin:
         elif substates:
             initial = state_d.get('initial', None)
             if isinstance(initial, dict):
-                initial = _import_transition_from_dict(name, initial)
-            elif initial is None:
-                initial = substates[0].get('name')
+                try:
+                    initial = _import_transition_from_dict(name, initial)
+                except StatechartError:
+                    raise
+                except Exception as e:
+                    raise StatechartError('Unable to load given YAML') from e
             state = CompoundState(name, initial=initial, on_entry=on_entry, on_exit=on_exit)
         elif parallel_substates:
             state = OrthogonalState(name, on_entry=on_entry, on_exit=on_exit)
@@ -174,6 +177,43 @@ def export_to_dict(statechart: Statechart, ordered=True) -> Mapping[str, Any]:
     return {'statechart': d}
 
 
+def _export_transitions_to_list(transitions: [Transition], ordered=True) -> List[Mapping[str, Any]]:
+    data = []
+    for transition in transitions:
+        transition_data = OrderedDict() if ordered else {}
+        if transition.event:
+            transition_data['event'] = transition.event
+        if transition.guard:
+            transition_data['guard'] = transition.guard
+        if transition.target:
+            transition_data['target'] = transition.target
+        if transition.action:
+            transition_data['action'] = transition.action
+        if transition.priority != Transition.DEFAULT_PRIORITY:
+            if transition.priority == Transition.LOW_PRIORITY:
+                priority = 'low'
+            elif transition.priority == Transition.HIGH_PRIORITY:
+                priority = 'high'
+            else:
+                priority = transition.priority
+            transition_data['priority'] = priority
+
+        preconditions = getattr(transition, 'preconditions', [])
+        postconditions = getattr(transition, 'postconditions', [])
+        invariants = getattr(transition, 'invariants', [])
+        if preconditions or postconditions or invariants:
+            conditions = []
+            for condition in preconditions:
+                conditions.append({'before': condition})
+            for condition in postconditions:
+                conditions.append({'after': condition})
+            for condition in invariants:
+                conditions.append({'always': condition})
+            transition_data['contract'] = conditions
+        data.append(transition_data)
+    return data
+
+
 def _export_state_to_dict(statechart: Statechart, state_name: str, ordered=True) -> Mapping[str, Any]:
     data = OrderedDict() if ordered else {}
 
@@ -198,7 +238,9 @@ def _export_state_to_dict(statechart: Statechart, state_name: str, ordered=True)
             data['on exit'] = state.on_exit
 
     if isinstance(state, CompoundState):
-        if state.initial:
+        if isinstance(state.initial, Transition):
+            data['initial'] = _export_transitions_to_list([state.initial], ordered)
+        elif state.initial:
             data['initial'] = state.initial
 
     preconditions = getattr(state, 'preconditions', [])
@@ -218,48 +260,14 @@ def _export_state_to_dict(statechart: Statechart, state_name: str, ordered=True)
         # event, guard, target, action
         transitions = statechart.transitions_from(cast(StateMixin, state).name)
         if len(transitions) > 0:
-            data['transitions'] = []
-
-            for transition in transitions:
-                transition_data = OrderedDict() if ordered else {}
-                if transition.event:
-                    transition_data['event'] = transition.event
-                if transition.guard:
-                    transition_data['guard'] = transition.guard
-                if transition.target:
-                    transition_data['target'] = transition.target
-                if transition.action:
-                    transition_data['action'] = transition.action
-                if transition.priority != Transition.DEFAULT_PRIORITY:
-                    if transition.priority == Transition.LOW_PRIORITY:
-                        priority = 'low'
-                    elif transition.priority == Transition.HIGH_PRIORITY:
-                        priority = 'high'
-                    else:
-                        priority = transition.priority
-                    transition_data['priority'] = priority
-
-                preconditions = getattr(transition, 'preconditions', [])
-                postconditions = getattr(transition, 'postconditions', [])
-                invariants = getattr(transition, 'invariants', [])
-                if preconditions or postconditions or invariants:
-                    conditions = []
-                    for condition in preconditions:
-                        conditions.append({'before': condition})
-                    for condition in postconditions:
-                        conditions.append({'after': condition})
-                    for condition in invariants:
-                        conditions.append({'always': condition})
-                    transition_data['contract'] = conditions
-
-                data['transitions'].append(transition_data)
+            data['transitions'] = _export_transitions_to_list(transitions, ordered)
 
     if isinstance(state, CompositeStateMixin):
         children = statechart.children_for(cast(StateMixin, state).name)
         children_data = [_export_state_to_dict(statechart, child, ordered) for child in children]
-
         if isinstance(state, CompoundState):
             data['states'] = children_data
+
         elif isinstance(state, OrthogonalState):
             data['parallel states'] = children_data
 

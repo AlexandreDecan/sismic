@@ -147,7 +147,6 @@ class TestExportToPlantUML:
         statechart = elevator.statechart
         with open(filepath, 'r') as f:
             p1 = f.read()
-
         assert p1 != export_to_plantuml(statechart)
         assert p1 == export_to_plantuml(statechart, based_on=p1)
         assert p1 == export_to_plantuml(statechart, based_on_filepath=filepath)
