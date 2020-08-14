@@ -573,11 +573,16 @@ class Statechart:
         :raise StatechartError:
         """
         for name, state in self._states.items():
-            if isinstance(state, CompoundState) and state.initial:
-                if state.initial not in self._states:
-                    raise StatechartError('Initial state {} of {} does not exist'.format(state.initial, state))
-                if state.initial not in self.children_for(name):
-                    raise StatechartError('Initial state {} of {} must be a child state'.format(state.initial, state))
+            if isinstance(state, CompoundState):
+                initial = state.initial
+
+                if isinstance(initial, Transition):
+                    pass
+                elif initial is not None:
+                    if initial not in self._states:
+                        raise StatechartError('Initial state {} of {} does not exist'.format(initial, state))
+                    if initial not in self.children_for(name):
+                        raise StatechartError('Initial state {} of {} must be a child state'.format(initial, state))
         return True
 
     def _validate_historystate_memory(self) -> bool:

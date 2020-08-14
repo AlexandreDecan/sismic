@@ -6,7 +6,7 @@ statechart:
     MAXPOWER = 3  # 1200W
   root state:
     name: controller
-    initial: door closed
+
     on entry: |
       power = POWER_DEFAULT
       timer = 0
@@ -17,7 +17,9 @@ statechart:
           timer = 0
     states:
       - name: door closed
-        initial: closed without item
+        initial:
+          target: closed without item
+          action: print("on the way to door closed without item")
         states:
           - name: closed without item
             transitions:

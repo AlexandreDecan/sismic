@@ -130,7 +130,12 @@ def _import_state_from_dict(state_d: Mapping[str, Any]) -> StateMixin:
         if substates and parallel_substates:
             raise StatechartError('{} cannot declare both a "states" and a "parallel states" property'.format(name))
         elif substates:
-            state = CompoundState(name, initial=state_d.get('initial', None), on_entry=on_entry, on_exit=on_exit)
+            initial = state_d.get('initial', None)
+            if isinstance(initial, dict):
+                initial = _import_transition_from_dict(name, initial)
+            elif initial is None:
+                initial = substates[0].get('name')
+            state = CompoundState(name, initial=initial, on_entry=on_entry, on_exit=on_exit)
         elif parallel_substates:
             state = OrthogonalState(name, on_entry=on_entry, on_exit=on_exit)
         else:

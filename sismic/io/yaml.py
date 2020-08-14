@@ -31,7 +31,7 @@ class SCHEMA:
         schema.Optional('on exit'): schema.Use(str),
         schema.Optional('transitions'): [transition],
         schema.Optional('contract'): [contract],
-        schema.Optional('initial'): schema.Use(str),
+        schema.Optional('initial'): schema.Or(str, transition),
         schema.Optional('parallel states'): [state],
         schema.Optional('states'): [state],
     })

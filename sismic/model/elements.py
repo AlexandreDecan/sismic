@@ -1,5 +1,5 @@
 from abc import ABCMeta
-from typing import List
+from typing import List, Union
 
 __all__ = ['ContractMixin', 'StateMixin', 'ActionStateMixin', 'TransitionStateMixin', 'CompositeStateMixin',
            'HistoryStateMixin', 'BasicState', 'CompoundState', 'OrthogonalState', 'ShallowHistoryState',
@@ -138,6 +138,86 @@ class BasicState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMix
             return NotImplemented
 
 
+class Transition(ContractMixin):
+    """
+    Represent a transition from a source state to a target state.
+
+    A transition can be eventless (no event) or internal (no target).
+    A condition (code as string) can be specified as a guard.
+
+    :param source: name of the source state
+    :param target: name of the target state (if transition is not internal)
+    :param event: event name (if any)
+    :param guard: condition as code (if any)
+    :param action: action as code (if any)
+    :param priority: priority (default to 0)
+    """
+
+    LOW_PRIORITY = -1
+    DEFAULT_PRIORITY = 0
+    HIGH_PRIORITY = 1
+
+    def __init__(self, source: str, target: str=None, event: str=None, guard: str=None, action: str=None, priority=None) -> None:
+        ContractMixin.__init__(self)
+        self._source = source
+        self._target = target
+        self.event = event
+        self.guard = guard
+        self.action = action
+        self.priority = 0 if priority is None else priority
+
+    @property
+    def source(self):
+        return self._source
+
+    @property
+    def target(self):
+        return self._target
+
+    @property
+    def internal(self):
+        """
+        Boolean indicating whether this transition is an internal transition.
+        """
+        return self._target is None
+
+    @property
+    def eventless(self):
+        """
+        Boolean indicating whether this transition is an eventless transition.
+        """
+        return self.event is None
+
+    def __eq__(self, other):
+        if isinstance(other, Transition):
+            return (
+                ContractMixin.__eq__(self, other)
+                and self.source == other.source
+                and self.target == other.target
+                and self.event == other.event
+                and self.guard == other.guard
+                and self.action == other.action
+                and self.priority == other.priority
+            )
+        else:
+            return NotImplemented
+
+    def __repr__(self):
+        return 'Transition({!r}, {!r}, event={!r})'.format(self.source, self.target, self.event)
+
+    def __str__(self):
+        return '{} -> {}{} [{}] -> {}'.format(
+            self.source,
+            '' if self.priority == 0 else '{}:'.format(self.priority),
+            self.event,
+            self.guard,
+            self.target if self.target else ''
+        )
+
+    def __hash__(self):
+        return hash(self.source)
+
+
 class CompoundState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin):
     """
     Compound states must have children states.
@@ -148,7 +228,7 @@ class CompoundState(ContractMixin, StateMixin, ActionStateMixin, TransitionState
     :param on_exit: code to execute when state is exited
     """
 
-    def __init__(self, name: str, initial: str=None, on_entry: str=None, on_exit: str=None) -> None:
+    def __init__(self, name: str, initial: Union[str, Transition] =None, on_entry: str=None, on_exit: str=None) -> None:
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
@@ -278,82 +358,3 @@ class FinalState(ContractMixin, StateMixin, ActionStateMixin):
         else:
             return NotImplemented
 
-
-class Transition(ContractMixin):
-    """
-    Represent a transition from a source state to a target state.
-
-    A transition can be eventless (no event) or internal (no target).
-    A condition (code as string) can be specified as a guard.
-
-    :param source: name of the source state
-    :param target: name of the target state (if transition is not internal)
-    :param event: event name (if any)
-    :param guard: condition as code (if any)
-    :param action: action as code (if any)
-    :param priority: priority (default to 0)
-    """
-
-    LOW_PRIORITY = -1
-    DEFAULT_PRIORITY = 0
-    HIGH_PRIORITY = 1
-
-    def __init__(self, source: str, target: str=None, event: str=None, guard: str=None, action: str=None, priority=None) -> None:
-        ContractMixin.__init__(self)
-        self._source = source
-        self._target = target
-        self.event = event
-        self.guard = guard
-        self.action = action
-        self.priority = 0 if priority is None else priority
-
-    @property
-    def source(self):
-        return self._source
-
-    @property
-    def target(self):
-        return self._target
-
-    @property
-    def internal(self):
-        """
-        Boolean indicating whether this transition is an internal transition.
-        """
-        return self._target is None
-
-    @property
-    def eventless(self):
-        """
-        Boolean indicating whether this transition is an eventless transition.
-        """
-        return self.event is None
-
-    def __eq__(self, other):
-        if isinstance(other, Transition):
-            return (
-                ContractMixin.__eq__(self, other)
-                and self.source == other.source
-                and self.target == other.target
-                and self.event == other.event
-                and self.guard == other.guard
-                and self.action == other.action
-                and self.priority == other.priority
-            )
-        else:
-            return NotImplemented
-
-    def __repr__(self):
-        return 'Transition({!r}, {!r}, event={!r})'.format(self.source, self.target, self.event)
-
-    def __str__(self):
-        return '{} -> {}{} [{}] -> {}'.format(
-            self.source,
-            '' if self.priority == 0 else '{}:'.format(self.priority),
-            self.event,
-            self.guard,
-            self.target if self.target else ''
-        )
-
-    def __hash__(self):
-        return hash(self.source)

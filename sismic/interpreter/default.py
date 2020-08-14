@@ -611,6 +611,8 @@ class Interpreter:
             elif isinstance(leaf, OrthogonalState) and self._statechart.children_for(leaf.name):
                 return MicroStep(entered_states=sorted(self._statechart.children_for(leaf.name)))
             elif isinstance(leaf, CompoundState) and leaf.initial:
+                if isinstance(leaf.initial, Transition):
+                    return MicroStep(entered_states=[leaf.initial.target], transition=leaf.initial)
                 return MicroStep(entered_states=[leaf.initial])
 
         return None
