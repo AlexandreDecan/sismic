@@ -55,7 +55,7 @@ Many examples are available in `docs/examples <https://github.com/AlexandreDecan
 
 The documentation can also be directly built from the `docs <https://github.com/AlexandreDecan/sismic/tree/master/docs>`_ directory using Sphinx.
 
-The scientific article `A method for testing and validating executable statechart models <https://doi.org/10.1007/s10270-018-0676-3>`_ presenting the method and techniques supported by Sismic for validating and testing statecharts, is published in Springer's Software and Systems modeling journal in 2018. 
+The scientific article `A method for testing and validating executable statechart models <https://doi.org/10.1007/s10270-018-0676-3>`_ presenting the method and techniques supported by Sismic for validating and testing statecharts, is published in Springer's Software and Systems modeling journal in 2018.
 
 
 Changelog
@@ -84,7 +84,7 @@ You can cite the Sismic library using:
       url = {https://github.com/AlexandreDecan/sismic},
     }
 
-You can cite the associated research article using:
+You can cite the associated research article (`PDF <https://decan.lexpage.net/files/SOSYM-2018.pdf>`_) using:
 
 .. code::
 

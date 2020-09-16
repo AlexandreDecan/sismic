@@ -107,7 +107,7 @@ https://github.com/AlexandreDecan/sismic
 
 Use GitHub's integrated services to contribute suggestions and feature requests for this library or to report bugs.
 
-You can cite the research article describing the method and techniques supported by Sismic using:
+You can cite the research article (`PDF <https://decan.lexpage.net/files/SOSYM-2018.pdf>`_) describing the method and techniques supported by Sismic using:
 
 .. code::
 
