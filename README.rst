@@ -78,11 +78,28 @@ You can cite the Sismic library using:
 
 .. code::
 
+    @article{sismic-article,
+        title = "Sismic—A Python library for statechart execution and testing",
+        journal = "SoftwareX",
+        volume = "12",
+        pages = "100590",
+        year = "2020",
+        issn = "2352-7110",
+        doi = "https://doi.org/10.1016/j.softx.2020.100590",
+        url = "http://www.sciencedirect.com/science/article/pii/S2352711020303034",
+        author = "Alexandre Decan and Tom Mens",
+    }
+
+or
+
+.. code::
+
     @software{sismic,
       author = {Decan, Alexandre},
       title = {Sismic Interactive Statechart Model Interpreter and Checker},
       url = {https://github.com/AlexandreDecan/sismic},
     }
+
 
 You can cite the associated research article (`PDF <https://decan.lexpage.net/files/SOSYM-2018.pdf>`_) using:
 
