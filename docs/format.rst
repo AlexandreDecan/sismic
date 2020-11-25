@@ -160,7 +160,7 @@ A composite state can define its initial state using *initial*.
     states:
       - name: nested state 1
       - name: nested state 2
-        initial: nested state a2
+        initial: nested state 2a
         states:
           - name: nested state 2a
 
