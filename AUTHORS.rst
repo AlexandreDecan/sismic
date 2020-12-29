@@ -16,3 +16,4 @@ Contributors
 * Timothy Rule
 * Jan Wouter Versluis
 * Frederik Mathiesen
+* Stéphane Bidoul
