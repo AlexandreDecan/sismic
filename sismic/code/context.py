@@ -147,7 +147,7 @@ class EventContextProvider:  # pragma: no cover
             self.pending = []
 
 
-class FrozenContext(collections.Mapping):  # pragma: no cover
+class FrozenContext(collections.abc.Mapping):  # pragma: no cover
     """
     A shallow copy of a context. The keys of the underlying context are
     exposed as attributes.
