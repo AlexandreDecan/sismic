@@ -5,8 +5,9 @@ Changelog
 1.6.2 (2020-12-29)
 ------------------
 
+ - (Added) Support for Python 3.9.
  - (Fixed) Remove deprecated import from ``collections`` (`#101 <https://github.com/AlexandreDecan/sismic/pull/101>`__).
-
+ - (Fixed) Remove deprecated ``threading.isAlive`` used in ``sismic.runner.AsyncRunner``.
 
 
 1.6.1 (2020-07-10)

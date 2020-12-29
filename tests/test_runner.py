@@ -1,6 +1,6 @@
 import pytest
 
-from time import sleep 
+from time import sleep
 
 from sismic.runner import AsyncRunner
 from sismic.interpreter import Interpreter
@@ -26,11 +26,11 @@ class TestAsyncRunner:
             before_execute = mocker.MagicMock()
             after_execute = mocker.MagicMock()
             after_run = mocker.MagicMock()
-        
+
         r = MockedRunner(interpreter, interval=0)
         yield r
         r.stop()
-        
+
     def test_not_yet_started(self, runner):
         assert runner.interpreter.configuration == []
 
@@ -46,7 +46,7 @@ class TestAsyncRunner:
         runner.start()
         sleep(self.INTERVAL)
         assert runner.interpreter.configuration == ['root', 's1']
-        
+
         runner.interpreter.queue('goto s2')
         sleep(self.INTERVAL)
         assert runner.interpreter.configuration == ['root', 's3']
@@ -57,7 +57,7 @@ class TestAsyncRunner:
 
         with pytest.raises(RuntimeError, match='Cannot restart'):
             runner.start()
-        
+
         assert not runner.running
 
     def test_start_again(self, runner):
@@ -65,7 +65,7 @@ class TestAsyncRunner:
 
         with pytest.raises(RuntimeError, match='already started'):
             runner.start()
-        
+
         assert runner.running
         runner.stop()
         assert not runner.running
@@ -79,9 +79,9 @@ class TestAsyncRunner:
         mocked_runner.start()
         sleep(self.INTERVAL)
         assert len(mocked_runner.before_run.call_args_list) == 1
-        
+
         sleep(self.INTERVAL)
-        
+
         assert len(mocked_runner.before_execute.call_args_list) > 0
         assert len(mocked_runner.after_execute.call_args_list) > 0
 
@@ -90,7 +90,7 @@ class TestAsyncRunner:
         sleep(self.INTERVAL)
         assert len(mocked_runner.after_run.call_args_list) == 1
 
-            
+
     def test_final(self, runner):
         runner.start()
         runner.interpreter.queue('goto s2')
@@ -100,7 +100,7 @@ class TestAsyncRunner:
         assert runner.interpreter.final
         assert not runner.running
         sleep(self.INTERVAL)  # Wait for the thread to finish
-        assert not runner._thread.isAlive()
+        assert not runner._thread.is_alive()
 
     def test_pause(self, runner):
         runner.start()
@@ -111,7 +111,7 @@ class TestAsyncRunner:
         assert runner.paused
         assert runner.running
         assert runner.interpreter.configuration == ['root', 's1']
-        
+
         runner.interpreter.queue('goto s2')
         sleep(self.INTERVAL)
         assert runner.interpreter.configuration == ['root', 's1']
@@ -122,7 +122,7 @@ class TestAsyncRunner:
         sleep(self.INTERVAL)
         assert runner.interpreter.configuration == ['root', 's3']
 
-        
+
     def test_state(self, runner):
         assert not runner.running
         assert not runner.paused
