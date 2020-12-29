@@ -2,7 +2,7 @@ import collections
 import copy
 import warnings
 
-from typing import Optional, Union, List, Dict
+from typing import Optional, List, Dict
 
 from ..model import Event, InternalEvent, MetaEvent
 
