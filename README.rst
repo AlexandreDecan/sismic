@@ -1,8 +1,8 @@
 Sismic for Python
 =================
 
-.. image:: https://travis-ci.org/AlexandreDecan/sismic.svg?branch=master
-    :target: https://travis-ci.org/AlexandreDecan/sismic
+.. image:: https://travis-ci.com/AlexandreDecan/sismic.svg?branch=master
+    :target: https://travis-ci.com/AlexandreDecan/sismic
 .. image:: https://coveralls.io/repos/AlexandreDecan/sismic/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/AlexandreDecan/sismic?branch=master
 .. image:: https://api.codacy.com/project/badge/grade/10d0a71b01c144859db571ddf17bb7d4
