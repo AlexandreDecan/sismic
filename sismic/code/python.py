@@ -12,7 +12,7 @@ from ..model import Event, InternalEvent, MetaEvent, Transition
 __all__ = ['PythonEvaluator']
 
 
-class FrozenContext(collections.Mapping):
+class FrozenContext(collections.abc.Mapping):
     """
     A shallow copy of a context. The keys of the underlying context are
     exposed as attributes.

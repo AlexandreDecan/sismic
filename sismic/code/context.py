@@ -2,7 +2,7 @@ import collections
 import copy
 import warnings
 
-from typing import Optional, Union, List, Dict
+from typing import Optional, List, Dict
 
 from ..model import Event, InternalEvent, MetaEvent
 
@@ -147,7 +147,7 @@ class EventContextProvider:  # pragma: no cover
             self.pending = []
 
 
-class FrozenContext(collections.Mapping):  # pragma: no cover
+class FrozenContext(collections.abc.Mapping):  # pragma: no cover
     """
     A shallow copy of a context. The keys of the underlying context are
     exposed as attributes.
