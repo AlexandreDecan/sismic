@@ -109,7 +109,7 @@ class AsyncRunner:
         """
         Wait for the execution to finish.
         """
-        if self._thread.isAlive():
+        if self._thread.is_alive():
             self._thread.join()
 
     def execute(self) -> List[MacroStep]:
