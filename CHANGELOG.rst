@@ -1,6 +1,14 @@
 Changelog
 =========
 
+
+1.6.2 (2020-12-29)
+------------------
+
+ - (Fixed) Remove deprecated import from ``collections`` (`#101 <https://github.com/AlexandreDecan/sismic/pull/101>`__).
+
+
+
 1.6.1 (2020-07-10)
 ------------------
 
