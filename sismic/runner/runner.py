@@ -32,14 +32,14 @@ class AsyncRunner:
     as such, proposes several hooks to control the execution and additional
     behaviours:
 
-     - before_run: called (only once !) when the runner is started. By default, do nothing.
-     - after_run: called (only once !) when the interpreter reaches a final configuration.
-       configuration of the underlying interpreter is reached. By default, do nothing.
-     - execute: called at each step of the run. By default, call the `execute_once`
+     - before_run: called (only once!) when the runner is started. By default, does nothing.
+     - after_run: called (only once!) when the interpreter reaches a final configuration.
+       configuration of the underlying interpreter is reached. By default, does nothing.
+     - execute: called at each step of the run. By default, calls the `execute_once`
        method of the underlying interpreter and returns a *list* of macro steps.
-     - before_execute: called right before the call to `execute()`. By default, do nothing.
+     - before_execute: called right before the call to `execute()`. By default, does nothing.
      - after_execute: called right after the call to `execute()` with the returned value
-       of `execute()`. By default, do nothing.
+       of `execute()`. By default, does nothing.
 
     By default, this runner calls the interpreter's `execute_once` method only once per cycle
     (meaning at least one macro step is processed during each cycle). If `execute_all` is
