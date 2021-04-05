@@ -2,6 +2,7 @@ from sismic.helpers import log_trace
 
 
 def setup_sismic_from_context(context):
+    # Create interpreter
     statechart = context.config.userdata.get('statechart')
     interpreter_klass = context.config.userdata.get('interpreter_klass')
     context.interpreter = interpreter_klass(statechart)
