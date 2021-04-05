@@ -53,7 +53,13 @@ def setup_behave_context(
 
     def run_hook(self, name, context, *args):
         if name == "before_scenario":
-            sismic_before_scenario(context, *args)
+            if context.config.userdata.get("is_async"):
+                # In async testing, this might get called prior to starting the event loop.  Ignore if so
+                current_context = get_async_context(context)
+                if current_context and current_context.loop.is_running():
+                    sismic_before_scenario(context, *args)
+            else:
+                sismic_before_scenario(context, *args)
         elif name == "before_step":
             sismic_before_step(context, *args)
         elif name == "before_tag":
