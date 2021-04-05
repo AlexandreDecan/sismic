@@ -1,8 +1,7 @@
 from sismic.helpers import log_trace
 
 
-def before_scenario(context, scenario):
-    # Create interpreter
+def setup_sismic_from_context(context):
     statechart = context.config.userdata.get('statechart')
     interpreter_klass = context.config.userdata.get('interpreter_klass')
     context.interpreter = interpreter_klass(statechart)
@@ -16,8 +15,11 @@ def before_scenario(context, scenario):
     for property_statechart in context.config.userdata.get('property_statecharts'):
         context.interpreter.bind_property_statechart(property_statechart, interpreter_klass=interpreter_klass)
 
+def sismic_before_scenario(context, scenario):
+    setup_sismic_from_context(context)
 
-def before_step(context, step):
+
+def sismic_before_step(context, step):
     # "Then" steps must at least follow one "when" step
     if step.step_type == 'then':
         # Stop monitoring
@@ -27,7 +29,10 @@ def before_step(context, step):
             raise ValueError('Scenario must at least contain one "when" step before any "then" step.')
 
 
-def after_step(context, step):
+def sismic_after_step(context, step):
+    if not hasattr(context, "interpreter"):
+        return
+
     # "Given" triggers execution
     if step.step_type == 'given':
         context.interpreter.execute()
@@ -58,3 +63,15 @@ def after_step(context, step):
         print('--------------------------------------------------------------')
 
         pdb.post_mortem(step.exc_traceback)
+
+
+def before_scenario(context, scenario):
+    sismic_before_scenario(context, scenario)
+
+
+def before_step(context, step):
+    sismic_before_step(context, step)
+
+
+def after_step(context, step):
+    sismic_after_step(context, step)
