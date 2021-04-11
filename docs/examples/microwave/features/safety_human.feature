@@ -6,13 +6,11 @@ Feature: Safety criterion
     And I close the door
     And I press increase timer button 5 times
 
-  @fixture.sismic_application
   Scenario: NO cooking when door is not closed
     Given I open the door
     When I press start button
     Then heating does not turn on
 
-  @fixture.sismic_application
   Scenario: Opening door interrupts cooking
     Given I press start button
     And 3 seconds elapsed
