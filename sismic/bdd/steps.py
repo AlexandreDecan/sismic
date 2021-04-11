@@ -1,3 +1,7 @@
+import asyncio
+from asyncio.events import AbstractEventLoop
+from sismic.bdd.LoopRunner import LoopRunner
+from typing import AsyncContextManager
 from behave import given, when, then  # type: ignore
 from .. import testing
 
@@ -5,7 +9,11 @@ from .. import testing
 @given('I do nothing')
 @when('I do nothing')
 def do_nothing(context):
-    pass
+    is_async = context.config.userdata.get("is_async")
+    if is_async:
+        runner = getattr(context, 'runner')  # type: LoopRunner
+        if runner.loop.is_running():
+            runner.run_coroutine(asyncio.sleep(0))
 
 
 @given('I reproduce "{scenario}"')

@@ -2,6 +2,7 @@ from sismic.helpers import log_trace
 
 
 def setup_sismic_from_context(context):
+    # Create interpreter
     statechart = context.config.userdata.get("statechart")
     interpreter_klass = context.config.userdata.get("interpreter_klass")
     context.interpreter = interpreter_klass(statechart)
@@ -72,15 +73,3 @@ def sismic_after_step(context, step):
         print("--------------------------------------------------------------")
 
         pdb.post_mortem(step.exc_traceback)
-
-
-def before_scenario(context, scenario):
-    sismic_before_scenario(context, scenario)
-
-
-def before_step(context, step):
-    sismic_before_step(context, step)
-
-
-def after_step(context, step):
-    sismic_after_step(context, step)
