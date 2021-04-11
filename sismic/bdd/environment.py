@@ -13,6 +13,24 @@ __all__ = [
 ]
 
 
+def setup_sismic_from_context(context):
+    # Create interpreter
+    statechart = context.config.userdata.get("statechart")
+    interpreter_klass = context.config.userdata.get("interpreter_klass")
+    context.interpreter = interpreter_klass(statechart)
+
+    # Log trace
+    context.trace = log_trace(context.interpreter)
+    context._monitoring = False
+    context.monitored_trace = None
+
+    # Bind property statecharts
+    for property_statechart in context.config.userdata.get("property_statecharts"):
+        context.interpreter.bind_property_statechart(
+            property_statechart, interpreter_klass=interpreter_klass
+        )
+
+
 def setup_behave_context(
     context,
     statechart_path=None,
@@ -72,25 +90,11 @@ def sismic_after_all(context):
         clear_async_context(context)
 
 
-def setup_sismic_from_context(context):
-    # Create interpreter
-    statechart = context.config.userdata.get("statechart")
-    interpreter_klass = context.config.userdata.get("interpreter_klass")
-    context.interpreter = interpreter_klass(statechart)
-
-    # Log trace
-    context.trace = log_trace(context.interpreter)
-    context._monitoring = False
-    context.monitored_trace = None
-
-    # Bind property statecharts
-    for property_statechart in context.config.userdata.get("property_statecharts"):
-        context.interpreter.bind_property_statechart(
-            property_statechart, interpreter_klass=interpreter_klass
-        )
-
-
 def sismic_before_scenario(context, scenario):
+    if async_test(context):
+        sismic_async_application(context)
+    else:
+        sismic_application(context)
     setup_sismic_from_context(context)
 
 
@@ -146,6 +150,14 @@ def sismic_after_step(context, step):
         pdb.post_mortem(step.exc_traceback)
 
 
+def sismic_application(context):
+    reset_fn = context.config.userdata.get("reset_fn")
+    if reset_fn:
+        (reset_fn)(context)
+    setup_sismic_from_context(context)
+
+
+# I'd love for these to be in async_support, but it must call setup_sismic_from_context
 async def default_async_task(context):
     async_start_fn = context.config.userdata.get("async_start_fn")
     try:
@@ -155,3 +167,12 @@ async def default_async_task(context):
         await asyncio.sleep(0)
     except Exception as ex:
         print(ex)
+
+
+def sismic_async_application(context):
+    reset_fn = context.config.userdata.get("reset_fn")
+    if reset_fn:
+        (reset_fn)(context)
+    async_context = create_async_context(context)
+    task = async_context.loop.create_task(default_async_task(context))
+    async_context.tasks.append(task)
