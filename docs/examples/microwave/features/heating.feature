@@ -1,29 +1,24 @@
 Feature: No heating if door is opened
 
-  @fixture.sismic_application
   Scenario: No heating when nothing is done
     When I do nothing
     Then event heating_on is not fired
 
-  @fixture.sismic_application
   Scenario: No heating when I open the door
     When I send event door_opened
     Then event heating_on is not fired
 
-  @fixture.sismic_application
   Scenario: No heating when item is placed
     Given I send event door_opened
     When I send event item_placed
     Then event heating_on is not fired
 
-  @fixture.sismic_application
   Scenario: No heating when door is not closed
     Given I send event door_opened
     And I send event item_placed
     When I send event door_closed
     Then event heating_on is not fired
 
-  @fixture.sismic_application
   Scenario: Allow heating if door is closed
     Given I send event door_opened
     And I send event item_placed
@@ -32,7 +27,6 @@ Feature: No heating if door is opened
     When I send event cooking_start
     Then event heating_on is fired
 
-  @fixture.sismic_application
   Scenario: Opening door interrupts heating
     Given I reproduce "Allow heating if door is closed"
     When I send event door_opened

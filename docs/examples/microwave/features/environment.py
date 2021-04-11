@@ -1,13 +1,12 @@
 from os.path import dirname, join
 from sismic.io.yaml import import_from_yaml
-from sismic.bdd.fixtures import setup_behave_context
+from sismic.bdd.environment import setup_behave_context
 from sismic.interpreter.default import Interpreter
 
 
 def setup_application(context, state_def) -> Interpreter:
     with open(state_def) as f:
         sc = import_from_yaml(f)
-
     return Interpreter(sc)
 
 
