@@ -1,5 +1,6 @@
 Feature: Cooking
 
+  @fixture.sismic_application
   Scenario: Start cooking food
     Given I open the door
     And I place an item in the oven
@@ -9,6 +10,7 @@ Feature: Cooking
     When I press start button
     Then heating turns on
 
+  @fixture.sismic_application
   Scenario: Stop cooking food
     Given I reproduce "Start cooking food"
     When 2 seconds elapsed
@@ -17,6 +19,7 @@ Feature: Cooking
     Then variable timer equals 0
     And heating turns off
 
+  @fixture.sismic_application
   Scenario: Cooking stops after preset time
     Given I reproduce "Start cooking food"
     When 5 seconds elapsed
