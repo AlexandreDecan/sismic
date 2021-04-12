@@ -36,11 +36,13 @@ def log_trace(interpreter: Interpreter) -> List[MacroStep]:
 
 def coverage_from_trace(trace: List[MacroStep]) -> Mapping[str, Counter]:
     """
-    Given a list of macro steps considered as the trace of a statechart execution, return *Counter* objects
-    that counts the states that were entered, the states that were exited and the transitions that were processed.
+    Given a list of macro steps considered as the trace of a statechart execution, return *Counter*
+    objects that counts the states that were entered, the states that were exited and the
+    transitions that were processed.
 
     :param trace: A list of macro steps
-    :return: A dict whose keys are "entered states", "exited states" and "processed transitions" and whose values are Counter object.
+    :return: A dict whose keys are "entered states", "exited states" and "processed transitions"
+    and whose values are Counter object.
     """
     entered_states = []
     exited_states = []
@@ -64,10 +66,13 @@ def run_in_background(interpreter: Interpreter,
                       delay: float = 0.05,
                       callback: Callable[[List[MacroStep]], Any] = None) -> threading.Thread:
     """
-    Run given interpreter in background. The interpreter is ran until it reaches a final configuration.
+    Run given interpreter in background.
+
+    The interpreter is ran until it reaches a final configuration.
     You can manually stop the thread using the added *stop* of the returned Thread object.
-    This is for convenience only and should be avoided, because a call to *stop* puts the interpreter in
-    an empty (and thus final) configuration, without properly leaving the active states.
+    This is for convenience only and should be avoided, because a call to *stop* puts the
+    interpreter in an empty (and thus final) configuration, without properly leaving the
+    active states.
 
     :param interpreter: an interpreter
     :param delay: delay between each call to *execute()*

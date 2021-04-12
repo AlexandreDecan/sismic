@@ -240,7 +240,8 @@ class Statechart:
         """
         Rotate given transition.
 
-        You MUST specify either *new_source* (a valid state name) or *new_target* (a valid state name or None) or both.
+        You MUST specify either *new_source* (a valid state name) or *new_target* (a valid
+        state name or None) or both.
 
         :param transition: a *Transition* instance
         :param new_source: a state name
@@ -322,7 +323,8 @@ class Statechart:
 
     def events_for(self, name_or_names: Union[str, List[str]] = None) -> List[str]:
         """
-        Return a list containing the name of every event that guards a transition in this statechart.
+        Return a list containing the name of every event that guards a transition
+        in this statechart.
 
         If *name_or_names* is specified, it must be the name of a state (or a list of such names).
         Only transitions that have a source state from this list will be considered.
@@ -369,7 +371,7 @@ class Statechart:
             # Check root state
             if self.root:
                 raise StatechartError(
-                    'Root already defined, {} should declare an existing parent state'.format(state))
+                    'Root already defined, {} must declare an existing parent state'.format(state))
         else:
             parent_state = self.state_for(parent)
 
@@ -398,8 +400,8 @@ class Statechart:
         Remove given state.
 
         The transitions that involve this state will also be removed.
-        If the state is the target of an *initial* or *memory* property, their value will be set to None.
-        If the state has children, they will be removed too.
+        If the state is the target of an *initial* or *memory* property, their value
+        will be set to None. If the state has children, they will be removed too.
 
         :param name: name of a state
         :raise StatechartError:
@@ -527,15 +529,18 @@ class Statechart:
         """
         Copy (a part of) given *statechart* into current one.
 
-        Copy *source* state, all its descendants and all involved transitions from *statechart* into current statechart.
-        The *source* state will override *replace* state (but will be renamed to *replace*), and all its descendants in
-        *statechart* will be copied into current statechart.
-        All the transitions that are involved in the process must be fully contained in *source* state (ie. for all
-        transition T: S->T, if S (resp. T) is a descendant-or-self of *source*, then T (resp. S) must be
-        a descendant-or-self of *source*).
+        Copy *source* state, all its descendants and all involved transitions from *statechart*
+        into current statechart. The *source* state will override *replace* state (but will be
+        renamed to *replace*), and all its descendants in *statechart* will be copied into current
+        statechart.
 
-        If necessary, callable *renaming_func* can be provided. This function should accept a (state) name and return a
-        (new state) name. Use *renaming_func* to avoid conflicting names in target statechart.
+        All the transitions that are involved in the process must be fully contained in *source*
+        state (ie. for all transition T: S->T, if S (resp. T) is a descendant-or-self of *source*,
+        then T (resp. S) must be a descendant-or-self of *source*).
+
+        If necessary, callable *renaming_func* can be provided. This function should accept a
+        (state) name and return a (new state) name. Use *renaming_func* to avoid conflicting
+        names in target statechart.
 
         :param statechart: Source statechart from which states will be copied.
         :param source: Name of the source state.
@@ -595,7 +600,7 @@ class Statechart:
 
     def _validate_historystate_memory(self) -> bool:
         """
-        Checks that every *HistoryStateMixin*'s memory refer to one of its parent's children, except itself.
+        Checks that every *HistoryStateMixin*'s memory refer to another of its parent's children.
 
         :return: True
         :raise StatechartError:
