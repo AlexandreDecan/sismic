@@ -14,7 +14,8 @@ def before_scenario(context, scenario):
 
     # Bind property statecharts
     for property_statechart in context.config.userdata.get('property_statecharts'):
-        context.interpreter.bind_property_statechart(property_statechart, interpreter_klass=interpreter_klass)
+        context.interpreter.bind_property_statechart(
+            property_statechart, interpreter_klass=interpreter_klass)
 
 
 def before_step(context, step):
@@ -24,7 +25,8 @@ def before_step(context, step):
         context._monitoring = False
 
         if context.monitored_trace is None:
-            raise ValueError('Scenario must at least contain one "when" step before any "then" step.')
+            raise ValueError(
+                'Scenario must at least contain one "when" step before any "then" step.')
 
 
 def after_step(context, step):

@@ -10,8 +10,9 @@ __all__ = ['InternalEventListener', 'PropertyStatechartListener']
 
 class InternalEventListener:
     """
-    Listener that filters and propagates internal events as external events. 
+    Listener that filters and propagates internal events as external events.
     """
+
     def __init__(self, callable: Callable[[Event], Any]) -> None:
         self._callable = callable
 
@@ -25,6 +26,7 @@ class PropertyStatechartListener:
     Listener that propagates meta-events to given property statechart, executes
     the property statechart, and checks it.
     """
+
     def __init__(self, interpreter) -> None:
         self._interpreter = interpreter
 

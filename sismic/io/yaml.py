@@ -45,7 +45,7 @@ class SCHEMA:
     }
 
 
-def import_from_yaml(text: str=None, filepath: str=None, *, ignore_schema: bool=False, ignore_validation: bool=False) -> Statechart:
+def import_from_yaml(text: str = None, filepath: str = None, *, ignore_schema: bool = False, ignore_validation: bool = False) -> Statechart:
     """
     Import a statechart from a YAML representation (first argument) or a YAML file (filepath argument).
 
@@ -59,7 +59,8 @@ def import_from_yaml(text: str=None, filepath: str=None, *, ignore_schema: bool=
     :return: a *Statechart* instance
     """
     if not text and not filepath:
-        raise TypeError('A YAML must be provided, either using first argument or filepath argument.')
+        raise TypeError(
+            'A YAML must be provided, either using first argument or filepath argument.')
     elif text and filepath:
         raise TypeError('Either provide first argument or filepath argument, not both.')
     elif filepath:
@@ -85,7 +86,7 @@ def import_from_yaml(text: str=None, filepath: str=None, *, ignore_schema: bool=
     return sc
 
 
-def export_to_yaml(statechart: Statechart, filepath: str=None) -> str:
+def export_to_yaml(statechart: Statechart, filepath: str = None) -> str:
     """
     Export given *Statechart* instance to YAML. Its YAML representation is returned by this function.
     Automatically save the output to filepath, if provided.

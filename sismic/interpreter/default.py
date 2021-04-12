@@ -49,10 +49,10 @@ class Interpreter:
     """
 
     def __init__(self, statechart: Statechart, *,
-                 evaluator_klass: Callable[..., Evaluator]=PythonEvaluator,
-                 initial_context: Mapping[str, Any]=None,
-                 clock: Clock=None,
-                 ignore_contract: bool=False) -> None:
+                 evaluator_klass: Callable[..., Evaluator] = PythonEvaluator,
+                 initial_context: Mapping[str, Any] = None,
+                 clock: Clock = None,
+                 ignore_contract: bool = False) -> None:
         # Internal variables
         self._ignore_contract = ignore_contract
         self._statechart = statechart
@@ -96,7 +96,8 @@ class Interpreter:
 
     @time.setter
     def time(self, value: float):
-        warnings.warn('Interpreter.time is deprecated since 1.3.0, use Interpreter.clock.time instead', DeprecationWarning)
+        warnings.warn(
+            'Interpreter.time is deprecated since 1.3.0, use Interpreter.clock.time instead', DeprecationWarning)
         self.clock.time = value  # type: ignore
 
     @property
@@ -134,7 +135,7 @@ class Interpreter:
 
         The listener is called each time a meta-event is emitted by current interpreter.
         Emitted meta-events are:
-        
+
         - *step started*: when a (possibly empty) macro step starts. The current time of the step is available through the ``time`` attribute.
         - *step ended*: when a (possibly empty) macro step ends.
         - *event consumed*: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
@@ -156,7 +157,7 @@ class Interpreter:
     def detach(self, listener: Callable[[MetaEvent], Any]) -> None:
         """
         Remove given listener from the ones that are currently attached to this interpreter.
-        
+
         :param listener: A previously attached listener.
         """
         self._listeners.remove(listener)
@@ -168,11 +169,11 @@ class Interpreter:
         Internal events sent by this interpreter will be propagated as external events.
         If *interpreter_or_callable* is an *Interpreter* instance,  its *queue* method is called.
         This is, if *i1* and *i2* are interpreters, *i1.bind(i2)* is equivalent to *i1.bind(i2.queue)*.
-        
+
         This method is a higher-level interface for ``self.attach``.
         If ``x = interpreter.bind(...)``, use ``interpreter.detach(x)`` to unbind a
         previously bound interpreter.
-        
+
         :param interpreter_or_callable: interpreter or callable to bind.
         :return: the resulting attached listener.
         """
@@ -182,16 +183,16 @@ class Interpreter:
             listener = InternalEventListener(interpreter_or_callable)
 
         self.attach(listener)
-        
+
         return listener
 
-    def bind_property_statechart(self, statechart: Statechart, *, interpreter_klass: Callable=None) -> Callable[[MetaEvent], Any]:
+    def bind_property_statechart(self, statechart: Statechart, *, interpreter_klass: Callable = None) -> Callable[[MetaEvent], Any]:
         """
         Bind a property statechart to the current interpreter.
 
         A property statechart receives meta-events from the current interpreter depending on what happens.
         See ``attach`` method for a full list of meta-events.
-        
+
         The internal clock of all property statecharts is synced with the one of the current interpreter.
         As soon as a property statechart reaches a final state, a ``PropertyStatechartError`` will be raised,
         meaning that the property expressed by the corresponding property statechart is not satisfied.
@@ -209,7 +210,8 @@ class Interpreter:
         :return: the resulting attached listener.
         """
         if isinstance(statechart, Interpreter):
-            warnings.warn('Passing an interpreter to bind_property_statechart is deprecated since 1.4.0. Use interpreter_klass instead.', DeprecationWarning)
+            warnings.warn(
+                'Passing an interpreter to bind_property_statechart is deprecated since 1.4.0. Use interpreter_klass instead.', DeprecationWarning)
             interpreter = statechart
             interpreter.clock = SynchronizedClock(self)
         else:
@@ -221,7 +223,7 @@ class Interpreter:
 
         return listener
 
-    def queue(self, event_or_name:Union[str, Event], *event_or_names:Union[str, Event], **parameters) -> 'Interpreter':
+    def queue(self, event_or_name: Union[str, Event], *event_or_names: Union[str, Event], **parameters) -> 'Interpreter':
         """
         Create and queue given events to the external event queue.
 
@@ -282,7 +284,7 @@ class Interpreter:
 
         # Notify listeners
         self._raise_event(MetaEvent('step started', time=self.time))
-        
+
         # Compute steps
         computed_steps = self._compute_steps()
 
@@ -297,7 +299,8 @@ class Interpreter:
 
             # Execute the steps
             if hasattr(self._evaluator, 'on_step_starts'):
-                warnings.warn('Evaluator.on_step_starts is deprecated since 1.4.0.', DeprecationWarning)
+                warnings.warn('Evaluator.on_step_starts is deprecated since 1.4.0.',
+                              DeprecationWarning)
                 self._evaluator.on_step_starts(event)
 
             executed_steps = []
@@ -305,7 +308,8 @@ class Interpreter:
                 executed_steps.append(self._apply_step(step))
                 executed_steps.extend(self._stabilize())
 
-            macro_step = MacroStep(time=self.time, steps=executed_steps)  # type: Optional[MacroStep]
+            # type: Optional[MacroStep]
+            macro_step = MacroStep(time=self.time, steps=executed_steps)
         else:  # No step
             macro_step = None
 
@@ -355,9 +359,10 @@ class Interpreter:
             for listener in self._listeners:
                 listener(event)
         else:
-            raise ValueError('Only InternalEvent and MetaEvent can be sent by a statechart, not {}'.format(type(event)))
+            raise ValueError(
+                'Only InternalEvent and MetaEvent can be sent by a statechart, not {}'.format(type(event)))
 
-    def _select_event(self, *, consume: bool=False) -> Optional[Event]:
+    def _select_event(self, *, consume: bool = False) -> Optional[Event]:
         """
         Return the next event to process.
         Internal events have priority over external ones.
@@ -399,7 +404,8 @@ class Interpreter:
                 if transition.event is None or transition.event == getattr(event, 'name', None):
                     # Compute order based on depth
                     if transition.source not in _state_depth_cache:
-                        _state_depth_cache[transition.source] = self._statechart.depth_for(transition.source)
+                        _state_depth_cache[transition.source] = self._statechart.depth_for(
+                            transition.source)
 
                     considered_transitions.append(transition)
 
@@ -408,7 +414,7 @@ class Interpreter:
         ignored_states = set()  # type: Set[str]
 
         # Group and sort transitions based on the event
-        eventless_first_order = lambda t: t.event is not None
+        def eventless_first_order(t): return t.event is not None
         for has_event, transitions in sorted_groupby(considered_transitions, key=eventless_first_order, reverse=not eventless_first):
             # If there are selected transitions (from previous group), ignore new ones
             if len(selected_transitions) > 0:
@@ -418,10 +424,10 @@ class Interpreter:
             exposed_event = event if has_event else None
 
             # Group and sort transitions based on the source state depth
-            depth_order = lambda t: _state_depth_cache[t.source]
+            def depth_order(t): return _state_depth_cache[t.source]
             for _, transitions in sorted_groupby(transitions, key=depth_order, reverse=inner_first):
                 # Group and sort transitions based on the source state
-                state_order = lambda t: t.source  # we just want states to be grouped here
+                def state_order(t): return t.source  # we just want states to be grouped here
                 for source, transitions in sorted_groupby(transitions, key=state_order):
                     # Do not considered ignored states
                     if source in ignored_states:
@@ -429,7 +435,7 @@ class Interpreter:
 
                     has_found_transitions = False
                     # Group and sort transitions based on their priority
-                    priority_order = lambda t: t.priority
+                    def priority_order(t): return t.priority
                     for _, transitions in sorted_groupby(transitions, key=priority_order, reverse=True):
                         for transition in transitions:
                             if transition.guard is None or self._evaluator.evaluate_guard(transition, exposed_event):
@@ -493,7 +499,8 @@ class Interpreter:
                         )
 
             # Define an arbitrary order based on the depth and the name of source states.
-            transitions = sorted(transitions, key=lambda t: (-self._statechart.depth_for(t.source), t.source))
+            transitions = sorted(
+                transitions, key=lambda t: (-self._statechart.depth_for(t.source), t.source))
 
         return transitions
 
@@ -562,7 +569,8 @@ class Interpreter:
                 last_before_lca = state
 
             # Take all the descendants of this state and list the ones that are active
-            for descendant in self._statechart.descendants_for(last_before_lca)[::-1]:  # Mind the reversed order!
+            # Mind the reversed order!
+            for descendant in self._statechart.descendants_for(last_before_lca)[::-1]:
                 # Only leave states that are currently active
                 if descendant in self._configuration:
                     exited_states.append(descendant)
@@ -641,12 +649,14 @@ class Interpreter:
                     child = self._statechart.state_for(child_name)
                     if isinstance(child, DeepHistoryState):
                         # This MUST contain at least one element!
-                        active = active_configuration.intersection(self._statechart.descendants_for(state.name))
+                        active = active_configuration.intersection(
+                            self._statechart.descendants_for(state.name))
                         assert len(active) >= 1
                         self._memory[child.name] = list(active)
                     elif isinstance(child, ShallowHistoryState):
                         # This MUST contain exactly one element!
-                        active = active_configuration.intersection(self.statechart.children_for(state.name))
+                        active = active_configuration.intersection(
+                            self.statechart.children_for(state.name))
                         assert len(active) == 1
                         self._memory[child.name] = list(active)
 
@@ -723,7 +733,7 @@ class Interpreter:
 
     def _evaluate_contract_conditions(self, obj: Union[Transition, StateMixin],
                                       cond_type: str,
-                                      step: Optional[Union[MacroStep, MicroStep]]=None) -> None:
+                                      step: Optional[Union[MacroStep, MicroStep]] = None) -> None:
         """
         Evaluate the conditions for given object.
 
@@ -739,7 +749,8 @@ class Interpreter:
                                                           'postconditions': PostconditionError,
                                                           'invariants': InvariantError}[cond_type])
 
-        unsatisfied_conditions = getattr(self._evaluator, 'evaluate_' + cond_type)(obj, getattr(step, 'event', None))
+        unsatisfied_conditions = getattr(
+            self._evaluator, 'evaluate_' + cond_type)(obj, getattr(step, 'event', None))
 
         for condition in unsatisfied_conditions:
             raise exception_klass(configuration=self.configuration, step=step, obj=obj,

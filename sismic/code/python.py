@@ -49,7 +49,7 @@ class PythonEvaluator(Evaluator):
     A code evaluator that understands Python.
 
     This evaluator exposes some additional functions/variables:
-    
+
     - On both code execution and code evaluation:
         - A *time: float* value that represents the current time exposed by interpreter clock.
         - An *active(name: str) -> bool* Boolean function that takes a state name and return *True* if and only
@@ -89,7 +89,8 @@ class PythonEvaluator(Evaluator):
         is expected to be an *Interpreter* instance
     :param initial_context: a dictionary that will be used as *__locals__*
     """
-    def __init__(self, interpreter=None, *, initial_context: Mapping[str, Any]=None) -> None:
+
+    def __init__(self, interpreter=None, *, initial_context: Mapping[str, Any] = None) -> None:
         super().__init__(interpreter, initial_context=initial_context)
 
         self._context = {}  # type: Dict[str, Any]
@@ -117,7 +118,7 @@ class PythonEvaluator(Evaluator):
         """
         return self._context.setdefault(name, value)
 
-    def _evaluate_code(self, code: Optional[str], *, additional_context: Mapping[str, Any]=None) -> bool:
+    def _evaluate_code(self, code: Optional[str], *, additional_context: Mapping[str, Any] = None) -> bool:
         """
         Evaluate given code using Python.
 
@@ -143,8 +144,7 @@ class PythonEvaluator(Evaluator):
         except Exception as e:
             raise CodeEvaluationError('"{}" occurred while evaluating "{}"'.format(e, code)) from e
 
-
-    def _execute_code(self, code: Optional[str], *, additional_context: Mapping[str, Any]=None) -> List[Event]:
+    def _execute_code(self, code: Optional[str], *, additional_context: Mapping[str, Any] = None) -> List[Event]:
         """
         Execute given code using Python.
 
@@ -157,7 +157,8 @@ class PythonEvaluator(Evaluator):
 
         compiled_code = self._executable_code.get(code, None)
         if compiled_code is None:
-            compiled_code = self._executable_code.setdefault(code, compile(code, '<string>', 'exec'))
+            compiled_code = self._executable_code.setdefault(
+                code, compile(code, '<string>', 'exec'))
 
         sent_events = []  # type: List[Event]
 
@@ -176,7 +177,7 @@ class PythonEvaluator(Evaluator):
         except Exception as e:
             raise CodeEvaluationError('"{}" occurred while executing "{}"'.format(e, code)) from e
 
-    def evaluate_guard(self, transition: Transition, event: Optional[Event]=None) -> bool:
+    def evaluate_guard(self, transition: Transition, event: Optional[Event] = None) -> bool:
         """
         Evaluate the guard for given transition.
 
@@ -191,7 +192,7 @@ class PythonEvaluator(Evaluator):
         }
         return self._evaluate_code(getattr(transition, 'guard', None), additional_context=additional_context)
 
-    def evaluate_preconditions(self, obj, event: Optional[Event]=None) -> Iterator[str]:
+    def evaluate_preconditions(self, obj, event: Optional[Event] = None) -> Iterator[str]:
         """
         Evaluate the preconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -215,7 +216,7 @@ class PythonEvaluator(Evaluator):
             getattr(obj, 'preconditions', [])
         )
 
-    def evaluate_invariants(self, obj, event: Optional[Event]=None) -> Iterator[str]:
+    def evaluate_invariants(self, obj, event: Optional[Event] = None) -> Iterator[str]:
         """
         Evaluate the invariants for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -240,7 +241,7 @@ class PythonEvaluator(Evaluator):
             getattr(obj, 'invariants', [])
         )
 
-    def evaluate_postconditions(self, obj, event: Optional[Event]=None) -> Iterator[str]:
+    def evaluate_postconditions(self, obj, event: Optional[Event] = None) -> Iterator[str]:
         """
         Evaluate the postconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.

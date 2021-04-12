@@ -61,8 +61,8 @@ def coverage_from_trace(trace: List[MacroStep]) -> Mapping[str, Counter]:
 
 
 def run_in_background(interpreter: Interpreter,
-                      delay: float=0.05,
-                      callback: Callable[[List[MacroStep]], Any]=None) -> threading.Thread:
+                      delay: float = 0.05,
+                      callback: Callable[[List[MacroStep]], Any] = None) -> threading.Thread:
     """
     Run given interpreter in background. The interpreter is ran until it reaches a final configuration.
     You can manually stop the thread using the added *stop* of the returned Thread object.
@@ -92,4 +92,3 @@ def run_in_background(interpreter: Interpreter,
 
     thread.start()
     return thread
-

@@ -142,7 +142,8 @@ def no_event_is_fired(context):
     for macrostep in context.monitored_trace:
         if len(macrostep.sent_events) > 0:
             if len(macrostep.sent_events) > 1:
-                assert False, 'Events {} are fired'.format(', '.join([e.name for e in macrostep.sent_events]))
+                assert False, 'Events {} are fired'.format(
+                    ', '.join([e.name for e in macrostep.sent_events]))
             else:
                 assert False, 'Event {} is fired'.format(macrostep.sent_events[0].name)
 
@@ -153,7 +154,8 @@ def variable_equals(context, variable, value):
 
     current_value = context.interpreter.context[variable]
     expected_value = eval(value, {}, {})
-    assert current_value == expected_value, 'Variable {} equals {}, not {}'.format(variable, current_value, expected_value)
+    assert current_value == expected_value, 'Variable {} equals {}, not {}'.format(
+        variable, current_value, expected_value)
 
 
 @then('variable {variable} does not equal {value}')
@@ -167,20 +169,23 @@ def variable_does_not_equal(context, variable, value):
 
 @then('expression {expression} holds')
 def expression_holds(context, expression):
-    assert testing.expression_holds(context.interpreter, expression), 'Expression {} does not holds'.format(expression)
+    assert testing.expression_holds(
+        context.interpreter, expression), 'Expression {} does not holds'.format(expression)
 
 
 @then('expression {expression} does not hold')
 def expression_does_not_hold(context, expression):
-    assert not testing.expression_holds(context.interpreter, expression), 'Expression {} holds'.format(expression)
+    assert not testing.expression_holds(
+        context.interpreter, expression), 'Expression {} holds'.format(expression)
 
 
 @then('statechart is in a final configuration')
 def final_configuration(context):
-    assert context.interpreter.final, 'Statechart is not in a final configuration: {}'.format(', '.join(context.interpreter.configuration))
+    assert context.interpreter.final, 'Statechart is not in a final configuration: {}'.format(
+        ', '.join(context.interpreter.configuration))
 
 
 @then('statechart is not in a final configuration')
 def not_final_configuration(context):
-    assert not context.interpreter.final, 'Statechart is in a final configuration: {}'.format(', '.join(context.interpreter.configuration))
-
+    assert not context.interpreter.final, 'Statechart is in a final configuration: {}'.format(
+        ', '.join(context.interpreter.configuration))

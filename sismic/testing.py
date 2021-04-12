@@ -43,7 +43,7 @@ def state_is_exited(steps: MacroSteps, name: str) -> bool:
     return False
 
 
-def event_is_fired(steps: MacroSteps, name: Optional[str], parameters: Mapping[str, Any]=None) -> bool:
+def event_is_fired(steps: MacroSteps, name: Optional[str], parameters: Mapping[str, Any] = None) -> bool:
     """
     Holds if an event was fired during given steps.
 
@@ -73,7 +73,7 @@ def event_is_fired(steps: MacroSteps, name: Optional[str], parameters: Mapping[s
     return False
 
 
-def event_is_consumed(steps: MacroSteps, name: Optional[str], parameters: Mapping[str, Any]=None) -> bool:
+def event_is_consumed(steps: MacroSteps, name: Optional[str], parameters: Mapping[str, Any] = None) -> bool:
     """
     Holds if an event was consumed during given steps.
 
@@ -105,7 +105,7 @@ def event_is_consumed(steps: MacroSteps, name: Optional[str], parameters: Mappin
     return False
 
 
-def transition_is_processed(steps: MacroSteps, transition: Optional[Transition]=None) -> bool:
+def transition_is_processed(steps: MacroSteps, transition: Optional[Transition] = None) -> bool:
     """
     Holds if a transition was processed during given steps.
 
@@ -138,4 +138,3 @@ def expression_holds(interpreter: Interpreter, expression: str) -> bool:
     :return: expression holds
     """
     return interpreter._evaluator._evaluate_code(expression)
-

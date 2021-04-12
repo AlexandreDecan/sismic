@@ -63,11 +63,11 @@ def map_assertion(step_text: str, existing_step_or_steps: Union[str, List[str]])
 def execute_bdd(statechart: Statechart,
                 feature_filepaths: List[str],
                 *,
-                step_filepaths: List[str]=None,
-                property_statecharts: List[Statechart]=None,
-                interpreter_klass: Callable[[Statechart], Interpreter]=Interpreter,
-                debug_on_error: bool=False,
-                behave_parameters: List[str]=None) -> int:
+                step_filepaths: List[str] = None,
+                property_statecharts: List[Statechart] = None,
+                interpreter_klass: Callable[[Statechart], Interpreter] = Interpreter,
+                debug_on_error: bool = False,
+                behave_parameters: List[str] = None) -> int:
     """
     Execute BDD tests for a statechart.
 
@@ -111,7 +111,8 @@ def execute_bdd(statechart: Statechart,
 
         # Copy provided steps, if any
         for step_filepath in step_filepaths:
-            shutil.copy(step_filepath, os.path.join(tempdir, 'steps', os.path.split(step_filepath)[-1]))
+            shutil.copy(step_filepath, os.path.join(
+                tempdir, 'steps', os.path.split(step_filepath)[-1]))
 
         # Path to steps
         config.steps_dir = os.path.join(tempdir, 'steps')

@@ -18,8 +18,8 @@ class DummyEvaluator(Evaluator):
     def context(self):
         return dict()
 
-    def _evaluate_code(self, code: str, *, additional_context: Mapping=None) -> bool:
+    def _evaluate_code(self, code: str, *, additional_context: Mapping = None) -> bool:
         return True
 
-    def _execute_code(self, code: str, *, additional_context: Mapping=None) -> List[Event]:
+    def _execute_code(self, code: str, *, additional_context: Mapping = None) -> List[Event]:
         return []

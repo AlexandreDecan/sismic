@@ -17,14 +17,14 @@ class PlantUMLExporter:
     def __init__(
             self,
             statechart: Statechart, *,
-            based_on: str=None,
-            statechart_name: bool=True,
-            statechart_description: bool=True,
-            statechart_preamble: bool=True,
-            state_contracts: bool=True,
-            state_action: bool=True,
-            transition_contracts: bool=True,
-            transition_action: bool=True) -> None:
+            based_on: str = None,
+            statechart_name: bool = True,
+            statechart_description: bool = True,
+            statechart_preamble: bool = True,
+            state_contracts: bool = True,
+            state_action: bool = True,
+            transition_contracts: bool = True,
+            transition_action: bool = True) -> None:
         self.statechart = statechart
         self.based_on = based_on
         self.statechart_name = statechart_name
@@ -40,7 +40,8 @@ class PlantUMLExporter:
             for line in self.based_on.splitlines():
                 matches = re.findall(r'(\[\*\]|[a-zA-Z0-9]+) -([^ ]*)> (\[\*\]|[a-zA-Z0-9]+)', line)
                 if matches:
-                    self._based_on_arrows[(matches[0][0], matches[0][2])] = '-{}>'.format(matches[0][1])
+                    self._based_on_arrows[(matches[0][0], matches[0][2])
+                                          ] = '-{}>'.format(matches[0][1])
 
         self._output = []  # type: List[str]
         self._indent = 0
@@ -51,7 +52,8 @@ class PlantUMLExporter:
             return '-->'
         else:
             source = '[*]' if source is None else self.state_id(source)
-            target = '[*]' if isinstance(self.statechart.state_for(target), FinalState) else self.state_id(target)
+            target = '[*]' if isinstance(self.statechart.state_for(target),
+                                         FinalState) else self.state_id(target)
             return self._based_on_arrows.get((source, target), '-->')
 
     def indent(self):
@@ -60,7 +62,7 @@ class PlantUMLExporter:
     def deindent(self):
         self._indent -= 2
 
-    def output(self, text: str, *, wrap: str='') -> None:
+    def output(self, text: str, *, wrap: str = '') -> None:
         lines = text.strip().split('\n')
 
         for line in lines:
@@ -131,7 +133,8 @@ class PlantUMLExporter:
                 ))
 
             # Internal actions
-            transitions = [tr for tr in self.statechart.transitions_from(name) if tr.internal and tr.action]
+            transitions = [tr for tr in self.statechart.transitions_from(
+                name) if tr.internal and tr.action]
             if len(transitions) > 0:
                 for transition in transitions:
                     text = []
@@ -184,7 +187,8 @@ class PlantUMLExporter:
 
     def export_transitions(self, source_name: str) -> None:
         # Transitions (except internal ones)
-        transitions = filter(lambda t: not t.internal, self.statechart.transitions_from(source_name))
+        transitions = filter(lambda t: not t.internal,
+                             self.statechart.transitions_from(source_name))
 
         for transition in transitions:
             # Do not treat final states here
@@ -221,7 +225,8 @@ class PlantUMLExporter:
             for cond in transition.postconditions:
                 text.append('post: {}\n'.format(cond))
 
-        _format = '{source} {arrow} {target} : {text}' if len(text) > 0 else '{source} {arrow} {target}'
+        _format = '{source} {arrow} {target} : {text}' if len(
+            text) > 0 else '{source} {arrow} {target}'
         self.output(_format.format(
             source=self.state_id(transition.source),
             arrow=self.arrow(transition.source, transition.target),
@@ -252,17 +257,17 @@ class PlantUMLExporter:
 
 def export_to_plantuml(
         statechart: Statechart,
-        filepath: str=None,
+        filepath: str = None,
         *,
-        based_on: str=None,
-        based_on_filepath: str=None,
-        statechart_name: bool=True,
-        statechart_description: bool=False,
-        statechart_preamble: bool=False,
-        state_contracts: bool=False,
-        state_action: bool=True,
-        transition_contracts: bool=False,
-        transition_action: bool=True) -> str:
+        based_on: str = None,
+        based_on_filepath: str = None,
+        statechart_name: bool = True,
+        statechart_description: bool = False,
+        statechart_preamble: bool = False,
+        state_contracts: bool = False,
+        state_action: bool = True,
+        transition_contracts: bool = False,
+        transition_action: bool = True) -> str:
     """
     Export given statechart to plantUML (see http://plantuml/plantuml).
     If a filepath is provided, also save the output to this file.
@@ -290,7 +295,8 @@ def export_to_plantuml(
     """
 
     if based_on and based_on_filepath:
-        raise TypeError('Parameters based_on and based_on_filepath cannot both be provided at the same time.')
+        raise TypeError(
+            'Parameters based_on and based_on_filepath cannot both be provided at the same time.')
     if based_on_filepath:
         with open(based_on_filepath, 'r') as f:
             based_on = f.read()
@@ -318,24 +324,31 @@ def export_to_plantuml(
 
 def cli(args=None) -> int:
     parser = argparse.ArgumentParser(
-        prog='sismic-plantuml', 
+        prog='sismic-plantuml',
         description='Command-line utility to export Sismic statecharts to plantUML.\n'
                     'See sismic.io.export_to_plantuml for more informations.'
     )
 
     parser.add_argument('statechart', metavar='statechart', type=str,
-        help='A YAML file describing a statechart')
-    parser.add_argument('--based-on', metavar='based', type=str, default=None, 
-        help='A previously exported PlantUML representation for this statechart.')
-    
-    parser.add_argument('--show-description', dest='statechart_description', action='store_true', default=False, help='Show statechart description')
-    parser.add_argument('--show-preamble', dest='statechart_preamble', action='store_true', default=False, help='Show statechart preamble')
-    parser.add_argument('--show-state-contracts', dest='state_contracts', action='store_true', default=False, help='Show state contracts')
-    parser.add_argument('--show-transition-contracts', dest='transition_contracts', action='store_false', default=False, help='Show transition contracts')
-    parser.add_argument('--hide-state-action', dest='state_action', action='store_false', default=True, help='Hide state action')
-    parser.add_argument('--hide-name', dest='statechart_name', action='store_false', default=True, help='Hide statechart name')
-    parser.add_argument('--hide-transition-action', dest='transition_action', action='store_false', default=True, help='Hide transition action')
-            
+                        help='A YAML file describing a statechart')
+    parser.add_argument('--based-on', metavar='based', type=str, default=None,
+                        help='A previously exported PlantUML representation for this statechart.')
+
+    parser.add_argument('--show-description', dest='statechart_description',
+                        action='store_true', default=False, help='Show statechart description')
+    parser.add_argument('--show-preamble', dest='statechart_preamble',
+                        action='store_true', default=False, help='Show statechart preamble')
+    parser.add_argument('--show-state-contracts', dest='state_contracts',
+                        action='store_true', default=False, help='Show state contracts')
+    parser.add_argument('--show-transition-contracts', dest='transition_contracts',
+                        action='store_false', default=False, help='Show transition contracts')
+    parser.add_argument('--hide-state-action', dest='state_action',
+                        action='store_false', default=True, help='Hide state action')
+    parser.add_argument('--hide-name', dest='statechart_name',
+                        action='store_false', default=True, help='Hide statechart name')
+    parser.add_argument('--hide-transition-action', dest='transition_action',
+                        action='store_false', default=True, help='Hide transition action')
+
     args, parameters = parser.parse_known_args(args)
 
     statechart = import_from_yaml(filepath=args.statechart)
@@ -343,7 +356,7 @@ def cli(args=None) -> int:
     if args.based_on:
         with open(args.based_on, 'r') as f:
             args.based_on = f.read()
-            
+
     exporter = PlantUMLExporter(
         statechart,
         based_on=args.based_on,

@@ -23,8 +23,8 @@ class MicroStep:
 
     __slots__ = ['event', 'transition', 'entered_states', 'exited_states', 'sent_events']
 
-    def __init__(self, event: Event=None, transition: Transition=None, entered_states: List[str]=None,
-                 exited_states: List[str]=None, sent_events: List[Event]=None) -> None:
+    def __init__(self, event: Event = None, transition: Transition = None, entered_states: List[str] = None,
+                 exited_states: List[str] = None, sent_events: List[Event] = None) -> None:
         self.event = event
         self.transition = transition
         self.entered_states = entered_states if entered_states else []  # type: List[str]

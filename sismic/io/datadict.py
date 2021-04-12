@@ -20,7 +20,8 @@ def import_from_dict(data: Mapping[str, Any]) -> Statechart:
     states = []  # (StateMixin instance, parent name)
     transitions = []  # Transition instances
     # (State dict, parent name)
-    data_to_consider = [(data['root state'], None)]  # type: List[Tuple[Mapping[str, Any], Optional[str]]]
+    # type: List[Tuple[Mapping[str, Any], Optional[str]]]
+    data_to_consider = [(data['root state'], None)]
 
     while data_to_consider:
         state_data, parent_name = data_to_consider.pop()
@@ -120,17 +121,21 @@ def _import_state_from_dict(state_d: Mapping[str, Any]) -> StateMixin:
     if stype == 'final':
         state = FinalState(name, on_entry=on_entry, on_exit=on_exit)
     elif stype == 'shallow history':
-        state = ShallowHistoryState(name, on_entry=on_entry, on_exit=on_exit, memory=state_d.get('memory', None))
+        state = ShallowHistoryState(name, on_entry=on_entry, on_exit=on_exit,
+                                    memory=state_d.get('memory', None))
     elif stype == 'deep history':
-        state = DeepHistoryState(name, on_entry=on_entry, on_exit=on_exit, memory=state_d.get('memory', None))
+        state = DeepHistoryState(name, on_entry=on_entry, on_exit=on_exit,
+                                 memory=state_d.get('memory', None))
     elif stype is None:
         substates = state_d.get('states', None)
         parallel_substates = state_d.get('parallel states', None)
 
         if substates and parallel_substates:
-            raise StatechartError('{} cannot declare both a "states" and a "parallel states" property'.format(name))
+            raise StatechartError(
+                '{} cannot declare both a "states" and a "parallel states" property'.format(name))
         elif substates:
-            state = CompoundState(name, initial=state_d.get('initial', None), on_entry=on_entry, on_exit=on_exit)
+            state = CompoundState(name, initial=state_d.get('initial', None),
+                                  on_entry=on_entry, on_exit=on_exit)
         elif parallel_substates:
             state = OrthogonalState(name, on_entry=on_entry, on_exit=on_exit)
         else:

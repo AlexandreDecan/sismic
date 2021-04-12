@@ -22,6 +22,7 @@ class TimeContextProvider:  # pragma: no cover
 
     This provider needs to be attached to an interpreter.
     """
+
     def __init__(self) -> None:
         self._entry_time = dict()  # type: Dict[str, float]
         self._idle_time = dict()  # type: Dict[str, float]
@@ -92,6 +93,7 @@ class EventContextProvider:  # pragma: no cover
 
     This provider needs to be attached to an interpreter.
     """
+
     def __init__(self) -> None:
         self.pending = []  # type: List[Event]
         self._sent = []  # type: List[Event]
@@ -135,7 +137,7 @@ class EventContextProvider:  # pragma: no cover
         :return: True iff. event is processed.
         """
         return getattr(self._consumed, 'name', None) == name
-    
+
     def __call__(self, event: MetaEvent) -> None:
         if event.name == 'event consumed':
             self._consumed = event.event

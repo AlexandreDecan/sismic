@@ -8,5 +8,6 @@ def sorted_groupby(iterable, key=None, reverse=False):
     groups = defaultdict(list)
     for value in iterable:
         groups[key(value)].append(value)
-    sort_key = lambda e: e[0]
+
+    def sort_key(e): return e[0]
     return sorted(groups.items(), key=sort_key, reverse=reverse)

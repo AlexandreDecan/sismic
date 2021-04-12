@@ -35,6 +35,7 @@ class SimulatedClock(Clock):
     A value strictly greater than 1 increases clock speed while a value strictly
     lower than 1 slows down the clock.
     """
+
     def __init__(self) -> None:
         self._base = time()
         self._time = 0
@@ -91,7 +92,8 @@ class SimulatedClock(Clock):
         """
         current_time = self.time
         if new_time < current_time:
-            raise ValueError('Time must be monotonic, cannot change time from {} to {}'.format(current_time, new_time))
+            raise ValueError('Time must be monotonic, cannot change time from {} to {}'.format(
+                current_time, new_time))
 
         self._time = new_time
         self._base = time()
@@ -130,6 +132,7 @@ class SynchronizedClock(Clock):
 
     :param interpreter: an interpreter instance
     """
+
     def __init__(self, interpreter) -> None:
         self._interpreter = interpreter
 

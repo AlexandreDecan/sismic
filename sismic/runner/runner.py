@@ -50,7 +50,8 @@ class AsyncRunner:
     :param interval: interval between two calls to `execute`
     :param execute_all: Repeatedly call interpreter's `execute_once` method at each step.
     """
-    def __init__(self, interpreter: Interpreter, interval: float=0.1, execute_all=False) -> None:
+
+    def __init__(self, interpreter: Interpreter, interval: float = 0.1, execute_all=False) -> None:
         self._unpaused = threading.Event()
         self._stop = threading.Event()
 
@@ -176,4 +177,3 @@ class AsyncRunner:
 
     def __del__(self):
         self.stop()
-
