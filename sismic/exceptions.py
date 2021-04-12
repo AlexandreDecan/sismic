@@ -52,8 +52,9 @@ class PropertyStatechartError(SismicError):
     def property_statechart(self):
         return self._property
 
-    def __str__(self):  # pragma: no cover
-        return '{}\nProperty is not satisfied, {} has reached a final state'.format(self.__class__.__name__, self._property)
+    def __str__(self):
+        return '{}\nProperty is not satisfied, {} has reached a final state'.format(
+            self.__class__.__name__, self._property)
 
 
 class ContractError(SismicError):

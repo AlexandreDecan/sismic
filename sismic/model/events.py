@@ -51,9 +51,9 @@ class Event:
 
     def __repr__(self):
         if self.data:
-            return '{}({!r}, {})'.format(self.__class__.__name__,
-                                         self.name,
-                                         ', '.join('{}={!r}'.format(k, v) for k, v in self.data.items()))
+            return '{}({!r}, {})'.format(
+                self.__class__.__name__, self.name, ', '.join(
+                    '{}={!r}'.format(k, v) for k, v in self.data.items()))
         else:
             return '{}({!r})'.format(self.__class__.__name__, self.name)
 
@@ -74,7 +74,8 @@ class DelayedEvent(Event):
 
     def __init__(self, name: str, delay: float, **additional_parameters: Any) -> None:
         warnings.warn(
-            'DelayedEvent is deprecated since 1.4.0, use Event with a delay parameter instead.', DeprecationWarning)
+            'DelayedEvent is deprecated since 1.4.0, use Event with a delay parameter instead.',
+            DeprecationWarning)
         super().__init__(name, delay=delay, **additional_parameters)
 
 

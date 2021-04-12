@@ -45,7 +45,8 @@ def after_step(context, step):
         context.monitored_trace.extend(macrosteps)
 
     # Hook to enable debugging
-    if step.step_type == 'then' and step.status == 'failed' and context.config.userdata.get('debug_on_error'):
+    if step.step_type == 'then' and step.status == 'failed' and context.config.userdata.get(
+            'debug_on_error'):
         try:
             import ipdb as pdb
         except ImportError:

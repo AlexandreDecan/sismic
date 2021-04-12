@@ -43,7 +43,9 @@ def state_is_exited(steps: MacroSteps, name: str) -> bool:
     return False
 
 
-def event_is_fired(steps: MacroSteps, name: Optional[str], parameters: Mapping[str, Any] = None) -> bool:
+def event_is_fired(
+        steps: MacroSteps, name: Optional[str],
+        parameters: Mapping[str, Any] = None) -> bool:
     """
     Holds if an event was fired during given steps.
 
@@ -73,7 +75,9 @@ def event_is_fired(steps: MacroSteps, name: Optional[str], parameters: Mapping[s
     return False
 
 
-def event_is_consumed(steps: MacroSteps, name: Optional[str], parameters: Mapping[str, Any] = None) -> bool:
+def event_is_consumed(
+        steps: MacroSteps, name: Optional[str],
+        parameters: Mapping[str, Any] = None) -> bool:
     """
     Holds if an event was consumed during given steps.
 

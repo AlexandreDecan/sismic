@@ -1,9 +1,9 @@
 from abc import ABCMeta
 from typing import List
 
-__all__ = ['ContractMixin', 'StateMixin', 'ActionStateMixin', 'TransitionStateMixin', 'CompositeStateMixin',
-           'HistoryStateMixin', 'BasicState', 'CompoundState', 'OrthogonalState', 'ShallowHistoryState',
-           'DeepHistoryState', 'FinalState', 'Transition']
+__all__ = ['ContractMixin', 'StateMixin', 'ActionStateMixin', 'TransitionStateMixin',
+           'CompositeStateMixin', 'HistoryStateMixin', 'BasicState', 'CompoundState',
+           'OrthogonalState', 'ShallowHistoryState', 'DeepHistoryState', 'FinalState', 'Transition']
 
 
 class ContractMixin(metaclass=ABCMeta):
@@ -138,7 +138,8 @@ class BasicState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMix
             return NotImplemented
 
 
-class CompoundState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin):
+class CompoundState(
+        ContractMixin, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin):
     """
     Compound states must have children states.
 
@@ -169,7 +170,8 @@ class CompoundState(ContractMixin, StateMixin, ActionStateMixin, TransitionState
             return NotImplemented
 
 
-class OrthogonalState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin):
+class OrthogonalState(
+        ContractMixin, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin):
     """
     Orthogonal states run their children simultaneously.
 
@@ -300,7 +302,8 @@ class Transition(ContractMixin):
     DEFAULT_PRIORITY = 0
     HIGH_PRIORITY = 1
 
-    def __init__(self, source: str, target: str = None, event: str = None, guard: str = None, action: str = None, priority=None) -> None:
+    def __init__(self, source: str, target: str = None, event: str = None, guard: str = None,
+                 action: str = None, priority=None) -> None:
         ContractMixin.__init__(self)
         self._source = source
         self._target = target

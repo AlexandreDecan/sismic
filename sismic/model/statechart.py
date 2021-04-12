@@ -235,7 +235,8 @@ class Statechart:
         except ValueError:
             raise StatechartError('Transition {} does not exist'.format(transition))
 
-    def rotate_transition(self, transition: Transition, new_source: str = '', new_target: Optional[str] = '') -> None:
+    def rotate_transition(self, transition: Transition, new_source: str = '',
+                          new_target: Optional[str] = '') -> None:
         """
         Rotate given transition.
 
@@ -299,7 +300,8 @@ class Statechart:
 
         transitions = []
         for transition in self._transitions:
-            if transition.target == target or (transition.target is None and transition.source == target):
+            if transition.target == target or (
+                    transition.target is None and transition.source == target):
                 transitions.append(transition)
         return transitions
 

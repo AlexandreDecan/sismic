@@ -49,7 +49,8 @@ class Evaluator(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _execute_code(self, code: str, *, additional_context: Mapping[str, Any] = None) -> List[Event]:
+    def _execute_code(
+            self, code: str, *, additional_context: Mapping[str, Any] = None) -> List[Event]:
         """
         Generic method to execute a piece of code. This method is a fallback if one
         of the other execute_* methods is not overridden.
@@ -72,7 +73,8 @@ class Evaluator(metaclass=abc.ABCMeta):
             if len(events) > 0:
                 raise CodeEvaluationError('Events cannot be raised by statechart preamble')
 
-    def evaluate_guard(self, transition: Transition, event: Optional[Event] = None) -> Optional[bool]:
+    def evaluate_guard(
+            self, transition: Transition, event: Optional[Event] = None) -> Optional[bool]:
         """
         Evaluate the guard for given transition.
 

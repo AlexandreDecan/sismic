@@ -97,7 +97,8 @@ class Interpreter:
     @time.setter
     def time(self, value: float):
         warnings.warn(
-            'Interpreter.time is deprecated since 1.3.0, use Interpreter.clock.time instead', DeprecationWarning)
+            'Interpreter.time is deprecated since 1.3.0, use Interpreter.clock.time instead',
+            DeprecationWarning)
         self.clock.time = value  # type: ignore
 
     @property
@@ -186,7 +187,10 @@ class Interpreter:
 
         return listener
 
-    def bind_property_statechart(self, statechart: Statechart, *, interpreter_klass: Callable = None) -> Callable[[MetaEvent], Any]:
+    def bind_property_statechart(
+            self, statechart: Statechart, *, interpreter_klass: Callable = None) -> Callable[
+            [MetaEvent],
+            Any]:
         """
         Bind a property statechart to the current interpreter.
 
@@ -211,7 +215,8 @@ class Interpreter:
         """
         if isinstance(statechart, Interpreter):
             warnings.warn(
-                'Passing an interpreter to bind_property_statechart is deprecated since 1.4.0. Use interpreter_klass instead.', DeprecationWarning)
+                'Passing an interpreter to bind_property_statechart is deprecated since 1.4.0. Use interpreter_klass instead.',
+                DeprecationWarning)
             interpreter = statechart
             interpreter.clock = SynchronizedClock(self)
         else:
@@ -223,7 +228,9 @@ class Interpreter:
 
         return listener
 
-    def queue(self, event_or_name: Union[str, Event], *event_or_names: Union[str, Event], **parameters) -> 'Interpreter':
+    def queue(self, event_or_name: Union[str, Event],
+              *event_or_names: Union[str, Event],
+              **parameters) -> 'Interpreter':
         """
         Create and queue given events to the external event queue.
 
@@ -360,7 +367,8 @@ class Interpreter:
                 listener(event)
         else:
             raise ValueError(
-                'Only InternalEvent and MetaEvent can be sent by a statechart, not {}'.format(type(event)))
+                'Only InternalEvent and MetaEvent can be sent by a statechart, not {}'.format(
+                    type(event)))
 
     def _select_event(self, *, consume: bool = False) -> Optional[Event]:
         """
@@ -370,7 +378,9 @@ class Interpreter:
         :param consume: Indicates whether event should be consumed, default to False.
         :return: An instance of Event or None if no event is available
         """
-        for queue in cast(Tuple[List[Tuple[float, Event]]], (self._internal_queue, self._external_queue)):
+        for queue in cast(
+                Tuple[List[Tuple[float, Event]]],
+                (self._internal_queue, self._external_queue)):
             if len(queue) > 0:
                 time, event = queue[0]
                 if time <= self.time:
@@ -415,7 +425,8 @@ class Interpreter:
 
         # Group and sort transitions based on the event
         def eventless_first_order(t): return t.event is not None
-        for has_event, transitions in sorted_groupby(considered_transitions, key=eventless_first_order, reverse=not eventless_first):
+        for has_event, transitions in sorted_groupby(
+                considered_transitions, key=eventless_first_order, reverse=not eventless_first):
             # If there are selected transitions (from previous group), ignore new ones
             if len(selected_transitions) > 0:
                 break
@@ -436,9 +447,11 @@ class Interpreter:
                     has_found_transitions = False
                     # Group and sort transitions based on their priority
                     def priority_order(t): return t.priority
-                    for _, transitions in sorted_groupby(transitions, key=priority_order, reverse=True):
+                    for _, transitions in sorted_groupby(
+                            transitions, key=priority_order, reverse=True):
                         for transition in transitions:
-                            if transition.guard is None or self._evaluator.evaluate_guard(transition, exposed_event):
+                            if transition.guard is None or self._evaluator.evaluate_guard(
+                                    transition, exposed_event):
                                 # Add transition to the list of selected ones
                                 selected_transitions.append(transition)
                                 has_found_transitions = True
@@ -586,8 +599,10 @@ class Interpreter:
                     break
                 entered_states.insert(0, state)
 
-            returned_steps.append(MicroStep(event=event, transition=transition,
-                                            entered_states=entered_states, exited_states=exited_states))
+            returned_steps.append(
+                MicroStep(
+                    event=event, transition=transition, entered_states=entered_states,
+                    exited_states=exited_states))
 
         return returned_steps
 
@@ -610,7 +625,9 @@ class Interpreter:
                         key=lambda s: (-self._statechart.depth_for(s.name), s.name))
 
         for leaf in leaves:
-            if isinstance(leaf, FinalState) and self._statechart.parent_for(leaf.name) == self._statechart.root:
+            if isinstance(
+                    leaf, FinalState) and self._statechart.parent_for(
+                    leaf.name) == self._statechart.root:
                 return MicroStep(exited_states=[leaf.name, cast(str, self._statechart.root)])
             if isinstance(leaf, (ShallowHistoryState, DeepHistoryState)):
                 states_to_enter = cast(List[str], self._memory.get(leaf.name, [leaf.memory]))

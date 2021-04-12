@@ -118,7 +118,9 @@ class PythonEvaluator(Evaluator):
         """
         return self._context.setdefault(name, value)
 
-    def _evaluate_code(self, code: Optional[str], *, additional_context: Mapping[str, Any] = None) -> bool:
+    def _evaluate_code(
+            self, code: Optional[str],
+            *, additional_context: Mapping[str, Any] = None) -> bool:
         """
         Evaluate given code using Python.
 
@@ -144,7 +146,9 @@ class PythonEvaluator(Evaluator):
         except Exception as e:
             raise CodeEvaluationError('"{}" occurred while evaluating "{}"'.format(e, code)) from e
 
-    def _execute_code(self, code: Optional[str], *, additional_context: Mapping[str, Any] = None) -> List[Event]:
+    def _execute_code(
+            self, code: Optional[str],
+            *, additional_context: Mapping[str, Any] = None) -> List[Event]:
         """
         Execute given code using Python.
 
@@ -190,7 +194,9 @@ class PythonEvaluator(Evaluator):
             'idle': lambda seconds: self._interpreter.time - seconds >= self._interpreter._idle_time[transition.source],
             'event': event,
         }
-        return self._evaluate_code(getattr(transition, 'guard', None), additional_context=additional_context)
+        return self._evaluate_code(
+            getattr(transition, 'guard', None),
+            additional_context=additional_context)
 
     def evaluate_preconditions(self, obj, event: Optional[Event] = None) -> Iterator[str]:
         """
