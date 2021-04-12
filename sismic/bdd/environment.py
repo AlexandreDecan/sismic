@@ -1,12 +1,17 @@
-from sismic.bdd.async_support import async_test, clear_async_context, create_async_context
 from typing import Callable, List
 
 from behave.runner import ModelRunner
+
+from sismic.bdd.async_support import (
+    async_test,
+    clear_async_context,
+    create_async_context,
+)
+from sismic.bdd.steps import *
 from sismic.helpers import log_trace
 from sismic.interpreter.default import Interpreter
 from sismic.io.yaml import import_from_yaml
 from sismic.model.statechart import Statechart
-from sismic.bdd.steps import *
 
 __all__ = [
     "setup_behave_context",
@@ -37,9 +42,7 @@ def setup_behave_context(
     statechart: Statechart = None,
     property_statecharts: List[Statechart] = None,
     interpreter_klass: Callable[[Statechart], Interpreter] = Interpreter,
-    async_start_fn=None,
     is_async=False,
-    reset_fn=None,
 ):
     property_statecharts = property_statecharts if property_statecharts else []
     sc = statechart
@@ -53,8 +56,6 @@ def setup_behave_context(
             "interpreter_klass": interpreter_klass,
             "is_async": is_async,
             "property_statecharts": property_statecharts,
-            "async_start_fn": async_start_fn,
-            "reset_fn": reset_fn,
         }
     )
 
@@ -151,18 +152,12 @@ def sismic_after_step(context, step):
 
 
 def sismic_application(context):
-    reset_fn = context.config.userdata.get("reset_fn")
-    if reset_fn:
-        (reset_fn)(context)
     setup_sismic_from_context(context)
 
 
 # I'd love for these to be in async_support, but it must call setup_sismic_from_context
 async def default_async_task(context):
-    async_start_fn = context.config.userdata.get("async_start_fn")
     try:
-        if async_start_fn:
-            await (async_start_fn)(context)
         setup_sismic_from_context(context)
         await asyncio.sleep(0)
     except Exception as ex:
@@ -170,9 +165,6 @@ async def default_async_task(context):
 
 
 def sismic_async_application(context):
-    reset_fn = context.config.userdata.get("reset_fn")
-    if reset_fn:
-        (reset_fn)(context)
     async_context = create_async_context(context)
     task = async_context.loop.create_task(default_async_task(context))
     async_context.tasks.append(task)

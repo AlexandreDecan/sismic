@@ -1,8 +1,11 @@
 import asyncio
 from asyncio.events import AbstractEventLoop
-from sismic.bdd.LoopRunner import LoopRunner
 from typing import AsyncContextManager
-from behave import given, when, then  # type: ignore
+
+from behave import given, then, when  # type: ignore
+
+from sismic.bdd.LoopRunner import LoopRunner
+
 from .. import testing
 
 
@@ -108,8 +111,10 @@ def state_is_not_exited(context, name):
 def state_is_active(context, name):
     # Check that state exists
     context.interpreter.statechart.state_for(name)
+    
+    active = ', '.join(context.interpreter.configuration)
 
-    assert name in context.interpreter.configuration, 'State {} is not active'.format(name)
+    assert name in context.interpreter.configuration, 'State {} is not active.  Active states are {}'.format(name, active)
 
 
 @then('state {name} is not active')
