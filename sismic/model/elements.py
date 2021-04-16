@@ -68,10 +68,7 @@ class ActionStateMixin(metaclass=ABCMeta):
 
     def __eq__(self, other):
         if isinstance(other, ActionStateMixin):
-            return (
-                self.on_entry == other.on_exit
-                and self.on_exit == other.on_exit
-            )
+            return self.on_entry == other.on_exit and self.on_exit == other.on_exit
         else:
             return NotImplemented
 
@@ -149,7 +146,8 @@ class CompoundState(
     :param on_exit: code to execute when state is exited
     """
 
-    def __init__(self, name: str, initial: str = None, on_entry: str = None, on_exit: str = None) -> None:
+    def __init__(self, name: str, initial: str = None,
+                 on_entry: str = None, on_exit: str = None) -> None:
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
@@ -211,7 +209,8 @@ class ShallowHistoryState(ContractMixin, StateMixin, ActionStateMixin, HistorySt
     :param memory: name of the initial state
     """
 
-    def __init__(self, name: str, on_entry: str = None, on_exit: str = None, memory: str = None) -> None:
+    def __init__(self, name: str, on_entry: str = None,
+                 on_exit: str = None, memory: str = None) -> None:
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
@@ -240,7 +239,8 @@ class DeepHistoryState(ContractMixin, StateMixin, ActionStateMixin, HistoryState
     :param memory: name of the initial state
     """
 
-    def __init__(self, name: str, on_entry: str = None, on_exit: str = None, memory: str = None) -> None:
+    def __init__(self, name: str, on_entry: str = None,
+                 on_exit: str = None, memory: str = None) -> None:
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)

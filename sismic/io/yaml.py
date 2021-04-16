@@ -49,10 +49,12 @@ def import_from_yaml(
         text: str = None, filepath: str = None, *, ignore_schema: bool = False,
         ignore_validation: bool = False) -> Statechart:
     """
-    Import a statechart from a YAML representation (first argument) or a YAML file (filepath argument).
+    Import a statechart from a YAML representation (first argument) or a YAML file (filepath
+    argument).
 
     Unless specified, the structure contained in the YAML is validated against a predefined
-    schema (see *sismic.io.SCHEMA*), and the resulting statechart is validated using its *validate()* method.
+    schema (see *sismic.io.SCHEMA*), and the resulting statechart is validated using its
+    *validate()* method.
 
     :param text: A YAML text. If not provided, filepath argument has to be provided.
     :param filepath: A path to a YAML file.
@@ -90,8 +92,8 @@ def import_from_yaml(
 
 def export_to_yaml(statechart: Statechart, filepath: str = None) -> str:
     """
-    Export given *Statechart* instance to YAML. Its YAML representation is returned by this function.
-    Automatically save the output to filepath, if provided.
+    Export given *Statechart* instance to YAML. Its YAML representation is returned by
+    this function. Automatically save the output to filepath, if provided.
 
     :param statechart: statechart to export
     :param filepath: save output to given filepath, if provided

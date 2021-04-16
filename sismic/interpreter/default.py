@@ -38,9 +38,9 @@ class Interpreter:
     (eventless transitions first, inner-first/source state semantics).
 
     :param statechart: statechart to interpret
-    :param evaluator_klass: An optional callable (e.g. a class) that takes an interpreter and an optional initial
-        context as input and returns an *Evaluator* instance that will be used to initialize the interpreter.
-        By default, the *PythonEvaluator* class will be used.
+    :param evaluator_klass: An optional callable (e.g. a class) that takes an interpreter and an
+        optional initial context as input and returns an *Evaluator* instance that will be used to
+        initialize the interpreter. By default, the *PythonEvaluator* class will be used.
     :param initial_context: an optional initial context that will be provided to the evaluator.
         By default, an empty context is provided
     :param clock: A BaseClock instance that will be used to set this interpreter internal time.
@@ -104,8 +104,8 @@ class Interpreter:
     @property
     def configuration(self) -> List[str]:
         """
-        List of active states names, ordered by depth. Ties are broken according to the lexicographic order
-        on the state name.
+        List of active states names, ordered by depth. Ties are broken according to the
+        lexicographic order on the state name.
         """
         return sorted(self._configuration, key=lambda s: (self._statechart.depth_for(s), s))
 
@@ -137,14 +137,20 @@ class Interpreter:
         The listener is called each time a meta-event is emitted by current interpreter.
         Emitted meta-events are:
 
-        - *step started*: when a (possibly empty) macro step starts. The current time of the step is available through the ``time`` attribute.
+        - *step started*: when a (possibly empty) macro step starts. The current time of the step
+          is available through the ``time`` attribute.
         - *step ended*: when a (possibly empty) macro step ends.
-        - *event consumed*: when an event is consumed. The consumed event is exposed through the ``event`` attribute.
-        - *event sent*: when an event is sent. The sent event is exposed through the ``event`` attribute.
-        - *state exited*: when a state is exited. The exited state is exposed through the ``state`` attribute.
-        - *state entered*: when a state is entered. The entered state is exposed through the ``state`` attribute.
-        - *transition processed*: when a transition is processed. The source state, target state and the event are
-          exposed respectively through the ``source``, ``target`` and ``event`` attribute.
+        - *event consumed*: when an event is consumed. The consumed event is exposed through the
+          ``event`` attribute.
+        - *event sent*: when an event is sent. The sent event is exposed through the ``event``
+          attribute.
+        - *state exited*: when a state is exited. The exited state is exposed through the ``state``
+          attribute.
+        - *state entered*: when a state is entered. The entered state is exposed through the
+          ``state`` attribute.
+        - *transition processed*: when a transition is processed. The source state, target state
+          and the event ard exposed respectively through the ``source``, ``target`` and ``event``
+          attributes.
         - Every meta-event that is sent from within the statechart.
 
         This is a low-level interface for ``self.bind`` and ``self.bind_property_statechart``.
@@ -163,13 +169,15 @@ class Interpreter:
         """
         self._listeners.remove(listener)
 
-    def bind(self, interpreter_or_callable: Union['Interpreter', Callable[[Event], Any]]) -> Callable[[MetaEvent], Any]:
+    def bind(self, interpreter_or_callable: Union['Interpreter', Callable[[
+             Event], Any]]) -> Callable[[MetaEvent], Any]:
         """
         Bind an interpreter (or a callable) to the current interpreter.
 
         Internal events sent by this interpreter will be propagated as external events.
         If *interpreter_or_callable* is an *Interpreter* instance,  its *queue* method is called.
-        This is, if *i1* and *i2* are interpreters, *i1.bind(i2)* is equivalent to *i1.bind(i2.queue)*.
+        This is, if *i1* and *i2* are interpreters, *i1.bind(i2)* is equivalent to
+        *i1.bind(i2.queue)*.
 
         This method is a higher-level interface for ``self.attach``.
         If ``x = interpreter.bind(...)``, use ``interpreter.detach(x)`` to unbind a
@@ -194,28 +202,30 @@ class Interpreter:
         """
         Bind a property statechart to the current interpreter.
 
-        A property statechart receives meta-events from the current interpreter depending on what happens.
-        See ``attach`` method for a full list of meta-events.
+        A property statechart receives meta-events from the current interpreter depending on
+        what happens. See ``attach`` method for a full list of meta-events.
 
-        The internal clock of all property statecharts is synced with the one of the current interpreter.
-        As soon as a property statechart reaches a final state, a ``PropertyStatechartError`` will be raised,
-        meaning that the property expressed by the corresponding property statechart is not satisfied.
-        Property statecharts are automatically executed when they are bound to an interpreter.
+        The internal clock of all property statecharts is synced with the one of the current
+        interpreter. As soon as a property statechart reaches a final state, a
+        ``PropertyStatechartError`` will be raised, meaning that the property expressed by the
+        corresponding property statechart is not satisfied. Property statecharts are automatically
+        executed when they are bound to an interpreter.
 
         Since Sismic 1.4.0: passing an interpreter as first argument is deprecated.
 
         This method is a higher-level interface for ``self.attach``.
-        If ``x = interpreter.bind_property_statechart(...)``, use ``interpreter.detach(x)`` to unbind a
-        previously bound property statechart.
+        If ``x = interpreter.bind_property_statechart(...)``, use ``interpreter.detach(x)`` to
+        unbind a previously bound property statechart.
 
         :param statechart: A statechart instance.
-        :param interpreter_klass: An optional callable that accepts a statechart as first parameter and a
-            named parameter clock. Default to Interpreter.
+        :param interpreter_klass: An optional callable that accepts a statechart as first parameter
+            and a named parameter clock. Default to Interpreter.
         :return: the resulting attached listener.
         """
         if isinstance(statechart, Interpreter):
             warnings.warn(
-                'Passing an interpreter to bind_property_statechart is deprecated since 1.4.0. Use interpreter_klass instead.',
+                'Passing an interpreter to bind_property_statechart is deprecated since 1.4.0. '
+                'Use interpreter_klass instead.',
                 DeprecationWarning)
             interpreter = statechart
             interpreter.clock = SynchronizedClock(self)
@@ -234,8 +244,8 @@ class Interpreter:
         """
         Create and queue given events to the external event queue.
 
-        If an event has a `delay` parameter, it will be processed by the first call to `execute_once`
-        as soon as `self.clock.time` exceeds current `self.time + event.delay`.
+        If an event has a `delay` parameter, it will be processed by the first call to
+        `execute_once` as soon as `self.clock.time` exceeds current `self.time + event.delay`.
 
         If named parameters are provided, they will be added to all events
         that are provided by name.
@@ -276,10 +286,10 @@ class Interpreter:
 
     def execute_once(self) -> Optional[MacroStep]:
         """
-        Select transitions that can be fired based on available queued events, process them and stabilize
-        the interpreter. When multiple transitions are selected, they are atomically processed:
-        states are exited, transition is processed, states are entered, statechart is stabilized and only
-        after that, the next transition is processed.
+        Select transitions that can be fired based on available queued events, process them and
+        stabilize the interpreter. When multiple transitions are selected, they are atomically
+        processed: states are exited, transition is processed, states are entered, statechart is
+        stabilized and only after that, the next transition is processed.
 
         :return: a macro step or *None* if nothing happened
         """
@@ -321,7 +331,7 @@ class Interpreter:
             macro_step = None
 
         # Check state invariants
-        configuration = self.configuration  # Use self.configuration to benefit from the sorting by depth
+        configuration = self.configuration  # Use self.configuration to benefit from the sorting
         for name in configuration:
             state = self._statechart.state_for(name)
             self._evaluate_contract_conditions(state, 'invariants', macro_step)
@@ -420,11 +430,16 @@ class Interpreter:
                     considered_transitions.append(transition)
 
         # Which states should be selected to satisfy depth ordering?
-        ignored_state_selector = self._statechart.ancestors_for if inner_first else self._statechart.descendants_for
+        if inner_first:
+            ignored_state_selector = self._statechart.ancestors_for
+        else:
+            ignored_state_selector = self._statechart.descendants_for
         ignored_states = set()  # type: Set[str]
 
         # Group and sort transitions based on the event
-        def eventless_first_order(t): return t.event is not None
+        def eventless_first_order(t):
+            return t.event is not None
+
         for has_event, transitions in sorted_groupby(
                 considered_transitions, key=eventless_first_order, reverse=not eventless_first):
             # If there are selected transitions (from previous group), ignore new ones
@@ -435,18 +450,25 @@ class Interpreter:
             exposed_event = event if has_event else None
 
             # Group and sort transitions based on the source state depth
-            def depth_order(t): return _state_depth_cache[t.source]
+            def depth_order(t):
+                return _state_depth_cache[t.source]
+
             for _, transitions in sorted_groupby(transitions, key=depth_order, reverse=inner_first):
                 # Group and sort transitions based on the source state
-                def state_order(t): return t.source  # we just want states to be grouped here
+                def state_order(t):
+                    return t.source  # we just want states to be grouped here
+
                 for source, transitions in sorted_groupby(transitions, key=state_order):
                     # Do not considered ignored states
                     if source in ignored_states:
                         continue
 
                     has_found_transitions = False
+
                     # Group and sort transitions based on their priority
-                    def priority_order(t): return t.priority
+                    def priority_order(t):
+                        return t.priority
+
                     for _, transitions in sorted_groupby(
                             transitions, key=priority_order, reverse=True):
                         for transition in transitions:
@@ -460,7 +482,8 @@ class Interpreter:
                         if has_found_transitions:
                             for state in ignored_state_selector(source):
                                 ignored_states.add(state)
-                            # Also ignore current state, as we found transitions in a higher priority class
+                            # Also ignore current state, as we found transitions in a higher
+                            # priority class
                             ignored_states.add(source)
                             break
 
@@ -468,8 +491,8 @@ class Interpreter:
 
     def _sort_transitions(self, transitions: List[Transition]) -> List[Transition]:
         """
-        Given a list of triggered transitions, return a list of transitions in an order that represents
-        the order in which they have to be processed.
+        Given a list of triggered transitions, return a list of transitions in an order that
+        represents the order in which they have to be processed.
 
         :param transitions: a list of *Transition* instances
         :return: an ordered list of *Transition* instances
@@ -477,8 +500,8 @@ class Interpreter:
             transitions (*ConflictingTransitionsError*).
         """
         if len(transitions) > 1:
-            # If more than one transition, we check (1) they are from separate regions and (2) they do not conflict
-            # Two transitions conflict if one of them leaves the parallel state
+            # If more than one transition, we check (1) they are from separate regions and (2) they
+            # do not conflict. Two transitions conflict if one of them leaves the parallel state
             for t1, t2 in combinations(transitions, 2):
                 # Check (1)
                 lca = cast(str, self._statechart.least_common_ancestor(t1.source, t2.source))
@@ -502,9 +525,8 @@ class Interpreter:
                             break
                         last_before_lca = state
                     # Target must be a descendant (or self) of this state
-                    if (transition.target and
-                            (transition.target not in
-                             [last_before_lca] + self._statechart.descendants_for(last_before_lca))):
+                    if (transition.target and (transition.target not in [
+                            last_before_lca] + self._statechart.descendants_for(last_before_lca))):
                         raise ConflictingTransitionsError(
                             'Conflicting transitions: {t1} and {t2}'
                             '\nConfiguration is {c}\nEvent is {e}\nTransitions are:{t}\n'
@@ -553,8 +575,8 @@ class Interpreter:
     def _create_steps(self, event: Optional[Event],
                       transitions: Iterable[Transition]) -> List[MicroStep]:
         """
-        Return a (possibly empty) list of micro steps. Each micro step corresponds to the process of a transition
-        matching given event.
+        Return a (possibly empty) list of micro steps. Each micro step corresponds to the process
+        of a transition matching given event.
 
         :param event: the event to consider, if any
         :param transitions: the transitions that should be processed

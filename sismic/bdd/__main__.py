@@ -19,7 +19,8 @@ def cli(args=None) -> int:
                         help='A list of files containing steps implementation')
     parser.add_argument(
         '--properties', metavar='properties', nargs='+', type=str,
-        help='A list of filepaths pointing to YAML property statecharts. They will be checked at runtime following a fail fast approach.')
+        help='A list of filepaths pointing to YAML property statecharts. They will be checked '
+             'at runtime following a fail fast approach.')
     parser.add_argument(
         '--show-steps', action='store_true', default=False,
         help='Display a list of available steps (equivalent to Behave\'s --steps parameter')

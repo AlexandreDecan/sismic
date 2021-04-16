@@ -272,13 +272,14 @@ def export_to_plantuml(
     Export given statechart to plantUML (see http://plantuml/plantuml).
     If a filepath is provided, also save the output to this file.
 
-    Due to the way statecharts are representing, and due to the presence of features that are specific to Sismic,
-    the resulting statechart representation does not include all the informations.
+    Due to the way statecharts are representing, and due to the presence of features that are
+    specific to Sismic,the resulting statechart representation does not include all the
+    informations.
     For example, final states and history states won't have name, actions and contracts.
 
-    If a previously exported representation for the statechart is provided, either as text (based_on parameter)
-    or as a filepath (based_on_filepath parameter), it will attempt to reuse the modifications made
-    to the transitions (their direction and length).
+    If a previously exported representation for the statechart is provided, either as text
+    (based_on parameter) or as a filepath (based_on_filepath parameter), it will attempt to reuse
+    the modifications made to the transitions (their direction and length).
 
     :param statechart: statechart to export
     :param filepath: save output to given filepath, if provided
