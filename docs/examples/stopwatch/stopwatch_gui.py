@@ -11,8 +11,6 @@ import sys
 sys.path.append('../../..')
 
 
-
-
 # Create a tiny GUI
 class StopwatchApplication(tk.Frame):
     def __init__(self, master=None):

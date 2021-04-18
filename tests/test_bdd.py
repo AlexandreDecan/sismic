@@ -21,7 +21,7 @@ class TestMicrowave:
     def property_statecharts(self):
         statecharts = []
         for filename in ['heating_off_property', 'heating_on_property', 'heating_property']:
-            with open(os.path.join('docs', 'examples', 'microwave', filename+'.yaml')) as f:
+            with open(os.path.join('docs', 'examples', 'microwave', filename + '.yaml')) as f:
                 statecharts.append(import_from_yaml(f))
         return statecharts
 
@@ -43,7 +43,7 @@ class TestMicrowave:
 
         assert 0 == execute_bdd(
             microwave.statechart,
-            [os.path.join('docs', 'examples', 'microwave', f+'.feature') for f in features],
+            [os.path.join('docs', 'examples', 'microwave', f + '.feature') for f in features],
             step_filepaths=[os.path.join('docs', 'examples', 'microwave', 'steps.py')],
         )
 
@@ -52,7 +52,7 @@ class TestMicrowave:
 
         assert 0 == execute_bdd(
             microwave.statechart,
-            [os.path.join('docs', 'examples', 'microwave', f+'.feature') for f in features],
+            [os.path.join('docs', 'examples', 'microwave', f + '.feature') for f in features],
             step_filepaths=[os.path.join('docs', 'examples', 'microwave', 'steps.py')],
             property_statecharts=property_statecharts
         )
@@ -118,7 +118,7 @@ class TestSteps:
         context.interpreter.clock.time = 0
         steps.wait(context, 3)
         assert context.interpreter.clock.time == 3
-        
+
         steps.wait(context, 6)
         assert context.interpreter.clock.time == 9
 

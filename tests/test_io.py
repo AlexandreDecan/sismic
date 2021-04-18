@@ -22,8 +22,8 @@ def compare_statecharts(s1, s2):
 @pytest.mark.parametrize('data', [1, -1, 1.0, 'yes', 'True', 'no', '', [], [1, 2], {}, {1: 1}])
 def test_yaml_parser_types_handling(data):
     yaml = ('statechart:'
-            '\n  name: ' + str(data) +
-            '\n  preamble: Nothing'
+            '\n  name: ' + str(data)
+            + '\n  preamble: Nothing'
             '\n  root state:'
             '\n    name: s1')
     item = import_from_yaml(yaml).name
@@ -92,7 +92,8 @@ class TestImportFromYaml:
 
         with pytest.raises(StatechartError) as e:
             import_from_yaml(yaml)
-        assert 'root cannot declare both a "states" and a "parallel states" property' in str(e.value)
+        assert 'root cannot declare both a "states" and a "parallel states" property' in str(
+            e.value)
 
 
 class TestExportToYaml:
@@ -109,7 +110,8 @@ class TestExportToYaml:
         assert import_from_yaml(export_to_yaml(example_from_docs)).validate()
 
     def test_identity_for_example_from_tests(self, example_from_tests):
-        compare_statecharts(example_from_tests, import_from_yaml(export_to_yaml(example_from_tests)))
+        compare_statecharts(example_from_tests, import_from_yaml(
+            export_to_yaml(example_from_tests)))
 
     def test_identity_for_example_from_docs(self, example_from_docs):
         compare_statecharts(example_from_docs, import_from_yaml(export_to_yaml(example_from_docs)))
@@ -152,7 +154,6 @@ class TestExportToPlantUML:
         assert p1 == export_to_plantuml(statechart, based_on=p1)
         assert p1 == export_to_plantuml(statechart, based_on_filepath=filepath)
 
-
     def test_cli(self, capsys):
         filepath = 'docs/examples/elevator/elevator.yaml'
         statechart = import_from_yaml(filepath=filepath)
@@ -163,8 +164,9 @@ class TestExportToPlantUML:
         assert export_to_plantuml(statechart) == out.strip()
 
         # Check all parameters
-        cli([filepath, '--based-on', 'docs/examples/elevator/elevator.plantuml', '--show-description', '--show-preamble', '--show-state-contracts', '--show-transition-contracts', '--hide-state-action', '--hide-name', '--hide-transition-action'])
+        cli([filepath, '--based-on', 'docs/examples/elevator/elevator.plantuml', '--show-description', '--show-preamble',
+            '--show-state-contracts', '--show-transition-contracts', '--hide-state-action', '--hide-name', '--hide-transition-action'])
         out, _ = capsys.readouterr()
-        export = export_to_plantuml(statechart, based_on_filepath='docs/examples/elevator/elevator.plantuml', statechart_description=True, statechart_preamble=True, state_contracts=True, transition_contracts=True, state_action=False, statechart_name=False, transition_action=False)
+        export = export_to_plantuml(statechart, based_on_filepath='docs/examples/elevator/elevator.plantuml', statechart_description=True,
+                                    statechart_preamble=True, state_contracts=True, transition_contracts=True, state_action=False, statechart_name=False, transition_action=False)
         assert export == out.strip()
-        

@@ -30,7 +30,7 @@ class TestInterpreterWithSimple:
 
         interpreter.clock.time += 10
         # No execution means no new time value
-        assert interpreter.time == 0  
+        assert interpreter.time == 0
 
         interpreter.execute()
         assert interpreter.time == 10
@@ -238,9 +238,12 @@ class TestInterpreterWithDeephistory:
         step = interpreter.queue('continue').execute_once()
 
         assert step.entered_states.index('active') < step.entered_states.index('active.H*')
-        assert step.entered_states.index('active.H*') < step.entered_states.index('concurrent_processes')
-        assert step.entered_states.index('concurrent_processes') < step.entered_states.index('process_1')
-        assert step.entered_states.index('concurrent_processes') < step.entered_states.index('process_2')
+        assert step.entered_states.index(
+            'active.H*') < step.entered_states.index('concurrent_processes')
+        assert step.entered_states.index(
+            'concurrent_processes') < step.entered_states.index('process_1')
+        assert step.entered_states.index(
+            'concurrent_processes') < step.entered_states.index('process_2')
         assert step.entered_states.index('process_1') < step.entered_states.index('s12')
         assert step.entered_states.index('process_2') < step.entered_states.index('s22')
 
@@ -252,7 +255,8 @@ class TestInterpreterWithDeephistory:
         interpreter.queue('next1', 'next2', 'pause')
         last_step = interpreter.execute()[-1]
 
-        assert last_step.exited_states == ['s12', 's22', 'process_1', 'process_2', 'concurrent_processes', 'active']
+        assert last_step.exited_states == [
+            's12', 's22', 'process_1', 'process_2', 'concurrent_processes', 'active']
         assert interpreter.configuration == ['root', 'pause']
 
         step = interpreter.queue('continue').execute_once()
@@ -442,7 +446,7 @@ class TestTransitionPriority:
     def test_high_has_priority(self, interpreter):
         interpreter.execute_once()
         assert interpreter.configuration == ['root', 'b']
-                
+
     def test_eventless_first(self, interpreter):
         interpreter.execute_once()
         interpreter.queue('e')
@@ -506,11 +510,13 @@ def test_run_in_background(elevator):
 
 class TestCoverageFromTrace:
     def test_empty_trace(self):
-        assert coverage_from_trace([]) == {'entered states': Counter(), 'exited states': Counter(), 'processed transitions': Counter()}
+        assert coverage_from_trace([]) == {'entered states': Counter(
+        ), 'exited states': Counter(), 'processed transitions': Counter()}
 
     def test_single_step(self):
         trace = [MacroStep(0, steps=[
-            MicroStep(entered_states=['a', 'b', 'c'], exited_states=['b'], transition=Transition('x')),
+            MicroStep(entered_states=['a', 'b', 'c'], exited_states=[
+                      'b'], transition=Transition('x')),
             MicroStep(entered_states=['a', 'b'], exited_states=['c'], transition=Transition('x')),
             MicroStep(entered_states=['a']),
             MicroStep(entered_states=[])
@@ -526,8 +532,9 @@ class TestCoverageFromTrace:
 
     def test_multiple_steps(self):
         trace = [MacroStep(0, steps=[
-            MicroStep(entered_states=['a', 'b', 'c'], exited_states=['b'], transition=Transition('x')),
-            MicroStep(entered_states=['a', 'b'], exited_states=['c'],  transition=Transition('x')),
+            MicroStep(entered_states=['a', 'b', 'c'], exited_states=[
+                      'b'], transition=Transition('x')),
+            MicroStep(entered_states=['a', 'b'], exited_states=['c'], transition=Transition('x')),
             MicroStep(entered_states=['a']),
             MicroStep(entered_states=[])
         ])]
@@ -633,9 +640,9 @@ class TestEventQueue:
         interpreter.queue('test1', delay=1)
         interpreter.queue('test2', delay=-1)
         interpreter.queue('test3', delay=0)
-        
+
         interpreter._time += 10
-        
+
         event = interpreter._select_event(consume=True)
         assert event == Event('test2', delay=-1)
         event = interpreter._select_event(consume=True)
@@ -649,16 +656,16 @@ class TestEventQueue:
         interpreter.queue('test2', delay=1)
         interpreter.queue('test4', delay=2)
         interpreter.queue('test5', delay=3)
-                
+
         event = interpreter._select_event(consume=True)
         assert event == Event('test1', delay=0)
         assert interpreter._select_event(consume=True) is None
-        
+
         interpreter._time = 1
         event = interpreter._select_event(consume=True)
         assert event == Event('test2', delay=1)
         assert interpreter._select_event(consume=True) is None
-        
+
         interpreter._time = 2
         event = interpreter._select_event(consume=True)
         assert event == Event('test3', delay=2)
@@ -670,7 +677,7 @@ class TestEventQueue:
         interpreter.queue('test1', delay=0)
         interpreter._raise_event(InternalEvent('test2'))
         interpreter.queue('test3', delay=2)
-        
+
         event = interpreter._select_event()
         assert isinstance(event, InternalEvent) and event == Event('test2')
 
@@ -680,13 +687,10 @@ class TestEventQueue:
 
         interpreter._raise_event(InternalEvent('test4'))
         # Queue is (0, test1) ; (2, test3) ; (2, test4) but test4 is internal
-        
+
         event = interpreter._select_event(consume=True)
         assert isinstance(event, InternalEvent) and event == Event('test4')
         event = interpreter._select_event(consume=True)
         assert event == Event('test1', delay=0)
         event = interpreter._select_event(consume=True)
         assert event == Event('test3', delay=2)
-        
-        
-    

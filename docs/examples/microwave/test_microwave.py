@@ -16,18 +16,18 @@ class MicrowaveTests(unittest.TestCase):
         self.oven.execute()
 
         self.oven.queue('cooking_start')
-        
+
         for step in iter(self.oven.execute_once, None):
             for event in step.sent_events:
                 self.assertNotEqual(event.name, 'heating_on')
-        
+
         self.assertNotIn('cooking_mode', self.oven.configuration)
 
     def test_increase_timer(self):
         self.oven.queue('door_opened', 'item_placed', 'door_closed')
-    
-        events = 10 * ['timer_inc']    
+
+        events = 10 * ['timer_inc']
         self.oven.queue(*events)
         self.oven.execute()
-        
+
         self.assertEqual(self.oven.context['timer'], 10)

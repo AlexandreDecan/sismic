@@ -12,8 +12,8 @@ class TestInterpreterMetaEvents:
         prop_sc.execute = mocker.MagicMock(return_value=None)
         prop_sc.final = False
         prop_sc.time = 0
-        
-        def prop_sc_call(statechart, clock):    
+
+        def prop_sc_call(statechart, clock):
             return prop_sc
 
         # Bind it
@@ -32,7 +32,8 @@ class TestInterpreterMetaEvents:
 
     def test_empty_step(self, microwave, property_statechart):
         microwave.execute()
-        assert property_statechart.queue.call_args_list[0][0][0] == MetaEvent('step started', time=0)
+        assert property_statechart.queue.call_args_list[0][0][0] == MetaEvent(
+            'step started', time=0)
         assert property_statechart.queue.call_args_list[-1][0][0] == MetaEvent('step ended')
 
         for call in property_statechart.queue.call_args_list:
@@ -45,7 +46,8 @@ class TestInterpreterMetaEvents:
 
         microwave.execute()
 
-        assert MetaEvent('event sent', event=InternalEvent('test')) in [x[0][0] for x in property_statechart.queue.call_args_list]
+        assert MetaEvent('event sent', event=InternalEvent('test')) in [
+            x[0][0] for x in property_statechart.queue.call_args_list]
 
     def test_meta_event_sent(self, microwave, property_statechart):
         # Add meta to a state
@@ -54,8 +56,10 @@ class TestInterpreterMetaEvents:
 
         microwave.execute()
 
-        assert MetaEvent('event sent', event=MetaEvent('test', x=1, y='hello')) not in [x[0][0] for x in property_statechart.queue.call_args_list]
-        assert MetaEvent('test', x=1, y='hello') in [x[0][0] for x in property_statechart.queue.call_args_list]
+        assert MetaEvent('event sent', event=MetaEvent('test', x=1, y='hello')) not in [
+            x[0][0] for x in property_statechart.queue.call_args_list]
+        assert MetaEvent('test', x=1, y='hello') in [x[0][0]
+                                                     for x in property_statechart.queue.call_args_list]
 
     def test_trace(self, microwave, property_statechart):
         microwave.queue('door_opened')
@@ -72,7 +76,8 @@ class TestInterpreterMetaEvents:
             MetaEvent('event consumed', event=Event('door_opened')),
             MetaEvent('state exited', state='closed without item'),
             MetaEvent('state exited', state='door closed'),
-            MetaEvent('transition processed', source='closed without item', target='opened without item', event=Event('door_opened')),
+            MetaEvent('transition processed', source='closed without item',
+                      target='opened without item', event=Event('door_opened')),
             MetaEvent('state entered', state='door opened'),
             MetaEvent('state entered', state='opened without item'),
             MetaEvent('event sent', event=InternalEvent('lamp_switch_on')),

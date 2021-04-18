@@ -12,8 +12,6 @@ import sys
 sys.path.append('../../..')
 
 
-
-
 # Create a tiny GUI
 class StopwatchApplication(tk.Frame):
     def __init__(self, master=None):
@@ -30,7 +28,7 @@ class StopwatchApplication(tk.Frame):
         self.stopwatch = Stopwatch()
         self.interpreter = Interpreter(statechart, initial_context={'stopwatch': self.stopwatch})
         self.interpreter.clock.start()
-        
+
         # Run the interpreter
         self.run()
 

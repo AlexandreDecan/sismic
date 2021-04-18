@@ -20,7 +20,8 @@ def test_writer(writer):
 
     writer.execute()
     assert writer.final
-    assert writer.context['output'] == ['bonjour ', '[b]', '[i]', 'a ', '[/b]', '[/i]', '[b]', 'tous !', '[/b]']
+    assert writer.context['output'] == ['bonjour ', '[b]',
+                                        '[i]', 'a ', '[/b]', '[/i]', '[b]', 'tous !', '[/b]']
 
 
 class TestElevator:
@@ -41,7 +42,8 @@ class TestElevator:
         assert elevator.context['destination'] == 4
 
         elevator.execute_once()
-        assert set(elevator.configuration) == {'active', 'active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'}
+        assert set(elevator.configuration) == {
+            'active', 'active', 'doorsClosed', 'floorListener', 'floorSelecting', 'movingElevator'}
 
     def test_floor_selected_and_reached(self, elevator):
         # Stabilisation

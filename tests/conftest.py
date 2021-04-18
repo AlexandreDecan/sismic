@@ -5,7 +5,6 @@ from sismic.io import import_from_yaml
 from sismic.interpreter import Interpreter
 
 
-
 @pytest.fixture(params=[False, True], ids=['no contract', 'contract'])
 def elevator(request):
     if request.param:
