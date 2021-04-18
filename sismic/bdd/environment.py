@@ -1,12 +1,11 @@
+import asyncio
 from typing import Callable, List
 
 from behave.runner import ModelRunner
 
-from sismic.bdd.async_support import (
-    async_test,
-    clear_async_context,
-    create_async_context,
-)
+from sismic.bdd.async_support import (clear_async_context,
+                                      create_async_context, get_async_context,
+                                      testing_async)
 from sismic.bdd.steps import *
 from sismic.helpers import log_trace
 from sismic.interpreter.default import Interpreter
@@ -63,20 +62,16 @@ def setup_behave_context(
 
     def run_hook(self, name, context, *args):
         if name == "before_scenario":
+            if testing_async(context):
+                create_async_context(context)
             sismic_before_scenario(context, *args)
-            if async_test(context):
-                if getattr(context, "fixture-setup"):
-                    setattr(context, "fixture-setup", False)
-                else:
-                    create_async_context(context)
-                    sismic_before_scenario(context, *args)
         elif name == "before_step":
             sismic_before_step(context, *args)
 
         behave_run_hook(self, name, context, *args)
 
         if name == "after_scenario":
-            if async_test(context):
+            if testing_async(context):
                 clear_async_context(context)
         elif name == "after_step":
             sismic_after_step(context, *args)
@@ -87,12 +82,12 @@ def setup_behave_context(
 
 
 def sismic_after_all(context):
-    if async_test(context):
+    if testing_async(context):
         clear_async_context(context)
 
 
 def sismic_before_scenario(context, scenario):
-    if async_test(context):
+    if testing_async(context):
         sismic_async_application(context)
     else:
         sismic_application(context)
@@ -165,6 +160,6 @@ async def default_async_task(context):
 
 
 def sismic_async_application(context):
-    async_context = create_async_context(context)
+    async_context = get_async_context(context)
     task = async_context.loop.create_task(default_async_task(context))
     async_context.tasks.append(task)

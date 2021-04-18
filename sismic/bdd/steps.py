@@ -1,22 +1,16 @@
-import asyncio
-from asyncio.events import AbstractEventLoop
-from typing import AsyncContextManager
-
 from behave import given, then, when  # type: ignore
 
 from sismic.bdd.LoopRunner import LoopRunner
 
 from .. import testing
+from .async_support import run_async_loop, testing_async
 
 
 @given('I do nothing')
 @when('I do nothing')
 def do_nothing(context):
-    is_async = context.config.userdata.get("is_async")
-    if is_async:
-        runner = getattr(context, 'runner')  # type: LoopRunner
-        if runner.loop.is_running():
-            runner.run_coroutine(asyncio.sleep(0))
+    if testing_async(context):
+        run_async_loop(context)
 
 
 @given('I reproduce "{scenario}"')
@@ -61,6 +55,8 @@ def send_event(context, name, parameter=None, value=None):
         parameters[parameter.strip()] = eval(value.strip(), {}, {})
 
     context.interpreter.queue(name, **parameters)
+    if testing_async(context):
+        run_async_loop(context)
 
 
 @given('I wait {seconds:g} seconds')
@@ -69,6 +65,8 @@ def send_event(context, name, parameter=None, value=None):
 @when('I wait {seconds:g} second')
 def wait(context, seconds):
     context.interpreter.clock.time += seconds
+    if testing_async(context):
+        run_async_loop(context)
 
 
 @then('state {name} is entered')
@@ -111,10 +109,11 @@ def state_is_not_exited(context, name):
 def state_is_active(context, name):
     # Check that state exists
     context.interpreter.statechart.state_for(name)
-    
+
     active = ', '.join(context.interpreter.configuration)
 
-    assert name in context.interpreter.configuration, 'State {} is not active.  Active states are {}'.format(name, active)
+    assert name in context.interpreter.configuration, 'State {} is not active.  Active states are {}'.format(
+        name, active)
 
 
 @then('state {name} is not active')
