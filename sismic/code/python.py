@@ -52,35 +52,41 @@ class PythonEvaluator(Evaluator):
 
     - On both code execution and code evaluation:
         - A *time: float* value that represents the current time exposed by interpreter clock.
-        - An *active(name: str) -> bool* Boolean function that takes a state name and return *True* if and only
-          if this state is currently active, ie. it is in the active configuration of the ``Interpreter`` instance
-          that makes use of this evaluator.
+        - An *active(name: str) -> bool* Boolean function that takes a state name and return *True*
+          if and only if this state is currently active, ie. it is in the active configuration of
+          the ``Interpreter`` instance that makes use of this evaluator.
     - On code execution:
-        - A *send(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
-          raises an internal event with it. Raised events are propagated to bound statecharts as external events and
-          to the current statechart as internal event. If delay is provided, a delayed event is created.
-        - A *notify(name: str, **kwargs) -> None* function that takes an event name and additional keyword parameters and
-          raises a meta-event with it. Meta-events are only sent to bound property statecharts.
-        - If the code is related to a transition, the *event: Event* that fires the transition is exposed.
-        - A *setdefault(name:str, value: Any) -> Any* function that defines and returns variable *name* in
-          the global scope if it is not yet defined.
+        - A *send(name: str, **kwargs) -> None* function that takes an event name and additional
+          keyword parameters and raises an internal event with it. Raised events are propagated to
+          bound statecharts as external events and to the current statechart as internal event.
+          If delay is provided, a delayed event is created.
+        - A *notify(name: str, **kwargs) -> None* function that takes an event name and additional
+          keyword parameters and raises a meta-event with it. Meta-events are only sent to bound
+          property statecharts.
+        - If the code is related to a transition, the *event: Event* that fires the transition
+          is exposed.
+        - A *setdefault(name:str, value: Any) -> Any* function that defines and returns variable
+          *name* in the global scope if it is not yet defined.
     - On guard or contract evaluation:
-        - If the code is related to a transition, an *event: Optional[Event]* variable is exposed. This variable
-          contains the currently considered event, or None.
+        - If the code is related to a transition, an *event: Optional[Event]* variable is exposed.
+          This variable contains the currently considered event, or None.
     - On guard or contract (except preconditions) evaluation:
-        - An *after(sec: float) -> bool* Boolean function that returns *True* if and only if the source state
-          was entered more than *sec* seconds ago. The time is evaluated according to Interpreter's clock.
-        - A *idle(sec: float) -> bool* Boolean function that returns *True* if and only if the source state
-          did not fire a transition for more than *sec* ago. The time is evaluated according to Interpreter's clock.
+        - An *after(sec: float) -> bool* Boolean function that returns *True* if and only if the
+          source state was entered more than *sec* seconds ago. The time is evaluated according to
+          Interpreter's clock.
+        - A *idle(sec: float) -> bool* Boolean function that returns *True* if and only if the
+          source state did not fire a transition for more than *sec* ago. The time is evaluated
+          according to Interpreter's clock.
     - On contract (except preconditions) evaluation:
-        - A variable *__old__* that has an attribute *x* for every *x* in the context when either the state
-          was entered (if the condition involves a state) or the transition was processed (if the condition
-          involves a transition). The value of *__old__.x* is a shallow copy of *x* at that time.
+        - A variable *__old__* that has an attribute *x* for every *x* in the context when either
+          the state was entered (if the condition involves a state) or the transition was processed
+          (if the condition involves a transition). The value of *__old__.x* is a shallow copy
+          of *x* at that time.
     - On contract evaluation:
-        - A *sent(name: str) -> bool* function that takes an event name and return True if an event with the same name
-          was sent during the current step.
-        - A *received(name: str) -> bool* function  that takes an event name and return True if an event with the
-          same name is currently processed in this step.
+        - A *sent(name: str) -> bool* function that takes an event name and return True if an
+          event with the same name was sent during the current step.
+        - A *received(name: str) -> bool* function  that takes an event name and return True if
+          an event with the same name is currently processed in this step.
 
     If an exception occurred while executing or evaluating a piece of code, it is propagated by the
     evaluator.
@@ -190,8 +196,14 @@ class PythonEvaluator(Evaluator):
         :return: truth value of *code*
         """
         additional_context = {
-            'after': lambda seconds: self._interpreter.time - seconds >= self._interpreter._entry_time[transition.source],
-            'idle': lambda seconds: self._interpreter.time - seconds >= self._interpreter._idle_time[transition.source],
+            'after': (
+                lambda seconds: self._interpreter.time - seconds
+                >= self._interpreter._entry_time[transition.source]
+            ),
+            'idle': (
+                lambda seconds: self._interpreter.time - seconds
+                >= self._interpreter._idle_time[transition.source]
+            ),
             'event': event,
         }
         return self._evaluate_code(
@@ -234,11 +246,23 @@ class PythonEvaluator(Evaluator):
         state_name = obj.source if isinstance(obj, Transition) else obj.name
 
         additional_context = {
-            '__old__': self._memory.get(id(obj), None),
-            'after': lambda seconds: self._interpreter.time - seconds >= self._interpreter._entry_time[state_name],
-            'idle': lambda seconds: self._interpreter.time - seconds >= self._interpreter._idle_time[state_name],
-            'received': lambda name: name == getattr(event, 'name', None),
-            'sent': lambda name: name in [e.name for e in self._interpreter._sent_events],
+            '__old__': self._memory.get(
+                id(obj),
+                None),
+            'after': (
+                lambda seconds: self._interpreter.time - seconds
+                >= self._interpreter._entry_time[state_name]
+            ),
+            'idle': (
+                lambda seconds: self._interpreter.time - seconds
+                >= self._interpreter._idle_time[state_name]
+            ),
+            'received': lambda name: name == getattr(
+                event,
+                'name',
+                None),
+            'sent': lambda name: name in [
+                e.name for e in self._interpreter._sent_events],
             'event': event,
         }
 
@@ -259,11 +283,23 @@ class PythonEvaluator(Evaluator):
         state_name = obj.source if isinstance(obj, Transition) else obj.name
 
         additional_context = {
-            '__old__': self._memory.get(id(obj), None),
-            'after': lambda seconds: self._interpreter.time - seconds >= self._interpreter._entry_time[state_name],
-            'idle': lambda seconds: self._interpreter.time - seconds >= self._interpreter._idle_time[state_name],
-            'received': lambda name: name == getattr(event, 'name', None),
-            'sent': lambda name: name in [e.name for e in self._interpreter._sent_events],
+            '__old__': self._memory.get(
+                id(obj),
+                None),
+            'after': (
+                lambda seconds: self._interpreter.time - seconds
+                >= self._interpreter._entry_time[state_name]
+            ),
+            'idle': (
+                lambda seconds: self._interpreter.time - seconds
+                >= self._interpreter._idle_time[state_name]
+            ),
+            'received': lambda name: name == getattr(
+                event,
+                'name',
+                None),
+            'sent': lambda name: name in [
+                e.name for e in self._interpreter._sent_events],
             'event': event,
         }
 

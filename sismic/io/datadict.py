@@ -174,7 +174,8 @@ def export_to_dict(statechart: Statechart, ordered=True) -> Mapping[str, Any]:
     return {'statechart': d}
 
 
-def _export_state_to_dict(statechart: Statechart, state_name: str, ordered=True) -> Mapping[str, Any]:
+def _export_state_to_dict(statechart: Statechart, state_name: str,
+                          ordered=True) -> Mapping[str, Any]:
     data = OrderedDict() if ordered else {}
 
     state = statechart.state_for(state_name)

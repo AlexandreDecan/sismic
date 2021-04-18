@@ -26,7 +26,8 @@ def map_action(step_text: str, existing_step_or_steps: Union[str, List[str]]) ->
      - map_action('I do two things', ['First thing to do', 'Second thing to do'])
 
     :param step_text: Text of the new step, without the "given" or "when" keyword.
-    :param existing_step_or_steps: existing step, without the "given" or "when" keyword. Could be a list of steps.
+    :param existing_step_or_steps: existing step, without the "given" or "when" keyword.
+        Could be a list of steps.
     """
     if not isinstance(existing_step_or_steps, str):
         existing_step_or_steps = '\nand '.join(existing_step_or_steps)
@@ -75,9 +76,11 @@ def execute_bdd(statechart: Statechart,
     :param feature_filepaths: list of filepaths to feature files.
     :param step_filepaths: list of filepaths to step definitions.
     :param property_statecharts: list of property statecharts
-    :param interpreter_klass: a callable that accepts a statechart and an optional clock and returns an Interpreter
+    :param interpreter_klass: a callable that accepts a statechart and an optional clock
+        and returns an Interpreter
     :param debug_on_error: set to True to drop to (i)pdb in case of error.
-    :param behave_parameters: additional CLI parameters used by Behave (see http://behave.readthedocs.io/en/latest/behave.html#command-line-arguments)
+    :param behave_parameters: additional CLI parameters used by Behave
+        (see http://behave.readthedocs.io/en/latest/behave.html#command-line-arguments)
     :return: exit code of behave CLI.
     """
     # Default values

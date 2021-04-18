@@ -27,7 +27,10 @@ class Event:
         self.data = additional_parameters
 
     def __eq__(self, other):
-        return (self.name == other.name and self.data == other.data) if isinstance(other, Event) else NotImplemented
+        if isinstance(other, Event):
+            return (self.name == other.name and self.data == other.data)
+        else:
+            return NotImplemented
 
     def __getattr__(self, attr):
         try:
