@@ -31,7 +31,7 @@ The basic idea is that contracts can be defined on statechart componnents (state
 by specifying preconditions, postconditions, and invariants on them.
 At runtime, Sismic will verify the conditions specified by the contracts.
 If a condition is not satisfied, a :py:exc:`~sismic.exceptions.ContractError` will be raised.
-More specifically, one of the following 4 error types wil be raised: :py:exc:`~sismic.exceptions.PreconditionError`,
+More specifically, one of the following 3 error types will be raised: :py:exc:`~sismic.exceptions.PreconditionError`,
 :py:exc:`~sismic.exceptions.PostconditionError`, or :py:exc:`~sismic.exceptions.InvariantError`.
 
 Contracts can be specified for any state contained in the statechart, and for any transition contained in the statechart.
