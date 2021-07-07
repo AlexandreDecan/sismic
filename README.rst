@@ -5,8 +5,6 @@ Sismic for Python
     :target: https://travis-ci.com/AlexandreDecan/sismic
 .. image:: https://coveralls.io/repos/AlexandreDecan/sismic/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/AlexandreDecan/sismic?branch=master
-.. image:: https://app.codacy.com/project/badge/Grade/0a48fa4d62e842dbaee8e499e72aa6cf
-    :target: https://www.codacy.com/gh/AlexandreDecan/sismic/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AlexandreDecan/sismic&amp;utm_campaign=Badge_Grade
 .. image:: https://badge.fury.io/py/sismic.svg
     :target: https://pypi.org/project/sismic/
 .. image:: https://readthedocs.org/projects/sismic/badge/?version=latest
@@ -61,7 +59,7 @@ The scientific article `A method for testing and validating executable statechar
 Changelog
 ---------
 
-See documentation's `changelog <http://sismic.readthedocs.io/en/master/changelog.html>`_.
+See documentation's `changelog <https://sismic.readthedocs.io/en/latest/changelog.html>`_.
 
 
 Credits
