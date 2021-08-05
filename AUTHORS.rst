@@ -17,3 +17,4 @@ Contributors
 * Jan Wouter Versluis
 * Frederik Mathiesen
 * Stéphane Bidoul
+* Rigó Ernő

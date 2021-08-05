@@ -2,6 +2,12 @@ Changelog
 =========
 
 
+1.6.3 (2021-08-05)
+------------------
+
+ - (Fixed) ``Statechart.remove_state`` no longer resets all initial states and all history states (`#110 <https://github.com/AlexandreDecan/sismic/pull/110>`__, Rigó Ernő).
+
+
 1.6.2 (2020-12-29)
 ------------------
 
