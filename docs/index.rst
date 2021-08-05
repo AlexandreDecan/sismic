@@ -95,7 +95,7 @@ Credits
 
 The Sismic library for Python
 is mainly developed by Alexandre Decan at the `University of Mons <http://www.umons.ac.be>`_ with the help
-of `many contributors <http://sismic.readthedocs.io/en/master/authors.html>`_.
+of `many contributors <http://sismic.readthedocs.io/en/latest/authors.html>`_.
 
 Sismic is released publicly under the `GNU Lesser General Public Licence version 3.0 (LGPLv3)
 <http://www.gnu.org/licenses/lgpl-3.0.html>`_.
