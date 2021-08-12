@@ -49,7 +49,8 @@ def send_event(context, name, parameter=None, value=None):
     parameters = {}
     if context.table:
         for row in context.table:
-            parameters[row['parameter'].strip()] = eval(row['value'].strip(), {}, {})
+            parameters[row['parameter'].strip()] = eval(
+                row['value'].strip(), {}, {})
 
     if parameter and value:
         parameters[parameter.strip()] = eval(value.strip(), {}, {})
@@ -121,7 +122,8 @@ def state_is_not_active(context, name):
     # Check that state exists
     context.interpreter.statechart.state_for(name)
 
-    assert name not in context.interpreter.configuration, 'State {} is active'.format(name)
+    assert name not in context.interpreter.configuration, 'State {} is active'.format(
+        name)
 
 
 @then('event {name} is fired')
@@ -130,7 +132,8 @@ def event_is_fired(context, name, parameter=None, value=None):
     parameters = {}
 
     for row in context.table if context.table else []:
-        parameters[row['parameter'].strip()] = eval(row['value'].strip(), {}, {})
+        parameters[row['parameter'].strip()] = eval(row['value'].strip(), {},
+                                                    {})
 
     if parameter and value:
         parameters[parameter.strip()] = eval(value.strip(), {}, {})
@@ -140,7 +143,8 @@ def event_is_fired(context, name, parameter=None, value=None):
     if len(parameters) == 0:
         assert test, 'Event {} is not fired'.format(name)
     else:
-        assert test, 'Event {} is not fired with parameters {}'.format(name, parameters)
+        assert test, 'Event {} is not fired with parameters {}'.format(
+            name, parameters)
 
 
 @then('event {name} is not fired')
@@ -154,15 +158,17 @@ def no_event_is_fired(context):
     for macrostep in context.monitored_trace:
         if len(macrostep.sent_events) > 0:
             if len(macrostep.sent_events) > 1:
-                assert False, 'Events {} are fired'.format(
-                    ', '.join([e.name for e in macrostep.sent_events]))
+                assert False, 'Events {} are fired'.format(', '.join(
+                    [e.name for e in macrostep.sent_events]))
             else:
-                assert False, 'Event {} is fired'.format(macrostep.sent_events[0].name)
+                assert False, 'Event {} is fired'.format(
+                    macrostep.sent_events[0].name)
 
 
 @then('variable {variable} equals {value}')
 def variable_equals(context, variable, value):
-    assert variable in context.interpreter.context, 'Variable {} is not defined'.format(variable)
+    assert variable in context.interpreter.context, 'Variable {} is not defined'.format(
+        variable)
 
     current_value = context.interpreter.context[variable]
     expected_value = eval(value, {}, {})
@@ -172,23 +178,27 @@ def variable_equals(context, variable, value):
 
 @then('variable {variable} does not equal {value}')
 def variable_does_not_equal(context, variable, value):
-    assert variable in context.interpreter.context, 'Variable {} is not defined'.format(variable)
+    assert variable in context.interpreter.context, 'Variable {} is not defined'.format(
+        variable)
 
     current_value = context.interpreter.context[variable]
     expected_value = eval(value, {}, {})
-    assert current_value != expected_value, 'Variable {} equals {}'.format(variable, current_value)
+    assert current_value != expected_value, 'Variable {} equals {}'.format(
+        variable, current_value)
 
 
 @then('expression {expression} holds')
 def expression_holds(context, expression):
     assert testing.expression_holds(
-        context.interpreter, expression), 'Expression {} does not holds'.format(expression)
+        context.interpreter,
+        expression), 'Expression {} does not holds'.format(expression)
 
 
 @then('expression {expression} does not hold')
 def expression_does_not_hold(context, expression):
     assert not testing.expression_holds(
-        context.interpreter, expression), 'Expression {} holds'.format(expression)
+        context.interpreter,
+        expression), 'Expression {} holds'.format(expression)
 
 
 @then('statechart is in a final configuration')

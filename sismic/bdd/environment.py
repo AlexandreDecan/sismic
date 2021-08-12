@@ -19,6 +19,8 @@ __all__ = [
 
 def setup_sismic_from_context(context):
     # Create interpreter
+    if hasattr(context, 'interpreter'):
+        return context.interpreter
     statechart = context.config.userdata.get("statechart")
     interpreter_klass = context.config.userdata.get("interpreter_klass")
     context.interpreter = interpreter_klass(statechart)
@@ -29,10 +31,10 @@ def setup_sismic_from_context(context):
     context.monitored_trace = None
 
     # Bind property statecharts
-    for property_statechart in context.config.userdata.get("property_statecharts"):
+    for property_statechart in context.config.userdata.get(
+            "property_statecharts"):
         context.interpreter.bind_property_statechart(
-            property_statechart, interpreter_klass=interpreter_klass
-        )
+            property_statechart, interpreter_klass=interpreter_klass)
 
 
 def setup_behave_context(
@@ -42,6 +44,7 @@ def setup_behave_context(
     property_statecharts: List[Statechart] = None,
     interpreter_klass: Callable[[Statechart], Interpreter] = Interpreter,
     is_async=False,
+    async_task=None,
 ):
     property_statecharts = property_statecharts if property_statecharts else []
     sc = statechart
@@ -49,49 +52,67 @@ def setup_behave_context(
         sc = import_from_yaml(filepath=statechart_path)
     if not sc:
         raise Exception("No statechart found")
-    context.config.update_userdata(
-        {
-            "statechart": sc,
-            "interpreter_klass": interpreter_klass,
-            "is_async": is_async,
-            "property_statecharts": property_statecharts,
-        }
-    )
+    context.config.update_userdata({
+        "statechart": sc,
+        "interpreter_klass": interpreter_klass,
+        "is_async": is_async,
+        "property_statecharts": property_statecharts,
+        "async_task": async_task,
+    })
+
+    if is_async:
+        create_async_context(context)
 
     behave_run_hook = ModelRunner.run_hook
 
     def run_hook(self, name, context, *args):
-        if name == "before_scenario":
-            if testing_async(context):
-                create_async_context(context)
+        if name == "before_all":
+            sismic_before_all(context, *args)
+        elif name == "before_scenario":
             sismic_before_scenario(context, *args)
         elif name == "before_step":
             sismic_before_step(context, *args)
 
         behave_run_hook(self, name, context, *args)
 
-        if name == "after_scenario":
-            if testing_async(context):
-                clear_async_context(context)
-        elif name == "after_step":
+        if name == "after_step":
             sismic_after_step(context, *args)
+        elif name == "after_scenario":
+            sismic_after_scenario(context, *args)
         elif name == "after_all":
             sismic_after_all(context, *args)
 
     ModelRunner.run_hook = run_hook
 
 
+def sismic_before_all(context):
+    pass
+    # if testing_async(context):
+    #     create_async_context(context)
+
+
 def sismic_after_all(context):
-    if testing_async(context):
-        clear_async_context(context)
+    pass
+    # if testing_async(context):
+    #     clear_async_context(context)
 
 
 def sismic_before_scenario(context, scenario):
+    if testing_async(context):
+        # First time thru, don't recreate
+        if len(context.runners) > 1:
+            clear_async_context(context)
+            create_async_context(context)
     if testing_async(context):
         sismic_async_application(context)
     else:
         sismic_application(context)
     setup_sismic_from_context(context)
+
+
+def sismic_after_scenario(context, scenario):
+    if testing_async(context):
+        clear_async_context(context)
 
 
 def sismic_before_step(context, step):
@@ -125,11 +146,8 @@ def sismic_after_step(context, step):
         context.monitored_trace.extend(macrosteps)
 
     # Hook to enable debugging
-    if (
-        step.step_type == "then"
-        and step.status == "failed"
-        and context.config.userdata.get("debug_on_error")
-    ):
+    if (step.step_type == "then" and step.status == "failed"
+            and context.config.userdata.get("debug_on_error")):
         try:
             import ipdb as pdb
         except ImportError:
@@ -152,8 +170,12 @@ def sismic_application(context):
 
 # I'd love for these to be in async_support, but it must call setup_sismic_from_context
 async def default_async_task(context):
+    setup_sismic_from_context(context)
+    async_task = context.config.userdata.get("async_task")
     try:
-        setup_sismic_from_context(context)
+        if async_task:
+            # await?
+            await async_task()
         await asyncio.sleep(0)
     except Exception as ex:
         print(ex)

@@ -1,5 +1,5 @@
 import asyncio
-from typing import Callable, List
+from typing import Any, Callable, List
 
 from behave.api.async_step import AsyncContext, use_or_create_async_context
 
@@ -10,35 +10,49 @@ def testing_async(context):
     return context.config.userdata.get("is_async")
 
 
-def get_async_context(context) -> AsyncContext:
-    name = getattr(context, "contextname", None)
-    async_context = getattr(context, name)
-    return async_context
-
-
 def create_async_context(context) -> AsyncContext:
-    runners = getattr(context, 'runners', 0)
-    runners += 1
-    setattr(context, 'runners', runners)
-    name = f"sismic{runners}"
+    if not hasattr(context, 'runners'):
+        context.runners = []
+
+    count = len(context.runners) + 1
+    name = f"sismic{count}"
+
+    # start a new loop runner
     runner = LoopRunner(asyncio.new_event_loop())
     runner.start()
     asyncio.set_event_loop(runner.loop)
-    async_context = use_or_create_async_context(context, name, loop=runner.loop)
-    setattr(context, "contextname", name)
-    setattr(context, name, async_context)
-    setattr(context, "runner", runner)
+
+    # save it in the context
+    setattr(runner.loop, 'sismicbdd', name)
+
+    async_context = use_or_create_async_context(context,
+                                                name,
+                                                loop=runner.loop)
+    context.runners.append([True, runner, async_context])
+
     return async_context
 
 
+def get_async_context(context) -> AsyncContext:
+    runners = getattr(context, "runners", [])  # type: List[List[Any]]
+    for active, runner, context in runners:
+        if active:
+            return context
+
+
 def clear_async_context(context):
-    runner = getattr(context, "runner", None)
-    if runner:
-        runner.stop_if_running()
-        runner.join()
+    runners = getattr(context, "runners", [])  # type: List[List[Any]]
+    for i in range(len(runners)):
+        active, runner, context = runners[i]
+        if active:
+            runner.stop_if_running()
+            runner.join()
+            runners[i][0] = False
 
 
 def run_async_loop(context):
-    runner = getattr(context, 'runner')  # type: LoopRunner
-    if runner.loop.is_running():
-        runner.run_coroutine(asyncio.sleep(0))
+    runners = getattr(context, "runners", [])  # type: List[List[Any]]
+    for i in range(len(runners)):
+        active, runner, context = runners[i]
+        if active:
+            runner.run_coroutine(asyncio.sleep(0))
