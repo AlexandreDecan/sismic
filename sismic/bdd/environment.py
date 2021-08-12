@@ -92,9 +92,8 @@ def sismic_before_all(context):
 
 
 def sismic_after_all(context):
-    pass
-    # if testing_async(context):
-    #     clear_async_context(context)
+    if testing_async(context):
+        clear_async_context(context)
 
 
 def sismic_before_scenario(context, scenario):
