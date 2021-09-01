@@ -113,12 +113,13 @@ You can cite the associated research article (`PDF <https://decan.lexpage.net/fi
        url = {https://doi.org/10.1007/s10270-018-0676-3},
      }
 
+
 External Resources
 ------------------
 
 The following ressources provide additional information about statecharts that may be of use, even if it is not immediately related to Sismic.
 
-- `Yakindu Statechart tools <https://www.itemis.com/en/yakindu/state-machine/>`__: commercial software for visual simulation, debugging, testing and code generation from statecharts. A free academic licence can be obtained for universities.
-- A `YouTube playlist <https://www.youtube.com/playlist?list=PLmHMvhX5wK_aohX5sOeAMogFDwlc3gJYR>`__ providing a set of introductory tutorials about statechart modeling and simulation (based on the aforementioned Yakindu tool).
+* `Yakindu Statechart tools <https://www.itemis.com/en/yakindu/state-machine/>`__: commercial software for visual simulation, debugging, testing and code generation from statecharts. A free academic licence can be obtained for universities.
+* A `YouTube playlist <https://www.youtube.com/playlist?list=PLmHMvhX5wK_aohX5sOeAMogFDwlc3gJYR>`__ providing a set of introductory tutorials about statechart modeling and simulation (based on the aforementioned Yakindu tool).
 
 (If some of the links provided above turn out to be dead, or if you know other relevant resources that should be added here, please contact us.)
