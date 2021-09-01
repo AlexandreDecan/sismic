@@ -118,8 +118,8 @@ Shallow and deep history states
 
 *History states* can be declared as follows:
 
-- *type: shallow history* to declare a *shallow history* state;
-- *type: deep history* to declare a *deep history* state.
+* *type: shallow history* to declare a *shallow history* state;
+* *type: deep history* to declare a *deep history* state.
 
 .. code:: yaml
 
@@ -199,9 +199,10 @@ Transitions typically specify a target state using the *target* field:
       - target: other state
 
 Other optional fields can be specified for a transition:
-a *guard* (a Boolean expression that will be evaluated to determine if the transition can be followed),
-an *event* (name of the event that will trigger the transition),
-an *action* (code that will be executed if the transition is processed).
+* a *guard* (a Boolean expression that will be evaluated to determine if the transition can be followed),
+* an *event* (name of the event that will trigger the transition),
+* an *action* (code that will be executed if the transition is processed).
+
 Here is a full example of a transition specification:
 
 .. code:: yaml
