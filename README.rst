@@ -83,8 +83,8 @@ You can cite the Sismic library using:
         pages = "100590",
         year = "2020",
         issn = "2352-7110",
-        doi = "https://doi.org/10.1016/j.softx.2020.100590",
-        url = "http://www.sciencedirect.com/science/article/pii/S2352711020303034",
+        doi = "10.1016/j.softx.2020.100590",
+        url = "https://doi.org/10.1016/j.softx.2020.100590",
         author = "Alexandre Decan and Tom Mens",
     }
 
@@ -110,6 +110,15 @@ You can cite the associated research article (`PDF <https://decan.lexpage.net/fi
        year = 2018,
        title = {A method for testing and validating executable statechart models},
        doi = {10.1007/s10270-018-0676-3},
-       url = {https://link.springer.com/article/10.1007/s10270-018-0676-3},
+       url = {https://doi.org/10.1007/s10270-018-0676-3},
      }
 
+External Resources
+------------------
+
+The following ressources provide additional information about statecharts that may be of use, even if it is not immediately related to Sismic.
+
+- `Yakindu Statechart tools <https://www.itemis.com/en/yakindu/state-machine/>`__: commercial software for visual simulation, debugging, testing and code generation from statecharts. A free academic licence can be obtained for universities.
+- A `YouTube playlist <https://www.youtube.com/playlist?list=PLmHMvhX5wK_aohX5sOeAMogFDwlc3gJYR>`__ providing a set of introductory tutorials about statechart modeling and simulation (based on the aforementioned Yakindu tool).
+
+(If some of the links provided above turn out to be dead, or if you know other relevant resources that should be added here, please contact us.)
