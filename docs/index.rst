@@ -31,27 +31,27 @@ Features
 
 Sismic provides the following features:
 
- - An easy way to define and to import statecharts, based on the human-friendly YAML markup language
- - A statechart interpreter offering a discrete, step-by-step, and fully observable simulation engine
- - Fully controllable simulation clock, with support for real and simulated time
- - Built-in support for expressing actions and guards using regular Python code, can be easily extended to other programming languages
- - A design-by-contract approach for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions
- - Runtime checking of behavioral properties expressed as statecharts
- - Built-in support for behavior-driven development
- - Support for communication between statecharts
- - Synchronous and asynchronous executions
- - Statechart visualization using `PlantUML <http://www.plantuml.com/plantuml>`__
+* An easy way to define and to import statecharts, based on the human-friendly YAML markup language
+* A statechart interpreter offering a discrete, step-by-step, and fully observable simulation engine
+* Fully controllable simulation clock, with support for real and simulated time
+* Built-in support for expressing actions and guards using regular Python code, can be easily extended to other programming languages
+* A design-by-contract approach for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions
+* Runtime checking of behavioral properties expressed as statecharts
+* Built-in support for behavior-driven development
+* Support for communication between statecharts
+* Synchronous and asynchronous executions
+* Statechart visualization using `PlantUML <http://www.plantuml.com/plantuml>`__
 
 
 The semantics of the statechart interpreter is based on the specification of the SCXML semantics (with a few exceptions),
 but can be easily tuned to other semantics.
 Sismic statecharts provides full support for the majority of the UML 2 statechart concepts:
 
- - simple states, composite states, orthogonal (parallel) states, initial and final states, shallow and deep history states
- - state transitions, guarded transitions, automatic (eventless) transitions, internal transitions and transition priorities
- - statechart variables and their initialisation
- - state entry and exit actions, transition actions
- - internal and external events, parametrized events, delayed events
+* simple states, composite states, orthogonal (parallel) states, initial and final states, shallow and deep history states
+* state transitions, guarded transitions, automatic (eventless) transitions, internal transitions and transition priorities
+* statechart variables and their initialisation
+* state entry and exit actions, transition actions
+* internal and external events, parametrized events, delayed events
 
 
 .. toctree::
