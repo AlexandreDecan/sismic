@@ -3,14 +3,12 @@ from behave import given, then, when  # type: ignore
 from sismic.bdd.LoopRunner import LoopRunner
 
 from .. import testing
-from .async_support import run_async_loop, testing_async
 
 
 @given('I do nothing')
 @when('I do nothing')
 def do_nothing(context):
-    if testing_async(context):
-        run_async_loop(context)
+    pass
 
 
 @given('I reproduce "{scenario}"')
@@ -56,8 +54,6 @@ def send_event(context, name, parameter=None, value=None):
         parameters[parameter.strip()] = eval(value.strip(), {}, {})
 
     context.interpreter.queue(name, **parameters)
-    if testing_async(context):
-        run_async_loop(context)
 
 
 @given('I wait {seconds:g} seconds')
@@ -66,8 +62,6 @@ def send_event(context, name, parameter=None, value=None):
 @when('I wait {seconds:g} second')
 def wait(context, seconds):
     context.interpreter.clock.time += seconds
-    if testing_async(context):
-        run_async_loop(context)
 
 
 @then('state {name} is entered')

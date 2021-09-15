@@ -38,6 +38,7 @@ def get_async_context(context) -> AsyncContext:
     for active, runner, context in runners:
         if active:
             return context
+    return create_async_context(context)
 
 
 def clear_async_context(context):

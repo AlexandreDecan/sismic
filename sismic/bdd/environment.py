@@ -5,7 +5,7 @@ from behave.runner import ModelRunner
 
 from sismic.bdd.async_support import (clear_async_context,
                                       create_async_context, get_async_context,
-                                      testing_async)
+                                      run_async_loop, testing_async)
 from sismic.bdd.steps import *
 from sismic.helpers import log_trace
 from sismic.interpreter.default import Interpreter
@@ -87,8 +87,6 @@ def setup_behave_context(
 
 def sismic_before_all(context):
     pass
-    # if testing_async(context):
-    #     create_async_context(context)
 
 
 def sismic_after_all(context):
@@ -102,7 +100,6 @@ def sismic_before_scenario(context, scenario):
         if len(context.runners) > 1:
             clear_async_context(context)
             create_async_context(context)
-    if testing_async(context):
         sismic_async_application(context)
     else:
         sismic_application(context)
@@ -110,8 +107,8 @@ def sismic_before_scenario(context, scenario):
 
 
 def sismic_after_scenario(context, scenario):
-    if testing_async(context):
-        clear_async_context(context)
+    # this resets the interpreter between scenarios
+    context.interpreter = None
 
 
 def sismic_before_step(context, step):
@@ -136,13 +133,7 @@ def sismic_after_step(context, step):
 
     # "When" triggers monitored execution
     if step.step_type == "when":
-        macrosteps = context.interpreter.execute()
-
-        if not context._monitoring:
-            context._monitoring = True
-            context.monitored_trace = []
-
-        context.monitored_trace.extend(macrosteps)
+        sismic_execute_interpreter(context)
 
     # Hook to enable debugging
     if (step.step_type == "then" and step.status == "failed"
@@ -173,7 +164,6 @@ async def default_async_task(context):
     async_task = context.config.userdata.get("async_task")
     try:
         if async_task:
-            # await?
             await async_task()
         await asyncio.sleep(0)
     except Exception as ex:
@@ -184,3 +174,15 @@ def sismic_async_application(context):
     async_context = get_async_context(context)
     task = async_context.loop.create_task(default_async_task(context))
     async_context.tasks.append(task)
+
+
+def sismic_execute_interpreter(context):
+    macrosteps = context.interpreter.execute()
+
+    if not context._monitoring:
+        context._monitoring = True
+        context.monitored_trace = []
+
+    context.monitored_trace.extend(macrosteps)
+    if testing_async(context):
+        run_async_loop(context)
