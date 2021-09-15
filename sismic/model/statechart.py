@@ -419,9 +419,9 @@ class Statechart:
 
         # Remove compoundstate's initial and historystate's memory
         for o_state in self._states.values():
-            if isinstance(o_state, CompoundState):
+            if isinstance(o_state, CompoundState) and o_state.initial == name:
                 o_state.initial = None
-            elif isinstance(o_state, HistoryStateMixin):
+            elif isinstance(o_state, HistoryStateMixin) and o_state.memory == name:
                 o_state.memory = None
 
         # Remove state

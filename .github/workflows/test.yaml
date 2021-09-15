@@ -1,0 +1,46 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.5, 3.6, 3.7, 3.8, 3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install pip -U
+          pip install -e . --ignore-requires-python
+      - name: Install test dependencies
+        run:  |
+          pip install coverage
+          pip install -r requirements.txt
+      - name: Execute tests
+        run: coverage run --source sismic -m pytest tests
+      - name: Execute documentation
+        run : |
+          cd docs
+          make doctest
+          cd ..
+
+          cd docs/examples/microwave/
+          python -m unittest
+          cd ../../..
+      - name: Upload coverage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip install coveralls
+          coveralls --service=github

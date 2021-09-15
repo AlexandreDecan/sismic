@@ -1,12 +1,10 @@
 Sismic for Python
 =================
 
-.. image:: https://travis-ci.com/AlexandreDecan/sismic.svg?branch=master
-    :target: https://travis-ci.com/AlexandreDecan/sismic
+.. image:: https://github.com/AlexandreDecan/sismic/actions/workflows/test.yaml/badge.svg?branch=master
+    :target: https://github.com/AlexandreDecan/sismic/actions/workflows/test.yaml
 .. image:: https://coveralls.io/repos/AlexandreDecan/sismic/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/AlexandreDecan/sismic?branch=master
-.. image:: https://app.codacy.com/project/badge/Grade/0a48fa4d62e842dbaee8e499e72aa6cf
-    :target: https://www.codacy.com/gh/AlexandreDecan/sismic/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AlexandreDecan/sismic&amp;utm_campaign=Badge_Grade
 .. image:: https://badge.fury.io/py/sismic.svg
     :target: https://pypi.org/project/sismic/
 .. image:: https://readthedocs.org/projects/sismic/badge/?version=latest
@@ -61,14 +59,14 @@ The scientific article `A method for testing and validating executable statechar
 Changelog
 ---------
 
-See documentation's `changelog <http://sismic.readthedocs.io/en/master/changelog.html>`_.
+See documentation's `changelog <https://sismic.readthedocs.io/en/latest/changelog.html>`_.
 
 
 Credits
 -------
 
 The Sismic library for Python is mainly developed by Alexandre Decan at the
-`Software Engineering Lab <http://informatique.umons.ac.be/genlog>`_ of the `University of Mons <http://www.umons.ac.be>`_ with the help of `many contributors <http://sismic.readthedocs.io/en/master/authors.html>`_.
+`Software Engineering Lab <http://informatique.umons.ac.be/genlog>`_ of the `University of Mons <http://www.umons.ac.be>`_ with the help of `many contributors <http://sismic.readthedocs.io/en/latest/authors.html>`_.
 
 Sismic is released as open source software under the `GNU Lesser General Public Licence version 3.0 (LGPLv3)
 <http://www.gnu.org/licenses/lgpl-3.0.html>`_.
@@ -85,8 +83,8 @@ You can cite the Sismic library using:
         pages = "100590",
         year = "2020",
         issn = "2352-7110",
-        doi = "https://doi.org/10.1016/j.softx.2020.100590",
-        url = "http://www.sciencedirect.com/science/article/pii/S2352711020303034",
+        doi = "10.1016/j.softx.2020.100590",
+        url = "https://doi.org/10.1016/j.softx.2020.100590",
         author = "Alexandre Decan and Tom Mens",
     }
 
@@ -112,6 +110,16 @@ You can cite the associated research article (`PDF <https://decan.lexpage.net/fi
        year = 2018,
        title = {A method for testing and validating executable statechart models},
        doi = {10.1007/s10270-018-0676-3},
-       url = {https://link.springer.com/article/10.1007/s10270-018-0676-3},
+       url = {https://doi.org/10.1007/s10270-018-0676-3},
      }
 
+
+External Resources
+------------------
+
+The following ressources provide additional information about statecharts that may be of use, even if it is not immediately related to Sismic.
+
+* `Yakindu Statechart tools <https://www.itemis.com/en/yakindu/state-machine/>`__: commercial software for visual simulation, debugging, testing and code generation from statecharts. A free academic licence can be obtained for universities.
+* A `YouTube playlist <https://www.youtube.com/playlist?list=PLmHMvhX5wK_aohX5sOeAMogFDwlc3gJYR>`__ providing a set of introductory tutorials about statechart modeling and simulation (based on the aforementioned Yakindu tool).
+
+(If some of the links provided above turn out to be dead, or if you know other relevant resources that should be added here, please contact us.)

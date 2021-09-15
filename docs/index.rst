@@ -6,16 +6,15 @@
 Sismic user manual
 ==================
 
-.. image:: https://travis-ci.com/AlexandreDecan/sismic.svg?branch=master
-    :target: https://travis-ci.com/AlexandreDecan/sismic
+.. image:: https://github.com/AlexandreDecan/sismic/actions/workflows/test.yaml/badge.svg?branch=master
+    :target: https://github.com/AlexandreDecan/sismic/actions/workflows/test.yaml
 .. image:: https://coveralls.io/repos/AlexandreDecan/sismic/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/AlexandreDecan/sismic?branch=master
-.. image:: https://app.codacy.com/project/badge/Grade/0a48fa4d62e842dbaee8e499e72aa6cf
-    :target: https://www.codacy.com/gh/AlexandreDecan/sismic/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AlexandreDecan/sismic&amp;utm_campaign=Badge_Grade
 .. image:: https://badge.fury.io/py/sismic.svg
-    :target: https://pypi.python.org/pypi/sismic
+    :target: https://pypi.org/project/sismic/
 .. image:: https://readthedocs.org/projects/sismic/badge/?version=latest
     :target: https://sismic.readthedocs.io/
+
 
 About
 -----
@@ -33,27 +32,27 @@ Features
 
 Sismic provides the following features:
 
-- An easy way to define and to import statecharts, based on the human-friendly YAML markup language
-- A statechart interpreter offering a discrete, step-by-step, and fully observable simulation engine
-- Fully controllable simulation clock, with support for real and simulated time
-- Built-in support for expressing actions and guards using regular Python code, can be easily extended to other programming languages
-- A design-by-contract approach for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions
-- Runtime checking of behavioral properties expressed as statecharts
-- Built-in support for behavior-driven development
-- Support for communication between statecharts
-- Synchronous and asynchronous executions
-- Statechart visualization using `PlantUML <http://www.plantuml.com/plantuml>`__
+* An easy way to define and to import statecharts, based on the human-friendly YAML markup language
+* A statechart interpreter offering a discrete, step-by-step, and fully observable simulation engine
+* Fully controllable simulation clock, with support for real and simulated time
+* Built-in support for expressing actions and guards using regular Python code, can be easily extended to other programming languages
+* A design-by-contract approach for statecharts: contracts can be specified to express invariants, pre- and postconditions on states and transitions
+* Runtime checking of behavioral properties expressed as statecharts
+* Built-in support for behavior-driven development
+* Support for communication between statecharts
+* Synchronous and asynchronous executions
+* Statechart visualization using `PlantUML <http://www.plantuml.com/plantuml>`__
 
 
 The semantics of the statechart interpreter is based on the specification of the SCXML semantics (with a few exceptions),
 but can be easily tuned to other semantics.
 Sismic statecharts provides full support for the majority of the UML 2 statechart concepts:
 
-- simple states, composite states, orthogonal (parallel) states, initial and final states, shallow and deep history states
-- state transitions, guarded transitions, automatic (eventless) transitions, internal transitions and transition priorities
-- statechart variables and their initialisation
-- state entry and exit actions, transition actions
-- internal and external events, parametrized events, delayed events
+* simple states, composite states, orthogonal (parallel) states, initial and final states, shallow and deep history states
+* state transitions, guarded transitions, automatic (eventless) transitions, internal transitions and transition priorities
+* statechart variables and their initialisation
+* state entry and exit actions, transition actions
+* internal and external events, parametrized events, delayed events
 
 
 .. toctree::
@@ -97,7 +96,7 @@ Credits
 
 The Sismic library for Python
 is mainly developed by Alexandre Decan at the `University of Mons <http://www.umons.ac.be>`_ with the help
-of `many contributors <http://sismic.readthedocs.io/en/master/authors.html>`_.
+of `many contributors <http://sismic.readthedocs.io/en/latest/authors.html>`_.
 
 Sismic is released publicly under the `GNU Lesser General Public Licence version 3.0 (LGPLv3)
 <http://www.gnu.org/licenses/lgpl-3.0.html>`_.
@@ -112,14 +111,14 @@ You can cite the research article (`PDF <https://decan.lexpage.net/files/SOSYM-2
 .. code::
 
     @article{sismic2018-sosym,
-      author = {Mens, Tom and Decan, Alexandre and Spanoudakis, Nikolaos},
-      journal = {Software and Systems Modeling},
-      publisher = {Springer},
-      year = 2018,
-      title = {A method for testing and validating executable statechart models},
-      doi = {10.1007/s10270-018-0676-3},
-      url = {https://link.springer.com/article/10.1007/s10270-018-0676-3},
-    }
+       author = {Mens, Tom and Decan, Alexandre and Spanoudakis, Nikolaos},
+       journal = {Software and Systems Modeling},
+       publisher = {Springer},
+       year = 2018,
+       title = {A method for testing and validating executable statechart models},
+       doi = {10.1007/s10270-018-0676-3},
+       url = {https://doi.org/10.1007/s10270-018-0676-3},
+     }
 
 You can cite the Sismic library itself using:
 
@@ -132,8 +131,8 @@ You can cite the Sismic library itself using:
         pages = "100590",
         year = "2020",
         issn = "2352-7110",
-        doi = "https://doi.org/10.1016/j.softx.2020.100590",
-        url = "http://www.sciencedirect.com/science/article/pii/S2352711020303034",
+        doi = "10.1016/j.softx.2020.100590",
+        url = "https://doi.org/10.1016/j.softx.2020.100590",
         author = "Alexandre Decan and Tom Mens",
     }
 

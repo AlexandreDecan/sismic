@@ -316,16 +316,16 @@ Observing the execution
 The interpreter is fully observable during its execution. It provides many methods and attributes
 that can be used to see what happens. In particular:
 
- - The :py:meth:`~sismic.interpreter.Interpreter.execute_once` (resp. :py:meth:`~sismic.interpreter.Interpreter.execute`)
+* The :py:meth:`~sismic.interpreter.Interpreter.execute_once` (resp. :py:meth:`~sismic.interpreter.Interpreter.execute`)
    method returns an instance of (resp. a list of) :py:class:`sismic.model.MacroStep`.
- - The :py:func:`~sismic.helpers.log_trace` function can be used to log all the steps that were processed during the
+* The :py:func:`~sismic.helpers.log_trace` function can be used to log all the steps that were processed during the
    execution of an interpreter. This methods takes an interpreter and returns a (dynamic) list of macro steps.
- - The list of active states can be retrieved using :py:attr:`~sismic.interpreter.Interpreter.configuration`.
- - The context of the execution is available using :py:attr:`~sismic.interpreter.Interpreter.context`
+* The list of active states can be retrieved using :py:attr:`~sismic.interpreter.Interpreter.configuration`.
+* The context of the execution is available using :py:attr:`~sismic.interpreter.Interpreter.context`
    (see :ref:`code_evaluation`).
- - It is possible to bind a callable that will be called each time an event is sent by the statechart using
+* It is possible to bind a callable that will be called each time an event is sent by the statechart using
    the :py:meth:`~sismic.interpreter.Interpreter.bind` method of an interpreter (see :ref:`communication`).
- - Meta-events are raised by the interpreter for specific events (e.g. a state is entered, a state is exited, etc.). 
+* Meta-events are raised by the interpreter for specific events (e.g. a state is entered, a state is exited, etc.). 
    Listeners can subscribe to these meta-events with :py:attr:`~sismic.interpreter.Interpreter.attach`.
 
 
