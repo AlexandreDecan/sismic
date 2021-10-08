@@ -1,0 +1,8 @@
+# https://github.com/probot/settings
+
+repository:
+    default_branch: master
+    description: "Sismic Interactive Statechart Model Interpreter and Checker"
+    homepage: https://sismic.readthedocs.io/
+    name: sismic
+    private: false
