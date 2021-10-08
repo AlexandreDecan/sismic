@@ -58,3 +58,6 @@ target/
 
 # Configuration
 .*
+
+# Github configuration should not be ignored
+!.github/
