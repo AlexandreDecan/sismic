@@ -331,7 +331,7 @@ an interpreter's :py:meth:`~sismic.interpreter.Interpreter.queue` method.
 
 
 Delayed events are not processed by the interpreter, as long as the current clock
-as not reach given delay. 
+has not reached given delay. 
 
 .. testcode:: delayed
 
