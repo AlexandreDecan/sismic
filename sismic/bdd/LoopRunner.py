@@ -8,12 +8,12 @@ from asyncio import AbstractEventLoop
 class LoopRunner(threading.Thread):
     loop: AbstractEventLoop
 
-    def __init__(self, loop):
-        threading.Thread.__init__(self, name="runner")
+    def __init__(self, loop, name="runner"):
+        threading.Thread.__init__(self, name=name)
         self.loop = loop
 
     def run(self):
-        asyncio.set_event_loop(self.loop)
+        asyncio.set_event_loop(self.loop)   
         try:
             self.loop.run_forever()
         finally:

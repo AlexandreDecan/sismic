@@ -90,6 +90,7 @@ class TestAsyncRunner:
         sleep(self.INTERVAL)
         assert len(mocked_runner.after_run.call_args_list) == 1
 
+
     def test_final(self, runner):
         runner.start()
         runner.interpreter.queue('goto s2')
@@ -120,6 +121,7 @@ class TestAsyncRunner:
         assert runner.running
         sleep(self.INTERVAL)
         assert runner.interpreter.configuration == ['root', 's3']
+
 
     def test_state(self, runner):
         assert not runner.running

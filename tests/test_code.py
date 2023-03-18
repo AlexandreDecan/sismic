@@ -7,15 +7,15 @@ from sismic.interpreter import Event, InternalEvent, MetaEvent
 
 
 def test_dummy_evaluator(mocker):
-    interpreter = mocker.MagicMock(name='interpreter')
-    evaluator = code.DummyEvaluator(interpreter=interpreter)
+        interpreter = mocker.MagicMock(name='interpreter')
+        evaluator = code.DummyEvaluator(interpreter=interpreter)
 
-    assert evaluator._evaluate_code('blablabla') is True
-    assert evaluator._evaluate_code('False') is True
-    assert evaluator.context == {}
+        assert evaluator._evaluate_code('blablabla') is True
+        assert evaluator._evaluate_code('False') is True
+        assert evaluator.context == {}
 
-    assert evaluator._execute_code('blablabla') == []
-    assert evaluator.context == {}
+        assert evaluator._execute_code('blablabla') == []
+        assert evaluator.context == {}
 
 
 def test_frozen_context():
@@ -60,10 +60,8 @@ class TestPythonEvaluator:
             evaluator._evaluate_code('a')
 
     def test_condition_on_event(self, evaluator):
-        assert evaluator._evaluate_code('event.data[\'a\'] == 1', additional_context={
-                                        'event': Event('test', a=1)})
-        assert evaluator._evaluate_code('event.name == \'test\'',
-                                        additional_context={'event': Event('test')})
+        assert evaluator._evaluate_code('event.data[\'a\'] == 1', additional_context={'event': Event('test', a=1)})
+        assert evaluator._evaluate_code('event.name == \'test\'', additional_context={'event': Event('test')})
 
         assert evaluator._evaluate_code('event', additional_context={'event': Event('a')}) is True
         assert evaluator._evaluate_code('not event', additional_context={'event': None}) is True
@@ -98,7 +96,7 @@ class TestPythonEvaluator:
         events = evaluator._execute_code('send("hello", delay=5)')
         event = events[0]
         assert event == Event('hello', delay=5)
-
+        
     def test_notify(self, evaluator):
         events = evaluator._execute_code('notify("hello", x=1, y="world")')
         assert events == [MetaEvent('hello', x=1, y='world')]

@@ -50,6 +50,8 @@ class AsyncRunner:
     :param interval: interval between two calls to `execute`
     :param execute_all: Repeatedly call interpreter's `execute_once` method at each step.
     """
+    
+    tcount = 0
 
     def __init__(self, interpreter: Interpreter, interval: float = 0.1, execute_all=False) -> None:
         self._unpaused = threading.Event()
@@ -58,7 +60,8 @@ class AsyncRunner:
         self.interpreter = interpreter
         self.interval = interval
         self._execute_all = execute_all
-        self._thread = threading.Thread(target=self._run)
+        self.tcount += 1
+        self._thread = threading.Thread(target=self._run, name=f"SAR-{self.tcount}")
 
     @property
     def running(self):

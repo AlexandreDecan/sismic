@@ -10,6 +10,8 @@ import sys
 sys.path.append('../../..')
 
 
+
+
 ####################################################
 
 # Create a tiny GUI
@@ -68,8 +70,7 @@ class MicrowaveApplication(tk.Frame):
         self.w_timer_reset = tk.Button(input_frame, text='timer 0',
                                        command=partial(self.send_event, event_name='timer_reset'))
 
-        # leave some space before first button
-        self.w_timer_inc.pack(side=tk.TOP, fill=tk.X, pady=(8, 0))
+        self.w_timer_inc.pack(side=tk.TOP, fill=tk.X, pady=(8, 0))  # leave some space before first button
         self.w_timer_dec.pack(side=tk.TOP, fill=tk.X)
         self.w_timer_reset.pack(side=tk.TOP, fill=tk.X)
 
@@ -78,8 +79,7 @@ class MicrowaveApplication(tk.Frame):
         self.w_cooking_stop = tk.Button(input_frame, text='stop',
                                         command=partial(self.send_event, event_name='cooking_stop'))
 
-        # leave some space before first button
-        self.w_cooking_start.pack(side=tk.TOP, fill=tk.X, pady=(8, 0))
+        self.w_cooking_start.pack(side=tk.TOP, fill=tk.X, pady=(8, 0))  # leave some space before first button
         self.w_cooking_stop.pack(side=tk.TOP, fill=tk.X)
 
         # SENSORS frame
@@ -91,8 +91,7 @@ class MicrowaveApplication(tk.Frame):
         clock_frame.pack(side=tk.TOP, fill=tk.BOTH)
         self.w_clock = tk.Label(clock_frame)
 
-        self.w_tick = tk.Button(clock_frame, text='tick', command=partial(
-            self.send_event, event_name='timer_tick'))
+        self.w_tick = tk.Button(clock_frame, text='tick', command=partial(self.send_event, event_name='timer_tick'))
         self.w_tick.pack(side=tk.TOP, fill=tk.X)
 
         # SENSORS > WeightSensor frame

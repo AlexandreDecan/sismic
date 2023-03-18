@@ -18,7 +18,7 @@ def create_async_context(context) -> AsyncContext:
     name = f"sismic{count}"
 
     # start a new loop runner
-    runner = LoopRunner(asyncio.new_event_loop())
+    runner = LoopRunner(asyncio.new_event_loop(), name)
     runner.start()
     asyncio.set_event_loop(runner.loop)
 

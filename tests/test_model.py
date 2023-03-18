@@ -510,8 +510,7 @@ class TestCopyFromStatechart:
     def test_keep_other_states(self, modified_simple_statechart, composite_statechart):
         sc1_states = modified_simple_statechart.states
 
-        composite_statechart.copy_from_statechart(
-            modified_simple_statechart, source='sc1_root', replace='s1a')
+        composite_statechart.copy_from_statechart(modified_simple_statechart, source='sc1_root', replace='s1a')
         assert 's1a' in composite_statechart.states
         assert 'sc1_root' not in composite_statechart.states
 
@@ -522,8 +521,7 @@ class TestCopyFromStatechart:
     def test_keep_other_transitions(self, modified_simple_statechart, composite_statechart):
         sc1_transitions = modified_simple_statechart.transitions
 
-        composite_statechart.copy_from_statechart(
-            modified_simple_statechart, source='sc1_root', replace='s1b1')
+        composite_statechart.copy_from_statechart(modified_simple_statechart, source='sc1_root', replace='s1b1')
 
         for transition in sc1_transitions:
             assert transition in composite_statechart.transitions
@@ -531,8 +529,7 @@ class TestCopyFromStatechart:
     def test_keep_existing_states(self, modified_simple_statechart, composite_statechart):
         sc2_states = composite_statechart.states
 
-        composite_statechart.copy_from_statechart(
-            modified_simple_statechart, source='sc1_root', replace='s1b1')
+        composite_statechart.copy_from_statechart(modified_simple_statechart, source='sc1_root', replace='s1b1')
 
         for state in sc2_states:
             assert state in composite_statechart.states
@@ -540,48 +537,41 @@ class TestCopyFromStatechart:
     def test_keep_existing_transitions(self, modified_simple_statechart, composite_statechart):
         sc2_transitions = composite_statechart.transitions
 
-        composite_statechart.copy_from_statechart(
-            modified_simple_statechart, source='sc1_root', replace='s1b1')
+        composite_statechart.copy_from_statechart(modified_simple_statechart, source='sc1_root', replace='s1b1')
 
         for transition in sc2_transitions:
             assert transition in composite_statechart.transitions
 
     def test_orphaned_transitions(self, modified_simple_statechart, composite_statechart):
         with pytest.raises(StatechartError) as e:
-            composite_statechart.copy_from_statechart(
-                modified_simple_statechart, source='sc1_s1', replace='s1b1')
+            composite_statechart.copy_from_statechart(modified_simple_statechart, source='sc1_s1', replace='s1b1')
         assert 'not contained in' in str(e.value)
 
         with pytest.raises(StatechartError) as e:
-            composite_statechart.copy_from_statechart(
-                modified_simple_statechart, source='sc1_final', replace='s1b1')
+            composite_statechart.copy_from_statechart(modified_simple_statechart, source='sc1_final', replace='s1b1')
             assert 'not contained in' in str(e.value)
 
     # See https://github.com/AlexandreDecan/sismic/issues/91
     def test_non_duplicated_transitions(self, modified_simple_statechart, composite_statechart):
-        composite_statechart.copy_from_statechart(
-            modified_simple_statechart, source='sc1_root', replace='s1b1')
+        composite_statechart.copy_from_statechart(modified_simple_statechart, source='sc1_root', replace='s1b1')
         assert len(composite_statechart.transitions) == len(set(composite_statechart.transitions))
 
     def test_invalid_plug(self, modified_simple_statechart, composite_statechart):
         # On compound
         with pytest.raises(StatechartError) as e:
-            composite_statechart.copy_from_statechart(
-                modified_simple_statechart, source='sc1_root', replace='s1')
+            composite_statechart.copy_from_statechart(modified_simple_statechart, source='sc1_root', replace='s1')
         assert 'children' in str(e.value)
 
         with pytest.raises(StatechartError) as e:
-            composite_statechart.copy_from_statechart(
-                modified_simple_statechart, source='sc1_root', replace='s1b')
+            composite_statechart.copy_from_statechart(modified_simple_statechart, source='sc1_root', replace='s1b')
             assert 'children' in str(e.value)
 
     def test_with_namespace(self, modified_simple_statechart, composite_statechart):
         sc1_states = modified_simple_statechart.states
         sc2_states = composite_statechart.states
 
-        def namespace(s): return '__' + s
-        composite_statechart.copy_from_statechart(
-            modified_simple_statechart, source='sc1_root', replace='s1a', renaming_func=namespace)
+        namespace = lambda s: '__' + s
+        composite_statechart.copy_from_statechart(modified_simple_statechart, source='sc1_root', replace='s1a', renaming_func=namespace)
 
         expected_states = sc2_states + [namespace(s) for s in sc1_states]
         expected_states.remove(namespace(modified_simple_statechart.root))
@@ -591,6 +581,5 @@ class TestCopyFromStatechart:
     def test_conflicting_names(self, modified_simple_statechart, composite_statechart):
         modified_simple_statechart.rename_state('sc1_s1', 's1')
         with pytest.raises(StatechartError) as e:
-            composite_statechart.copy_from_statechart(
-                modified_simple_statechart, source='sc1_root', replace='s1a')
+            composite_statechart.copy_from_statechart(modified_simple_statechart, source='sc1_root', replace='s1a')
         assert 'already exists' in str(e.value)
