@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.6.4 (2023-03-03)
+------------------
+
+ - (Fixed) Invalid output of ``export_to_plantuml`` if ``statechart_preamble`` is enabled, with plantuml-1.2022.12 (`#119 <https://github.com/AlexandreDecan/sismic/issues/119>`__).
+
 
 1.6.3 (2021-08-05)
 ------------------
