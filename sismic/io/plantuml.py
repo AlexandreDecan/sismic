@@ -88,6 +88,7 @@ class PlantUMLExporter:
         if self.statechart_description and self.statechart.description:
             self.output('caption {}'.format(self.statechart.description.replace('\n', '\\n')))
 
+    def export_preamble(self):
         if self.statechart_preamble and self.statechart.preamble:
             self.output('note top of {}'.format(self.state_id(self.statechart.root)))
             self.indent()
@@ -249,6 +250,7 @@ class PlantUMLExporter:
 
         self.export_statechart()
         self.export_state(self.statechart.root)  # type: ignore
+        self.export_preamble()
 
         self.output('@enduml')
 
