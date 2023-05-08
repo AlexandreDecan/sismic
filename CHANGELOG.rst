@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.6.5 (2023-05-08)
+------------------
+
+ - (Fixed) Dropped support for Python 3.5 and 3.6 since they are no longer supported by ``ruamel.yaml`` used internally.
+
+
 1.6.4 (2023-03-03)
 ------------------
 
