@@ -20,7 +20,7 @@ About
 -----
 
 Statecharts are a well-known visual modeling language for specifying the executable behavior
-of reactive event-based systems. The essential complexity of statechart models solicits the need for advanced model testing and validation techniques. Sismic is a statechart library for Python (version 3.5 or higher) providing a set of tools to define, validate, simulate, execute and test statecharts. *Sismic* is a recursive acronym that stands for *Sismic Interactive Statechart Model Interpreter and Checker*.
+of reactive event-based systems. The essential complexity of statechart models solicits the need for advanced model testing and validation techniques. Sismic is a statechart library for Python providing a set of tools to define, validate, simulate, execute and test statecharts. *Sismic* is a recursive acronym that stands for *Sismic Interactive Statechart Model Interpreter and Checker*.
 
 Sismic is mainly developed by Dr. Alexandre Decan as part of his research activities at the `Software Engineering Lab <http://informatique.umons.ac.be/genlog>`_ of the `University of Mons <http://www.umons.ac.be>`_. Sismic is released
 as open source under the  `GNU Lesser General Public Licence version 3.0 (LGPLv3) <http://www.gnu.org/licenses/lgpl-3.0.html>`_.
