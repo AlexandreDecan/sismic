@@ -35,7 +35,7 @@ More specifically, Sismic provides:
 Installation
 ------------
 
-Sismic requires Python >=3.6.
+Sismic requires Python >=3.7.
 Sismic can be installed using ``pip`` as usual: ``pip install sismic``.
 This will install the latest stable version.
 
