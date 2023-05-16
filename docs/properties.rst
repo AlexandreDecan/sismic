@@ -114,5 +114,5 @@ Heating must stop when door is opened
 
 This property statechart ensures that the heating should quickly stop when the door is open while cooking occurs.
 
-.. literalinclude:: /examples/elevator/tester_elevator_7th_floor_never_reached.yaml
+.. literalinclude:: /examples/elevator/heating_off_property.yaml
    :language: yaml
