@@ -2,9 +2,9 @@ statechart:
   name: Shallow history
   description: |
     A statechart that makes use of an history state.
-    It represents a process that loops over three states (s1, s2, s3) on `next` event.
-    The process can be interrupted with a `pause` event.
-    When paused, the process can either be continued (`continue` event) or stopped (`stop` event).
+    It represents a process that loops over three states (s1, s2, s3) on "next" event.
+    The process can be interrupted with a "pause" event.
+    When paused, the process can either be continued ("continue" event) or stopped ("stop" event).
   root state:
     name: root
     initial: loop

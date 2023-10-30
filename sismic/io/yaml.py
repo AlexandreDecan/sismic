@@ -1,6 +1,8 @@
 import ruamel.yaml as yaml
 import schema
 
+from io import StringIO
+
 from ..exceptions import StatechartError
 from ..model import Statechart
 
@@ -71,11 +73,8 @@ def import_from_yaml(
         with open(filepath, 'r') as f:
             text = f.read()
 
-    if yaml.version_info < (0, 15):
-        data = yaml.safe_load(text)  # type: dict
-    else:
-        yml = yaml.YAML(typ='safe', pure=True)
-        data = yml.load(text)
+    yml = yaml.YAML(typ='safe', pure=True)
+    data = yml.load(text)
 
     if not ignore_schema:
         try:
@@ -99,11 +98,13 @@ def export_to_yaml(statechart: Statechart, filepath: str = None) -> str:
     :param filepath: save output to given filepath, if provided
     :return: A textual YAML representation
     """
-    output = yaml.dump(export_to_dict(statechart, ordered=False),
-                       width=1000, default_flow_style=False)
+    output = StringIO()
+
+    yml = yaml.YAML(typ='safe', pure=True)
+    yml.dump(export_to_dict(statechart), output)
 
     if filepath:
         with open(filepath, 'w') as f:
-            f.write(output)
+            f.write(output.getvalue())
 
-    return output
+    return output.getvalue()

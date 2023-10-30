@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, cast
 
 from ..exceptions import StatechartError
@@ -154,29 +153,27 @@ def _import_state_from_dict(state_d: Mapping[str, Any]) -> StateMixin:
     return state
 
 
-def export_to_dict(statechart: Statechart, ordered=True) -> Mapping[str, Any]:
+def export_to_dict(statechart: Statechart) -> Mapping[str, Any]:
     """
     Export given StateChart instance to a dict.
 
     :param statechart: a StateChart instance
-    :param ordered: set to True to use an ordereddict instead of a dict
     :return: a dict that can be used in *_import_from_dict*
     """
-    d = OrderedDict() if ordered else {}  # type: MutableMapping
+    d = dict()
     d['name'] = statechart.name
     if statechart.description:
         d['description'] = statechart.description
     if statechart.preamble:
         d['preamble'] = statechart.preamble
 
-    d['root state'] = _export_state_to_dict(statechart, cast(str, statechart.root), ordered)
+    d['root state'] = _export_state_to_dict(statechart, cast(str, statechart.root))
 
     return {'statechart': d}
 
 
-def _export_state_to_dict(statechart: Statechart, state_name: str,
-                          ordered=True) -> Mapping[str, Any]:
-    data = OrderedDict() if ordered else {}
+def _export_state_to_dict(statechart: Statechart, state_name: str) -> Mapping[str, Any]:
+    data = dict()
 
     state = statechart.state_for(state_name)
 
@@ -222,7 +219,7 @@ def _export_state_to_dict(statechart: Statechart, state_name: str,
             data['transitions'] = []
 
             for transition in transitions:
-                transition_data = OrderedDict() if ordered else {}
+                transition_data = dict()
                 if transition.event:
                     transition_data['event'] = transition.event
                 if transition.guard:
@@ -257,7 +254,7 @@ def _export_state_to_dict(statechart: Statechart, state_name: str,
 
     if isinstance(state, CompositeStateMixin):
         children = statechart.children_for(cast(StateMixin, state).name)
-        children_data = [_export_state_to_dict(statechart, child, ordered) for child in children]
+        children_data = [_export_state_to_dict(statechart, child) for child in children]
 
         if isinstance(state, CompoundState):
             data['states'] = children_data

@@ -1,5 +1,5 @@
 __package__ = 'sismic'
-__version__ = '1.6.5'
+__version__ = '1.6.6'
 __licence__ = 'LGPL3'
 __author__ = 'Alexandre Decan'
 __url__ = 'https://github.com/AlexandreDecan/sismic/'
