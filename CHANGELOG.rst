@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.6.6 (2023-10-30)
+------------------
+
+ - (Fixed) Backward incompatible change in ``ruamel.yaml``.
+
+
 1.6.5 (2023-05-08)
 ------------------
 

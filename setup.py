@@ -46,9 +46,9 @@ setup(
     keywords='statechart state machine interpreter model uml scxml harel',
 
     packages=find_packages(exclude=['docs', 'tests']),
-    python_requires='>=3.5',
+    python_requires='>=3.7',
     install_requires=[
-        'ruamel.yaml>=0.12.10',
+        'ruamel.yaml>=0.18.2',
         'schema>=0.5.0',
         'behave>=1.2.6',
     ],
