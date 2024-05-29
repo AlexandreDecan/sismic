@@ -9,6 +9,8 @@ Sismic for Python
     :target: https://pypi.org/project/sismic/
 .. image:: https://readthedocs.org/projects/sismic/badge/?version=latest
     :target: https://sismic.readthedocs.io/
+.. image:: https://archive.softwareheritage.org/badge/origin/https://github.com/AlexandreDecan/sismic/
+    :target: https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/AlexandreDecan/sismic
 
 Sismic Interactive Statechart Model Interpreter and Checker
 -----------------------------------------------------------
