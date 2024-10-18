@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.6.7 (2024-10-18)
+------------------
+
+ - (Fixed) Minimal version of Python, and related installation instructions.
+
 1.6.6 (2023-10-30)
 ------------------
 

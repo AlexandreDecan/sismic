@@ -4,14 +4,14 @@ Installation
 Using pip
 ---------
 
-Sismic requires Python >=3.7, and can be installed using ``pip`` as usual: ``pip install sismic``.
+Sismic requires Python >=3.9, and can be installed using ``pip`` as usual: ``pip install sismic``.
 This will install the latest stable version.
 Starting from release 1.0.0, Sismic adheres to a `semantic versioning <https://semver.org>`__ scheme.
 
 You can isolate Sismic installation by using virtual environments:
 
 1. Get the tool to create virtual environments: ``pip install virtualenv``
-2. Create the environment: ``virtualenv -p python3.5 env``
+2. Create the environment: ``virtualenv -p python3.9 env``
 3. Jump into: ``source env/bin/activate``
 4. Install Sismic: ``pip install sismic``
 
@@ -27,7 +27,7 @@ From GitHub
 You can also install Sismic from its repository by cloning it.
 
 1. Get the tool to create virtual environments: ``pip install virtualenv``
-2. Create the environment: ``virtualenv -p python3.5 env``
+2. Create the environment: ``virtualenv -p python3.9 env``
 3. Jump into: ``source env/bin/activate``
 4. Clone the repository: ``git clone https://github.com/AlexandreDecan/sismic``
 5. Install Sismic: ``pip install .`` or ``pip install -e .`` (editable mode)

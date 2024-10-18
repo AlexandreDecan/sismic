@@ -37,16 +37,16 @@ setup(
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
 
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
     ],
     keywords='statechart state machine interpreter model uml scxml harel',
 
     packages=find_packages(exclude=['docs', 'tests']),
-    python_requires='>=3.7',
+    python_requires='>=3.9',
     install_requires=[
         'ruamel.yaml>=0.18.2',
         'schema>=0.5.0',
