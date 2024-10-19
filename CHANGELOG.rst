@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.6.8 (2024-10-19)
+------------------
+
+ - (Fixed) Incorrect visualisation with PlantUML due to a backward incompatible change in their viewer.
+
 1.6.7 (2024-10-18)
 ------------------
 

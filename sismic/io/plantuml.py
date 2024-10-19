@@ -42,7 +42,7 @@ class PlantUMLExporter:
                 if matches:
                     self._based_on_arrows[(matches[0][0], matches[0][2])
                                           ] = '-{}>'.format(matches[0][1])
-
+        self._pending_transitions = []  # type: List[Transition]
         self._output = []  # type: List[str]
         self._indent = 0
 
@@ -103,7 +103,7 @@ class PlantUMLExporter:
         if isinstance(state, FinalState):
             # Find transitions leading to it
             for transition in self.statechart.transitions_to(state.name):
-                self.export_transition(transition)
+                self._pending_transitions.append(transition)
             return
 
         if isinstance(state, ShallowHistoryState):
@@ -165,6 +165,15 @@ class PlantUMLExporter:
             for cond in state.postconditions:
                 self.output('{} : **post:** {}'.format(self.state_id(name), cond))
 
+        # Nested states
+        for i, child in enumerate(self.statechart.children_for(name)):
+            if i != 0 and isinstance(state, OrthogonalState):
+                self.output('--')
+            self.export_state(child)
+
+        if isinstance(state, (ShallowHistoryState, DeepHistoryState)):
+            self.export_history_memory(state)
+
         # Transitions
         if isinstance(state, CompoundState) and state.initial:
             self.output('[*] {arrow} {target}'.format(
@@ -173,15 +182,6 @@ class PlantUMLExporter:
             ))
 
         self.export_transitions(name)
-
-        if isinstance(state, (ShallowHistoryState, DeepHistoryState)):
-            self.export_history_memory(state)
-
-        # Nested states
-        for i, child in enumerate(self.statechart.children_for(name)):
-            if i != 0 and isinstance(state, OrthogonalState):
-                self.output('--')
-            self.export_state(child)
 
         self.deindent()
         self.output('}')
@@ -195,7 +195,7 @@ class PlantUMLExporter:
             # Do not treat final states here
             if isinstance(self.statechart.state_for(transition.target), FinalState):
                 continue
-            self.export_transition(transition)
+            self._pending_transitions.append(transition)
 
     def export_transition(self, transition: Transition) -> None:
         target = self.statechart.state_for(transition.target)
@@ -250,6 +250,10 @@ class PlantUMLExporter:
 
         self.export_statechart()
         self.export_state(self.statechart.root)  # type: ignore
+
+        for transition in self._pending_transitions:
+            self.export_transition(transition)
+
         self.export_preamble()
 
         self.output('@enduml')
