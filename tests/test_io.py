@@ -146,7 +146,7 @@ class TestExportToPlantUML:
         filepath = 'docs/examples/elevator/elevator.plantuml'
         statechart = elevator.statechart
         with open(filepath, 'r') as f:
-            p1 = f.read()
+            p1 = f.read().strip()
 
         assert p1 != export_to_plantuml(statechart)
         assert p1 == export_to_plantuml(statechart, based_on=p1)
@@ -167,4 +167,4 @@ class TestExportToPlantUML:
         out, _ = capsys.readouterr()
         export = export_to_plantuml(statechart, based_on_filepath='docs/examples/elevator/elevator.plantuml', statechart_description=True, statechart_preamble=True, state_contracts=True, transition_contracts=True, state_action=False, statechart_name=False, transition_action=False)
         assert export == out.strip()
-        
+
