@@ -4,7 +4,7 @@ Behavior-Driven Development
 About Behavior-Driven Development
 ---------------------------------
 
-This introduction is inspired by the documentation of `Behave <http://behave.readthedocs.io/en/latest/philosophy.html>`__, a Python
+This introduction is inspired by the documentation of `Behave <http://behave.readthedocs.io/en/latest/philosophy/>`__, a Python
 library for Behavior-Driven Development (BDD).
 BDD is an agile software development technique that encourages collaboration between developers,
 QA and non-technical or business participants in a software project.
@@ -137,7 +137,7 @@ The ``sismic-bdd`` command-line interface accepts several other parameters:
                             available)
 
 Additionally, any extra parameter provided to ``sismic-bdd`` will be passed to Behave.
-See `command-line parameters of Behave <http://behave.readthedocs.io/en/latest/behave.html#command-line-arguments>`__
+See `command-line parameters of Behave <http://behave.readthedocs.io/en/latest/behave/#command-line-arguments>`__
 for more information.
 
 
@@ -295,7 +295,7 @@ Consider the following scenarios expressed using a domain-specific language:
 
 The mapping from domain-specific step "Given I open the door" to the action of sending a door opened event to the
 statechart could be defined using plain Python code, by defining a new step following
-`Python Step Implementations <http://behave.readthedocs.io/en/latest/tutorial.html#python-step-implementations>`__
+`Python Step Implementations <http://behave.readthedocs.io/en/latest/tutorial/#python-step-implementations>`__
 of Behave.
 
 .. code:: python
