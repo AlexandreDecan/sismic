@@ -18,7 +18,7 @@ Using statecharts to express properties
 Property statecharts can be used to express functional properties of the intended behaviour in terms of the events
 that are consumed or sent, or in terms of the states that are entered or exited by a statechart.
 When a statechart is executed by Sismic, specific meta-events are created based on the events that are sent or
-consumed, the states that are entered of exited, etc. When the statechart being monitored is executed, the meta-events
+consumed, the states that are entered or exited, etc. When the statechart being monitored is executed, the meta-events
 are propagated to all associated property statecharts.
 The property statecharts will look for property violations based on those meta-events, following a *fail fast*
 approach: they will report a failure as soon as the monitored behavior leads to a final state of the property
@@ -114,5 +114,5 @@ Heating must stop when door is opened
 
 This property statechart ensures that the heating should quickly stop when the door is open while cooking occurs.
 
-.. literalinclude:: /examples/elevator/heating_off_property.yaml
+.. literalinclude:: /examples/microwave/heating_off_property.yaml
    :language: yaml
