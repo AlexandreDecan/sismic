@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.6.9 (2025-04-09)
+------------------
+
+ - (Fixed) Revert change made to PlantUML in 1.6.8 since the backward incompatibility has been fixed and the change added another issue with parallel states. 
+
 1.6.8 (2024-10-19)
 ------------------
 
