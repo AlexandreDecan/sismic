@@ -1,10 +1,15 @@
 Changelog
 =========
 
+1.6.10 (2025-08-04)
+-------------------
+
+ - (Fixed) Backward incompatible change in Behave 1.3.0.
+
 1.6.9 (2025-04-09)
 ------------------
 
- - (Fixed) Revert change made to PlantUML in 1.6.8 since the backward incompatibility has been fixed and the change added another issue with parallel states. 
+ - (Fixed) Revert change made to PlantUML in 1.6.8 since the backward incompatibility has been fixed and the change added another issue with parallel states.
 
 1.6.8 (2024-10-19)
 ------------------
