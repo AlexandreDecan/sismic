@@ -449,8 +449,6 @@ class Statechart:
         # Change transitions
         for transition in self.transitions:
             if transition.source == old_name:
-                if transition.internal:
-                    transition._target = new_name
                 transition._source = new_name
 
             if transition.target == old_name:
