@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.6.11 (2025-10-29)
+-------------------
+
+ - (Fixed) `rename_state` breaks internal transitions (`#131 <https://github.com/AlexandreDecan/sismic/issues/131>`__, SomeFrenchGuy).
+
 1.6.10 (2025-08-04)
 -------------------
 

@@ -18,3 +18,4 @@ Contributors
 * Frederik Mathiesen
 * Stéphane Bidoul
 * Rigó Ernő
+* SomeFrenchGuy
