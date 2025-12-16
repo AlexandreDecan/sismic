@@ -1,16 +1,25 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite the following paper."
-type: article
-title: "Sismic - A Python library for statechart execution and testing"
 authors:
   - family-names: Decan
     given-names: Alexandre
   - family-names: Mens
     given-names: Tom
-journal: "SoftwareX"
-volume: "12"
-pages: "100590"
-year: 2020
-issn: "2352-7110"
 doi: "10.1016/j.softx.2020.100590"
-url: "https://doi.org/10.1016/j.softx.2020.100590"
+url: https://github.com/AlexandreDecan/sismic
+title: "Sismic - A Python library for statechart execution and testing"
+preferred-citation:
+  title: "Sismic - A Python library for statechart execution and testing"
+  authors:
+    - family-names: Decan
+      given-names: Alexandre
+    - family-names: Mens
+      given-names: Tom
+  type: article
+  journal: "SoftwareX"
+  volume: "12"
+  pages: "100590"
+  year: 2020
+  issn: "2352-7110"
+  doi: "10.1016/j.softx.2020.100590"
+  url: "https://doi.org/10.1016/j.softx.2020.100590"
