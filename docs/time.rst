@@ -350,7 +350,7 @@ They are processed as soon as the clock time value exceeds the expected delay:
 
     interpreter.clock.time = 5
     interpreter.execute()
-    print('Current floor:', interpreter.context['current'])  # Still on ground floor
+    print('Current floor:', interpreter.context['current'])  # floor is reached
 
 .. testoutput:: delayed
 
