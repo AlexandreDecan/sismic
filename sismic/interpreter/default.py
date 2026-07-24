@@ -1,9 +1,9 @@
 import bisect
 import warnings
 
+from collections.abc import Callable, Iterable, Mapping
 from itertools import combinations
-from typing import (Any, Callable, Dict, Iterable, List, Mapping, Optional,
-                    Set, Tuple, Union, cast)
+from typing import Any, Optional, Union, cast
 
 from .listener import InternalEventListener, PropertyStatechartListener
 from ..utilities import sorted_groupby
@@ -64,24 +64,24 @@ class Interpreter:
         self._time = self.clock.time
 
         # History states memory
-        self._memory = {}  # type: Dict[str, Optional[List[str]]]
+        self._memory = {}  # type: dict[str, Optional[list[str]]]
 
         # Set of active states
-        self._configuration = set()  # type: Set[str]
+        self._configuration = set()  # type: set[str]
 
         # Entry and idle times
-        self._entry_time = dict()  # type: Dict[str, float]
-        self._idle_time = dict()  # type: Dict[str, float]
+        self._entry_time = dict()  # type: dict[str, float]
+        self._idle_time = dict()  # type: dict[str, float]
 
         # Events sent during current macro step
-        self._sent_events = []  # type: List[Event]
+        self._sent_events = []  # type: list[Event]
 
         # Event queues
-        self._internal_queue = []  # type: List[Tuple[float, InternalEvent]]
-        self._external_queue = []  # type: List[Tuple[float, Event]]
+        self._internal_queue = []  # type: list[tuple[float, InternalEvent]]
+        self._external_queue = []  # type: list[tuple[float, Event]]
 
         # Bound listeners
-        self._listeners = []  # type: List[Callable[[MetaEvent], Any]]
+        self._listeners = []  # type: list[Callable[[MetaEvent], Any]]
 
         # Evaluator
         self._evaluator = evaluator_klass(self, initial_context=initial_context)
@@ -102,7 +102,7 @@ class Interpreter:
         self.clock.time = value  # type: ignore
 
     @property
-    def configuration(self) -> List[str]:
+    def configuration(self) -> list[str]:
         """
         List of active states names, ordered by depth. Ties are broken according to the
         lexicographic order on the state name.
@@ -260,7 +260,7 @@ class Interpreter:
             self._queue_event(event)
         return self
 
-    def execute(self, max_steps: int = -1) -> List[MacroStep]:
+    def execute(self, max_steps: int = -1) -> list[MacroStep]:
         """
         Repeatedly calls *execute_once* and return a list containing
         the returned values of *execute_once*.
@@ -347,7 +347,7 @@ class Interpreter:
         :param event: Event to queue.
         """
         if isinstance(event, InternalEvent):
-            queue = cast(List[Tuple[float, Event]], self._internal_queue)
+            queue = cast(list[tuple[float, Event]], self._internal_queue)
         else:
             queue = self._external_queue
 
@@ -389,7 +389,7 @@ class Interpreter:
         :return: An instance of Event or None if no event is available
         """
         for queue in cast(
-                Tuple[List[Tuple[float, Event]]],
+                tuple[list[tuple[float, Event]]],
                 (self._internal_queue, self._external_queue)):
             if len(queue) > 0:
                 time, event = queue[0]
@@ -400,7 +400,7 @@ class Interpreter:
         return None
 
     def _select_transitions(self, event: Optional[Event], states: Iterable[str], *,
-                            eventless_first=True, inner_first=True) -> List[Transition]:
+                            eventless_first=True, inner_first=True) -> list[Transition]:
         """
         Select and return the transitions that are triggered, based on given event
         (or None if no event can be consumed) and given list of states.
@@ -414,9 +414,9 @@ class Interpreter:
         :param inner_first: True to follow inner-first/source state semantics.
         :return: list of triggered transitions.
         """
-        selected_transitions = []  # type: List[Transition]
-        considered_transitions = []  # type: List[Transition]
-        _state_depth_cache = dict()  # type: Dict[str, int]
+        selected_transitions = []  # type: list[Transition]
+        considered_transitions = []  # type: list[Transition]
+        _state_depth_cache = dict()  # type: dict[str, int]
 
         # Select triggerable (based on event) transitions for considered states
         for transition in self._statechart.transitions:
@@ -434,7 +434,7 @@ class Interpreter:
             ignored_state_selector = self._statechart.ancestors_for
         else:
             ignored_state_selector = self._statechart.descendants_for
-        ignored_states = set()  # type: Set[str]
+        ignored_states = set()  # type: set[str]
 
         # Group and sort transitions based on the event
         def eventless_first_order(t):
@@ -489,7 +489,7 @@ class Interpreter:
 
         return selected_transitions
 
-    def _sort_transitions(self, transitions: List[Transition]) -> List[Transition]:
+    def _sort_transitions(self, transitions: list[Transition]) -> list[Transition]:
         """
         Given a list of triggered transitions, return a list of transitions in an order that
         represents the order in which they have to be processed.
@@ -539,7 +539,7 @@ class Interpreter:
 
         return transitions
 
-    def _compute_steps(self) -> List[MicroStep]:
+    def _compute_steps(self) -> list[MicroStep]:
         """
         Compute and returns the next steps based on current configuration
         and event queues.
@@ -573,7 +573,7 @@ class Interpreter:
         return self._create_steps(event, transitions)
 
     def _create_steps(self, event: Optional[Event],
-                      transitions: Iterable[Transition]) -> List[MicroStep]:
+                      transitions: Iterable[Transition]) -> list[MicroStep]:
         """
         Return a (possibly empty) list of micro steps. Each micro step corresponds to the process
         of a transition matching given event.
@@ -652,7 +652,7 @@ class Interpreter:
                     leaf.name) == self._statechart.root:
                 return MicroStep(exited_states=[leaf.name, cast(str, self._statechart.root)])
             if isinstance(leaf, (ShallowHistoryState, DeepHistoryState)):
-                states_to_enter = cast(List[str], self._memory.get(leaf.name, [leaf.memory]))
+                states_to_enter = cast(list[str], self._memory.get(leaf.name, [leaf.memory]))
                 states_to_enter.sort(key=lambda x: (self._statechart.depth_for(x), x))
                 return MicroStep(entered_states=states_to_enter, exited_states=[leaf.name])
             elif isinstance(leaf, OrthogonalState) and self._statechart.children_for(leaf.name):
@@ -674,7 +674,7 @@ class Interpreter:
 
         active_configuration = set(self._configuration)  # Copy
 
-        sent_events = []  # type: List[Event]
+        sent_events = []  # type: list[Event]
 
         # Exit states
         for state in exited_states:
@@ -756,7 +756,7 @@ class Interpreter:
                          entered_states=step.entered_states, exited_states=step.exited_states,
                          sent_events=sent_events)
 
-    def _stabilize(self) -> List[MicroStep]:
+    def _stabilize(self) -> list[MicroStep]:
         """
         Compute, apply and return stabilization steps.
 

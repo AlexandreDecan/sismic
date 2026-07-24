@@ -1,5 +1,6 @@
 import abc
-from typing import Any, Optional, Iterable, List, Mapping
+from collections.abc import Iterable, Mapping
+from typing import Any, Optional
 
 from ..model import Statechart, StateMixin, Transition, Event
 from ..exceptions import CodeEvaluationError
@@ -50,7 +51,7 @@ class Evaluator(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def _execute_code(
-            self, code: str, *, additional_context: Mapping[str, Any] = None) -> List[Event]:
+            self, code: str, *, additional_context: Mapping[str, Any] = None) -> list[Event]:
         """
         Generic method to execute a piece of code. This method is a fallback if one
         of the other execute_* methods is not overridden.
@@ -86,7 +87,7 @@ class Evaluator(metaclass=abc.ABCMeta):
             return self._evaluate_code(transition.guard, additional_context={'event': event})
         return None
 
-    def execute_action(self, transition: Transition, event: Optional[Event] = None) -> List[Event]:
+    def execute_action(self, transition: Transition, event: Optional[Event] = None) -> list[Event]:
         """
         Execute the action for given transition.
         This method is called for every transition that is processed, even those with no *action*.
@@ -100,7 +101,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         else:
             return []
 
-    def execute_on_entry(self, state: StateMixin) -> List[Event]:
+    def execute_on_entry(self, state: StateMixin) -> list[Event]:
         """
         Execute the on entry action for given state.
         This method is called for every state that is entered, even those with no *on_entry*.
@@ -114,7 +115,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         else:
             return []
 
-    def execute_on_exit(self, state: StateMixin) -> List[Event]:
+    def execute_on_exit(self, state: StateMixin) -> list[Event]:
         """
         Execute the on exit action for given state.
         This method is called for every state that is exited, even those with no *on_exit*.

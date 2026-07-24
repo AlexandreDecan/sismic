@@ -1,8 +1,6 @@
 import time
 import threading
 
-from typing import List
-
 from ..interpreter import Interpreter
 from ..model import MacroStep
 
@@ -113,7 +111,7 @@ class AsyncRunner:
         if self._thread.is_alive():
             self._thread.join()
 
-    def execute(self) -> List[MacroStep]:
+    def execute(self) -> list[MacroStep]:
         """
         Called each time the interpreter has to be executed.
         """
@@ -135,7 +133,7 @@ class AsyncRunner:
         """
         pass
 
-    def after_execute(self, steps: List[MacroStep]):
+    def after_execute(self, steps: list[MacroStep]):
         """
         Called after each call to self.execute().
         Receives the return value of self.execute().

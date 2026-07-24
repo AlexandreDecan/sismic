@@ -1,5 +1,4 @@
 from abc import ABCMeta
-from typing import List
 
 __all__ = ['ContractMixin', 'StateMixin', 'ActionStateMixin', 'TransitionStateMixin',
            'CompositeStateMixin', 'HistoryStateMixin', 'BasicState', 'CompoundState',
@@ -12,9 +11,9 @@ class ContractMixin(metaclass=ABCMeta):
     """
 
     def __init__(self) -> None:
-        self.preconditions = []  # type: List[str]
-        self.postconditions = []  # type: List[str]
-        self.invariants = []  # type: List[str]
+        self.preconditions = []  # type: list[str]
+        self.postconditions = []  # type: list[str]
+        self.invariants = []  # type: list[str]
 
     def __eq__(self, other):
         if isinstance(other, ContractMixin):

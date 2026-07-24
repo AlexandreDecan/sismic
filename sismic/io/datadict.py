@@ -1,4 +1,5 @@
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, cast
+from collections.abc import Mapping, MutableMapping
+from typing import Any, Optional, cast
 
 from ..exceptions import StatechartError
 from ..model import (ActionStateMixin, BasicState, CompositeStateMixin,
@@ -19,7 +20,7 @@ def import_from_dict(data: Mapping[str, Any]) -> Statechart:
     states = []  # (StateMixin instance, parent name)
     transitions = []  # Transition instances
     # (State dict, parent name)
-    # type: List[Tuple[Mapping[str, Any], Optional[str]]]
+    # type: list[tuple[Mapping[str, Any], Optional[str]]]
     data_to_consider = [(data['root state'], None)]
 
     while data_to_consider:

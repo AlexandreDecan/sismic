@@ -1,8 +1,8 @@
-import collections
 import copy
 
+from collections.abc import Iterator, Mapping
 from types import CodeType
-from typing import Any, Dict, List, Optional, Mapping, Iterator
+from typing import Any, Optional
 
 from . import Evaluator
 from ..exceptions import CodeEvaluationError
@@ -12,14 +12,14 @@ from ..model import Event, InternalEvent, MetaEvent, Transition
 __all__ = ['PythonEvaluator']
 
 
-class FrozenContext(collections.abc.Mapping):
+class FrozenContext(Mapping):
     """
     A shallow copy of a context. The keys of the underlying context are
     exposed as attributes.
     """
     __slots__ = ['__frozencontext']
 
-    def __init__(self, context: Dict) -> None:
+    def __init__(self, context: dict) -> None:
         self.__frozencontext = {k: copy.copy(v) for k, v in context.items()}
 
     def __getattr__(self, item):
@@ -99,16 +99,16 @@ class PythonEvaluator(Evaluator):
     def __init__(self, interpreter=None, *, initial_context: Mapping[str, Any] = None) -> None:
         super().__init__(interpreter, initial_context=initial_context)
 
-        self._context = {}  # type: Dict[str, Any]
+        self._context = {}  # type: dict[str, Any]
         self._context.update(initial_context if initial_context else {})
         self._interpreter = interpreter
 
         # Precompiled code
-        self._evaluable_code = {}  # type: Dict[str, CodeType]
-        self._executable_code = {}  # type: Dict[str, CodeType]
+        self._evaluable_code = {}  # type: dict[str, CodeType]
+        self._executable_code = {}  # type: dict[str, CodeType]
 
         # Frozen context for __old__
-        self._memory = {}  # type: Dict[int, FrozenContext]
+        self._memory = {}  # type: dict[int, FrozenContext]
 
     @property
     def context(self) -> Mapping:
@@ -154,7 +154,7 @@ class PythonEvaluator(Evaluator):
 
     def _execute_code(
             self, code: Optional[str],
-            *, additional_context: Mapping[str, Any] = None) -> List[Event]:
+            *, additional_context: Mapping[str, Any] = None) -> list[Event]:
         """
         Execute given code using Python.
 
@@ -170,7 +170,7 @@ class PythonEvaluator(Evaluator):
             compiled_code = self._executable_code.setdefault(
                 code, compile(code, '<string>', 'exec'))
 
-        sent_events = []  # type: List[Event]
+        sent_events = []  # type: list[Event]
 
         exposed_context = {
             'active': lambda name: name in self._interpreter.configuration,

@@ -1,5 +1,6 @@
+from collections.abc import Callable, Iterable
 from copy import deepcopy
-from typing import Callable, Dict, Iterable, List, Optional, Union, cast
+from typing import Optional, Union, cast
 
 from ..exceptions import StatechartError
 
@@ -23,10 +24,10 @@ class Statechart:
         self.description = description
         self._preamble = preamble
 
-        self._states = {}  # type: Dict[str, StateMixin]
-        self._parent = {}  # type: Dict[str, Optional[str]]
-        self._children = {}  # type: Dict[Optional[str], List[str]]
-        self._transitions = []  # type: List[Transition]
+        self._states = {}  # type: dict[str, StateMixin]
+        self._parent = {}  # type: dict[str, Optional[str]]
+        self._children = {}  # type: dict[Optional[str], list[str]]
+        self._transitions = []  # type: list[Transition]
 
         self._children[None] = []  # Root state
 
@@ -85,7 +86,7 @@ class Statechart:
         except KeyError as e:
             raise StatechartError('State {} does not exist'.format(name)) from e
 
-    def children_for(self, name: str) -> List[str]:
+    def children_for(self, name: str) -> list[str]:
         """
         Return the names of the children of the given state.
 
@@ -97,7 +98,7 @@ class Statechart:
 
         return self._children[name]
 
-    def ancestors_for(self, name: str) -> List[str]:
+    def ancestors_for(self, name: str) -> list[str]:
         """
         Return an ordered list of ancestors for the given state.
         Ancestors are ordered by decreasing depth.
@@ -115,7 +116,7 @@ class Statechart:
             parent = self._parent[parent]
         return ancestors
 
-    def descendants_for(self, name: str) -> List[str]:
+    def descendants_for(self, name: str) -> list[str]:
         """
         Return an ordered list of descendants for the given state.
         Descendants are ordered by increasing depth.
@@ -168,7 +169,7 @@ class Statechart:
                 return state
         return None
 
-    def leaf_for(self, names: Iterable[str]) -> List[str]:
+    def leaf_for(self, names: Iterable[str]) -> list[str]:
         """
         Return the leaves of *names*.
 
@@ -179,7 +180,7 @@ class Statechart:
         :return: the names of the leaves in *names*
         :raise StatechartError: if a state does not exist
         """
-        leaves = []  # type: List[str]
+        leaves = []  # type: list[str]
         names = set(names)  # Lookups in set are more efficient
 
         for name in names:
@@ -272,7 +273,7 @@ class Statechart:
                 new_target_state = self.state_for(new_target)
                 transition._target = new_target_state.name
 
-    def transitions_from(self, source: str) -> List[Transition]:
+    def transitions_from(self, source: str) -> list[Transition]:
         """
         Return the list of transitions whose source is given name.
 
@@ -288,7 +289,7 @@ class Statechart:
                 transitions.append(transition)
         return transitions
 
-    def transitions_to(self, target: str) -> List[Transition]:
+    def transitions_to(self, target: str) -> list[Transition]:
         """
         Return the list of transitions whose target is given name.
         Internal transitions are returned too.
@@ -306,7 +307,7 @@ class Statechart:
                 transitions.append(transition)
         return transitions
 
-    def transitions_with(self, event: str) -> List[Transition]:
+    def transitions_with(self, event: str) -> list[Transition]:
         """
         Return the list of transitions that can be triggered by given event name.
 
@@ -321,7 +322,7 @@ class Statechart:
 
     # ######### EVENTS ##########
 
-    def events_for(self, name_or_names: Union[str, List[str]] = None) -> List[str]:
+    def events_for(self, name_or_names: Union[str, list[str]] = None) -> list[str]:
         """
         Return a list containing the name of every event that guards a transition
         in this statechart.
@@ -340,7 +341,7 @@ class Statechart:
         else:
             states = name_or_names
 
-        states = cast(List[str], states)
+        states = cast(list[str], states)
         names = set()
         for state in states:
             for transition in self.transitions_from(state):

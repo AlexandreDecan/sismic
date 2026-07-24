@@ -2,7 +2,7 @@ import collections
 import copy
 import warnings
 
-from typing import Optional, List, Dict
+from typing import Optional
 
 from ..model import Event, InternalEvent, MetaEvent
 
@@ -24,10 +24,10 @@ class TimeContextProvider:  # pragma: no cover
     """
 
     def __init__(self) -> None:
-        self._entry_time = dict()  # type: Dict[str, float]
-        self._idle_time = dict()  # type: Dict[str, float]
+        self._entry_time = dict()  # type: dict[str, float]
+        self._idle_time = dict()  # type: dict[str, float]
         self._time = 0  # type: float
-        self._configuration = []  # type: List[str]
+        self._configuration = []  # type: list[str]
 
     @property
     def time(self) -> float:
@@ -95,8 +95,8 @@ class EventContextProvider:  # pragma: no cover
     """
 
     def __init__(self) -> None:
-        self.pending = []  # type: List[Event]
-        self._sent = []  # type: List[Event]
+        self.pending = []  # type: list[Event]
+        self._sent = []  # type: list[Event]
         self._consumed = None  # type: Optional[Event]
 
     def send(self, name: str, **kwargs) -> None:
@@ -156,7 +156,7 @@ class FrozenContext(collections.abc.Mapping):  # pragma: no cover
     """
     __slots__ = ['__frozencontext']
 
-    def __init__(self, context: Dict) -> None:
+    def __init__(self, context: dict) -> None:
         self.__frozencontext = {k: copy.copy(v) for k, v in context.items()}
 
     def __getattr__(self, item):

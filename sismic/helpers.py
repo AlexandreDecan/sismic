@@ -3,8 +3,9 @@ import time
 import warnings
 
 from collections import Counter
+from collections.abc import Callable, Mapping
 from functools import wraps
-from typing import Any, Callable, List, Mapping
+from typing import Any
 
 from .interpreter import Interpreter
 from .model import MacroStep
@@ -12,7 +13,7 @@ from .model import MacroStep
 __all__ = ['log_trace', 'run_in_background', 'coverage_from_trace']
 
 
-def log_trace(interpreter: Interpreter) -> List[MacroStep]:
+def log_trace(interpreter: Interpreter) -> list[MacroStep]:
     """
     Return a list that will be populated by each value returned by the *execute_once* method
     of given interpreter.
@@ -34,7 +35,7 @@ def log_trace(interpreter: Interpreter) -> List[MacroStep]:
     return trace
 
 
-def coverage_from_trace(trace: List[MacroStep]) -> Mapping[str, Counter]:
+def coverage_from_trace(trace: list[MacroStep]) -> Mapping[str, Counter]:
     """
     Given a list of macro steps considered as the trace of a statechart execution, return *Counter*
     objects that counts the states that were entered, the states that were exited and the
@@ -64,7 +65,7 @@ def coverage_from_trace(trace: List[MacroStep]) -> Mapping[str, Counter]:
 
 def run_in_background(interpreter: Interpreter,
                       delay: float = 0.05,
-                      callback: Callable[[List[MacroStep]], Any] = None) -> threading.Thread:
+                      callback: Callable[[list[MacroStep]], Any] = None) -> threading.Thread:
     """
     Run given interpreter in background.
 
