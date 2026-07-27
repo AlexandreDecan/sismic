@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.6.12 (not yet released)
+-------------------------
+
+ - (Fixed) Improve typing with ``Path`` objects in complement to filepaths (`#134 <https://github.com/AlexandreDecan/sismic/pull/134>`__, Morwenn).
+
 1.6.11 (2025-10-29)
 -------------------
 
