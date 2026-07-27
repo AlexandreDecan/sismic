@@ -19,3 +19,4 @@ Contributors
 * Stéphane Bidoul
 * Rigó Ernő
 * SomeFrenchGuy
+* Morwenn
