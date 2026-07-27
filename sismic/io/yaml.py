@@ -1,7 +1,9 @@
 import ruamel.yaml as yaml
 import schema
 
+import os
 from io import StringIO
+from typing import Union
 
 from ..exceptions import StatechartError
 from ..model import Statechart
@@ -48,7 +50,7 @@ class SCHEMA:
 
 
 def import_from_yaml(
-        text: str = None, filepath: str = None, *, ignore_schema: bool = False,
+        text: str = None, filepath: Union[str, bytes, os.PathLike] = None, *, ignore_schema: bool = False,
         ignore_validation: bool = False) -> Statechart:
     """
     Import a statechart from a YAML representation (first argument) or a YAML file (filepath
@@ -89,7 +91,7 @@ def import_from_yaml(
     return sc
 
 
-def export_to_yaml(statechart: Statechart, filepath: str = None) -> str:
+def export_to_yaml(statechart: Statechart, filepath: Union[str, bytes, os.PathLike] = None) -> str:
     """
     Export given *Statechart* instance to YAML. Its YAML representation is returned by
     this function. Automatically save the output to filepath, if provided.

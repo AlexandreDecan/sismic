@@ -1,4 +1,5 @@
 import argparse
+import os
 import re
 import sys
 
@@ -259,10 +260,10 @@ class PlantUMLExporter:
 
 def export_to_plantuml(
         statechart: Statechart,
-        filepath: str = None,
+        filepath: Union[str, bytes, os.PathLike] = None,
         *,
         based_on: str = None,
-        based_on_filepath: str = None,
+        based_on_filepath: Union[str, bytes, os.PathLike] = None,
         statechart_name: bool = True,
         statechart_description: bool = False,
         statechart_preamble: bool = False,
