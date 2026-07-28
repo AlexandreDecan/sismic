@@ -2,7 +2,8 @@ import os
 import shutil
 import tempfile
 
-from typing import Union, List, Callable
+from collections.abc import Callable
+from typing import Union
 from behave import given, when, then
 from behave.__main__ import run_behave
 from behave.configuration import Configuration
@@ -14,7 +15,7 @@ from ..model import Statechart
 __all__ = ['map_action', 'map_assertion', 'execute_bdd']
 
 
-def map_action(step_text: str, existing_step_or_steps: Union[str, List[str]]) -> None:
+def map_action(step_text: str, existing_step_or_steps: Union[str, list[str]]) -> None:
     """
     Map new "given"/"when" steps to one or many existing one(s).
     Parameters are propagated to the original step(s) as well, as expected.
@@ -41,7 +42,7 @@ def map_action(step_text: str, existing_step_or_steps: Union[str, List[str]]) ->
         context.execute_steps('When ' + existing_step_or_steps.format(**kwargs))
 
 
-def map_assertion(step_text: str, existing_step_or_steps: Union[str, List[str]]) -> None:
+def map_assertion(step_text: str, existing_step_or_steps: Union[str, list[str]]) -> None:
     """
     Map a new "then" step to one or many existing one(s).
     Parameters are propagated to the original step(s) as well, as expected.
@@ -62,13 +63,13 @@ def map_assertion(step_text: str, existing_step_or_steps: Union[str, List[str]])
 
 
 def execute_bdd(statechart: Statechart,
-                feature_filepaths: List[str],
+                feature_filepaths: list[str],
                 *,
-                step_filepaths: List[str] = None,
-                property_statecharts: List[Statechart] = None,
+                step_filepaths: list[str] = None,
+                property_statecharts: list[Statechart] = None,
                 interpreter_klass: Callable[[Statechart], Interpreter] = Interpreter,
                 debug_on_error: bool = False,
-                behave_parameters: List[str] = None) -> int:
+                behave_parameters: list[str] = None) -> int:
     """
     Execute BDD tests for a statechart.
 

@@ -3,7 +3,7 @@ import os
 import re
 import sys
 
-from typing import Dict, List, Tuple, Union
+from typing import Union
 from ..io import import_from_yaml
 from ..model import (
     DeepHistoryState, FinalState, Transition, CompoundState,
@@ -36,7 +36,7 @@ class PlantUMLExporter:
         self.transition_contracts = transition_contracts
         self.transition_action = transition_action
 
-        self._based_on_arrows = dict()  # type: Dict[Tuple[str, str], str]
+        self._based_on_arrows = dict()  # type: dict[tuple[str, str], str]
         if self.based_on:
             for line in self.based_on.splitlines():
                 matches = re.findall(r'(\[\*\]|[a-zA-Z0-9]+) -([^ ]*)> (\[\*\]|[a-zA-Z0-9]+)', line)
@@ -44,7 +44,7 @@ class PlantUMLExporter:
                     self._based_on_arrows[(matches[0][0], matches[0][2])
                                           ] = '-{}>'.format(matches[0][1])
 
-        self._output = []  # type: List[str]
+        self._output = []  # type: list[str]
         self._indent = 0
 
     def arrow(self, source, target):

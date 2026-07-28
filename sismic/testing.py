@@ -1,4 +1,5 @@
-from typing import Union, Optional, List, Any, Mapping
+from collections.abc import Mapping
+from typing import Union, Optional, Any
 from .interpreter import Interpreter
 from .model import MacroStep, Transition
 
@@ -10,7 +11,7 @@ __all__ = [
     'expression_holds',
 ]
 
-MacroSteps = Union[MacroStep, List[MacroStep]]
+MacroSteps = Union[MacroStep, list[MacroStep]]
 
 
 def state_is_entered(steps: MacroSteps, name: str) -> bool:

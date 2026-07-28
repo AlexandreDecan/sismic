@@ -1,4 +1,4 @@
-from typing import List, Mapping
+from collections.abc import Mapping
 
 from .evaluator import Evaluator
 from ..model import Event
@@ -21,5 +21,5 @@ class DummyEvaluator(Evaluator):
     def _evaluate_code(self, code: str, *, additional_context: Mapping = None) -> bool:
         return True
 
-    def _execute_code(self, code: str, *, additional_context: Mapping = None) -> List[Event]:
+    def _execute_code(self, code: str, *, additional_context: Mapping = None) -> list[Event]:
         return []

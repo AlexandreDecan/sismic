@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from .elements import Transition
 from .events import Event
@@ -24,13 +24,13 @@ class MicroStep:
     __slots__ = ['event', 'transition', 'entered_states', 'exited_states', 'sent_events']
 
     def __init__(self, event: Event = None, transition: Transition = None,
-                 entered_states: List[str] = None, exited_states: List[str] = None,
-                 sent_events: List[Event] = None) -> None:
+                 entered_states: list[str] = None, exited_states: list[str] = None,
+                 sent_events: list[Event] = None) -> None:
         self.event = event
         self.transition = transition
-        self.entered_states = entered_states if entered_states else []  # type: List[str]
-        self.exited_states = exited_states if exited_states else []  # type: List[str]
-        self.sent_events = sent_events if sent_events else []  # type: List[Event]
+        self.entered_states = entered_states if entered_states else []  # type: list[str]
+        self.exited_states = exited_states if exited_states else []  # type: list[str]
+        self.sent_events = sent_events if sent_events else []  # type: list[Event]
 
     def __repr__(self):
         params = []
@@ -55,14 +55,14 @@ class MacroStep:
     :param steps: a list of *MicroStep* instances
     """
 
-    def __init__(self, time: float, steps: List[MicroStep]) -> None:
+    def __init__(self, time: float, steps: list[MicroStep]) -> None:
         self._time = time
         self._steps = steps
 
     __slots__ = ['_time', '_steps']
 
     @property
-    def steps(self) -> List[MicroStep]:
+    def steps(self) -> list[MicroStep]:
         """
         List of micro steps
         """
@@ -86,34 +86,34 @@ class MacroStep:
         return None
 
     @property
-    def transitions(self) -> List[Transition]:
+    def transitions(self) -> list[Transition]:
         """
         A (possibly empty) list of transitions that were triggered.
         """
         return [step.transition for step in self._steps if step.transition]
 
     @property
-    def entered_states(self) -> List[str]:
+    def entered_states(self) -> list[str]:
         """
         List of the states names that were entered.
         """
-        states = []  # type: List[str]
+        states = []  # type: list[str]
         for step in self._steps:
             states += step.entered_states
         return states
 
     @property
-    def exited_states(self) -> List[str]:
+    def exited_states(self) -> list[str]:
         """
         List of the states names that were exited.
         """
-        states = []  # type: List[str]
+        states = []  # type: list[str]
         for step in self._steps:
             states += step.exited_states
         return states
 
     @property
-    def sent_events(self) -> List[Event]:
+    def sent_events(self) -> list[Event]:
         """
         List of events that were sent during this step.
         """

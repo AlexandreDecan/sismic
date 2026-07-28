@@ -13,7 +13,8 @@ class Clock(metaclass=abc.ABCMeta):
     The purpose of a clock instance is to provide a way for the interpreter
     to get the current time during the execution of a statechart.
     """
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def time(self) -> float:
         """
         Current time
