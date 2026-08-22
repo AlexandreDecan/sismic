@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 from collections.abc import Mapping
-from typing import Any, Union
+from typing import Any
 
 from .interpreter import Interpreter
 from .model import MacroStep, Transition
@@ -15,7 +13,7 @@ __all__ = [
     "transition_is_processed",
 ]
 
-MacroSteps = Union[MacroStep, list[MacroStep]]
+MacroSteps = MacroStep | list[MacroStep]
 
 
 def state_is_entered(steps: MacroSteps, name: str) -> bool:

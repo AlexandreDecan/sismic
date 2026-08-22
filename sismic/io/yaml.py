@@ -1,6 +1,4 @@
 # mypy: disable-error-code="arg-type"
-from __future__ import annotations
-
 import os
 from io import StringIO
 from typing import Any, ClassVar

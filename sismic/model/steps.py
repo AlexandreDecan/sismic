@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from .elements import Transition
 from .events import Event
 

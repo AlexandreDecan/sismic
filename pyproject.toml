@@ -9,7 +9,7 @@ description = "Sismic Interactive Statechart Model Interpreter and Checker"
 readme = "README.rst"
 keywords = [ "harel", "interpreter", "machine", "model", "scxml", "state", "statechart", "uml" ]
 license-files = [ "LICENSE", "AUTHORS.rst", "CITATION.cff", "CHANGELOG.rst" ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
@@ -19,7 +19,6 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",

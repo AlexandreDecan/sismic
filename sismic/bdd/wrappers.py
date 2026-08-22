@@ -1,6 +1,4 @@
 # mypy: disable-error-code="operator"
-from __future__ import annotations
-
 import os
 import shutil
 import tempfile

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections.abc import Callable, Iterable
 from copy import deepcopy
 from typing import Self
@@ -537,7 +535,7 @@ class Statechart:
 
     def copy_from_statechart(
         self,
-        statechart: Statechart,
+        statechart: Self,
         *,
         source: str,
         replace: str,
