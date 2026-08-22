@@ -7,5 +7,3 @@ Module *bdd*
     :show-inheritance:
     :inherited-members:
     :imported-members:
-
-

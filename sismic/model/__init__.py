@@ -1,4 +1,4 @@
 from .elements import *
-from .statechart import *
 from .events import *
+from .statechart import *
 from .steps import *

@@ -7,5 +7,3 @@ Module *model*
     :show-inheritance:
     :inherited-members:
     :imported-members:
-
-

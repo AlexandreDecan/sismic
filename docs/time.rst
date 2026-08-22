@@ -7,8 +7,8 @@ It is quite usual in statecharts to find notations such as "*after 30 seconds*",
 on a transition. Sismic does not support the use of these *special events*, and proposes instead to deal with time
 by making use of some specifics provided by its interpreter and the default Python code evaluator.
 
-Every interpreter has an internal clock that is exposed through its :py:attr:`~sismic.interpreter.Interpreter.clock` 
-attribute and that can be used to manipulate the time of the simulation. 
+Every interpreter has an internal clock that is exposed through its :py:attr:`~sismic.interpreter.Interpreter.clock`
+attribute and that can be used to manipulate the time of the simulation.
 
 The built-in Python code evaluator allows one to make use of ``after(...)``, ``idle(...)`` in guards or contracts.
 These two Boolean predicates can be used to automatically compare the current time (as exposed by interpreter clock)
@@ -18,11 +18,11 @@ state using this predicate (or source state in the case of a transition) was ent
 Similarly, ``idle(x)`` evaluates to ``True`` if no transition was triggered during the last ``x`` seconds.
 
 These two predicates rely on the :py:attr:`~sismic.interpreter.Interpreter.time` attribute of an interpreter.
-The value of that attribute is computed at the beginning of each executed step based on a clock. 
+The value of that attribute is computed at the beginning of each executed step based on a clock.
 
-.. note:: 
+.. note::
 
-    The interpreter's time is set by the clock each time :py:meth:`~sismic.interpreter.Interpreter.execute_once` is called. 
+    The interpreter's time is set by the clock each time :py:meth:`~sismic.interpreter.Interpreter.execute_once` is called.
     Consequently, a call to :py:meth:`~sismic.interpreter.Interpreter.execute` (that repeatedly calls :py:meth:`~sismic.interpreter.Interpreter.execute_once`) could lead to macro steps with different time values, depending on the duration required to process the underlying calls to :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
 
 
@@ -30,23 +30,23 @@ Interpreter clock
 =================
 
 Sismic provides three implementations of :py:class:`~sismic.clock.Clock` in its :py:mod:`sismic.clock` module.
-The first one is a :py:class:`~sismic.clock.SimulatedClock` that can be manually or automatically incremented. In the latter case, 
+The first one is a :py:class:`~sismic.clock.SimulatedClock` that can be manually or automatically incremented. In the latter case,
 the speed of the clock can be easily changed. The second implementation is a classical :py:class:`~sismic.clock.UtcClock` that corresponds
-to a wall-clock in UTC with no flourish. The third implemention is a :py:class:`~sismic.clock.SynchronizedClock` that synchronizes its time value 
+to a wall-clock in UTC with no flourish. The third implemention is a :py:class:`~sismic.clock.SynchronizedClock` that synchronizes its time value
 based on the one of an interpreter. Its main use case is to support the co-execution of property statecharts.
 
-By default, the interpreter uses a :py:class:`~sismic.clock.SimulatedClock`. If you want the 
+By default, the interpreter uses a :py:class:`~sismic.clock.SimulatedClock`. If you want the
 interpreter to rely on another kind of clock, pass an instance of :py:class:`~sismic.clock.Clock`
-as the ``clock`` parameter of an interpreter constructor. 
+as the ``clock`` parameter of an interpreter constructor.
 
 
 Simulated clock
 ---------------
 
 The default clock is a :py:class:`~sismic.clock.SimulatedClock` instance.
-Its current time value can be read from the :py:attr:`~sismic.clock.SimulatedClock.time` attribute. 
-The clock starts at 0 and can either be manually changed by setting its time value, or 
-automatically (after having called its :py:meth:`~sismic.clock.SimulatedClock.start` method). 
+Its current time value can be read from the :py:attr:`~sismic.clock.SimulatedClock.time` attribute.
+The clock starts at 0 and can either be manually changed by setting its time value, or
+automatically (after having called its :py:meth:`~sismic.clock.SimulatedClock.start` method).
 
 
 .. testcode:: clock
@@ -67,11 +67,11 @@ automatically (after having called its :py:meth:`~sismic.clock.SimulatedClock.st
 .. note::
 
     Notice that time is expected to be monotonic: it is not allowed to set a new value that is strictly lower than
-    the previous one. 
+    the previous one.
 
 
-To support pseudo real time, a :py:class:`~sismic.clock.SimulatedClock` instance exposes two methods, namely 
-:py:meth:`~sismic.clock.SimulatedClock.start` and :py:meth:`~sismic.clock.SimulatedClock.stop`. 
+To support pseudo real time, a :py:class:`~sismic.clock.SimulatedClock` instance exposes two methods, namely
+:py:meth:`~sismic.clock.SimulatedClock.start` and :py:meth:`~sismic.clock.SimulatedClock.stop`.
 When the :py:meth:`~sismic.clock.SimulatedClock.start` method is called, the clock measures the elapsed time
 using Python's ``time.time()`` function.
 
@@ -96,7 +96,7 @@ You can still change the current time value even if the clock is started:
 
     clock.time = 10
     print('after having been set to 10: {:.1f}'.format(clock.time))
-    
+
     sleep(0.1)
     print('after 0.1: {:.1f}'.format(clock.time))
 
@@ -105,10 +105,10 @@ You can still change the current time value even if the clock is started:
     after having been set to 10: 10.0
     after 0.1: 10.1
 
-Finally, a simulated clock can be accelerated or slowed down by changing the value 
-of its :py:attr:`~sismic.clock.SimulatedClock.speed` attribute. By default, the value of this 
+Finally, a simulated clock can be accelerated or slowed down by changing the value
+of its :py:attr:`~sismic.clock.SimulatedClock.speed` attribute. By default, the value of this
 attribute is set to ``1``. A higher value (e.g., ``2``) means that the clock will be faster
-than real time (e.g., 2 times faster), while a lower value slows down the clock. 
+than real time (e.g., 2 times faster), while a lower value slows down the clock.
 
 .. testcode:: clock
 
@@ -198,7 +198,7 @@ Example: automatic time
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 If the execution of a statechart needs to rely on a real clock, the simplest way to achieve this
-is by using the :py:meth:`~sismic.clock.SimulatedClock.start` method of an interpreter clock. 
+is by using the :py:meth:`~sismic.clock.SimulatedClock.start` method of an interpreter clock.
 
 Let us first initialize an interpreter using one of our statechart example, the *elevator*:
 
@@ -211,9 +211,9 @@ Let us first initialize an interpreter using one of our statechart example, the 
 
     interpreter = Interpreter(statechart)
 
-Initially, the internal clock is set to 0. 
-As we want to simulate the statechart based on real-time, we need to start the clock. 
-For this example, as we don't want to have to wait 10 seconds for the elevator to 
+Initially, the internal clock is set to 0.
+As we want to simulate the statechart based on real-time, we need to start the clock.
+For this example, as we don't want to have to wait 10 seconds for the elevator to
 move to the ground floor, we speed up the internal clock by a factor of 100:
 
 .. testcode:: realclock
@@ -260,10 +260,10 @@ We can now check that our elevator is on the ground floor:
     0
 
 
-Wall-clock 
+Wall-clock
 ----------
 
-The second clock provided by Sismic is a :py:class:`~sismic.clock.UtcClock` whose time 
+The second clock provided by Sismic is a :py:class:`~sismic.clock.UtcClock` whose time
 is synchronized with system time (it relies on the ``time.time()`` function of Python).
 
 
@@ -279,22 +279,22 @@ is synchronized with system time (it relies on the ``time.time()`` function of P
 Synchronized clock
 ------------------
 
-The third clock is a :py:class:`~sismic.clock.SynchronizedClock` that expects an 
+The third clock is a :py:class:`~sismic.clock.SynchronizedClock` that expects an
 :py:class:`~sismic.interpreter.Interpreter` instance, and synchronizes its time
 value based on the value of the ``time`` attribute of the interpreter.
 
-The main use cases are when statechart executions have to be synchronized to the 
-point where a shared clock instance is not sufficient because executions should 
-occur at exactly the same time, up to the milliseconds. Internally, this clock 
+The main use cases are when statechart executions have to be synchronized to the
+point where a shared clock instance is not sufficient because executions should
+occur at exactly the same time, up to the milliseconds. Internally, this clock
 is used when property statecharts are bound to an interpreter, as they need to be
-executed at the exact same time. 
+executed at the exact same time.
 
 
 Implementing other clocks
 -------------------------
 
 You can quite easily write your own clock implementation, for example if you need to
-synchronize different distributed interpreters. 
+synchronize different distributed interpreters.
 Simply subclass the :py:class:`~sismic.clock.Clock` base class.
 
 .. autoclass:: sismic.clock.Clock
@@ -309,14 +309,14 @@ Delayed events
 
 Sismic also has support for delayed events, i.e. events that will be triggered in the future.
 
-When a delayed event is queued in an interpreter at time ``T`` with delay ``D``, 
-it is not processed by a call to :py:meth:`~sismic.interpreter.Interpreter.execute` 
-or to :py:meth:`~sismic.interpreter.Interpreter.execute_once` unless the current clock 
-time value exceeds ``T + D``. 
+When a delayed event is queued in an interpreter at time ``T`` with delay ``D``,
+it is not processed by a call to :py:meth:`~sismic.interpreter.Interpreter.execute`
+or to :py:meth:`~sismic.interpreter.Interpreter.execute_once` unless the current clock
+time value exceeds ``T + D``.
 
-Delayed events can be created simply by providing a ``delay`` parameter when an 
-:py:class:`~sismic.model.Event` instance is created, or when calling 
-an interpreter's :py:meth:`~sismic.interpreter.Interpreter.queue` method. 
+Delayed events can be created simply by providing a ``delay`` parameter when an
+:py:class:`~sismic.model.Event` instance is created, or when calling
+an interpreter's :py:meth:`~sismic.interpreter.Interpreter.queue` method.
 
 
 .. testcode:: delayed
@@ -331,12 +331,12 @@ an interpreter's :py:meth:`~sismic.interpreter.Interpreter.queue` method.
 
 
 Delayed events are not processed by the interpreter, as long as the current clock
-has not reached given delay. 
+has not reached given delay.
 
 .. testcode:: delayed
 
     print('Current time:', interpreter.clock.time)  # 0
-    interpreter.execute()  
+    interpreter.execute()
     print('Current floor:', interpreter.context['current'])  # Still on ground floor
 
 .. testoutput:: delayed
@@ -357,9 +357,9 @@ They are processed as soon as the clock time value exceeds the expected delay:
     Current floor: 4
 
 
-Notice that the time when a delayed event will be processed is based on the time value of 
-the clock when the :py:meth:`~sismic.interpreter.Interpreter.queue` method is called, not 
-the :py:attr:`~sismic.interpreter.Interpreter.time` attribute that corresponds to the time of 
+Notice that the time when a delayed event will be processed is based on the time value of
+the clock when the :py:meth:`~sismic.interpreter.Interpreter.queue` method is called, not
+the :py:attr:`~sismic.interpreter.Interpreter.time` attribute that corresponds to the time of
 the last executed step.
 
 .. testcode:: delayed
@@ -367,20 +367,20 @@ the last executed step.
     interpreter.clock.time = 6
     print('Interpreter time:', interpreter.time)
     print('Clock time:', interpreter.clock.time)
-    
+
     interpreter.queue('floorSelected', floor=2, delay=1)
-    
+
 .. testoutput:: delayed
 
     Interpreter time: 5
     Clock time: 6
-    
+
 .. testcode:: delayed
 
     interpreter.clock.time = 7
     interpreter.execute()  # Event is processed, because 6 + 1 >= 7
 
-    print('Current floor:', interpreter.context['current'])    
+    print('Current floor:', interpreter.context['current'])
 
 .. testoutput:: delayed
 

@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import threading
 import time
 import warnings
-
 from collections import Counter
 from collections.abc import Callable, Mapping
 from functools import wraps
@@ -10,7 +11,7 @@ from typing import Any
 from .interpreter import Interpreter
 from .model import MacroStep
 
-__all__ = ['log_trace', 'run_in_background', 'coverage_from_trace']
+__all__ = ["coverage_from_trace", "log_trace", "run_in_background"]
 
 
 def log_trace(interpreter: Interpreter) -> list[MacroStep]:
@@ -57,15 +58,17 @@ def coverage_from_trace(trace: list[MacroStep]) -> Mapping[str, Counter]:
                 processed_transitions.append(microstep.transition)
 
     return {
-        'entered states': Counter(entered_states),
-        'exited states': Counter(exited_states),
-        'processed transitions': Counter(processed_transitions)
+        "entered states": Counter(entered_states),
+        "exited states": Counter(exited_states),
+        "processed transitions": Counter(processed_transitions),
     }
 
 
-def run_in_background(interpreter: Interpreter,
-                      delay: float = 0.05,
-                      callback: Callable[[list[MacroStep]], Any] = None) -> threading.Thread:
+def run_in_background(
+    interpreter: Interpreter,
+    delay: float = 0.05,
+    callback: Callable[[list[MacroStep]], Any] | None = None,
+) -> threading.Thread:
     """
     Run given interpreter in background.
 
@@ -81,7 +84,7 @@ def run_in_background(interpreter: Interpreter,
     :return: started thread (instance of *threading.Thread*)
     :deprecated: since 1.3.0, use runner.AsyncRunner instead.
     """
-    warnings.warn('Deprecated since 1.3.0. Use runner.AsyncRunner instead.', DeprecationWarning)
+    warnings.warn("Deprecated since 1.3.0. Use runner.AsyncRunner instead.", DeprecationWarning)
 
     def _task():
         while not interpreter.final:
@@ -89,6 +92,7 @@ def run_in_background(interpreter: Interpreter,
             if callback:
                 callback(steps)
             time.sleep(delay)
+
     thread = threading.Thread(target=_task)
 
     def stop_thread():

@@ -7,5 +7,3 @@ Module *clock*
     :show-inheritance:
     :inherited-members:
     :imported-members:
-
-

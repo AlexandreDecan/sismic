@@ -10,7 +10,7 @@ Feature: Cooking
     Then heating turns on
 
   Scenario: Stop cooking food
-    Given I reproduce "Start cooking food"
+    Given I reproduce 'Start cooking food'
     When 2 seconds elapsed
     Then variable timer equals 3
     When I press stop button
@@ -18,9 +18,7 @@ Feature: Cooking
     And heating turns off
 
   Scenario: Cooking stops after preset time
-    Given I reproduce "Start cooking food"
+    Given I reproduce 'Start cooking food'
     When 5 seconds elapsed
     Then variable timer equals 0
     And heating turns off
-
-

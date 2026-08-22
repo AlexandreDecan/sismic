@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from collections.abc import Mapping
 
-from .evaluator import Evaluator
 from ..model import Event
+from .evaluator import Evaluator
 
-__all__ = ['DummyEvaluator']
+__all__ = ["DummyEvaluator"]
 
 
 class DummyEvaluator(Evaluator):
@@ -16,10 +18,10 @@ class DummyEvaluator(Evaluator):
 
     @property
     def context(self):
-        return dict()
+        return {}
 
-    def _evaluate_code(self, code: str, *, additional_context: Mapping = None) -> bool:
+    def _evaluate_code(self, code: str, *, additional_context: Mapping | None = None) -> bool:
         return True
 
-    def _execute_code(self, code: str, *, additional_context: Mapping = None) -> list[Event]:
+    def _execute_code(self, code: str, *, additional_context: Mapping | None = None) -> list[Event]:
         return []

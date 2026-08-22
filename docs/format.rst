@@ -298,5 +298,3 @@ See `schema library <https://pypi.python.org/pypi/schema>`__ for more informatio
 .. literalinclude:: ../sismic/io/yaml.py
     :language: python
     :pyobject: SCHEMA
-
-

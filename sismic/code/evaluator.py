@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 import abc
 from collections.abc import Iterable, Mapping
-from typing import Any, Optional
+from typing import Any
 
-from ..model import Statechart, StateMixin, Transition, Event
 from ..exceptions import CodeEvaluationError
+from ..model import Event, Statechart, StateMixin, Transition
 
-__all__ = ['Evaluator']
+__all__ = ["Evaluator"]
 
 
 class Evaluator(metaclass=abc.ABCMeta):
@@ -25,7 +27,12 @@ class Evaluator(metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def __init__(self, interpreter=None, *, initial_context: Mapping[str, Any] = None) -> None:
+    def __init__(
+        self,
+        interpreter=None,
+        *,
+        initial_context: Mapping[str, Any] | None = None,
+    ) -> None:
         pass
 
     @property
@@ -38,7 +45,12 @@ class Evaluator(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _evaluate_code(self, code: str, *, additional_context: Mapping[str, Any] = None) -> bool:
+    def _evaluate_code(
+        self,
+        code: str,
+        *,
+        additional_context: Mapping[str, Any] | None = None,
+    ) -> bool:
         """
         Generic method to evaluate a piece of code. This method is a fallback if one of
         the other evaluate_* methods is not overridden.
@@ -51,7 +63,11 @@ class Evaluator(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def _execute_code(
-            self, code: str, *, additional_context: Mapping[str, Any] = None) -> list[Event]:
+        self,
+        code: str,
+        *,
+        additional_context: Mapping[str, Any] | None = None,
+    ) -> list[Event]:
         """
         Generic method to execute a piece of code. This method is a fallback if one
         of the other execute_* methods is not overridden.
@@ -72,10 +88,9 @@ class Evaluator(metaclass=abc.ABCMeta):
         if statechart.preamble:
             events = self._execute_code(statechart.preamble)
             if len(events) > 0:
-                raise CodeEvaluationError('Events cannot be raised by statechart preamble')
+                raise CodeEvaluationError("Events cannot be raised by statechart preamble")
 
-    def evaluate_guard(
-            self, transition: Transition, event: Optional[Event] = None) -> Optional[bool]:
+    def evaluate_guard(self, transition: Transition, event: Event | None = None) -> bool | None:
         """
         Evaluate the guard for given transition.
 
@@ -84,10 +99,10 @@ class Evaluator(metaclass=abc.ABCMeta):
         :return: truth value of *code*
         """
         if transition.guard:
-            return self._evaluate_code(transition.guard, additional_context={'event': event})
+            return self._evaluate_code(transition.guard, additional_context={"event": event})
         return None
 
-    def execute_action(self, transition: Transition, event: Optional[Event] = None) -> list[Event]:
+    def execute_action(self, transition: Transition, event: Event | None = None) -> list[Event]:
         """
         Execute the action for given transition.
         This method is called for every transition that is processed, even those with no *action*.
@@ -97,7 +112,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :return: a list of sent events
         """
         if transition.action:
-            return self._execute_code(transition.action, additional_context={'event': event})
+            return self._execute_code(transition.action, additional_context={"event": event})
         else:
             return []
 
@@ -109,7 +124,7 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param state: the considered state
         :return: a list of sent events
         """
-        code = getattr(state, 'on_entry', None)
+        code = getattr(state, "on_entry", None)
         if code:
             return self._execute_code(code)
         else:
@@ -123,13 +138,13 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param state: the considered state
         :return: a list of sent events
         """
-        code = getattr(state, 'on_exit', None)
+        code = getattr(state, "on_exit", None)
         if code:
             return self._execute_code(code)
         else:
             return []
 
-    def evaluate_preconditions(self, obj, event: Optional[Event] = None) -> Iterable[str]:
+    def evaluate_preconditions(self, obj, event: Event | None = None) -> Iterable[str]:
         """
         Evaluate the preconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -138,13 +153,13 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param event: an optional *Event* instance, if any
         :return: list of unsatisfied conditions
         """
-        event_d = {'event': event} if isinstance(obj, Transition) else None
+        event_d = {"event": event} if isinstance(obj, Transition) else None
         return filter(
-            lambda c: not self._evaluate_code(
-                c, additional_context=event_d), getattr(obj, 'preconditions', [])
+            lambda c: not self._evaluate_code(c, additional_context=event_d),
+            getattr(obj, "preconditions", []),
         )
 
-    def evaluate_invariants(self, obj, event: Optional[Event] = None) -> Iterable[str]:
+    def evaluate_invariants(self, obj, event: Event | None = None) -> Iterable[str]:
         """
         Evaluate the invariants for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -153,13 +168,13 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param event: an optional *Event* instance, if any
         :return: list of unsatisfied conditions
         """
-        event_d = {'event': event} if isinstance(obj, Transition) else None
+        event_d = {"event": event} if isinstance(obj, Transition) else None
         return filter(
-            lambda c: not self._evaluate_code(
-                c, additional_context=event_d), getattr(obj, 'invariants', [])
+            lambda c: not self._evaluate_code(c, additional_context=event_d),
+            getattr(obj, "invariants", []),
         )
 
-    def evaluate_postconditions(self, obj, event: Optional[Event] = None) -> Iterable[str]:
+    def evaluate_postconditions(self, obj, event: Event | None = None) -> Iterable[str]:
         """
         Evaluate the postconditions for given object (either a *StateMixin* or a
         *Transition*) and return a list of conditions that are not satisfied.
@@ -168,8 +183,8 @@ class Evaluator(metaclass=abc.ABCMeta):
         :param event: an optional *Event* instance, if any
         :return: list of unsatisfied conditions
         """
-        event_d = {'event': event} if isinstance(obj, Transition) else None
+        event_d = {"event": event} if isinstance(obj, Transition) else None
         return filter(
-            lambda c: not self._evaluate_code(
-                c, additional_context=event_d), getattr(obj, 'postconditions', [])
+            lambda c: not self._evaluate_code(c, additional_context=event_d),
+            getattr(obj, "postconditions", []),
         )

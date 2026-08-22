@@ -36,10 +36,10 @@ being executed. Those meta-events are automatically send to any previously bound
 
 To bind a property statechart to an interpreter, it suffices to provide the property statechart as a
 parameter of the :py:meth:`~sismic.interpreter.Interpreter.bind_property_statechart` method of an interpreter.
-This method accepts a :py:class:`~sismic.model.Statechart` instance that is used to create an interpreter for 
+This method accepts a :py:class:`~sismic.model.Statechart` instance that is used to create an interpreter for
 the property statechart. This method also accepts an optional ``interpreter_klass`` parameter as a callable accepting
 a :py:class:`~sismic.model.Statechart` and a named parameter ``clock`` (a :py:class:`~sismic.clock.Clock` instance)
-and is used to build an interpreter for the property statechart. 
+and is used to build an interpreter for the property statechart.
 
 If a property statechart reaches a final state during its execution, then the property is considered as not
 satisfied, and a :py:class:`~sismic.exceptions.PropertyStatechartError` is raised.
@@ -56,22 +56,22 @@ documentation of the :py:meth:`~sismic.interpreter.Interpreter.attach` method:
 .. automethod:: sismic.interpreter.Interpreter.attach
     :noindex:
 
-.. note:: 
+.. note::
 
     Property statecharts are not the only way to listen to these meta-events. Any listener
-    that is attached with :py:meth:`~sismic.interpreter.Interpreter.attach` will receive these 
+    that is attached with :py:meth:`~sismic.interpreter.Interpreter.attach` will receive these
     meta-events.
-    
-Property statecharts can listen to what happens in an interpreter when they are bound to 
+
+Property statecharts can listen to what happens in an interpreter when they are bound to
 this interpreter, using :py:meth:`~sismic.interpreter.Interpreter.bind_property_statechart` method:
 
 .. automethod:: sismic.interpreter.Interpreter.bind_property_statechart
     :noindex:
 
-Internally, this method wraps given property statechart to an appropriate listener, and 
+Internally, this method wraps given property statechart to an appropriate listener, and
 calls :py:meth:`~sismic.interpreter.Interpreter.attach` so you don't have to.
-Bound property statecharts can be unbound from the interpreter by calling the 
-:py:meth:`~sismic.interpreter.Interpreter.detach` method. This method accepts a 
+Bound property statecharts can be unbound from the interpreter by calling the
+:py:meth:`~sismic.interpreter.Interpreter.detach` method. This method accepts a
 previously attached listener, so you'll need to keep track of the listener returned
 by the initial call to :py:meth:`~sismic.interpreter.Interpreter.bind_property_statechart`.
 

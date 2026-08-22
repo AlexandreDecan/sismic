@@ -1,7 +1,8 @@
+from time import sleep
+
 import pytest
 
-from time import sleep
-from sismic.clock import SimulatedClock, UtcClock, SynchronizedClock
+from sismic.clock import SimulatedClock, SynchronizedClock, UtcClock
 
 
 class TestSimulatedClock:
@@ -55,11 +56,11 @@ class TestSimulatedClock:
         clock.stop()
         clock.time = 10
         clock.speed = 0.1
-        
+
         clock.start()
         sleep(0.1)
         clock.stop()
-        
+
         assert 10 < clock.time < 10.1
 
     def test_start_stop(self, clock):
@@ -85,13 +86,13 @@ class TestUtcClock:
         assert clock.time > current_time
 
 
-class TestSynchronizedClock():
+class TestSynchronizedClock:
     @pytest.fixture()
     def interpreter(self, mocker):
         interpreter = mocker.MagicMock()
         interpreter.time = 0
         return interpreter
-    
+
     @pytest.fixture()
     def clock(self, interpreter):
         return SynchronizedClock(interpreter)
@@ -106,4 +107,3 @@ class TestSynchronizedClock():
     def test_no_sync_with_clock(self, clock, interpreter):
         interpreter.clock.time = 3
         assert clock.time == 0
-        

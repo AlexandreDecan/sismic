@@ -28,6 +28,6 @@ Feature: No heating if door is opened
     Then event heating_on is fired
 
   Scenario: Opening door interrupts heating
-    Given I reproduce "Allow heating if door is closed"
+    Given I reproduce 'Allow heating if door is closed'
     When I send event door_opened
     Then event heating_off is fired

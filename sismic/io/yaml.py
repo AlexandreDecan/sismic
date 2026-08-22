@@ -1,57 +1,65 @@
-import ruamel.yaml as yaml
-import schema
+# mypy: disable-error-code="arg-type"
+from __future__ import annotations
 
 import os
 from io import StringIO
-from typing import Union
+from typing import Any, ClassVar
+
+import schema
+from ruamel import yaml
 
 from ..exceptions import StatechartError
 from ..model import Statechart
-
 from .datadict import export_to_dict, import_from_dict
 
-__all__ = ['import_from_yaml', 'export_to_yaml']
+__all__ = ["export_to_yaml", "import_from_yaml"]
 
 
 class SCHEMA:
-    contract = {schema.Or('before', 'after', 'always'): schema.Use(str)}
+    contract: ClassVar[dict] = {schema.Or("before", "after", "always"): schema.Use(str)}
 
-    transition = {
-        schema.Optional('target'): schema.Use(str),
-        schema.Optional('event'): schema.Use(str),
-        schema.Optional('guard'): schema.Use(str),
-        schema.Optional('action'): schema.Use(str),
-        schema.Optional('contract'): [contract],
-        schema.Optional('priority'): schema.Or(schema.Use(int), 'high', 'low'),
+    transition: ClassVar[dict] = {
+        schema.Optional("target"): schema.Use(str),
+        schema.Optional("event"): schema.Use(str),
+        schema.Optional("guard"): schema.Use(str),
+        schema.Optional("action"): schema.Use(str),
+        schema.Optional("contract"): [contract],
+        schema.Optional("priority"): schema.Or(schema.Use(int), "high", "low"),
     }
 
-    state = dict()  # type: ignore
-    state.update({
-        'name': schema.Use(str),
-        schema.Optional('type'): schema.Or('final', 'shallow history', 'deep history'),
-        schema.Optional('on entry'): schema.Use(str),
-        schema.Optional('on exit'): schema.Use(str),
-        schema.Optional('transitions'): [transition],
-        schema.Optional('contract'): [contract],
-        schema.Optional('initial'): schema.Use(str),
-        schema.Optional('parallel states'): [state],
-        schema.Optional('states'): [state],
-        schema.Optional('memory'): schema.Use(str),
-    })
+    state: ClassVar[dict] = {}
+    state.update(
+        {
+            "name": schema.Use(str),
+            schema.Optional("type"): schema.Or("final", "shallow history", "deep history"),
+            schema.Optional("on entry"): schema.Use(str),
+            schema.Optional("on exit"): schema.Use(str),
+            schema.Optional("transitions"): [transition],
+            schema.Optional("contract"): [contract],
+            schema.Optional("initial"): schema.Use(str),
+            schema.Optional("parallel states"): [state],
+            schema.Optional("states"): [state],
+            schema.Optional("memory"): schema.Use(str),
+        },
+    )
 
-    statechart = {
-        'statechart': {
-            'name': schema.Use(str),
-            schema.Optional('description'): schema.Use(str),
-            schema.Optional('preamble'): schema.Use(str),
-            'root state': state,
-        }
+    statechart: ClassVar[dict[str, Any]] = {
+        "statechart": {
+            "name": schema.Use(str),
+            schema.Optional("description"): schema.Use(str),
+            schema.Optional("preamble"): schema.Use(str),
+            "root state": state,
+        },
     }
 
 
 def import_from_yaml(
-        text: str = None, filepath: Union[str, bytes, os.PathLike] = None, *, ignore_schema: bool = False,
-        ignore_validation: bool = False) -> Statechart:
+    text: str | None = None,
+    filepath: str | bytes | os.PathLike | None = None,
+    *,
+    ignore_schema: bool = False,
+    ignore_validation: bool = False,
+) -> Statechart:
     """
     Import a statechart from a YAML representation (first argument) or a YAML file (filepath
     argument).
@@ -68,21 +76,22 @@ def import_from_yaml(
     """
     if not text and not filepath:
         raise TypeError(
-            'A YAML must be provided, either using first argument or filepath argument.')
+            "A YAML must be provided, either using first argument or filepath argument.",
+        )
     elif text and filepath:
-        raise TypeError('Either provide first argument or filepath argument, not both.')
+        raise TypeError("Either provide first argument or filepath argument, not both.")
     elif filepath:
-        with open(filepath, 'r') as f:
+        with open(filepath, "r") as f:
             text = f.read()
 
-    yml = yaml.YAML(typ='safe', pure=True)
+    yml = yaml.YAML(typ="safe", pure=True)
     data = yml.load(text)
 
     if not ignore_schema:
         try:
             data = schema.Schema(SCHEMA.statechart).validate(data)
         except schema.SchemaError as e:
-            raise StatechartError('YAML validation failed') from e
+            raise StatechartError("YAML validation failed") from e
 
     sc = import_from_dict(data)
 
@@ -91,7 +100,10 @@ def import_from_yaml(
     return sc
 
 
-def export_to_yaml(statechart: Statechart, filepath: Union[str, bytes, os.PathLike] = None) -> str:
+def export_to_yaml(
+    statechart: Statechart,
+    filepath: str | bytes | os.PathLike | None = None,
+) -> str:
     """
     Export given *Statechart* instance to YAML. Its YAML representation is returned by
     this function. Automatically save the output to filepath, if provided.
@@ -102,11 +114,11 @@ def export_to_yaml(statechart: Statechart, filepath: Union[str, bytes, os.PathLi
     """
     output = StringIO()
 
-    yml = yaml.YAML(typ='safe', pure=True)
+    yml = yaml.YAML(typ="safe", pure=True)
     yml.dump(export_to_dict(statechart), output)
 
     if filepath:
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             f.write(output.getvalue())
 
     return output.getvalue()

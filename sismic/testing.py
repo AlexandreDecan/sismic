@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 from collections.abc import Mapping
-from typing import Union, Optional, Any
+from typing import Any, Union
+
 from .interpreter import Interpreter
 from .model import MacroStep, Transition
 
-
 __all__ = [
-    'state_is_entered', 'state_is_exited',
-    'event_is_fired', 'event_is_consumed',
-    'transition_is_processed',
-    'expression_holds',
+    "event_is_consumed",
+    "event_is_fired",
+    "expression_holds",
+    "state_is_entered",
+    "state_is_exited",
+    "transition_is_processed",
 ]
 
 MacroSteps = Union[MacroStep, list[MacroStep]]
@@ -45,8 +49,10 @@ def state_is_exited(steps: MacroSteps, name: str) -> bool:
 
 
 def event_is_fired(
-        steps: MacroSteps, name: Optional[str],
-        parameters: Mapping[str, Any] = None) -> bool:
+    steps: MacroSteps,
+    name: str | None,
+    parameters: Mapping[str, Any] | None = None,
+) -> bool:
     """
     Holds if an event was fired during given steps.
 
@@ -61,7 +67,7 @@ def event_is_fired(
     :return: event was fired
     """
     steps = steps if isinstance(steps, list) else [steps]
-    parameters = dict() if parameters is None else parameters
+    parameters = {} if parameters is None else parameters
 
     for step in steps:
         for event in step.sent_events:
@@ -77,8 +83,10 @@ def event_is_fired(
 
 
 def event_is_consumed(
-        steps: MacroSteps, name: Optional[str],
-        parameters: Mapping[str, Any] = None) -> bool:
+    steps: MacroSteps,
+    name: str | None,
+    parameters: Mapping[str, Any] | None = None,
+) -> bool:
     """
     Holds if an event was consumed during given steps.
 
@@ -93,7 +101,7 @@ def event_is_consumed(
     :return: event was consumed
     """
     steps = steps if isinstance(steps, list) else [steps]
-    parameters = dict() if parameters is None else parameters
+    parameters = {} if parameters is None else parameters
 
     for step in steps:
         if step.event is None:
@@ -110,7 +118,7 @@ def event_is_consumed(
     return False
 
 
-def transition_is_processed(steps: MacroSteps, transition: Optional[Transition] = None) -> bool:
+def transition_is_processed(steps: MacroSteps, transition: Transition | None = None) -> bool:
     """
     Holds if a transition was processed during given steps.
 

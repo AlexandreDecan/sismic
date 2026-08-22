@@ -5,7 +5,7 @@ Feature: Lighting
     Then lamp turns on
 
   Scenario: Lamp is off when door is closed
-    Given I reproduce "Lamp is on when door is open"
+    Given I reproduce 'Lamp is on when door is open'
     When I close the door
     Then lamp turns off
 
@@ -18,7 +18,6 @@ Feature: Lighting
     Then lamp turns on
 
   Scenario: Lamp turns off after cooking
-    Given I reproduce "Lamp is on while cooking"
+    Given I reproduce 'Lamp is on while cooking'
     When I press stop button
     Then lamp turns off
-

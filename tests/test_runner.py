@@ -1,9 +1,9 @@
-import pytest
-
 from time import sleep
 
-from sismic.runner import AsyncRunner
+import pytest
+
 from sismic.interpreter import Interpreter
+from sismic.runner import AsyncRunner
 
 
 class TestAsyncRunner:
@@ -34,28 +34,28 @@ class TestAsyncRunner:
     def test_not_yet_started(self, runner):
         assert runner.interpreter.configuration == []
 
-        runner.interpreter.queue('goto s2')
+        runner.interpreter.queue("goto s2")
         sleep(self.INTERVAL)
         assert runner.interpreter.configuration == []
 
         runner.start()
         sleep(self.INTERVAL)
-        assert runner.interpreter.configuration == ['root', 's3']
+        assert runner.interpreter.configuration == ["root", "s3"]
 
     def test_start(self, runner):
         runner.start()
         sleep(self.INTERVAL)
-        assert runner.interpreter.configuration == ['root', 's1']
+        assert runner.interpreter.configuration == ["root", "s1"]
 
-        runner.interpreter.queue('goto s2')
+        runner.interpreter.queue("goto s2")
         sleep(self.INTERVAL)
-        assert runner.interpreter.configuration == ['root', 's3']
+        assert runner.interpreter.configuration == ["root", "s3"]
 
     def test_restart_stopped(self, runner):
         runner.start()
         runner.stop()
 
-        with pytest.raises(RuntimeError, match='Cannot restart'):
+        with pytest.raises(RuntimeError, match="Cannot restart"):
             runner.start()
 
         assert not runner.running
@@ -63,7 +63,7 @@ class TestAsyncRunner:
     def test_start_again(self, runner):
         runner.start()
 
-        with pytest.raises(RuntimeError, match='already started'):
+        with pytest.raises(RuntimeError, match="already started"):
             runner.start()
 
         assert runner.running
@@ -90,11 +90,10 @@ class TestAsyncRunner:
         sleep(self.INTERVAL)
         assert len(mocked_runner.after_run.call_args_list) == 1
 
-
     def test_final(self, runner):
         runner.start()
-        runner.interpreter.queue('goto s2')
-        runner.interpreter.queue('goto final')
+        runner.interpreter.queue("goto s2")
+        runner.interpreter.queue("goto final")
         sleep(self.INTERVAL)
         sleep(self.INTERVAL)
         assert runner.interpreter.final
@@ -110,18 +109,17 @@ class TestAsyncRunner:
         runner.pause()
         assert runner.paused
         assert runner.running
-        assert runner.interpreter.configuration == ['root', 's1']
+        assert runner.interpreter.configuration == ["root", "s1"]
 
-        runner.interpreter.queue('goto s2')
+        runner.interpreter.queue("goto s2")
         sleep(self.INTERVAL)
-        assert runner.interpreter.configuration == ['root', 's1']
+        assert runner.interpreter.configuration == ["root", "s1"]
 
         runner.unpause()
         assert not runner.paused
         assert runner.running
         sleep(self.INTERVAL)
-        assert runner.interpreter.configuration == ['root', 's3']
-
+        assert runner.interpreter.configuration == ["root", "s3"]
 
     def test_state(self, runner):
         assert not runner.running

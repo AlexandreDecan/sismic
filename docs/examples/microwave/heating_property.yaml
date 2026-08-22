@@ -1,4 +1,4 @@
-statechart: 
+statechart:
   name: Heating must not occur if/when door is opened
   description: Combines heating_on_property and heating_off_property
   root state:
@@ -21,7 +21,7 @@ statechart:
           - target: failure
             event: event sent
             guard: event.event.name == 'heating_on'
-      - name: door is closed and heating is on 
+      - name: door is closed and heating is on
         transitions:
           - target: door is closed and is heating off
             event: event sent

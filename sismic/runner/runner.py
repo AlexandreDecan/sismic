@@ -1,11 +1,10 @@
-import time
 import threading
+import time
 
 from ..interpreter import Interpreter
 from ..model import MacroStep
 
-
-__all__ = ['AsyncRunner']
+__all__ = ["AsyncRunner"]
 
 
 class AsyncRunner:
@@ -77,9 +76,9 @@ class AsyncRunner:
         Start the execution.
         """
         if self._stop.is_set():
-            raise RuntimeError('Cannot restart a stopped runner.')
+            raise RuntimeError("Cannot restart a stopped runner.")
         elif self._thread.is_alive():
-            raise RuntimeError('Runner is already started')
+            raise RuntimeError("Runner is already started")
         else:
             self._unpaused.set()
             self._thread.start()

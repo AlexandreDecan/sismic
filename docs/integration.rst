@@ -66,7 +66,7 @@ In the *lap time* state (reached through a *split* event) , this regular refresh
 
 The source code (shown below) that defines the GUI of the stopwatch, and that controls the statechart by sending it events, is implemented using the :py:mod:`Tkinter` library.
 Each button of the GUI is bound to a Python method in which the corresponding event is created and sent to the statechart.
-The statechart is *bound* to the source code by defining a new :py:class:`~sismic.interpreter.Interpreter` that contains the parsed YAML specification, and using the :py:meth:`~sismic.interpreter.Interpreter.bind` 
+The statechart is *bound* to the source code by defining a new :py:class:`~sismic.interpreter.Interpreter` that contains the parsed YAML specification, and using the :py:meth:`~sismic.interpreter.Interpreter.bind`
 method. The  ``event_handler`` passed to it allows the Python source code to receive events back from the statechart.
 In particular, the ``w_timer`` field of the GUI will be updated with a new value of the time whenever the statechart sends a *refresh* event.
 The ``run`` method, which is put in Tk's mainloop, updates the internal clock of the interpreter and executes the interpreter.
