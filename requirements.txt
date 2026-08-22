@@ -1,4 +1,0 @@
-Sphinx<7.0.0
-sphinx-autodoc-typehints>=1.2.5,!=1.5.0
-pytest>=5.0.0
-pytest-mock>=3.0.0

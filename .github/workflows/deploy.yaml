@@ -8,16 +8,13 @@ jobs:
   deploy:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
         with:
-          python-version: 3.14
-      - name: Install dependencies
-        run: |
-          pip install pip -U
-          pip install build
+          python-version-file: ".python-version"
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
       - name: Build package
-        run: python -m build
+        run: uv build
       - name: Publish package
-        uses: pypa/gh-action-pypi-publish@release/v1
+        run: uv publish

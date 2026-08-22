@@ -1,0 +1,27 @@
+repos:
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: "v2.28.0"
+    hooks:
+      - id: pyproject-fmt
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-ast
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.4
+    hooks:
+      - id: ruff-check
+      - id: ruff-format
+  - repo: local
+    hooks:
+      - id: type-checking
+        name: Type Checking (mypy)
+        entry: mypy
+        language: system
+        types: [python]
+        require_serial: true
+        files: "sismic/"
