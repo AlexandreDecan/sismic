@@ -343,4 +343,3 @@ Assuming that the features are defined in ``cooking.feature``, these steps in ``
     3 scenarios passed, 0 failed, 0 skipped
     17 steps passed, 0 failed, 0 skipped, 0 undefined
     Took 0m0.040s
-

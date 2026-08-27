@@ -1,6 +1,6 @@
 statechart:
   name: Heating does not start if door is opened
-  root state: 
+  root state:
     name: root
     initial: door is closed
     states:

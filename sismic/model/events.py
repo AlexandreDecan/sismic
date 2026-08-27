@@ -1,7 +1,7 @@
 import warnings
 from typing import Any
 
-__all__ = ['Event', 'InternalEvent', 'MetaEvent']
+__all__ = ["Event", "InternalEvent", "MetaEvent"]
 
 
 class Event:
@@ -20,7 +20,7 @@ class Event:
     :param data: additional data passed as named parameters.
     """
 
-    __slots__ = ['name', 'data']
+    __slots__ = ["data", "name"]
 
     def __init__(self, name: str, **additional_parameters: Any) -> None:
         self.name = name
@@ -28,7 +28,7 @@ class Event:
 
     def __eq__(self, other):
         if isinstance(other, Event):
-            return (self.name == other.name and self.data == other.data)
+            return self.name == other.name and self.data == other.data
         else:
             return NotImplemented
 
@@ -36,7 +36,7 @@ class Event:
         try:
             return self.data[attr]
         except KeyError:
-            raise AttributeError('{} has no attribute {}'.format(self, attr))
+            raise AttributeError(f"{self} has no attribute {attr}")
 
     def __getstate__(self):
         # For pickle and implicitly for multiprocessing
@@ -50,22 +50,23 @@ class Event:
         return hash(self.name)
 
     def __dir__(self):
-        return ['name'] + list(self.data.keys())
+        return ["name"] + list(self.data.keys())
 
     def __repr__(self):
         if self.data:
-            return '{}({!r}, {})'.format(
-                self.__class__.__name__, self.name, ', '.join(
-                    '{}={!r}'.format(k, v) for k, v in self.data.items()))
+            return "{}({!r}, {})".format(
+                self.__class__.__name__,
+                self.name,
+                ", ".join(f"{k}={v!r}" for k, v in self.data.items()),
+            )
         else:
-            return '{}({!r})'.format(self.__class__.__name__, self.name)
+            return f"{self.__class__.__name__}({self.name!r})"
 
 
 class InternalEvent(Event):
     """
     Subclass of Event that represents an internal event.
     """
-    pass
 
 
 class DelayedEvent(Event):
@@ -77,8 +78,9 @@ class DelayedEvent(Event):
 
     def __init__(self, name: str, delay: float, **additional_parameters: Any) -> None:
         warnings.warn(
-            'DelayedEvent is deprecated since 1.4.0, use Event with a delay parameter instead.',
-            DeprecationWarning)
+            "DelayedEvent is deprecated since 1.4.0, use Event with a delay parameter instead.",
+            DeprecationWarning,
+        )
         super().__init__(name, delay=delay, **additional_parameters)
 
 
@@ -86,4 +88,3 @@ class MetaEvent(Event):
     """
     Subclass of Event that represents a MetaEvent, as used in property statecharts.
     """
-    pass

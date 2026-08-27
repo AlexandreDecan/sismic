@@ -156,6 +156,3 @@ The exception displays some relevant information to help debug:
 If you do not want the execution to be interrupted by such exceptions, you can set the ``ignore_contract``
 parameter to ``True`` when constructing an ``Interpreter``.
 This way, no contract checking will be done during the execution.
-
-
-

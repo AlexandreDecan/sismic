@@ -12,7 +12,7 @@ In particular, eventless transitions are processed *before* transitions containi
 *before* external events, and the simulation follows a inner-first/source-state and run-to-completion semantics.
 
 The main difference between SCXML and Sismic's default interpreter resides in how multiple transitions
-can be triggered simultaneously. This may occur for transitions in orthogonal/parallel states, or when transitions 
+can be triggered simultaneously. This may occur for transitions in orthogonal/parallel states, or when transitions
 declaring the same event have guards that are not mutually exclusive.
 
 Simulating the simultaneous triggering of multiple transitions is problematic,
@@ -46,12 +46,12 @@ We decide to follow Rhapsody and to raise an error (in fact, a :py:exc:`~sismic.
 nondeterminism occur during the execution. Notice that this only concerns multiple transitions in the same
 composite state, not in parallel states.
 
-.. note:: 
+.. note::
 
-    Sismic allows to define priorities on transitions. This can be used to address some cases of 
-    nondeterminism. During execution, if a transition can be triggered, then transitions originating 
-    from the same state and whose priority is strictly lower than the selected one won't be considered. 
-    Note that, as usual, transitions with no event are considered before transitions with event, 
+    Sismic allows to define priorities on transitions. This can be used to address some cases of
+    nondeterminism. During execution, if a transition can be triggered, then transitions originating
+    from the same state and whose priority is strictly lower than the selected one won't be considered.
+    Note that, as usual, transitions with no event are considered before transitions with event,
     regardless of the associated priorities.
 
 When multiple transitions are triggered from within distinct parallel states, the situation is even more intricate.
@@ -183,12 +183,12 @@ This can be checked by looking at the external event queue of the interpreter.
 
 .. note::
 
-    An interpreter has two event queues, one for external events (the ones that are added using 
-    :py:meth:`~sismic.interpreter.Interpreter.queue`), and one for internal events (the ones that 
-    are sent from within the statechart). External events are stored in ``_external_queue`` while 
+    An interpreter has two event queues, one for external events (the ones that are added using
+    :py:meth:`~sismic.interpreter.Interpreter.queue`), and one for internal events (the ones that
+    are sent from within the statechart). External events are stored in ``_external_queue`` while
     internal events are stored in ``_internal_queue``. Internal events are always processed before
-    external ones. To access the next event that will be processed by the interpreter, use the 
-    :py:meth:`~sismic.interpreter.Interpreter._select_event` method. 
+    external ones. To access the next event that will be processed by the interpreter, use the
+    :py:meth:`~sismic.interpreter.Interpreter._select_event` method.
 
 To process all events **at once**, one can repeatedly call :py:meth:`~sismic.interpreter.Interpreter.execute_once` until
 it returns a ``None`` value, meaning that nothing happened during the last call. For instance:
@@ -227,9 +227,9 @@ of underlying calls to :py:meth:`~sismic.interpreter.Interpreter.execute_once`.
     # 'clock' is not yet processed
     assert len(interpreter.execute()) == 1
 
-The statechart used for these examples did not react to *click*, *clack* and *clock* because none of 
+The statechart used for these examples did not react to *click*, *clack* and *clock* because none of
 these events are expected to be received by the statechart (or, in other words, the statechart was
-not written to react to these events). 
+not written to react to these events).
 
 For convenience, a :py:class:`~sismic.model.Statechart` has an :py:meth:`~sismic.model.Statechart.events_for` method
 that returns the list of all possible events that are expected by this statechart.
@@ -244,14 +244,14 @@ that returns the list of all possible events that are expected by this statechar
 
 The *elevator* statechart, the one used for this example, only reacts to *floorSelected* events.
 Moreover, it assumes that *floorSelected* events have an additional parameter named ``floor``.
-These events are *parametrized* events, and their parameters be accessed by action code and guards 
-in the statechart during execution. 
+These events are *parametrized* events, and their parameters be accessed by action code and guards
+in the statechart during execution.
 
 For example, the *floorSelecting* state of the *elevator* example has a transition
 ``floorSelected / destination = event.floor`` that stores the value of the *floor* parameter
 into the *destination* variable.
 
-To add parameters to an event, simply pass these parameters as named arguments to the 
+To add parameters to an event, simply pass these parameters as named arguments to the
 :py:meth:`~sismic.interpreter.Interpreter.queue` method of the interpreter.
 
 
@@ -325,7 +325,7 @@ that can be used to see what happens. In particular:
    (see :ref:`code_evaluation`).
 * It is possible to bind a callable that will be called each time an event is sent by the statechart using
    the :py:meth:`~sismic.interpreter.Interpreter.bind` method of an interpreter (see :ref:`communication`).
-* Meta-events are raised by the interpreter for specific events (e.g. a state is entered, a state is exited, etc.). 
+* Meta-events are raised by the interpreter for specific events (e.g. a state is entered, a state is exited, etc.).
    Listeners can subscribe to these meta-events with :py:attr:`~sismic.interpreter.Interpreter.attach`.
 
 
@@ -333,8 +333,8 @@ Asynchronous execution
 ----------------------
 
 The calls to :py:meth:`~sismic.interpreter.Interpreter.execute` or :py:meth:`~sismic.interpreter.Interpreter.execute_once`
-are blocking calls, i.e. they are performed synchronously. To allow asynchronous execution of a statechart, one 
-has, e.g., to run the interpreter in a separate thread or to continuously loop over these calls. 
+are blocking calls, i.e. they are performed synchronously. To allow asynchronous execution of a statechart, one
+has, e.g., to run the interpreter in a separate thread or to continuously loop over these calls.
 
 Module :py:mod:`~sismic.runner` contains an :py:class:`~sismic.runner.AsyncRunner` that provides basic
 support for continuous asynchronous execution of statecharts:
@@ -343,16 +343,16 @@ support for continuous asynchronous execution of statecharts:
     :noindex:
 
 
-    
+
 
 Anatomy of the interpreter
 --------------------------
 
 .. note::
 
-    This section explains which are the methods that are called during the execution of a statechart, and is 
+    This section explains which are the methods that are called during the execution of a statechart, and is
     mainly useful if you plan to extend or alter the semantics of the execution.
-    
+
 
 An :py:class:`~sismic.interpreter.Interpreter` makes use of several *private* methods for its initialization and computations.
 These methods computes the transition(s) that should be processed, the resulting steps, etc.
@@ -375,7 +375,7 @@ These methods can be overridden or combined to define variants of statechart sem
 
 These methods are all used (even indirectly) by :py:class:`~sismic.interpreter.Interpreter.execute_once`.
 
-.. seealso:: 
+.. seealso::
 
     Consider looking at the source of :py:class:`~sismic.interpreter.Interpreter.execute_once` to understand
     how these methods are related and organized.

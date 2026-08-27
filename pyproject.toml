@@ -1,0 +1,71 @@
+[build-system]
+build-backend = "uv_build"
+requires = [ "uv-build>=0.12.1,<0.13" ]
+
+[project]
+name = "sismic"
+version = "1.6.11"
+description = "Sismic Interactive Statechart Model Interpreter and Checker"
+readme = "README.rst"
+keywords = [ "harel", "interpreter", "machine", "model", "scxml", "state", "statechart", "uml" ]
+license-files = [ "LICENSE", "AUTHORS.rst", "CITATION.cff", "CHANGELOG.rst" ]
+requires-python = ">=3.10"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Education",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Software Development :: Interpreters",
+  "Topic :: Software Development :: Testing",
+]
+dependencies = [
+  "behave>=1.2.6",
+  "ruamel-yaml>=0.18.2",
+  "schema>=0.5",
+]
+[project.urls]
+Homepage = "https://github.com/AlexandreDecan/sismic/"
+[project.scripts]
+sismic-bdd = "sismic.bdd.__main__:cli"
+sismic-plantuml = "sismic.io.plantuml:cli"
+
+[dependency-groups]
+dev = [
+  "mypy>=1.19.1",
+  "pytest>=5",
+  "pytest-cov>=7",
+  "pytest-mock>=3",
+  "sphinx<7",
+  "sphinx-autodoc-typehints>=1.2.5,!=1.5",
+]
+
+[tool.uv.build-backend]
+module-name = "sismic"
+module-root = ""
+
+[tool.ruff]
+line-length = 100
+fix = true
+[tool.ruff.lint]
+extend-select = [ "COM812" ]
+ignore = [ "PIE790" ]
+pydocstyle.convention = "google"
+
+[tool.pyproject-fmt]
+table_format = "long"
+
+[tool.mypy]
+follow_untyped_imports = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+extra_checks = true

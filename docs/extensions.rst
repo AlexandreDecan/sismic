@@ -28,5 +28,3 @@ The extension provides two new interpreter classes: ``OuterFirstInterpreter`` an
 These two interpreters can be combined together, thanks to Python multiple inheritance.
 
 Download: `https://github.com/AlexandreDecan/sismic-extensions/tree/master/sismic_semantics <https://github.com/AlexandreDecan/sismic-extensions/tree/master/sismic_semantics>`__
-
-

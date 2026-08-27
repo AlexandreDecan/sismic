@@ -9,9 +9,9 @@ Notably, module :py:mod:`sismic.io` contains a function :py:func:`~sismic.io.exp
 `PlantUML <http://plantuml.com/>`__, a tool based on graphviz that can automatically render statecharts (to some extent).
 An online version of PlantUML can be found `here <http://www.plantuml.com/plantuml/>`__.
 
-Function :py:func:`~sismic.io.export_to_plantuml` can be directly called from the command-line 
+Function :py:func:`~sismic.io.export_to_plantuml` can be directly called from the command-line
 without having to run a Python interpreter, through the ``sismic-plantuml`` (or ``python -m sismic.io.plantuml``)
-command-line interface. 
+command-line interface.
 
 .. code-block:: none
 
@@ -21,7 +21,7 @@ command-line interface.
                         [--hide-name] [--hide-transition-action]
                         statechart
 
-    Command-line utility to export Sismic statecharts to plantUML. 
+    Command-line utility to export Sismic statecharts to plantUML.
     See sismic.io.export_to_plantuml for more informations.
 
     positional arguments:
@@ -29,7 +29,7 @@ command-line interface.
 
     optional arguments:
     -h, --help                      show this help message and exit
-    --based-on based                A previously exported PlantUML representation 
+    --based-on based                A previously exported PlantUML representation
                                         for this statechart
     --show-description              Show statechart description
     --show-preamble                 Show statechart preamble
@@ -44,7 +44,7 @@ For example, the elevator statechart presented in the previous section can be ex
 
 .. literalinclude:: /examples/elevator/elevator.plantuml
 
-This PlantUML description can automatically be converted to the following statechart representation 
+This PlantUML description can automatically be converted to the following statechart representation
 using the PlantUML tool (an online version can be found `here <http://www.plantuml.com/plantuml/>`__).
 
 .. image:: /examples/elevator/elevator.png
@@ -72,5 +72,3 @@ This will then be used to incorporate as much as possible the changes made on tr
 
 .. autofunction:: sismic.io.export_to_plantuml
     :noindex:
-
-

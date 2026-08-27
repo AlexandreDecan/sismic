@@ -94,14 +94,14 @@ is sent both to ``interpreter_1`` and ``interpreter_2``.
 
 .. note::
 
-    The :py:meth:`~sismic.interpreter.Interpreter.bind` method is a high-level interface for 
+    The :py:meth:`~sismic.interpreter.Interpreter.bind` method is a high-level interface for
     :py:meth:`~sismic.interpreter.Interpreter.attach`. Internally, the former wraps given
-    interpreter or callable with an appropriate listener before calling 
+    interpreter or callable with an appropriate listener before calling
     :py:meth:`~sismic.interpreter.Interpreter.attach`. You can unbound a previously
     bound interpreter with :py:meth:`~sismic.interpreter.Interpreter.detach` method.
     This method accepts a previously attached listener, so you'll need to keep track of the listener returned
     by the initial call to :py:meth:`~sismic.interpreter.Interpreter.bind`.
-    
+
 
 Example of communicating statecharts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -146,7 +146,7 @@ are automatically propagated to ``elevator``:
     print('Awaiting event in elevator:', elevator._select_event())  # None
 
     buttons.execute(max_steps=2)  # (1) initialize buttons, and (2) consume button_2_pushed
-    print('Awaiting event in buttons:', buttons._select_event())  # Internal event 
+    print('Awaiting event in buttons:', buttons._select_event())  # Internal event
     print('Awaiting event in elevator:', elevator._select_event())  # External event
 
 .. testoutput:: buttons
@@ -169,13 +169,13 @@ The execution of bound statecharts does not differ from the execution of unbound
     Current floor: 2
 
 
-Synchronizing the clock 
+Synchronizing the clock
 -----------------------
 
-Each interpreter in Sismic has its own clock to deal with time (see :ref:`dealing_time`). 
-When creating an interpreter, it is possible to specify which clock should be used to compute the 
-``time`` attribute of the interpreter. 
-When multiple statecharts have to be run concurrently, it is often convenient to have their 
+Each interpreter in Sismic has its own clock to deal with time (see :ref:`dealing_time`).
+When creating an interpreter, it is possible to specify which clock should be used to compute the
+``time`` attribute of the interpreter.
+When multiple statecharts have to be run concurrently, it is often convenient to have their
 time synchronized. This can be achieved (to some extent) by providing a shared instance
 of a clock to their interpreter.
 
@@ -210,21 +210,21 @@ We can now execute the statecharts and check their time value.
 .. testcode:: time_sync
 
     clock.start()
-     
+
     elevator_step = elevator.execute_once()
     buttons_step = buttons.execute_once()
 
     clock.stop()
 
-As a single instance of a clock is used by both interpreter, the values exposed by their clocks 
-are obviously the same: 
+As a single instance of a clock is used by both interpreter, the values exposed by their clocks
+are obviously the same:
 
 .. testcode:: time_sync
 
     assert elevator.clock.time == buttons.clock.time
 
 However, even if the clock is the same for all interpreters, this does not always mean that the calls
-to :py:meth:`~sismic.interpreter.Interpreter.execute_once` are all performed at the same time. 
+to :py:meth:`~sismic.interpreter.Interpreter.execute_once` are all performed at the same time.
 Depending on the time required to process the first ``execute_once``, the second one will be called
 with a delay of (at least) a few milliseconds.
 
@@ -237,8 +237,8 @@ that corresponds to the time of the last executed step:
     assert elevator_step.time != buttons_step.time
     assert elevator.time != buttons.time
 
-To avoid these slight variations between different calls to :py:meth:`~sismic.interpreter.Interpreter.execute_once`, 
-Sismic offers a :py:class:`~sismic.clock.SynchronizedClock` 
+To avoid these slight variations between different calls to :py:meth:`~sismic.interpreter.Interpreter.execute_once`,
+Sismic offers a :py:class:`~sismic.clock.SynchronizedClock`
 whose value is based on another interpreter's time.
 
 .. testcode:: time_sync
@@ -254,31 +254,31 @@ interpreters. Obviously, in this context, we first need to execute the interpret
 .. testcode:: time_sync
 
     elevator.clock.start()
-     
+
     elevator_step = elevator.execute_once()
     buttons_step = buttons.execute_once()
 
     elevator.clock.stop()
-    
+
 Now we can check that the time of the last executed steps are the same:
 
 .. testcode:: time_sync
 
     assert elevator_step.time == buttons_step.time
     assert elevator.time == buttons.time
-    
+
 .. note::
 
-    While the two interpreters were virtually executed at the same time value, 
-    their clocks still have different values as a :py:class:`~sismic.clock.SynchronizedClock` is based 
+    While the two interpreters were virtually executed at the same time value,
+    their clocks still have different values as a :py:class:`~sismic.clock.SynchronizedClock` is based
     on the ``time`` attribute of given interpreter and not on its internal clock.
 
     .. testcode:: time_sync
 
         assert elevator.clock.time != buttons.clock.time
-    
-.. warning:: 
 
-    Because the time of an interpreter is set by the clock each time :py:meth:`~sismic.interpreter.Interpreter.execute_once` is called, you should avoid using :py:meth:`~sismic.interpreter.Interpreter.execute` (that repeatedly calls :py:meth:`~sismic.interpreter.Interpreter.execute_once`) if you want a perfect synchronization between two or more interpreters. 
-    In our example, a call to :py:meth:`~sismic.interpreter.Interpreter.execute` instead of :py:meth:`~sismic.interpreter.Interpreter.execute_once` for the first interpreter implies that the time value of the second interpreter will equal the time value of the first interpreter after having executed all its macro steps. 
-    In other words, the execution of the second interpreter will be synchronized with the execution of the last macro step of the first interpreter in that case. 
+.. warning::
+
+    Because the time of an interpreter is set by the clock each time :py:meth:`~sismic.interpreter.Interpreter.execute_once` is called, you should avoid using :py:meth:`~sismic.interpreter.Interpreter.execute` (that repeatedly calls :py:meth:`~sismic.interpreter.Interpreter.execute_once`) if you want a perfect synchronization between two or more interpreters.
+    In our example, a call to :py:meth:`~sismic.interpreter.Interpreter.execute` instead of :py:meth:`~sismic.interpreter.Interpreter.execute_once` for the first interpreter implies that the time value of the second interpreter will equal the time value of the first interpreter after having executed all its macro steps.
+    In other words, the execution of the second interpreter will be synchronized with the execution of the last macro step of the first interpreter in that case.

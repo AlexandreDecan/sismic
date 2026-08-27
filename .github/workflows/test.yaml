@@ -12,35 +12,46 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
       - name: Install dependencies
-        run: |
-          pip install pip -U
-          pip install -e . --ignore-requires-python
-      - name: Install test dependencies
-        run:  |
-          pip install coverage
-          pip install -r requirements.txt
+        run: uv sync --dev --python ${{ matrix.python-version }}
       - name: Execute tests
-        run: coverage run --source sismic -m pytest tests
+        run: uv run pytest tests --cov-report lcov --cov
       - name: Execute documentation
         run : |
+          source .venv/bin/activate
           cd docs
           make doctest
-          cd ..
 
-          cd docs/examples/microwave/
-          python -m unittest
-          cd ../../..
+          cd examples/microwave/
+          pytest
       - name: Upload coverage
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: coverallsapp/github-action@v2
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version-file: ".python-version"
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - name: Install dependencies
         run: |
-          pip install coveralls
-          coveralls --service=github
+          uv sync --dev
+          source .venv/bin/activate
+      - name: Check pyproject.toml
+        run: uv tool run pyproject-fmt pyproject.toml
+      - name: Check Python code quality and format
+        run: |
+          uv tool run ruff check
+          uv tool run ruff format --check
+      - name: Check Python static typing
+        run: uv run mypy sismic

@@ -1,9 +1,7 @@
 import abc
-
 from time import time
 
-
-__all__ = ['Clock', 'SimulatedClock', 'UtcClock', 'SynchronizedClock']
+__all__ = ["Clock", "SimulatedClock", "SynchronizedClock", "UtcClock"]
 
 
 class Clock(metaclass=abc.ABCMeta):
@@ -13,6 +11,7 @@ class Clock(metaclass=abc.ABCMeta):
     The purpose of a clock instance is to provide a way for the interpreter
     to get the current time during the execution of a statechart.
     """
+
     @property
     @abc.abstractmethod
     def time(self) -> float:
@@ -22,7 +21,7 @@ class Clock(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     def __repr__(self):
-        return '{}[{}]'.format(self.__class__.__name__, self.time)
+        return f"{self.__class__.__name__}[{self.time}]"
 
 
 class SimulatedClock(Clock):
@@ -93,21 +92,22 @@ class SimulatedClock(Clock):
         """
         current_time = self.time
         if new_time < current_time:
-            raise ValueError('Time must be monotonic, cannot change time from {} to {}'.format(
-                current_time, new_time))
+            raise ValueError(
+                f"Time must be monotonic, cannot change time from {current_time} to {new_time}",
+            )
 
         self._time = new_time
         self._base = time()
 
     def __str__(self):
-        return '{:.2f}'.format(float(self.time))
+        return f"{float(self.time):.2f}"
 
     def __repr__(self):
-        return '{}[{:.2f},x{},{}]'.format(
+        return "{}[{:.2f},x{},{}]".format(
             self.__class__.__name__,
             self.time,
             self._speed,
-            '>' if self._play else '=',
+            ">" if self._play else "=",
         )
 
 

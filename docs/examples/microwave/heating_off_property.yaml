@@ -1,7 +1,7 @@
 statechart:
   name: Heating must stop when door is opened
   description: |
-    Heating must quickly stop when door is opened. 
+    Heating must quickly stop when door is opened.
     Here, "quickly" means before next timer_tick event.
   root state:
     name: root

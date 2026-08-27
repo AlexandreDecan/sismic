@@ -7,5 +7,3 @@ Module *testing*
     :show-inheritance:
     :inherited-members:
     :imported-members:
-
-

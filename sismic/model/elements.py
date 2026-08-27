@@ -1,8 +1,20 @@
 from abc import ABCMeta
 
-__all__ = ['ContractMixin', 'StateMixin', 'ActionStateMixin', 'TransitionStateMixin',
-           'CompositeStateMixin', 'HistoryStateMixin', 'BasicState', 'CompoundState',
-           'OrthogonalState', 'ShallowHistoryState', 'DeepHistoryState', 'FinalState', 'Transition']
+__all__ = [
+    "ActionStateMixin",
+    "BasicState",
+    "CompositeStateMixin",
+    "CompoundState",
+    "ContractMixin",
+    "DeepHistoryState",
+    "FinalState",
+    "HistoryStateMixin",
+    "OrthogonalState",
+    "ShallowHistoryState",
+    "StateMixin",
+    "Transition",
+    "TransitionStateMixin",
+]
 
 
 class ContractMixin(metaclass=ABCMeta):
@@ -11,9 +23,9 @@ class ContractMixin(metaclass=ABCMeta):
     """
 
     def __init__(self) -> None:
-        self.preconditions = []  # type: list[str]
-        self.postconditions = []  # type: list[str]
-        self.invariants = []  # type: list[str]
+        self.preconditions: list[str] = []
+        self.postconditions: list[str] = []
+        self.invariants: list[str] = []
 
     def __eq__(self, other):
         if isinstance(other, ContractMixin):
@@ -41,7 +53,7 @@ class StateMixin(metaclass=ABCMeta):
         return self._name
 
     def __repr__(self):
-        return '{}({!r})'.format(self.__class__.__name__, self.name)
+        return f"{self.__class__.__name__}({self.name!r})"
 
     def __eq__(self, other):
         if isinstance(other, StateMixin):
@@ -61,7 +73,7 @@ class ActionStateMixin(metaclass=ABCMeta):
     :param on_exit: code to execute when state is exited
     """
 
-    def __init__(self, on_entry: str = None, on_exit: str = None) -> None:
+    def __init__(self, on_entry: str | None = None, on_exit: str | None = None) -> None:
         self.on_entry = on_entry
         self.on_exit = on_exit
 
@@ -97,7 +109,7 @@ class HistoryStateMixin(metaclass=ABCMeta):
     :param memory: name of the initial state
     """
 
-    def __init__(self, memory: str = None) -> None:
+    def __init__(self, memory: str | None = None) -> None:
         self.memory = memory
 
     def __eq__(self, other):
@@ -116,7 +128,7 @@ class BasicState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMix
     :param on_exit: code to execute when state is exited
     """
 
-    def __init__(self, name: str, on_entry: str = None, on_exit: str = None) -> None:
+    def __init__(self, name: str, on_entry: str | None = None, on_exit: str | None = None) -> None:
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
@@ -135,7 +147,12 @@ class BasicState(ContractMixin, StateMixin, ActionStateMixin, TransitionStateMix
 
 
 class CompoundState(
-        ContractMixin, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin):
+    ContractMixin,
+    StateMixin,
+    ActionStateMixin,
+    TransitionStateMixin,
+    CompositeStateMixin,
+):
     """
     Compound states must have children states.
 
@@ -145,8 +162,13 @@ class CompoundState(
     :param on_exit: code to execute when state is exited
     """
 
-    def __init__(self, name: str, initial: str = None,
-                 on_entry: str = None, on_exit: str = None) -> None:
+    def __init__(
+        self,
+        name: str,
+        initial: str | None = None,
+        on_entry: str | None = None,
+        on_exit: str | None = None,
+    ) -> None:
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
@@ -168,7 +190,12 @@ class CompoundState(
 
 
 class OrthogonalState(
-        ContractMixin, StateMixin, ActionStateMixin, TransitionStateMixin, CompositeStateMixin):
+    ContractMixin,
+    StateMixin,
+    ActionStateMixin,
+    TransitionStateMixin,
+    CompositeStateMixin,
+):
     """
     Orthogonal states run their children simultaneously.
 
@@ -177,7 +204,7 @@ class OrthogonalState(
     :param on_exit: code to execute when state is exited
     """
 
-    def __init__(self, name: str, on_entry: str = None, on_exit: str = None) -> None:
+    def __init__(self, name: str, on_entry: str | None = None, on_exit: str | None = None) -> None:
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
@@ -208,8 +235,13 @@ class ShallowHistoryState(ContractMixin, StateMixin, ActionStateMixin, HistorySt
     :param memory: name of the initial state
     """
 
-    def __init__(self, name: str, on_entry: str = None,
-                 on_exit: str = None, memory: str = None) -> None:
+    def __init__(
+        self,
+        name: str,
+        on_entry: str | None = None,
+        on_exit: str | None = None,
+        memory: str | None = None,
+    ) -> None:
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
@@ -238,8 +270,13 @@ class DeepHistoryState(ContractMixin, StateMixin, ActionStateMixin, HistoryState
     :param memory: name of the initial state
     """
 
-    def __init__(self, name: str, on_entry: str = None,
-                 on_exit: str = None, memory: str = None) -> None:
+    def __init__(
+        self,
+        name: str,
+        on_entry: str | None = None,
+        on_exit: str | None = None,
+        memory: str | None = None,
+    ) -> None:
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
@@ -266,7 +303,7 @@ class FinalState(ContractMixin, StateMixin, ActionStateMixin):
     :param on_exit: code to execute when state is exited
     """
 
-    def __init__(self, name: str, on_entry: str = None, on_exit: str = None) -> None:
+    def __init__(self, name: str, on_entry: str | None = None, on_exit: str | None = None) -> None:
         ContractMixin.__init__(self)
         StateMixin.__init__(self, name)
         ActionStateMixin.__init__(self, on_entry, on_exit)
@@ -301,8 +338,15 @@ class Transition(ContractMixin):
     DEFAULT_PRIORITY = 0
     HIGH_PRIORITY = 1
 
-    def __init__(self, source: str, target: str = None, event: str = None, guard: str = None,
-                 action: str = None, priority=None) -> None:
+    def __init__(
+        self,
+        source: str,
+        target: str | None = None,
+        event: str | None = None,
+        guard: str | None = None,
+        action: str | None = None,
+        priority: int | str | None = None,
+    ) -> None:
         ContractMixin.__init__(self)
         self._source = source
         self._target = target
@@ -348,15 +392,15 @@ class Transition(ContractMixin):
             return NotImplemented
 
     def __repr__(self):
-        return 'Transition({!r}, {!r}, event={!r})'.format(self.source, self.target, self.event)
+        return f"Transition({self.source!r}, {self.target!r}, event={self.event!r})"
 
     def __str__(self):
-        return '{} -> {}{} [{}] -> {}'.format(
+        return "{} -> {}{} [{}] -> {}".format(
             self.source,
-            '' if self.priority == 0 else '{}:'.format(self.priority),
+            "" if self.priority == 0 else f"{self.priority}:",
             self.event,
             self.guard,
-            self.target if self.target else ''
+            self.target if self.target else "",
         )
 
     def __hash__(self):

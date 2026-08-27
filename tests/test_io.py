@@ -1,9 +1,9 @@
 import pytest
 
-from sismic.model import Statechart
 from sismic.exceptions import StatechartError
-from sismic.io import import_from_yaml, export_to_yaml, export_to_plantuml
+from sismic.io import export_to_plantuml, export_to_yaml, import_from_yaml
 from sismic.io.plantuml import cli
+from sismic.model import Statechart
 
 
 def compare_statecharts(s1, s2):
@@ -19,13 +19,15 @@ def compare_statecharts(s1, s2):
         assert set(s1.children_for(state)) == set(s2.children_for(state))
 
 
-@pytest.mark.parametrize('data', [1, -1, 1.0, 'yes', 'True', 'no', '', [], [1, 2], {}, {1: 1}])
+@pytest.mark.parametrize("data", [1, -1, 1.0, "yes", "True", "no", "", [], [1, 2], {}, {1: 1}])
 def test_yaml_parser_types_handling(data):
-    yaml = ('statechart:'
-            '\n  name: ' + str(data) +
-            '\n  preamble: Nothing'
-            '\n  root state:'
-            '\n    name: s1')
+    yaml = f"""
+    statechart:
+        name: {data!s}
+        preamble: Nothing
+        root state:
+            name: s1
+    """
     item = import_from_yaml(yaml).name
     assert isinstance(item, str)
 
@@ -34,7 +36,7 @@ def test_import_from_yaml_args():
     with pytest.raises(TypeError):
         import_from_yaml()
     with pytest.raises(TypeError):
-        import_from_yaml('A', filepath='B')
+        import_from_yaml("A", filepath="B")
 
 
 class TestImportFromYaml:
@@ -58,7 +60,7 @@ class TestImportFromYaml:
         """
         with pytest.raises(StatechartError) as e:
             import_from_yaml(yaml)
-        assert 'Unknown target state' in str(e.value)
+        assert "Unknown target state" in str(e.value)
 
     def test_history_not_in_compound(self):
         yaml = """
@@ -75,7 +77,7 @@ class TestImportFromYaml:
         """
         with pytest.raises(StatechartError) as e:
             import_from_yaml(yaml)
-        assert 'cannot be used as a parent for' in str(e.value)
+        assert "cannot be used as a parent for" in str(e.value)
 
     def test_declare_both_states_and_parallel_states(self):
         yaml = """
@@ -90,9 +92,11 @@ class TestImportFromYaml:
               - name: s2
         """
 
-        with pytest.raises(StatechartError) as e:
+        with pytest.raises(
+            StatechartError,
+            match="root cannot declare both a 'states' and a 'parallel states' property",
+        ):
             import_from_yaml(yaml)
-        assert 'root cannot declare both a "states" and a "parallel states" property' in str(e.value)
 
 
 class TestExportToYaml:
@@ -109,7 +113,10 @@ class TestExportToYaml:
         assert import_from_yaml(export_to_yaml(example_from_docs)).validate()
 
     def test_identity_for_example_from_tests(self, example_from_tests):
-        compare_statecharts(example_from_tests, import_from_yaml(export_to_yaml(example_from_tests)))
+        compare_statecharts(
+            example_from_tests,
+            import_from_yaml(export_to_yaml(example_from_tests)),
+        )
 
     def test_identity_for_example_from_docs(self, example_from_docs):
         compare_statecharts(example_from_docs, import_from_yaml(export_to_yaml(example_from_docs)))
@@ -125,7 +132,7 @@ class TestExportToPlantUML:
             state_contracts=True,
             state_action=True,
             transition_contracts=True,
-            transition_action=True
+            transition_action=True,
         )
         assert len(export) > 0
 
@@ -138,23 +145,22 @@ class TestExportToPlantUML:
             state_contracts=True,
             state_action=True,
             transition_contracts=True,
-            transition_action=True
+            transition_action=True,
         )
         assert len(export) > 0
 
     def test_export_based_on_filepath(self, elevator):
-        filepath = 'docs/examples/elevator/elevator.plantuml'
+        filepath = "docs/examples/elevator/elevator.plantuml"
         statechart = elevator.statechart
-        with open(filepath, 'r') as f:
+        with open(filepath, "r") as f:
             p1 = f.read().strip()
 
         assert p1 != export_to_plantuml(statechart)
         assert p1 == export_to_plantuml(statechart, based_on=p1)
         assert p1 == export_to_plantuml(statechart, based_on_filepath=filepath)
 
-
     def test_cli(self, capsys):
-        filepath = 'docs/examples/elevator/elevator.yaml'
+        filepath = "docs/examples/elevator/elevator.yaml"
         statechart = import_from_yaml(filepath=filepath)
 
         # Check default parameters
@@ -163,8 +169,30 @@ class TestExportToPlantUML:
         assert export_to_plantuml(statechart) == out.strip()
 
         # Check all parameters
-        cli([filepath, '--based-on', 'docs/examples/elevator/elevator.plantuml', '--show-description', '--show-preamble', '--show-state-contracts', '--show-transition-contracts', '--hide-state-action', '--hide-name', '--hide-transition-action'])
+        cli(
+            [
+                filepath,
+                "--based-on",
+                "docs/examples/elevator/elevator.plantuml",
+                "--show-description",
+                "--show-preamble",
+                "--show-state-contracts",
+                "--show-transition-contracts",
+                "--hide-state-action",
+                "--hide-name",
+                "--hide-transition-action",
+            ],
+        )
         out, _ = capsys.readouterr()
-        export = export_to_plantuml(statechart, based_on_filepath='docs/examples/elevator/elevator.plantuml', statechart_description=True, statechart_preamble=True, state_contracts=True, transition_contracts=True, state_action=False, statechart_name=False, transition_action=False)
+        export = export_to_plantuml(
+            statechart,
+            based_on_filepath="docs/examples/elevator/elevator.plantuml",
+            statechart_description=True,
+            statechart_preamble=True,
+            state_contracts=True,
+            transition_contracts=True,
+            state_action=False,
+            statechart_name=False,
+            transition_action=False,
+        )
         assert export == out.strip()
-

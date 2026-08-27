@@ -6,35 +6,30 @@ class StatechartError(SismicError):
     """
     Base error for anything that is related to a statechart.
     """
-    pass
 
 
 class CodeEvaluationError(SismicError):
     """
     Base error for anything related to the evaluation of the code contained in a statechart.
     """
-    pass
 
 
 class ExecutionError(SismicError):
     """
     Base error for anything related to the execution of a statechart.
     """
-    pass
 
 
 class ConflictingTransitionsError(ExecutionError):
     """
     When multiple conflicting (parallel) transitions can be processed at the same time.
     """
-    pass
 
 
 class NonDeterminismError(ExecutionError):
     """
     In case of non-determinism.
     """
-    pass
 
 
 class PropertyStatechartError(SismicError):
@@ -53,8 +48,7 @@ class PropertyStatechartError(SismicError):
         return self._property
 
     def __str__(self):
-        return '{}\nProperty is not satisfied, {} has reached a final state'.format(
-            self.__class__.__name__, self._property)
+        return f"{self.__class__.__name__}\nProperty is not satisfied, {self._property} has reached a final state"
 
 
 class ContractError(SismicError):
@@ -69,7 +63,7 @@ class ContractError(SismicError):
     :param context: the context in which the condition failed
     """
 
-    __slots__ = ['_configuration', '_step', '_obj', '_assertion', '_context']
+    __slots__ = ["_assertion", "_configuration", "_context", "_obj", "_step"]
 
     def __init__(self, configuration=None, step=None, obj=None, assertion=None, context=None):
         super().__init__(self)
@@ -100,39 +94,36 @@ class ContractError(SismicError):
         return self._context
 
     def __str__(self):  # pragma: no cover
-        message = ['{}'.format(self.__class__.__name__)]
+        message = [f"{self.__class__.__name__}"]
         if self._obj:
-            message.append('Object: {}'.format(self._obj))
+            message.append(f"Object: {self._obj}")
         if self._assertion:
-            message.append('Assertion: {}'.format(self._assertion))
+            message.append(f"Assertion: {self._assertion}")
         if self._configuration:
-            message.append('Configuration: {}'.format(self._configuration))
+            message.append(f"Configuration: {self._configuration}")
         if self._step:
-            message.append('Step: {}'.format(self._step))
+            message.append(f"Step: {self._step}")
         if self._context:
-            message.append('Context:')
+            message.append("Context:")
             for key, value in sorted(self._context.items(), key=lambda t: t[0]):
-                message.append(' - {key} = {value}'.format(key=key, value=value))
+                message.append(f" - {key} = {value}")
 
-        return '\n'.join(message)
+        return "\n".join(message)
 
 
 class PreconditionError(ContractError):
     """
     A precondition is not satisfied.
     """
-    pass
 
 
 class PostconditionError(ContractError):
     """
     A postcondition is not satisfied.
     """
-    pass
 
 
 class InvariantError(ContractError):
     """
     An invariant is not satisfied.
     """
-    pass
