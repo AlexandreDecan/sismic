@@ -4,7 +4,7 @@ requires = [ "uv-build>=0.12.1,<0.13" ]
 
 [project]
 name = "sismic"
-version = "1.6.11"
+version = "1.6.12-pre1"
 description = "Sismic Interactive Statechart Model Interpreter and Checker"
 readme = "README.rst"
 keywords = [ "harel", "interpreter", "machine", "model", "scxml", "state", "statechart", "uml" ]

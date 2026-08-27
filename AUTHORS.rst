@@ -20,3 +20,4 @@ Contributors
 * Rigó Ernő
 * SomeFrenchGuy
 * Morwenn
+* RobLafoo
