@@ -24,7 +24,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
-  "Programming Language :: Python :: 3.15",
+  # "Programming Language :: Python :: 3.15",
   "Topic :: Scientific/Engineering",
   "Topic :: Software Development :: Interpreters",
   "Topic :: Software Development :: Testing",
@@ -63,6 +63,7 @@ ignore = [ "PIE790" ]
 pydocstyle.convention = "google"
 
 [tool.pyproject-fmt]
+max_supported_python = "3.14"
 table_format = "long"
 
 [tool.mypy]
