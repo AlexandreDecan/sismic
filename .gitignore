@@ -58,5 +58,5 @@ target/
 
 # Configuration
 !.readthedocs.yaml
-!.github/*
+!.github
 .*
