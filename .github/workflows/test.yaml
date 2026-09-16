@@ -9,6 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      checks: write
     strategy:
       fail-fast: false
       matrix:
@@ -37,6 +40,8 @@ jobs:
         uses: coverallsapp/github-action@v2
   lint:
     runs-on: ubuntu-26.04
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v7
       - name: Setup Python
