@@ -1,8 +1,8 @@
 Changelog
 =========
 
-1.6.12 (not yet released)
--------------------------
+1.6.12 (2026-09-28)
+-------------------
 
  - (Fixed) Improve typing with ``Path`` objects in complement to filepaths (`#134 <https://github.com/AlexandreDecan/sismic/pull/134>`__, Morwenn).
  - (Fixed) Replace features deprecated in Python 3.9 (`#135 <https://github.com/AlexandreDecan/sismic/pull/135>`__, Morwenn).
