@@ -1,6 +1,5 @@
 from collections.abc import Callable, Iterable
 from copy import deepcopy
-from typing import Self
 
 from ..exceptions import StatechartError
 from .elements import (
@@ -535,7 +534,7 @@ class Statechart:
 
     def copy_from_statechart(
         self,
-        statechart: Self,
+        statechart: "Statechart",
         *,
         source: str,
         replace: str,

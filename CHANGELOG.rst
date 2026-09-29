@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.6.13 (2026-09-29)
+-------------------
+
+ - (Fixed) Fix a regression introduced in 1.6.12 that prevented Sismic to be used with Python 3.10.
+
 1.6.12 (2026-09-28)
 -------------------
 
