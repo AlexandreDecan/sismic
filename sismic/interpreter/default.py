@@ -2,7 +2,7 @@ import bisect
 import warnings
 from collections.abc import Callable, Iterable, Mapping
 from itertools import combinations
-from typing import Any, Self, cast
+from typing import Any, cast
 
 from ..clock import Clock, SimulatedClock, SynchronizedClock
 from ..code import Evaluator, PythonEvaluator
@@ -190,7 +190,7 @@ class Interpreter:
 
     def bind(
         self,
-        interpreter_or_callable: Self | Callable[[Event], Any],
+        interpreter_or_callable: "Interpreter | Callable[[Event], Any]",
     ) -> Callable[[MetaEvent], Any]:
         """
         Bind an interpreter (or a callable) to the current interpreter.
@@ -267,7 +267,7 @@ class Interpreter:
         event_or_name: str | Event,
         *event_or_names: str | Event,
         **parameters,
-    ) -> Self:
+    ) -> "Interpreter":
         """
         Create and queue given events to the external event queue.
 

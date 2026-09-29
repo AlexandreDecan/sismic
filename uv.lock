@@ -748,7 +748,7 @@ wheels = [
 
 [[package]]
 name = "sismic"
-version = "1.6.12rc1"
+version = "1.6.12"
 source = { editable = "." }
 dependencies = [
     { name = "behave" },
