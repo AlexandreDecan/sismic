@@ -118,11 +118,11 @@ class PlantUMLExporter:
             return
 
         if isinstance(state, ShallowHistoryState):
-            self.output(f"state 'H' as {self.state_id(name)} {{")
+            self.output(f'state "H" as {self.state_id(name)} {{')
         elif isinstance(state, DeepHistoryState):
-            self.output(f"state 'H*' as {self.state_id(name)} {{")
+            self.output(f'state "H*" as {self.state_id(name)} {{')
         else:
-            self.output(f"state '{name}' as {self.state_id(name)} {{")
+            self.output(f'state "{name}" as {self.state_id(name)} {{')
 
         self.indent()
 
