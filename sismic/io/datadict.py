@@ -1,5 +1,8 @@
+# mypy: disable-error-code="arg-type"
 from collections.abc import Mapping
-from typing import Any, cast
+from typing import Any, ClassVar, cast
+
+import schema
 
 from ..exceptions import StatechartError
 from ..model import (
@@ -20,7 +23,70 @@ from ..model import (
 __all__ = ["export_to_dict", "import_from_dict"]
 
 
-def import_from_dict(data: Mapping[str, Any]) -> Statechart:
+class SCHEMA:
+    contract: ClassVar[dict] = {schema.Or("before", "after", "always"): schema.Use(str)}
+
+    transition: ClassVar[dict] = {
+        schema.Optional("target"): schema.Use(str),
+        schema.Optional("event"): schema.Use(str),
+        schema.Optional("guard"): schema.Use(str),
+        schema.Optional("action"): schema.Use(str),
+        schema.Optional("contract"): [contract],
+        schema.Optional("priority"): schema.Or(schema.Use(int), "high", "low"),
+    }
+
+    state: ClassVar[dict] = {}
+    state.update(
+        {
+            "name": schema.Use(str),
+            schema.Optional("type"): schema.Or("final", "shallow history", "deep history"),
+            schema.Optional("on entry"): schema.Use(str),
+            schema.Optional("on exit"): schema.Use(str),
+            schema.Optional("transitions"): [transition],
+            schema.Optional("contract"): [contract],
+            schema.Optional("initial"): schema.Use(str),
+            schema.Optional("parallel states"): [state],
+            schema.Optional("states"): [state],
+            schema.Optional("memory"): schema.Use(str),
+        },
+    )
+
+    statechart: ClassVar[dict[str, Any]] = {
+        "statechart": {
+            "name": schema.Use(str),
+            schema.Optional("description"): schema.Use(str),
+            schema.Optional("preamble"): schema.Use(str),
+            "root state": state,
+        },
+    }
+
+
+def import_from_dict(
+    data: Mapping[str, Any],
+    *,
+    ignore_schema: bool = False,
+    ignore_validation: bool = False,
+) -> Statechart:
+    """
+    Import a statechart from its dictionary representation.
+
+    Unless specified, the structure contained in the YAML is validated against a predefined
+    schema (see *sismic.io.SCHEMA*), and the resulting statechart is validated using its
+    *validate()* method.
+
+    :param data: A mapping representing the statechart.
+    :param ignore_schema: set to *True* to disable yaml validation.
+    :param ignore_validation: set to *True* to disable statechart validation.
+    :return: a *Statechart* instance
+    """
+
+    # Validate the input mapping
+    if not ignore_schema:
+        try:
+            data = schema.Schema(SCHEMA.statechart).validate(data)
+        except schema.SchemaError as e:
+            raise StatechartError("mapping validation failed") from e
+
     data = data["statechart"]
 
     statechart = Statechart(
@@ -69,6 +135,10 @@ def import_from_dict(data: Mapping[str, Any]) -> Statechart:
         statechart.add_state(state, parent)
     for transition in transitions:
         statechart.add_transition(transition)
+
+    # Validate the statechart
+    if not ignore_validation:
+        statechart.validate()
 
     return statechart
 
