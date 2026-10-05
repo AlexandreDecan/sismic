@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.6.14 (2026-10-05)
+-------------------
+
+ - (Fixed) A regression introduced in 1.6.12 that prevent PlantUML export (`#146 <https://github.com/AlexandreDecan/sismic/pull/146>`__, Morwenn).
+
 1.6.13 (2026-09-29)
 -------------------
 
