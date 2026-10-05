@@ -1,6 +1,10 @@
+from typing import Any
+
 import pytest
+from ruamel import yaml
 
 from sismic.exceptions import StatechartError
+from sismic.io.datadict import import_from_dict
 from sismic.io import export_to_plantuml, export_to_yaml, import_from_yaml
 from sismic.io.plantuml import cli
 from sismic.model import Statechart
@@ -196,3 +200,58 @@ class TestExportToPlantUML:
             transition_action=False,
         )
         assert export == out.strip()
+
+
+class TestImportFromDict:
+    def load_simple_statechart(self, tests_dir) -> dict[str, Any]:
+        yml = yaml.YAML(typ="safe", pure=True)
+        return yml.load(tests_dir / "yaml/simple.yaml")
+
+    def test_import_from_valid_dict(self, tests_dir):
+        data = self.load_simple_statechart(tests_dir)
+        assert "statechart" in data
+        assert data["statechart"] == {
+            "name": "simple statechart",
+            "root state": {
+                "name": "root",
+                "initial": "s1",
+                "states": [
+                    {"name": "s1", "transitions": [{"target": "s2", "event": "goto s2"}]},
+                    {"name": "s2", "transitions": [{"target": "s3"}]},
+                    {
+                        "name": "s3",
+                        "transitions": [
+                            {"target": "s1", "event": "goto s1"},
+                            {"target": "s2", "event": "goto s2"},
+                            {"target": "final", "event": "goto final"},
+                        ],
+                    },
+                    {"name": "final", "type": "final"},
+                ],
+            },
+        }
+
+        statechart = import_from_dict(data)
+        assert statechart.name == "simple statechart"
+        assert statechart.root == "root"
+        assert len(statechart.states) == 5
+
+    def test_incorrect_schema(self, tests_dir):
+        data = self.load_simple_statechart(tests_dir)
+        data["statechart"]["type"] = "incorrect_type"
+
+        with pytest.raises(StatechartError, match="mapping validation failed"):
+            import_from_dict(data, ignore_validation=True)
+
+    def test_incorrect_validation(self, tests_dir):
+        data = self.load_simple_statechart(tests_dir)
+        data["statechart"]["root state"]["initial"] = "s54"
+
+        with pytest.raises(StatechartError, match="Initial state s54 .* does not exist"):
+            import_from_dict(data, ignore_schema=True)
+
+    def test_skipped_validation_raises_no_error(self, tests_dir):
+        data = self.load_simple_statechart(tests_dir)
+        data["statechart"]["type"] = "incorrect_type"
+        data["statechart"]["root state"]["initial"] = "s54"
+        import_from_dict(data, ignore_schema=True, ignore_validation=True)
